@@ -1,0 +1,197 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                   DIAGNÓSTICO COMPLETO PREPARADO                           ║
+║                   Problema: Produto não liberado após compra               ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📅 DATA: 15 de Maio de 2026
+🔴 SEVERIDADE: CRÍTICA
+⏰ URGÊNCIA: IMEDIATA
+⏱️  TEMPO NECESSÁRIO: 20 minutos
+
+═══════════════════════════════════════════════════════════════════════════
+
+📁 ARQUIVOS CRIADOS (7 arquivos)
+═══════════════════════════════════════════════════════════════════════════
+
+✅ README_DIAGNOSTIC.md
+   → Visão geral do problema e arquivos criados
+   → Início rápido em 3 passos
+
+✅ START_HERE.md ⭐ COMECE AQUI!
+   → Guia visual simplificado
+   → Instruções passo a passo
+   → Formulário para compilar resultados
+   → 20 minutos do início ao fim
+
+✅ DIAGNOSTIC_INDEX.md
+   → Índice de todos os arquivos
+   → Fluxo de trabalho recomendado
+   → Qual arquivo usar para cada situação
+
+✅ DIAGNOSTIC_SUMMARY.md
+   → Resumo executivo
+   → Cenários possíveis
+   → Sinais de cada tipo de problema
+
+✅ DIAGNOSTIC_REPORT.md
+   → Análise técnica detalhada
+   → Análise do código fonte
+   → Problemas identificados com probabilidades
+   → Plano de ação técnico
+
+✅ EXECUTE_DIAGNOSTIC.md
+   → Guia passo a passo completo
+   → Instruções detalhadas para cada ferramenta
+   → Troubleshooting de problemas comuns
+
+✅ supabase/DIAGNOSTIC_PURCHASE_FLOW.sql
+   → Script SQL de diagnóstico completo
+   → Verifica webhooks, compras, members, deliveries
+   → Gera resumo executivo
+
+✅ backend/diagnostic-stripe.js
+   → Script Node.js de verificação
+   → Conecta com Stripe API
+   → Compara dados Stripe vs Supabase
+   → Identifica problemas automaticamente
+
+═══════════════════════════════════════════════════════════════════════════
+
+🚀 COMO COMEÇAR
+═══════════════════════════════════════════════════════════════════════════
+
+OPÇÃO 1: Início Rápido (Recomendado)
+────────────────────────────────────────────────────────────────────────────
+1. Abra: START_HERE.md
+2. Siga os 4 passos (20 minutos)
+3. Compartilhe os resultados
+
+OPÇÃO 2: Leitura Completa
+────────────────────────────────────────────────────────────────────────────
+1. Leia: README_DIAGNOSTIC.md (visão geral)
+2. Leia: DIAGNOSTIC_SUMMARY.md (resumo executivo)
+3. Leia: DIAGNOSTIC_REPORT.md (análise técnica)
+4. Execute: EXECUTE_DIAGNOSTIC.md (passo a passo)
+
+═══════════════════════════════════════════════════════════════════════════
+
+📋 CHECKLIST PRÉ-DIAGNÓSTICO
+═══════════════════════════════════════════════════════════════════════════
+
+Antes de começar, certifique-se:
+
+[ ] Tenho acesso ao Supabase SQL Editor
+[ ] Tenho acesso ao Stripe Dashboard
+[ ] Backend está configurado (.env.backend)
+[ ] Node.js está instalado
+[ ] Tenho 20 minutos disponíveis
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎯 O QUE VAI ACONTECER
+═══════════════════════════════════════════════════════════════════════════
+
+FASE 1: DIAGNÓSTICO (20 minutos)
+────────────────────────────────────────────────────────────────────────────
+✅ Execute script SQL no Supabase
+✅ Execute script Node.js no terminal
+✅ Verifique Stripe Dashboard manualmente
+✅ Compile os resultados
+
+FASE 2: ANÁLISE (Após compartilhar resultados)
+────────────────────────────────────────────────────────────────────────────
+✅ Identificar problema exato
+✅ Determinar causa raiz
+✅ Calcular impacto (usuários afetados)
+
+FASE 3: CORREÇÃO (Após análise)
+────────────────────────────────────────────────────────────────────────────
+✅ Criar scripts de correção SQL
+✅ Criar patches de código
+✅ Criar scripts de migração
+✅ Fornecer instruções de implementação
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔍 PROBLEMAS PROVÁVEIS
+═══════════════════════════════════════════════════════════════════════════
+
+🟡 Problema #1: Webhooks não funcionando (70% probabilidade)
+   → Webhooks não estão chegando ao backend
+   → Compras não são registradas automaticamente
+   → SOLUÇÃO: Configurar Stripe CLI + webhook endpoint
+
+🟡 Problema #2: Metadata incompleto (20% probabilidade)
+   → create-checkout não envia member_id
+   → fulfill-purchase não consegue processar
+   → SOLUÇÃO: Corrigir metadata + reprocessar compras
+
+🟡 Problema #3: Usuários sem members (10% probabilidade)
+   → Trigger de criação não existe ou falhou
+   → Usuários fazem login mas não têm registro em members
+   → SOLUÇÃO: Criar trigger + migrar usuários existentes
+
+═══════════════════════════════════════════════════════════════════════════
+
+📊 RESULTADOS ESPERADOS
+═══════════════════════════════════════════════════════════════════════════
+
+Após o diagnóstico, você terá:
+
+✅ Problema exato identificado
+✅ Dados concretos (quantas compras afetadas)
+✅ Causa raiz determinada
+✅ Scripts de correção prontos
+✅ Plano de implementação
+✅ Documentação de prevenção
+
+═══════════════════════════════════════════════════════════════════════════
+
+⏱️  TEMPO ESTIMADO
+═══════════════════════════════════════════════════════════════════════════
+
+Diagnóstico SQL:           5 minutos
+Diagnóstico Stripe:        5 minutos
+Verificação Manual:        5 minutos
+Compilação:                5 minutos
+─────────────────────────────────────
+TOTAL:                    20 minutos
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎯 PRÓXIMA AÇÃO
+═══════════════════════════════════════════════════════════════════════════
+
+👉 ABRA O ARQUIVO: START_HERE.md
+
+   Este arquivo contém:
+   - Instruções visuais passo a passo
+   - Formulário para compilar resultados
+   - Troubleshooting de problemas comuns
+   - Tudo que você precisa em um só lugar
+
+═══════════════════════════════════════════════════════════════════════════
+
+📞 SUPORTE
+═══════════════════════════════════════════════════════════════════════════
+
+Se tiver dúvidas durante a execução:
+- Consulte EXECUTE_DIAGNOSTIC.md para instruções detalhadas
+- Consulte DIAGNOSTIC_REPORT.md para análise técnica
+- Compartilhe resultados parciais se travar em algum passo
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ STATUS: Diagnóstico completo preparado
+⏳ AGUARDANDO: Execução do diagnóstico
+🎯 OBJETIVO: Identificar por que produtos não são liberados após compra
+
+═══════════════════════════════════════════════════════════════════════════
+
+🚀 COMECE AGORA!
+
+Abra o arquivo START_HERE.md e siga as instruções.
+
+═══════════════════════════════════════════════════════════════════════════

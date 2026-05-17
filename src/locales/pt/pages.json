@@ -1,0 +1,449 @@
+{
+  "terms": {
+    "title": "Termos de Uso",
+    "heading": "Termos e Condições",
+    "description": "Ao utilizar a CodeEngine Learn, você concorda com estes termos. Leia atentamente antes de usar nossos serviços.",
+    "lastUpdate": "Última atualização: {{date}}",
+    "allowedUse": "Uso Permitido",
+    "allowedUseDesc": "Você pode usar nossos produtos para fins pessoais e profissionais.",
+    "allowedItems": {
+      "access": "Acessar e baixar produtos adquiridos",
+      "learn": "Usar o conteúdo para aprendizado pessoal",
+      "apply": "Aplicar conhecimentos em projetos profissionais",
+      "feedback": "Compartilhar feedback e sugestões"
+    },
+    "prohibitedUse": "Uso Proibido",
+    "prohibitedUseDesc": "As seguintes ações são estritamente proibidas.",
+    "prohibitedItems": {
+      "redistribute": "Redistribuir ou revender produtos adquiridos",
+      "share": "Compartilhar credenciais de acesso",
+      "reverse": "Fazer engenharia reversa dos produtos",
+      "illegal": "Usar conteúdo para fins ilegais",
+      "copyright": "Violar direitos autorais ou propriedade intelectual"
+    },
+    "questions": "Dúvidas sobre os Termos?",
+    "questionsDesc": "Entre em contato para esclarecer qualquer questão sobre nossos termos de uso.",
+    "contactUs": "Fale Conosco"
+  },
+  "success": {
+    "loading": "Carregando dados da compra...",
+    "error": "Erro ao Carregar Compra",
+    "backToHome": "Voltar para Home",
+    "confirmed": "Pagamento Confirmado! 🎉",
+    "purchaseSuccess": "Sua compra de {{product}} foi processada com sucesso!",
+    "amountPaid": "Valor pago: {{amount}}",
+    "checkEmail": "Verifique seu Email",
+    "emailSent": "Enviamos um email de confirmação para:",
+    "checkSpam": "(Verifique também a pasta de spam)",
+    "downloadReady": "Acesso Imediato",
+    "downloadDesc": "Você já pode acessar seu produto na área de membros. Clique no botão abaixo para começar!",
+    "goToDownloads": "Acessar Área de Membros",
+    "lifetimeAccess": "Suporte Disponível",
+    "lifetimeDesc": "Precisa de ajuda? Entre em contato conosco através do email de suporte.",
+    "support": "Precisa de Ajuda?",
+    "supportDesc": "Nossa equipe está pronta para ajudar com qualquer dúvida.",
+    "contactSupport": "Contatar Suporte",
+    "purchaseId": "ID da Compra:",
+    "backToHomeBtn": "Voltar para Home",
+    "autoRedirect": "Você será redirecionado automaticamente para a área de membros em",
+    "seconds": "segundos",
+    "nextSteps": "Próximos Passos",
+    "step1Title": "Verifique seu email",
+    "step1Desc": "Confirme o recebimento do email de confirmação (verifique também a pasta de spam)",
+    "step2Title": "Acesse a área de membros",
+    "step2Desc": "Faça login e acesso todos os seus produtos comprados",
+    "step3Title": "Faça o download",
+    "step3Desc": "Baixe seu produto e comece a usar imediatamente",
+    "sessionNotFound": "ID da sessão não encontrado",
+    "failedToFetchSession": "Falha ao buscar dados da sessão",
+    "errorLoadingPurchase": "Erro ao carregar dados da compra",
+    "acquiredProduct": "Produto adquirido",
+    "product": "Produto"
+  },
+  "cancel": {
+    "title": "Compra Cancelada",
+    "heading": "Checkout Cancelado",
+    "description": "Você cancelou o processo de pagamento. Não se preocupe, nenhuma cobrança foi realizada.",
+    "whatHappened": "O que aconteceu?",
+    "whatHappenedDesc": "O processo de checkout foi interrompido antes da conclusão do pagamento. Nenhuma cobrança foi realizada em seu cartão.",
+    "tryAgain": "Quer tentar novamente?",
+    "tryAgainDesc": "Você pode voltar à página do produto e tentar novamente quando estiver pronto. Seu carrinho ainda está disponível.",
+    "needHelp": "Precisa de Ajuda?",
+    "needHelpDesc": "Se você encontrou algum problema durante o checkout ou tem dúvidas, entre em contato conosco.",
+    "viewProducts": "Ver Produtos",
+    "goHome": "Ir para Home",
+    "commonIssues": "Problemas Comuns",
+    "cardDeclined": "💳 Cartão recusado?",
+    "cardDeclinedDesc": "Verifique se os dados do cartão estão corretos e se há limite disponível. Alguns bancos podem bloquear compras internacionais - entre em contato com seu banco se necessário.",
+    "securityConcern": "🔒 Preocupado com segurança?",
+    "securityConcernDesc": "Todos os pagamentos são processados de forma segura através do Stripe, uma das plataformas de pagamento mais confiáveis do mundo. Seus dados estão protegidos.",
+    "productQuestions": "❓ Tem dúvidas sobre o produto?",
+    "productQuestionsDesc": "Volte à página do produto para ver mais detalhes, FAQs e avaliações de outros clientes. Você também pode entrar em contato conosco antes de comprar."
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Gerencie suas preferências e informações pessoais",
+    "personalInfo": "Informações Pessoais",
+    "name": "Nome",
+    "email": "Email",
+    "emailNote": "O email não pode ser alterado",
+    "saveChanges": "Salvar Alterações",
+    "changePassword": "Alterar Senha",
+    "newPassword": "Nova Senha",
+    "newPasswordPlaceholder": "Mínimo 6 caracteres",
+    "confirmPassword": "Confirmar Nova Senha",
+    "confirmPasswordPlaceholder": "Confirme sua nova senha",
+    "updatePassword": "Alterar Senha",
+    "language": "Language",
+    "languageDesc": "Choose your platform language",
+    "emailNotifications": "Notificações por Email",
+    "emailNotificationsDesc": "Receba atualizações sobre novos produtos e ofertas",
+    "productUpdates": "Atualizações de Produtos",
+    "productUpdatesDesc": "Notificações sobre produtos que você possui",
+    "newsAndOffers": "Novidades e Ofertas",
+    "newsAndOffersDesc": "Promoções e lançamentos exclusivos",
+    "savePreferences": "Salvar Preferências",
+    "saved": "Alterações salvas com sucesso!",
+    "passwordChanged": "Senha alterada com sucesso!",
+    "error": "Erro ao salvar alterações"
+  },
+  "licensing": {
+    "title": "Licenciamento",
+    "subtitle": "Escolha a licença adequada para suas necessidades. Oferecemos opções flexíveis para diferentes casos de uso.",
+    "badge": "Licenciamento",
+    "heading": "Tipos de Licença",
+    "personalLicense": "Licença Pessoal",
+    "personalDesc": "Para uso individual e projetos pessoais.",
+    "personalFeatures": {
+      "unlimited": "Uso ilimitado em projetos pessoais",
+      "updates": "Atualizações gratuitas",
+      "support": "Suporte por email"
+    },
+    "personalPrice": "Incluída na compra",
+    "commercialLicense": "Licença Comercial",
+    "commercialDesc": "Para empresas e projetos comerciais.",
+    "commercialFeatures": {
+      "commercial": "Uso em projetos comerciais",
+      "multiple": "Múltiplos desenvolvedores",
+      "priority": "Suporte prioritário",
+      "consulting": "Consultoria técnica"
+    },
+    "requestQuote": "Solicitar Orçamento",
+    "questionsTitle": "Dúvidas sobre Licenciamento?",
+    "questionsDesc": "Nossa equipe está pronta para ajudar você a escolher a licença ideal para seu projeto.",
+    "contactUs": "Fale Conosco",
+    "whatsapp": "WhatsApp"
+  },
+  "contact": {
+    "title": "Contato",
+    "subtitle": "Entre em contato conosco",
+    "heroTitle": "Fale Conosco",
+    "heroSubtitle": "Estamos aqui para ajudar. Seja para suporte CodeEngine Learn, parcerias ou publicação de conteúdo, nossa equipe está pronta para atendê-lo.",
+    "howCanWeHelp": "Como Podemos Ajudar?",
+    "responseTime": "Tempo de Resposta",
+    "responseTimeDesc": "Nossa equipe responde em até 24 horas em dias úteis.",
+    "premiumSupport": "Para questões urgentes, membros premium têm suporte prioritário.",
+    "category": "Categoria",
+    "categories": {
+      "support": "Suporte Técnico",
+      "supportDesc": "Precisa de ajuda técnica ou tem dúvidas sobre a plataforma?",
+      "partnership": "Parcerias",
+      "partnershipDesc": "Interessado em parcerias estratégicas ou colaborações?",
+      "content": "Publicação de Conteúdo",
+      "contentDesc": "Quer publicar seu conteúdo em nossa plataforma?",
+      "other": "Outros Assuntos",
+      "otherDesc": "Outros assuntos ou sugestões para a plataforma?"
+    },
+    "formSuccess": {
+      "title": "Mensagem Enviada!",
+      "desc": "Recebemos sua mensagem e responderemos em breve.",
+      "button": "Enviar Outra Mensagem"
+    },
+    "formError": {
+      "title": "Erro ao Enviar",
+      "desc": "Não foi possível enviar sua mensagem. Por favor, tente novamente ou entre em contato via WhatsApp.",
+      "button": "Tentar Novamente"
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "questions": [
+        {
+          "q": "Como faço para publicar meu conteúdo?",
+          "a": "Entre em contato através do formulário selecionando \"Publicação de Conteúdo\". Nossa equipe avaliará seu material e entrará em contato."
+        },
+        {
+          "q": "Qual o prazo de resposta?",
+          "a": "Respondemos todas as mensagens em até 24 horas em dias úteis. Membros premium têm suporte prioritário."
+        },
+        {
+          "q": "Como funciona o suporte técnico?",
+          "a": "Nosso suporte técnico está disponível para ajudar com problemas de acesso, downloads e uso da plataforma."
+        },
+        {
+          "q": "Posso sugerir melhorias?",
+          "a": "Sim! Adoramos receber feedback. Use a categoria \"Outros Assuntos\" para enviar suas sugestões."
+        }
+      ]
+    },
+    "name": "Nome Completo",
+    "namePlaceholder": "Digite seu nome completo",
+    "email": "Email",
+    "emailPlaceholder": "seu@email.com",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Assunto da mensagem",
+    "message": "Mensagem",
+    "messagePlaceholder": "Descreva sua solicitação ou dúvida...",
+    "send": "Enviar Mensagem",
+    "sending": "Enviando...",
+    "sent": "Mensagem enviada com sucesso!",
+    "error": "Erro ao enviar mensagem. Tente novamente."
+  },
+  "about": {
+    "title": "Sobre",
+    "subtitle": "Conheça a CodeEngine Learn",
+    "heroTitle": "Transformando Conhecimento em Poder",
+    "heroSubtitle": "A CodeEngine Learn é mais que uma plataforma de conteúdo digital. Somos um ecossistema premium dedicado a capacitar profissionais através do conhecimento de alta qualidade em tecnologia e inteligência artificial.",
+    "stats": {
+      "activeMembers": "Membros Ativos",
+      "premiumContent": "Conteúdos Premium",
+      "satisfaction": "Satisfação",
+      "support": "Suporte"
+    },
+    "whatMovesUs": "O Que Nos Move",
+    "mission": "Nossa Missão",
+    "missionDesc": "Democratizar o acesso ao conhecimento premium em tecnologia e IA, capacitando profissionais a alcançarem seu máximo potencial.",
+    "vision": "Nossa Visão",
+    "visionDesc": "Ser a plataforma líder em conteúdo digital de alta qualidade, reconhecida pela excelência e inovação constante.",
+    "values": "Nossos Valores",
+    "valuesDesc": "Excelência, inovação, acessibilidade e compromisso com a transformação profissional de nossos membros.",
+    "whyChoose": "Por Que Escolher a CodeEngine Learn",
+    "curatedContent": "Conteúdo Curado",
+    "curatedContentDesc": "Cada material é cuidadosamente selecionado e validado por especialistas da indústria.",
+    "premiumCommunity": "Comunidade Premium",
+    "premiumCommunityDesc": "Faça parte de uma comunidade exclusiva de profissionais de tecnologia e IA.",
+    "globalAccess": "Acesso Global",
+    "globalAccessDesc": "Aprenda no seu ritmo, de qualquer lugar do mundo, com conteúdo sempre atualizado.",
+    "manifesto": "Nosso Manifesto",
+    "manifestoP1": "Acreditamos que o conhecimento é o maior ativo da era digital. Em um mundo onde a tecnologia evolui exponencialmente, o acesso a conteúdo de qualidade não deve ser um privilégio, mas um direito.",
+    "manifestoP2": "Construímos esta plataforma com a visão de criar um ecossistema onde profissionais, estudantes e entusiastas possam encontrar os melhores recursos para acelerar sua jornada de aprendizado.",
+    "manifestoP3": "Cada ebook, cada guia, cada material disponível aqui foi cuidadosamente curado para garantir que você tenha acesso ao que há de mais relevante e atualizado no universo da tecnologia e IA.",
+    "manifestoP4": "Juntos, estamos construindo o futuro do aprendizado digital.",
+    "readyToStart": "Pronto para Começar?",
+    "readyToStartDesc": "Junte-se a milhares de profissionais que já estão transformando suas carreiras com nosso conteúdo premium.",
+    "exploreLibrary": "Explorar Biblioteca"
+  },
+  "releases": {
+    "badge": "Novidades",
+    "heading": "Lançamentos Recentes",
+    "subtitle": "Descubra os conteúdos mais recentes adicionados à nossa biblioteca. Sempre atualizados, sempre relevantes, sempre premium.",
+    "stats": {
+      "last30Days": "Últimos 30 Dias",
+      "newContent": "{{count}} novos conteúdos",
+      "premiumQuality": "Qualidade Premium",
+      "curatedByExperts": "Curado por especialistas",
+      "alwaysUpdated": "Sempre Atualizado",
+      "weeklyContent": "Novos conteúdos semanalmente"
+    },
+    "timeAgo": {
+      "today": "Hoje",
+      "yesterday": "Ontem",
+      "daysAgo": "{{count}} dias atrás",
+      "weeksAgo": "{{count}} semanas atrás",
+      "monthsAgo": "{{count}} meses atrás"
+    },
+    "badges": {
+      "new": "Novo",
+      "free": "Grátis"
+    },
+    "actions": {
+      "viewMore": "Ver Mais",
+      "exploreLibrary": "Explorar Biblioteca"
+    },
+    "empty": {
+      "title": "Nenhum lançamento recente",
+      "description": "Novos conteúdos serão adicionados em breve."
+    }
+  },
+  "news": {
+    "badge": "Notícias & Atualizações",
+    "heading": "Central de Conhecimento",
+    "subtitle": "Acompanhe as últimas tendências em IA, automação, SaaS e tecnologia. Insights exclusivos para membros da comunidade.",
+    "exclusiveContent": "Conteúdo Exclusivo para Membros",
+    "exclusiveDesc": "Entre na sua conta para acessar artigos, análises e conteúdo premium sobre IA, automação e as mais recentes inovações tecnológicas.",
+    "signInNow": "Entrar Agora",
+    "categories": {
+      "all": "Todas",
+      "ai": "Inteligência Artificial",
+      "automation": "Automação",
+      "saas": "SaaS",
+      "programming": "Programação",
+      "productivity": "Produtividade",
+      "innovation": "Inovação"
+    },
+    "noNews": "Nenhum artigo encontrado",
+    "noNewsCategory": "Ainda não há artigos na categoria \"{{category}}\".",
+    "noNewsGeneral": "Novos artigos serão publicados em breve!",
+    "readMore": "Continuar Lendo",
+    "views": "visualizações"
+  },
+  "library": {
+    "heading": "Biblioteca de Elite",
+    "subtitle": "O arsenal definitivo de conhecimento e ferramentas para a vanguarda digital. Explore sistemas arquitetados para escalar operações e dominar a era da inteligência artificial.",
+    "categories": "Categorias",
+    "all": "Todas",
+    "errorLoading": "Erro ao carregar produtos:",
+    "noProducts": "Nenhum produto encontrado nesta categoria.",
+    "noProductsGeneral": "Nenhum produto disponível no momento.",
+    "comingSoon": "Novos produtos serão adicionados em breve!",
+    "free": "Grátis",
+    "course": "Curso",
+    "ebook": "E-book"
+  },
+  "favorites": {
+    "badge": "Meus Favoritos",
+    "heading": "Conteúdos Salvos",
+    "subtitle": "Seus conteúdos favoritos em um só lugar. Salve, organize e acesse quando quiser.",
+    "count": "{{count}} Favorito",
+    "count_plural": "{{count}} Favoritos",
+    "savedForLater": "Conteúdos salvos para depois",
+    "exploreMore": "Explorar Mais",
+    "savedOn": "Salvo em {{date}}",
+    "buy": "Comprar",
+    "empty": {
+      "title": "Nenhum Favorito Ainda",
+      "description": "Comece a salvar seus conteúdos favoritos para acessá-los facilmente depois.",
+      "action": "Explorar Biblioteca"
+    },
+    "tip": {
+      "title": "💡 Dica Pro",
+      "description": "Seus favoritos são sincronizados automaticamente em todos os seus dispositivos. Salve agora, acesse de qualquer lugar!"
+    }
+  },
+  "support": {
+    "badge": "Central de Suporte",
+    "heading": "Como Podemos Ajudar?",
+    "subtitle": "Nossa equipe está pronta para ajudar você a aproveitar ao máximo a CodeEngine Learn. Escolha o canal de suporte mais adequado para sua necessidade.",
+    "channels": {
+      "whatsappForm": {
+        "title": "Formulário WhatsApp",
+        "description": "Preencha o formulário de contato e envie sua mensagem direto pelo WhatsApp."
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Fale conosco diretamente pelo WhatsApp para suporte rápido."
+      },
+      "form": {
+        "title": "Formulário",
+        "description": "Preencha nosso formulário detalhado para questões específicas.",
+        "action": "Abrir formulário →"
+      }
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "questions": [
+        {
+          "q": "Como faço para acessar meus produtos?",
+          "a": "Após a compra, acesse a área de membros e vá em \"Minhas Compras\". Todos os seus produtos estarão disponíveis para download."
+        },
+        {
+          "q": "Posso solicitar reembolso?",
+          "a": "Sim, oferecemos garantia de 7 dias. Entre em contato conosco dentro deste prazo para solicitar reembolso."
+        },
+        {
+          "q": "Os produtos recebem atualizações?",
+          "a": "Sim! Todos os produtos são atualizados regularmente e você recebe as atualizações gratuitamente."
+        },
+        {
+          "q": "Como funciona o suporte técnico?",
+          "a": "Oferecemos suporte por email e WhatsApp. Membros premium têm suporte prioritário com resposta em até 12 horas."
+        }
+      ]
+    },
+    "resources": {
+      "documentation": {
+        "title": "Documentação",
+        "description": "Acesse nossa documentação completa com guias, tutoriais e exemplos práticos.",
+        "action": "Em Breve"
+      },
+      "videos": {
+        "title": "Tutoriais em Vídeo",
+        "description": "Assista tutoriais em vídeo para aprender a usar nossos produtos de forma eficiente.",
+        "action": "Em Breve"
+      }
+    }
+  },
+  "privacy": {
+    "badge": "Política de Privacidade",
+    "heading": "Sua Privacidade é Nossa Prioridade",
+    "subtitle": "Na CodeEngine Learn, levamos a proteção dos seus dados a sério. Esta política descreve como coletamos, usamos e protegemos suas informações pessoais.",
+    "lastUpdate": "Última atualização: {{date}}",
+    "dataCollection": {
+      "title": "Informações que Coletamos",
+      "subtitle": "Coletamos apenas as informações necessárias para fornecer nossos serviços.",
+      "registration": "Informações de Cadastro",
+      "registrationItems": {
+        "name": "Nome completo",
+        "email": "Endereço de email",
+        "password": "Senha (criptografada)"
+      },
+      "usage": "Informações de Uso",
+      "usageItems": {
+        "products": "Produtos visualizados e adquiridos",
+        "downloads": "Histórico de downloads",
+        "preferences": "Preferências e favoritos"
+      }
+    },
+    "dataUsage": {
+      "title": "Como Usamos Suas Informações",
+      "subtitle": "Utilizamos seus dados exclusivamente para melhorar sua experiência.",
+      "items": {
+        "purchases": "Processar suas compras e fornecer acesso aos produtos",
+        "notifications": "Enviar notificações sobre novos produtos e atualizações",
+        "recommendations": "Personalizar recomendações de conteúdo",
+        "improvements": "Melhorar nossos serviços e experiência do usuário",
+        "communication": "Comunicar sobre suporte e atualizações importantes"
+      }
+    },
+    "dataProtection": {
+      "title": "Proteção de Dados",
+      "subtitle": "Implementamos medidas de segurança rigorosas para proteger suas informações.",
+      "items": {
+        "encryption": "Criptografia SSL/TLS em todas as comunicações",
+        "passwords": "Senhas armazenadas com hash seguro",
+        "access": "Acesso restrito aos dados pessoais",
+        "backups": "Backups regulares e seguros",
+        "monitoring": "Monitoramento contínuo de segurança"
+      }
+    },
+    "userRights": {
+      "title": "Seus Direitos",
+      "subtitle": "Você tem controle total sobre seus dados pessoais.",
+      "access": "Acesso",
+      "accessDesc": "Solicitar cópia dos seus dados",
+      "correction": "Correção",
+      "correctionDesc": "Atualizar informações incorretas",
+      "deletion": "Exclusão",
+      "deletionDesc": "Solicitar remoção dos seus dados",
+      "portability": "Portabilidade",
+      "portabilityDesc": "Exportar seus dados",
+      "optOut": "Opt-out",
+      "optOutDesc": "Cancelar notificações a qualquer momento"
+    },
+    "contact": {
+      "title": "Dúvidas sobre Privacidade?",
+      "subtitle": "Entre em contato conosco para esclarecer qualquer questão sobre como tratamos seus dados.",
+      "button": "Fale Conosco"
+    }
+  },
+  "memberDashboard": {
+    "greeting": "Olá, {{name}}",
+    "purchases": "Compras",
+    "unread": "Não lidas",
+    "myLibrary": "Minha biblioteca",
+    "myCourses": "Meus cursos",
+    "continueWhere": "Continuar de onde parou",
+    "continue": "Continuar",
+    "inProgress": "Em andamento",
+    "viewFullLibrary": "Ver biblioteca completa"
+  }
+}

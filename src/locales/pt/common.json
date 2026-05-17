@@ -1,0 +1,270 @@
+{
+  "nav": {
+    "home": "Início",
+    "library": "Biblioteca",
+    "releases": "Lançamentos",
+    "news": "Notícias",
+    "about": "Sobre",
+    "contact": "Contato",
+    "member": "Área do Membro",
+    "favorites": "Favoritos",
+    "myLibrary": "Minha biblioteca",
+    "myPurchases": "Minhas Compras",
+    "settings": "Configurações",
+    "search": "Pesquisar",
+    "searchPlaceholder": "Buscar produtos, categorias...",
+    "login": "Entrar",
+    "logout": "Sair",
+    "signIn": "Entrar",
+    "becomeMember": "Tornar-se Membro",
+    "myProfile": "Meu Perfil",
+    "memberArea": "Área do membro",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "menu": "Menu"
+  },
+  "actions": {
+    "buyNow": "Comprar Agora",
+    "download": "Baixar",
+    "downloadProduct": "Baixar Produto",
+    "downloadFree": "Baixar Gratuitamente",
+    "downloadPreview": "Baixar Preview",
+    "downloading": "Baixando...",
+    "installApp": "Instalar App",
+    "updateNow": "Atualizar agora",
+    "updateLater": "Depois",
+    "allowNotifications": "Permitir notificações?",
+    "allow": "Permitir",
+    "deny": "Agora não",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "explore": "Explorar biblioteca",
+    "clear": "Limpar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "confirm": "Confirmar",
+    "viewAll": "Ver tudo",
+    "loadMore": "Carregar mais"
+  },
+  "pwa": {
+    "installTitle": "Instalar CodeEngine Learn",
+    "installDesc": "Acesso rápido como app no seu dispositivo",
+    "updateTitle": "Nova versão disponível",
+    "updateDesc": "Uma atualização está pronta para instalar"
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "languageDesc": "Escolha o idioma da plataforma",
+    "profile": "Perfil",
+    "notifications": "Notificações por email",
+    "password": "Alterar senha",
+    "preferences": "Preferências",
+    "account": "Conta",
+    "security": "Segurança"
+  },
+  "home": {
+    "heroTitle": "Ecossistema Premium de Conhecimento Digital",
+    "heroSubtitle": "Ecossistema Premium de Conhecimento Digital. Domine automação, IA e sistemas de alta performance.",
+    "exploreVault": "Explorar o Cofre",
+    "featured": "Destaques",
+    "featuredTitle": "Produtos em Destaque",
+    "featuredSubtitle": "Acesso premium a ferramentas que aceleram seu fluxo de trabalho e ampliam sua capacidade criativa.",
+    "categories": "Categorias",
+    "welcome": "Bem-vindo",
+    "latestReleases": "Últimos Lançamentos",
+    "popularProducts": "Produtos Populares",
+    "noFeatured": "Nenhum destaque ativo. Configure no painel admin em Produtos em Destaque."
+  },
+  "product": {
+    "owned": "Você já possui este produto",
+    "free": "Gratuito",
+    "price": "Preço",
+    "description": "Descrição",
+    "details": "Detalhes",
+    "reviews": "Avaliações",
+    "related": "Produtos Relacionados",
+    "addToCart": "Adicionar ao Carrinho",
+    "outOfStock": "Fora de Estoque"
+  },
+  "search": {
+    "title": "Buscar",
+    "placeholder": "Buscar produtos, categorias...",
+    "searching": "Buscando...",
+    "noResults": "Nenhum resultado encontrado",
+    "tryOtherKeywords": "Tente buscar com outras palavras-chave",
+    "recentSearches": "Buscas Recentes",
+    "startSearching": "Comece a Buscar",
+    "minCharacters": "Digite pelo menos 2 caracteres para buscar produtos"
+  },
+  "notifications": {
+    "title": "Notificações",
+    "empty": "Nenhuma notificação",
+    "emptyDesc": "Você está em dia com tudo!",
+    "markRead": "Marcar como lida",
+    "markAllRead": "Marcar todas como lidas",
+    "newCount": "{{count}} nova",
+    "newCount_plural": "{{count}} novas",
+    "viewAll": "Ver Todas as Notificações",
+    "stayUpdated": "Fique por dentro das novidades",
+    "new": "Nova",
+    "justNow": "Agora mesmo",
+    "hoursAgo": "{{count}}h atrás",
+    "yesterday": "Ontem",
+    "categories": {
+      "new_product": "Novo Produto",
+      "promotion": "Promoção",
+      "update": "Atualização",
+      "news": "Notícia",
+      "new_news": "Nova Notícia",
+      "new_release": "Novo Lançamento",
+      "default": "Notificação"
+    }
+  },
+  "profile": {
+    "memberSince": "Membro CodeEngine Learn",
+    "editProfile": "Editar Perfil",
+    "changePassword": "Alterar Senha",
+    "emailPreferences": "Preferências de Email",
+    "memberArea": "Área do membro",
+    "myLibrary": "Minha biblioteca",
+    "myPurchases": "Minhas Compras",
+    "notifications": "Notificações",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "signInOrCreate": "Entrar / Criar Conta"
+  },
+  "member": {
+    "title": "Área do membro",
+    "tabs": {
+      "home": "Início",
+      "library": "Biblioteca",
+      "purchases": "Compras",
+      "notifications": "Notificações"
+    },
+    "logout": "Sair"
+  },
+  "library": {
+    "title": "Minha Biblioteca",
+    "filters": {
+      "all": "Todos",
+      "course": "Curso",
+      "ebook": "E-book",
+      "file": "Arquivo"
+    },
+    "actions": {
+      "start": "Começar",
+      "continue": "Continuar",
+      "continueReading": "Continuar leitura",
+      "read": "Ler",
+      "download": "Baixar"
+    },
+    "empty": {
+      "title": "Sua biblioteca está vazia",
+      "description": "Adquira cursos, e-books ou arquivos na loja para vê-los aqui."
+    },
+    "status": {
+      "free": "Grátis"
+    }
+  },
+  "notificationPanel": {
+    "title": "Notificações",
+    "tabs": {
+      "all": "Todas",
+      "unread": "Não Lidas"
+    },
+    "actions": {
+      "markAll": "Marcar Todas",
+      "markAsRead": "Marcar como lida",
+      "delete": "Excluir",
+      "retry": "Tentar Novamente"
+    },
+    "empty": {
+      "unread": "Nenhuma notificação não lida",
+      "unreadDesc": "Você está em dia com suas notificações!",
+      "all": "Nenhuma notificação",
+      "allDesc": "Você receberá notificações sobre compras, downloads e promoções aqui."
+    },
+    "status": {
+      "unreadCount": "{{count}} não lida",
+      "unreadCount_plural": "{{count}} não lidas",
+      "allRead": "Todas as notificações foram lidas"
+    },
+    "loading": "Carregando notificações...",
+    "error": "Erro ao Carregar Notificações",
+    "time": {
+      "now": "Agora mesmo",
+      "minutesAgo": "Há {{count}} minuto",
+      "minutesAgo_plural": "Há {{count}} minutos",
+      "hoursAgo": "Há {{count}} hora",
+      "hoursAgo_plural": "Há {{count}} horas",
+      "daysAgo": "Há {{count}} dia",
+      "daysAgo_plural": "Há {{count}} dias"
+    }
+  },
+  "purchases": {
+    "title": "Histórico de Compras",
+    "count": "{{count}} compra",
+    "count_plural": "{{count}} compras",
+    "filters": {
+      "all": "Todas",
+      "completed": "Concluído",
+      "pending": "Pendente",
+      "failed": "Falhou"
+    },
+    "status": {
+      "completed": "Concluído",
+      "pending": "Pendente",
+      "failed": "Falhou",
+      "refunded": "Reembolsado",
+      "free": "Grátis"
+    },
+    "actions": {
+      "download": "Baixar"
+    },
+    "empty": {
+      "title": "Nenhuma compra encontrada",
+      "all": "Você ainda não realizou nenhuma compra.",
+      "filtered": "Você não tem compras com status \"{{status}}\"."
+    }
+  },
+  "footer": {
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "support": "Suporte",
+    "about": "Sobre Nós",
+    "contact": "Contato",
+    "followUs": "Siga-nos",
+    "allRightsReserved": "Todos os direitos reservados",
+    "licensing": "Licenciamento",
+    "tagline": "Ecossistema Premium de Conhecimento Digital"
+  },
+  "errors": {
+    "generic": "Ocorreu um erro. Tente novamente.",
+    "loginRequired": "Por favor, faça login para continuar.",
+    "noAccess": "Você não possui acesso a este produto.",
+    "fileUnavailable": "Arquivo não disponível para download",
+    "networkError": "Erro de conexão. Verifique sua internet.",
+    "serverError": "Erro no servidor. Tente novamente mais tarde.",
+    "notFound": "Página não encontrada",
+    "unauthorized": "Acesso não autorizado",
+    "sessionExpired": "Sua sessão expirou. Faça login novamente."
+  },
+  "loading": {
+    "default": "Carregando...",
+    "products": "Carregando produtos...",
+    "page": "Carregando página...",
+    "pleaseWait": "Por favor, aguarde..."
+  },
+  "success": {
+    "saved": "Salvo com sucesso!",
+    "updated": "Atualizado com sucesso!",
+    "deleted": "Excluído com sucesso!",
+    "sent": "Enviado com sucesso!"
+  }
+}

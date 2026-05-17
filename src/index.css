@@ -1,0 +1,285 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+@import "tailwindcss";
+
+@theme {
+  --breakpoint-xs: 30rem;
+  --breakpoint-3xl: 120rem;
+
+  --color-background: #050505;
+  --color-surface-lowest: #0e0e0e;
+  --color-surface: #131313;
+  --color-surface-container: #201f1f;
+  --color-surface-high: #2a2a2a;
+  --color-surface-highest: #353534;
+  
+  --color-primary: #c0c1ff;
+  --color-primary-fixed: #e1e0ff;
+  --color-on-primary: #1000a9;
+  
+  --color-secondary: #4cd7f6;
+  --color-secondary-container: #03b5d3;
+  
+  --color-tertiary: #ddb7ff;
+  --color-tertiary-container: #b76dff;
+  
+  --color-on-surface: #e5e2e1;
+  --color-on-surface-variant: #c7c4d7;
+  --color-outline: #464554;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+  
+  html {
+    @apply overflow-x-hidden;
+    max-width: 100vw;
+    min-height: 100%;
+  }
+  
+  body {
+    @apply bg-background text-on-surface antialiased overflow-x-hidden selection:bg-primary/30 selection:text-primary;
+    max-width: 100vw;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  #root {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    h1 {
+      @apply text-3xl leading-tight;
+    }
+    
+    h2 {
+      @apply text-2xl leading-tight;
+    }
+    
+    h3 {
+      @apply text-xl leading-tight;
+    }
+    
+    p {
+      @apply text-sm leading-relaxed;
+    }
+    
+    /* Prevent text overflow */
+    * {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+    
+    /* Reduce padding on mobile */
+    .glass-panel,
+    .glass-card {
+      @apply p-4 bg-surface/95;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    
+    .mockup-rotate {
+      transform: none !important;
+    }
+    
+    .perspective-container {
+      perspective: none !important;
+    }
+    
+    .hero-abstract {
+      display: none !important;
+    }
+    
+    .page-wrapper {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .overlay-premium,
+    .overlay-dark,
+    .overlay-elevated {
+      border-radius: 1.5rem;
+    }
+    
+    /* Larger touch zones */
+    button,
+    a {
+      min-height: 44px;
+    }
+    
+    /* Optimize images */
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .glass-panel,
+    .glass-card {
+      @apply rounded-3xl;
+    }
+  }
+
+  @media (max-width: 479px) {
+    h1 {
+      @apply text-[1.75rem] leading-tight;
+    }
+
+    h2 {
+      @apply text-2xl leading-tight;
+    }
+
+    .page-wrapper {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+  }
+
+  @media (min-width: 1920px) {
+    .page-wrapper {
+      max-width: 1440px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* ========================================
+     ADAPTIVE OVERLAY CONTRAST SYSTEM
+     High-contrast overlays for complex backgrounds
+     ======================================== */
+  
+  /* Premium Overlay - Maximum contrast for dropdowns/modals */
+  .overlay-premium {
+    background: linear-gradient(135deg, rgba(8, 8, 12, 0.96) 0%, rgba(5, 5, 10, 0.94) 100%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(192, 193, 255, 0.15);
+    box-shadow: 
+      0 20px 60px -15px rgba(0, 0, 0, 0.9),
+      0 0 1px rgba(192, 193, 255, 0.3),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+  
+  /* Dark Overlay - Strong contrast for notifications */
+  .overlay-dark {
+    background: linear-gradient(135deg, rgba(10, 10, 15, 0.95) 0%, rgba(8, 8, 12, 0.93) 100%);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(192, 193, 255, 0.12);
+    box-shadow: 
+      0 15px 45px -10px rgba(0, 0, 0, 0.85),
+      0 0 1px rgba(192, 193, 255, 0.25),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+  
+  /* Elevated Overlay - Medium contrast for popovers */
+  .overlay-elevated {
+    background: linear-gradient(135deg, rgba(15, 15, 20, 0.92) 0%, rgba(12, 12, 16, 0.90) 100%);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid rgba(192, 193, 255, 0.10);
+    box-shadow: 
+      0 12px 35px -8px rgba(0, 0, 0, 0.80),
+      0 0 1px rgba(192, 193, 255, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Glass Panel - Original style (kept for compatibility) */
+  .glass-panel {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .glass-card {
+    background: rgba(20, 20, 22, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05);
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  
+  .glass-card-hover:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(192, 193, 255, 0.15), inset 0 1px 0 0 rgba(255,255,255,0.2);
+    border-color: rgba(192, 193, 255, 0.4);
+  }
+
+  .nav-beam {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(192, 193, 255, 0.8), transparent);
+    opacity: 0.5;
+  }
+
+  .primary-btn {
+    @apply bg-on-surface text-background font-bold px-6 py-2 rounded-full transition-all;
+  }
+  
+  .primary-btn:hover {
+    box-shadow: 0 0 20px rgba(192, 193, 255, 0.4);
+  }
+
+  .secondary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+  }
+  
+  .secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(192, 193, 255, 0.5);
+    color: var(--color-primary);
+  }
+
+  .perspective-container {
+    perspective: 1000px;
+  }
+  
+  .mockup-rotate {
+    transform: rotateY(-15deg) rotateX(5deg);
+    transition: transform 0.5s ease;
+  }
+  
+  .mockup-rotate:hover {
+    transform: rotateY(-5deg) rotateX(2deg);
+  }
+
+  .responsive-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .text-safe-wrap {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}

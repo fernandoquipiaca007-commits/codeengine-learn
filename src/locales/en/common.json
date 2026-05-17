@@ -1,0 +1,270 @@
+{
+  "nav": {
+    "home": "Home",
+    "library": "Library",
+    "releases": "Releases",
+    "news": "News",
+    "about": "About",
+    "contact": "Contact",
+    "member": "Member Area",
+    "favorites": "Favorites",
+    "myLibrary": "My library",
+    "myPurchases": "My Purchases",
+    "settings": "Settings",
+    "search": "Search",
+    "searchPlaceholder": "Search products, categories...",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "signIn": "Sign in",
+    "becomeMember": "Become a Member",
+    "myProfile": "My Profile",
+    "memberArea": "Member area",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menu": "Menu"
+  },
+  "actions": {
+    "buyNow": "Buy Now",
+    "download": "Download",
+    "downloadProduct": "Download Product",
+    "downloadFree": "Download Free",
+    "downloadPreview": "Download Preview",
+    "downloading": "Downloading...",
+    "installApp": "Install App",
+    "updateNow": "Update now",
+    "updateLater": "Later",
+    "allowNotifications": "Allow notifications?",
+    "allow": "Allow",
+    "deny": "Not now",
+    "save": "Save",
+    "cancel": "Cancel",
+    "explore": "Explore library",
+    "clear": "Clear",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "viewAll": "View all",
+    "loadMore": "Load more"
+  },
+  "pwa": {
+    "installTitle": "Install CodeEngine Learn",
+    "installDesc": "Quick access as an app on your device",
+    "updateTitle": "New version available",
+    "updateDesc": "An update is ready to install"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageDesc": "Choose your platform language",
+    "profile": "Profile",
+    "notifications": "Email notifications",
+    "password": "Change password",
+    "preferences": "Preferences",
+    "account": "Account",
+    "security": "Security"
+  },
+  "home": {
+    "heroTitle": "Premium Digital Knowledge Ecosystem",
+    "heroSubtitle": "Premium Digital Knowledge Ecosystem. Master automation, AI and high-performance systems.",
+    "exploreVault": "Explore the Vault",
+    "featured": "Featured",
+    "featuredTitle": "Featured Products",
+    "featuredSubtitle": "Premium access to tools that accelerate your workflow and expand your creative capacity.",
+    "categories": "Categories",
+    "welcome": "Welcome",
+    "latestReleases": "Latest Releases",
+    "popularProducts": "Popular Products",
+    "noFeatured": "No active featured products. Configure in the admin panel under Featured Products."
+  },
+  "product": {
+    "owned": "You already own this product",
+    "free": "Free",
+    "price": "Price",
+    "description": "Description",
+    "details": "Details",
+    "reviews": "Reviews",
+    "related": "Related Products",
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search products, categories...",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "tryOtherKeywords": "Try searching with other keywords",
+    "recentSearches": "Recent Searches",
+    "startSearching": "Start Searching",
+    "minCharacters": "Type at least 2 characters to search products"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "emptyDesc": "You're all caught up!",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "newCount": "{{count}} new",
+    "newCount_plural": "{{count}} new",
+    "viewAll": "View All Notifications",
+    "stayUpdated": "Stay up to date with news",
+    "new": "New",
+    "justNow": "Just now",
+    "hoursAgo": "{{count}}h ago",
+    "yesterday": "Yesterday",
+    "categories": {
+      "new_product": "New Product",
+      "promotion": "Promotion",
+      "update": "Update",
+      "news": "News",
+      "new_news": "New Article",
+      "new_release": "New Release",
+      "default": "Notification"
+    }
+  },
+  "profile": {
+    "memberSince": "CodeEngine Learn Member",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "emailPreferences": "Email Preferences",
+    "memberArea": "Member Area",
+    "myLibrary": "My Library",
+    "myPurchases": "My Purchases",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "logout": "Sign Out",
+    "signInOrCreate": "Sign In / Create Account"
+  },
+  "member": {
+    "title": "Member Area",
+    "tabs": {
+      "home": "Home",
+      "library": "Library",
+      "purchases": "Purchases",
+      "notifications": "Notifications"
+    },
+    "logout": "Sign Out"
+  },
+  "library": {
+    "title": "My Library",
+    "filters": {
+      "all": "All",
+      "course": "Course",
+      "ebook": "E-book",
+      "file": "File"
+    },
+    "actions": {
+      "start": "Start",
+      "continue": "Continue",
+      "continueReading": "Continue reading",
+      "read": "Read",
+      "download": "Download"
+    },
+    "empty": {
+      "title": "Your library is empty",
+      "description": "Purchase courses, e-books or files from the store to see them here."
+    },
+    "status": {
+      "free": "Free"
+    }
+  },
+  "notificationPanel": {
+    "title": "Notifications",
+    "tabs": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "actions": {
+      "markAll": "Mark All",
+      "markAsRead": "Mark as read",
+      "delete": "Delete",
+      "retry": "Try Again"
+    },
+    "empty": {
+      "unread": "No unread notifications",
+      "unreadDesc": "You're all caught up with your notifications!",
+      "all": "No notifications",
+      "allDesc": "You'll receive notifications about purchases, downloads and promotions here."
+    },
+    "status": {
+      "unreadCount": "{{count}} unread",
+      "unreadCount_plural": "{{count}} unread",
+      "allRead": "All notifications have been read"
+    },
+    "loading": "Loading notifications...",
+    "error": "Error Loading Notifications",
+    "time": {
+      "now": "Just now",
+      "minutesAgo": "{{count}} minute ago",
+      "minutesAgo_plural": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hour ago",
+      "hoursAgo_plural": "{{count}} hours ago",
+      "daysAgo": "{{count}} day ago",
+      "daysAgo_plural": "{{count}} days ago"
+    }
+  },
+  "purchases": {
+    "title": "Purchase History",
+    "count": "{{count}} purchase",
+    "count_plural": "{{count}} purchases",
+    "filters": {
+      "all": "All",
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "free": "Free"
+    },
+    "actions": {
+      "download": "Download"
+    },
+    "empty": {
+      "title": "No purchases found",
+      "all": "You haven't made any purchases yet.",
+      "filtered": "You have no purchases with status \"{{status}}\"."
+    }
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "support": "Support",
+    "about": "About Us",
+    "contact": "Contact",
+    "followUs": "Follow us",
+    "allRightsReserved": "All rights reserved",
+    "licensing": "Licensing",
+    "tagline": "Premium Digital Knowledge Ecosystem"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "loginRequired": "Please sign in to continue.",
+    "noAccess": "You do not have access to this product.",
+    "fileUnavailable": "File not available for download",
+    "networkError": "Connection error. Check your internet.",
+    "serverError": "Server error. Please try again later.",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized access",
+    "sessionExpired": "Your session has expired. Please sign in again."
+  },
+  "loading": {
+    "default": "Loading...",
+    "products": "Loading products...",
+    "page": "Loading page...",
+    "pleaseWait": "Please wait..."
+  },
+  "success": {
+    "saved": "Saved successfully!",
+    "updated": "Updated successfully!",
+    "deleted": "Deleted successfully!",
+    "sent": "Sent successfully!"
+  }
+}

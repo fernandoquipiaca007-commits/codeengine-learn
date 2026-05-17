@@ -1,0 +1,36 @@
+# Backup automático: a cada push o GitHub já é o backup remoto.
+# Este workflow cria, adicionalmente, snapshots periódicos em forma de tag,
+# úteis para rollback rápido sem depender de releases manuais.
+
+name: Auto Backup (Daily Snapshot)
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # todo dia às 03:00 UTC (~00:00 BRT)
+  workflow_dispatch:       # permite rodar manualmente
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Create daily snapshot tag
+        run: |
+          DATE=$(date -u +'%Y.%m.%d')
+          TAG="snapshot/${DATE}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Skipping."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Daily snapshot ${DATE}"
+          git push origin "$TAG"
+          echo "✅ Snapshot tag $TAG created."
