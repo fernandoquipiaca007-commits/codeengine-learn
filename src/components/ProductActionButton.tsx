@@ -71,6 +71,8 @@ export function ProductActionButton({
   }
 
   const handlePaidCheckout = async () => {
+    if (loading) return; // Prevent double-click
+    if (ownsProduct) return; // Already owns
     setLoading(true);
     setError(null);
 
@@ -113,10 +115,14 @@ export function ProductActionButton({
       });
 
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({}));
-        throw new Error(
-          (errBody as { error?: string }).error || `Erro do servidor (${response.status})`
-        );
+        const errBody = await response.json().catch(() => ({})) as any;
+        // Handle 409 = already owns product
+        if (response.status === 409 && errBody.alreadyOwned) {
+          await refetch(); // Refresh ownership state
+          setError('Você já possui este produto.');
+          return;
+        }
+        throw new Error(errBody.error || `Erro do servidor (${response.status})`);
       }
 
       const data = await response.json();
@@ -137,32 +143,31 @@ export function ProductActionButton({
         err instanceof TypeError ||
         (err instanceof Error && err.message.toLowerCase().includes('fetch'));
       const message = isNetwork
-        ? `Servidor de pagamentos indisponível. Confirme que o backend está rodando em ${BACKEND_URL} (npm run dev na pasta backend).`
+        ? `Servidor de pagamentos indisponível.`
         : mapStoreError(err, 'payment');
       setError(message);
-      alert(`Erro ao iniciar checkout:\n\n${message}\n\nTente novamente.`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleFreeProduct = async () => {
+    if (loading) return;
+    if (ownsProduct) return;
     setLoading(true);
     setError(null);
 
     try {
       if (!user) {
-        alert('Por favor, faça login para obter este produto gratuito.');
+        setError('Faça login para obter este produto.');
         return;
       }
 
-      // Get auth token
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('No active session');
       }
 
-      // Claim free product
       const response = await fetch(`${BACKEND_URL}/api/products/claim-free`, {
         method: 'POST',
         headers: {
@@ -180,24 +185,15 @@ export function ProductActionButton({
         throw new Error(data.error || 'Failed to claim free product');
       }
 
-      // Show success message
-      alert('✅ Produto gratuito adicionado à sua biblioteca!');
+      // Refresh ownership state
+      await refetch();
       
-      // Navigate to library if callback provided
       if (onNavigateToLibrary) {
         onNavigateToLibrary();
-      } else {
-        // Fallback: reload page
-        window.location.reload();
       }
     } catch (err) {
       console.error('Free product error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to claim free product');
-      alert(
-        '❌ Erro ao obter produto gratuito:\n\n' +
-        (err instanceof Error ? err.message : 'Erro desconhecido') +
-        '\n\nPor favor, tente novamente.'
-      );
+      setError(err instanceof Error ? err.message : 'Erro ao obter produto gratuito.');
     } finally {
       setLoading(false);
     }

@@ -22,11 +22,12 @@ export function Success({ setScreen }: SuccessProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get session_id from URL
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
 
     if (sessionId) {
+      // Security: clear session_id from URL immediately
+      window.history.replaceState({}, '', window.location.pathname);
       fetchSessionData(sessionId);
     } else {
       setError(t('success.sessionNotFound'));
