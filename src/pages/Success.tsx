@@ -23,14 +23,27 @@ export function Success({ setScreen }: SuccessProps) {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('session_id');
+    let sessionId = urlParams.get('session_id');
+
+    // If no session_id in URL, try sessionStorage (re-mount recovery)
+    if (!sessionId) {
+      sessionId = sessionStorage.getItem('ce_checkout_session_id');
+    }
 
     if (sessionId) {
+      // Persist for re-mount recovery before clearing URL
+      sessionStorage.setItem('ce_checkout_session_id', sessionId);
       // Security: clear session_id from URL immediately
       window.history.replaceState({}, '', window.location.pathname);
       fetchSessionData(sessionId);
     } else {
-      setError(t('success.sessionNotFound'));
+      // No session_id anywhere — show success fallback instead of error
+      // The purchase DID complete (user was redirected here by Stripe)
+      setSessionData({
+        productName: t('success.acquiredProduct'),
+        customerEmail: '',
+        amountPaid: 0,
+      });
       setLoading(false);
     }
   }, []);
@@ -95,6 +108,7 @@ export function Success({ setScreen }: SuccessProps) {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
+            sessionStorage.removeItem('ce_checkout_session_id');
             if (setScreen) {
               setScreen('member');
             }

@@ -18,6 +18,7 @@ export function ReferralProgress({ productId, originalPrice, onDiscountChange }:
   const { getProgress } = useReferral();
   const [progress, setProgress] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [ownsProduct, setOwnsProduct] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => {
@@ -25,6 +26,28 @@ export function ReferralProgress({ productId, originalPrice, onDiscountChange }:
       const { data: { user } } = await supabase.auth.getUser();
       setIsLoggedIn(!!user);
       if (user) {
+        // Check if user already owns this product
+        const { data: member } = await supabase
+          .from('members')
+          .select('id')
+          .eq('auth_id', user.id)
+          .maybeSingle();
+        
+        if (member?.id) {
+          const { data: purchase } = await supabase
+            .from('purchases')
+            .select('id')
+            .eq('member_id', member.id)
+            .eq('product_id', productId)
+            .in('payment_status', ['completed', 'pending'])
+            .maybeSingle();
+          
+          if (purchase) {
+            setOwnsProduct(true);
+            return; // Don't load progress if they own it
+          }
+        }
+
         const p = await getProgress(productId);
         if (p?.success) {
           setProgress(p);
@@ -62,7 +85,7 @@ export function ReferralProgress({ productId, originalPrice, onDiscountChange }:
     return () => { supabase.removeChannel(channel); };
   }, [productId, isLoggedIn, progress?.conversions]);
 
-  if (!isLoggedIn || !progress || progress.goal <= 0) return null;
+  if (!isLoggedIn || ownsProduct || !progress || progress.goal <= 0) return null;
 
   const pct = progress.progressPercent || 0;
   const currentPrice = progress.currentPrice ?? originalPrice;

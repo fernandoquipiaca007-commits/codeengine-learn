@@ -44,6 +44,12 @@ export function Footer({ setScreen }: FooterProps = {}) {
         >
           {t('footer.support')}
         </button>
+        <button 
+          onClick={() => handleNavigation('rewards')}
+          className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors focus:underline focus:underline-offset-4"
+        >
+          Recompensas
+        </button>
       </div>
       <div className="font-sans text-base text-secondary opacity-60 text-center">
         © 2026 CodeEngine Learn. {t('footer.tagline')}.

@@ -21,6 +21,7 @@ import { Licensing } from './pages/Licensing';
 import { Support } from './pages/Support';
 import { Success } from './pages/Success';
 import { Cancel } from './pages/Cancel';
+import { Rewards } from './pages/Rewards';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { PushPermissionPrompt } from './components/PushPermissionPrompt';
@@ -201,6 +202,7 @@ export default function App() {
             {currentScreen === 'support' && <Support setScreen={navigateToScreen} />}
             {currentScreen === 'success' && <Success setScreen={navigateToScreen} />}
             {currentScreen === 'cancel' && <Cancel setScreen={navigateToScreen} />}
+            {currentScreen === 'rewards' && <Rewards setScreen={navigateToScreen} />}
           </motion.div>
         </AnimatePresence>
       </main>

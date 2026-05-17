@@ -41,6 +41,14 @@ export function CheckoutButton({
 
       // Create checkout session
       const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+
+      // Read referral code from localStorage
+      let referralCode = '';
+      try {
+        const stored = JSON.parse(localStorage.getItem('ce_referral_code') || 'null');
+        if (stored && stored.expiry > Date.now()) referralCode = stored.code;
+      } catch {}
+
       const response = await fetch(`${BACKEND_URL}/api/stripe/create-checkout`, {
         method: 'POST',
         headers: {
@@ -50,7 +58,9 @@ export function CheckoutButton({
           productId,
           couponCode: couponCode || undefined,
           userId: user.id,
+          authUserId: user.id,
           userEmail: user.email,
+          referralCode: referralCode || undefined,
           successUrl: `${appUrl}?screen=success`,
           cancelUrl: `${appUrl}?screen=cancel`,
         }),
