@@ -78,6 +78,7 @@
   },
   "product": {
     "owned": "Vous possédez déjà ce produit",
+    "ownedBadge": "Acquis",
     "free": "Gratuit",
     "price": "Prix",
     "description": "Description",

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase } from 'lucide-react';
+import { ArrowRight, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Product, Category } from '../types/store';
 import { useFavorites } from '../hooks/useFavorites';
+import { useOwnedProducts } from '../hooks/useOwnedProducts';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { fetchLocalizedProducts } from '../hooks/useLocalizedProduct';
 import { useLocale } from '../contexts/LocaleContext';
@@ -14,6 +15,7 @@ export function Library({ setScreen, onProductClick }: {
   onProductClick?: (productId: string) => void;
 }) {
   const { t } = useTranslation('pages');
+  const { t: tCommon } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -22,8 +24,9 @@ export function Library({ setScreen, onProductClick }: {
   const [user, setUser] = useState<any>(null);
   const { locale } = useLocale();
 
-  // Get favorites hook
+  // Get favorites and owned products hooks
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
+  const { isOwned } = useOwnedProducts(user?.id);
 
   // Load user session
   useEffect(() => {
@@ -269,6 +272,12 @@ export function Library({ setScreen, onProductClick }: {
                         )}
                         
                         <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
+                          {isOwned(product.id) && (
+                            <span className="bg-green-500/20 border border-green-400/40 text-green-300 px-3 py-1 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase flex items-center gap-1.5 shadow-lg shadow-green-500/20">
+                              <CheckCircle className="w-3 h-3" />
+                              {tCommon('product.ownedBadge')}
+                            </span>
+                          )}
                           {product.is_free && (
                             <span className="bg-green-500/20 border border-green-400/40 text-green-300 px-2 py-0.5 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase">
                               {t('library.free')}
