@@ -90,6 +90,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
       }
 
       const user = session.user;
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
       // 2. Lookup member record
       let { data: member } = await supabase
@@ -109,9 +110,33 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
         member = retry;
       }
 
+      // If still not found, call backend to create the member record
       if (!member) {
-        console.warn('No member record found for auth user:', user.id);
-        // Still show the page — user IS authenticated
+        console.warn('No member record found, calling ensure-member endpoint for:', user.id);
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/auth/ensure-member`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+          });
+          const data = await response.json();
+          if (data.success && data.member) {
+            member = {
+              id: data.member.id,
+              email: data.member.email || user.email,
+              profile_data: data.member.profile_data || {},
+            };
+          }
+        } catch (ensureErr) {
+          console.error('ensure-member call failed:', ensureErr);
+        }
+      }
+
+      if (!member || !member.id) {
+        console.warn('Could not resolve member record for auth user:', user.id);
+        // Show page with limited functionality — user IS authenticated
         setMemberData({
           id: '',
           name: user.email?.split('@')[0] || 'Membro',
@@ -123,7 +148,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
       setMemberData({
         id: member.id,
         name: member.profile_data?.name || user.email?.split('@')[0] || 'Membro',
-        email: member.email,
+        email: member.email || user.email || '',
       });
 
       await loadStats(member.id);

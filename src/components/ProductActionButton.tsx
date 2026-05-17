@@ -168,6 +168,17 @@ export function ProductActionButton({
         throw new Error('No active session');
       }
 
+      // Ensure member record exists before claiming
+      try {
+        await fetch(`${BACKEND_URL}/api/auth/ensure-member`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        });
+      } catch {}
+
       const response = await fetch(`${BACKEND_URL}/api/products/claim-free`, {
         method: 'POST',
         headers: {
