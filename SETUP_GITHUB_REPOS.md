@@ -35,14 +35,16 @@ Você precisa criar 3 repositórios no GitHub:
 - **❌ NÃO** escolha uma licença
 - Clique em **Create repository**
 
-#### Repositório 3: codeengine-api
+#### Repositório 3: codeengine-api ⚠️ DEVE SER PRIVADO
 - **Repository name**: `codeengine-api`
 - **Description**: `CodeEngine Learn - Backend API (Stripe, Email, Webhooks)`
-- **Visibility**: Private (recomendado - contém lógica de pagamento)
+- **Visibility**: 🔒 **Private** (OBRIGATÓRIO - contém lógica de pagamento e webhooks sensíveis)
 - **❌ NÃO** marque "Add a README file"
 - **❌ NÃO** adicione .gitignore
 - **❌ NÃO** escolha uma licença
 - Clique em **Create repository**
+
+> ⚠️ **IMPORTANTE**: Este repositório DEVE ser privado por questões de segurança!
 
 ### Opção B: Via GitHub CLI (gh)
 
@@ -50,9 +52,11 @@ Se você tem o GitHub CLI instalado:
 
 ```bash
 # Criar os 3 repositórios
-gh repo create fernandoquipiaca007-commits/codeengine-learn --private --description "CodeEngine Learn - Premium Digital Knowledge Store (Frontend)"
+gh repo create fernandoquipiaca007-commits/codeengine-learn --public --description "CodeEngine Learn - Premium Digital Knowledge Store (Frontend)"
 gh repo create fernandoquipiaca007-commits/codeengine-admin --private --description "CodeEngine Learn - Admin Panel for Product Management"
 gh repo create fernandoquipiaca007-commits/codeengine-api --private --description "CodeEngine Learn - Backend API (Stripe, Email, Webhooks)"
+
+# ⚠️ IMPORTANTE: codeengine-api DEVE ser privado por segurança!
 ```
 
 ---
