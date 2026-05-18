@@ -5,12 +5,13 @@ import { supabase } from '../lib/supabase';
 
 interface AuthProps {
   setScreen: (screen: string) => void;
+  initialMode?: AuthMode;
 }
 
 type AuthMode = 'login' | 'signup' | 'reset';
 
-export function Auth({ setScreen }: AuthProps) {
-  const [mode, setMode] = useState<AuthMode>('login');
+export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');

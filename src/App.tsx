@@ -180,6 +180,7 @@ export default function App() {
               <Product setScreen={navigateToScreen} productId={currentProductId} />
             )}
             {currentScreen === 'auth' && <Auth setScreen={navigateToScreen} />}
+            {currentScreen === 'signup' && <Auth setScreen={navigateToScreen} initialMode="signup" />}
             {currentScreen === 'member' && (
               <Member
                 key={memberSection}

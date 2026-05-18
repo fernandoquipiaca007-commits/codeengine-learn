@@ -130,12 +130,12 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-3 sm:px-4 md:px-5 lg:px-8 py-2.5 sm:py-3 md:py-3.5 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-3 lg:mt-4 mx-auto w-[calc(100%-1rem)] sm:w-[calc(100%-1.5rem)] md:w-[95%] lg:w-[90%] max-w-[1280px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-3.5 md:py-4 bg-surface/80 backdrop-blur-xl rounded-full mt-3 sm:mt-3 lg:mt-4 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1280px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
       <div className="nav-beam"></div>
       
       {/* Logo - Progressive sizing */}
       <div 
-        className="font-display text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold tracking-tighter text-on-surface cursor-pointer whitespace-nowrap flex-shrink-0 min-w-0"
+        className="font-display text-base sm:text-lg md:text-xl lg:text-xl xl:text-2xl font-bold tracking-tighter text-on-surface cursor-pointer whitespace-nowrap flex-shrink-0 min-w-0"
         onClick={() => setScreen('home')}
       >
         <span className="inline sm:hidden">CE</span>
@@ -221,37 +221,37 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
       </div>
       
       {/* Right Side Actions - Intelligent Progressive Collapse */}
-      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3 xl:gap-4 flex-shrink-0 min-w-0">
-        {/* Search Button - Hidden on very small screens, moved to drawer */}
+      <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 lg:gap-3.5 xl:gap-4 flex-shrink-0 min-w-0">
+        {/* Search Button - Always visible */}
         <button 
           onClick={onSearchClick}
-          className="hidden xs:flex text-on-surface-variant hover:text-primary transition-colors p-1.5 sm:p-2 rounded-full hover:bg-white/5 flex-shrink-0"
+          className="text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5 flex-shrink-0"
           title={t('nav.search')}
         >
-          <LucideSearch className="w-4 sm:w-[18px] md:w-5 h-4 sm:h-[18px] md:h-5" />
+          <LucideSearch className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
         </button>
         
         {user ? (
           // Logged in: Progressive display
           <>
-            {/* Points Badge - Hidden on small screens */}
-            <div className="hidden sm:block flex-shrink-0">
-              <PointsBadge />
+            {/* Points Badge - Always visible */}
+            <div className="flex-shrink-0">
+              <PointsBadge onClick={() => setScreen('member', 'recompensas')} />
             </div>
 
-            {/* Notification Bell - Hidden on small screens */}
-            <div className="hidden sm:block relative flex-shrink-0">
+            {/* Notification Bell - Always visible */}
+            <div className="relative flex-shrink-0">
               <button
                 onClick={() => {
                   setShowNotifications(!showNotifications);
                   setShowProfileMenu(false);
                 }}
-                className="relative text-on-surface-variant hover:text-primary transition-colors p-1.5 sm:p-2 rounded-full hover:bg-white/5"
+                className="relative text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5"
               >
-                <Bell className="w-4 sm:w-[18px] md:w-5 h-4 sm:h-[18px] md:h-5" />
+                <Bell className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] sm:min-w-[18px] h-[16px] sm:h-[18px] px-0.5 sm:px-1 bg-red-500 rounded-full flex items-center justify-center border-[1.5px] border-surface shadow-lg animate-pulse">
-                    <span className="font-display text-[8px] sm:text-[9px] font-bold text-white leading-none">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] sm:min-w-[20px] h-[18px] sm:h-[20px] px-1 sm:px-1.5 bg-red-500 rounded-full flex items-center justify-center border-2 border-surface shadow-lg animate-pulse">
+                    <span className="font-display text-[9px] sm:text-[10px] font-bold text-white leading-none">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   </span>
@@ -283,10 +283,9 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                   setShowProfileMenu(!showProfileMenu);
                   setShowNotifications(false);
                 }}
-                className="font-display text-[10px] sm:text-xs font-semibold tracking-widest uppercase px-2 sm:px-3 md:px-4 xl:px-6 py-1.5 sm:py-2 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex items-center gap-1.5 sm:gap-2 whitespace-nowrap"
+                className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex items-center justify-center flex-shrink-0"
               >
-                <User className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] flex-shrink-0" />
-                <span className="hidden xl:inline">{t('nav.myProfile')}</span>
+                <User className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6 flex-shrink-0" />
               </button>
               
               {showProfileMenu && (
@@ -377,10 +376,10 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
             {/* Mobile Menu Button - Always visible on non-desktop */}
             <button 
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-1.5 sm:p-2 rounded-full hover:bg-white/5 flex-shrink-0"
+              className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5 flex-shrink-0"
               aria-label={t('nav.openMenu')}
             >
-              <Menu className="w-4 sm:w-[18px] md:w-5 h-4 sm:h-[18px] md:h-5" />
+              <Menu className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
             </button>
           </>
         ) : (
@@ -388,13 +387,13 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           <>
             <button 
               onClick={() => setScreen('auth')}
-              className="hidden lg:block font-display text-[10px] xl:text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
+              className="hidden lg:block font-display text-xs xl:text-sm font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
             >
               {t('nav.signIn')}
             </button>
             <button 
-              onClick={() => setScreen('auth')}
-              className="font-display text-[10px] sm:text-xs font-semibold tracking-widest uppercase px-2 sm:px-3 md:px-4 xl:px-6 py-1.5 sm:py-2 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex-shrink-0 whitespace-nowrap"
+              onClick={() => setScreen('signup')}
+              className="font-display text-xs sm:text-sm font-semibold tracking-widest uppercase px-3 sm:px-4 md:px-5 xl:px-6 py-2 sm:py-2.5 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex-shrink-0 whitespace-nowrap"
             >
               <span className="hidden lg:inline">{t('nav.becomeMember')}</span>
               <span className="lg:hidden">{t('nav.signIn')}</span>
@@ -403,10 +402,10 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
             {/* Mobile Menu Button */}
             <button 
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-1.5 sm:p-2 rounded-full hover:bg-white/5 flex-shrink-0"
+              className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5 flex-shrink-0"
               aria-label={t('nav.openMenu')}
             >
-              <Menu className="w-4 sm:w-[18px] md:w-5 h-4 sm:h-[18px] md:h-5" />
+              <Menu className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
             </button>
           </>
         )}
@@ -440,46 +439,6 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
             
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4">
-              
-              {/* Search Button - Only on very small screens */}
-              <button
-                onClick={() => {
-                  onSearchClick();
-                  setShowMobileMenu(false);
-                }}
-                className="xs:hidden w-full flex items-center gap-3 px-4 py-3.5 mb-2 text-left font-sans text-sm font-semibold text-on-surface hover:text-primary hover:bg-white/5 rounded-xl transition-all"
-              >
-                <LucideSearch className="w-4 h-4 flex-shrink-0" />
-                <span>{t('nav.search')}</span>
-              </button>
-              
-              {/* Notifications - Only on small screens when logged in */}
-              {user && (
-                <button
-                  onClick={() => {
-                    setScreen('member', 'notifications');
-                    setShowMobileMenu(false);
-                  }}
-                  className="sm:hidden w-full flex items-center gap-3 px-4 py-3.5 mb-2 text-left font-sans text-sm font-semibold text-on-surface hover:text-primary hover:bg-white/5 rounded-xl transition-all"
-                >
-                  <Bell className="w-4 h-4 flex-shrink-0" />
-                  <span>{t('profile.notifications')}</span>
-                  {unreadCount > 0 && (
-                    <span className="ml-auto min-w-[20px] h-5 px-1.5 bg-red-500 rounded-full flex items-center justify-center">
-                      <span className="font-display text-[10px] font-bold text-white">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    </span>
-                  )}
-                </button>
-              )}
-              
-              {/* Points Badge - Mobile */}
-              {user && (
-                <div className="sm:hidden px-4 py-2 mb-2">
-                  <PointsBadge compact={false} />
-                </div>
-              )}
               
               {/* Navigation Links */}
               <div className="space-y-1.5 sm:space-y-2">
