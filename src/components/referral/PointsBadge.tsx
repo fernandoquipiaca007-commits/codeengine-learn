@@ -4,13 +4,16 @@
 
 import { motion, AnimatePresence } from 'motion/react';
 import { usePoints, LEVEL_COLORS, LEVEL_ICONS } from '../../hooks/usePoints';
+import { useTranslation } from 'react-i18next';
 
 interface PointsBadgeProps {
   compact?: boolean;
   showPoints?: boolean;
+  onClick?: () => void;
 }
 
-export function PointsBadge({ compact = true, showPoints = true }: PointsBadgeProps) {
+export function PointsBadge({ compact = true, showPoints = true, onClick }: PointsBadgeProps) {
+  const { t } = useTranslation('member');
   const { balance } = usePoints();
 
   if (!balance) return null;
@@ -21,40 +24,55 @@ export function PointsBadge({ compact = true, showPoints = true }: PointsBadgePr
 
   if (compact) {
     return (
-      <motion.div
+      <motion.button
+        type="button"
+        onClick={onClick}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${colors.bg} border ${colors.border} ${colors.glow} shadow-sm cursor-default`}
-        title={`${balance.total_points} points · Level ${level}`}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${colors.bg} border ${colors.border} ${colors.glow} shadow-sm cursor-pointer transition-all hover:shadow-md`}
+        title={t('rewardsPanel.pointsBadgeTooltip', { 
+          points: balance.total_points, 
+          level: t(`rewardsPanel.levels.${level}`)
+        })}
       >
-        <span className="text-sm">{icon}</span>
         {showPoints && (
           <AnimatePresence mode="popLayout">
-            <motion.span
+            <motion.div
               key={balance.available_points}
               initial={{ y: -8, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 8, opacity: 0 }}
-              className={`font-mono text-xs font-bold ${colors.text}`}
+              className="flex items-center gap-1.5"
             >
-              {balance.available_points.toLocaleString()}
-            </motion.span>
+              <span className={`font-display text-xs font-semibold uppercase tracking-wider ${colors.text}`}>
+                {t(`rewardsPanel.levels.${level}`)}
+              </span>
+              <span className={`font-mono text-sm font-bold ${colors.text}`}>
+                {balance.available_points.toLocaleString()}
+              </span>
+            </motion.div>
           </AnimatePresence>
         )}
-      </motion.div>
+      </motion.button>
     );
   }
 
   return (
-    <motion.div
+    <motion.button
+      type="button"
+      onClick={onClick}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl ${colors.bg} border ${colors.border} ${colors.glow}`}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl ${colors.bg} border ${colors.border} ${colors.glow} cursor-pointer transition-all hover:shadow-md`}
     >
       <span className="text-2xl">{icon}</span>
       <div>
         <p className={`font-display text-xs font-bold uppercase tracking-wider ${colors.text}`}>
-          {level}
+          {t(`rewardsPanel.levels.${level}`)}
         </p>
         <p className="font-mono text-sm font-semibold text-on-surface">
           {balance.available_points.toLocaleString()} pts
@@ -70,10 +88,10 @@ export function PointsBadge({ compact = true, showPoints = true }: PointsBadgePr
             />
           </div>
           <p className="text-[10px] text-on-surface-variant mt-0.5 text-right">
-            → {balance.levelInfo.nextLevel}
+            → {t(`rewardsPanel.levels.${balance.levelInfo.nextLevel}`)}
           </p>
         </div>
       )}
-    </motion.div>
+    </motion.button>
   );
 }

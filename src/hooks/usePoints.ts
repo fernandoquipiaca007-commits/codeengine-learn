@@ -40,6 +40,7 @@ export interface Reward {
 export function usePoints() {
   const [balance, setBalance] = useState<PointsBalance | null>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -70,7 +71,10 @@ export function usePoints() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.success) setHistory(data.history || []);
+      if (data.success) {
+        setHistory(data.history || []);
+        setTransactions(data.history || []);
+      }
     } catch {}
   }, [getToken]);
 
@@ -188,6 +192,7 @@ export function usePoints() {
   return {
     balance,
     history,
+    transactions,
     rewards,
     loading,
     fetchBalance,
@@ -207,12 +212,34 @@ export const LEVEL_COLORS: Record<string, { bg: string; text: string; border: st
   platinum: { bg: 'bg-cyan-400/20', text: 'text-cyan-300', border: 'border-cyan-500', glow: 'shadow-cyan-300/40' },
 };
 
+// Level icons are now rendered as Lucide React components in the UI
+// This object is kept for backwards compatibility but values are not used
 export const LEVEL_ICONS: Record<string, string> = {
-  starter: '⭐',
-  bronze: '🥉',
-  silver: '🥈',
-  gold: '🥇',
-  platinum: '💎',
+  starter: 'Star',
+  bronze: 'Award',
+  silver: 'Medal',
+  gold: 'Crown',
+  platinum: 'Gem',
+};
+
+export const LEVEL_NAMES: Record<string, string> = {
+  starter: 'Starter',
+  bronze: 'Bronze',
+  silver: 'Silver',
+  gold: 'Gold',
+  platinum: 'Platinum',
 };
 
 export const LEVEL_ORDER = ['starter', 'bronze', 'silver', 'gold', 'platinum'] as const;
+
+// Helper to get the Lucide icon component for a level
+export function getLevelIconComponent(level: string) {
+  const icons = {
+    starter: 'Star',
+    bronze: 'Award',
+    silver: 'Medal',
+    gold: 'Crown',
+    platinum: 'Gem',
+  };
+  return icons[level as keyof typeof icons] || 'Star';
+}

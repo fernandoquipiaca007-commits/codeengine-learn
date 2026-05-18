@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { Copy, Check, Share2, MessageCircle, Mail, Link2 } from 'lucide-react';
 import { useReferral } from '../../hooks/useReferral';
 import { supabase } from '../../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface ReferralShareCardProps {
   productId?: string;
@@ -14,6 +15,7 @@ interface ReferralShareCardProps {
 }
 
 export function ReferralShareCard({ productId, compact = false }: ReferralShareCardProps) {
+  const { t } = useTranslation('member');
   const { createLink, getGlobalLink, getShareUrl, myLinks, fetchMyLinks } = useReferral();
   const [link, setLink] = useState<any>(null);
   const [shareUrl, setShareUrl] = useState('');
@@ -117,8 +119,8 @@ export function ReferralShareCard({ productId, compact = false }: ReferralShareC
             <Share2 className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <p className="font-display text-sm font-semibold text-on-surface">Share & Earn</p>
-            <p className="text-xs text-on-surface-variant">Generate your referral link to earn rewards</p>
+            <p className="font-display text-sm font-semibold text-on-surface">{t('rewardsPanel.shareAndEarn')}</p>
+            <p className="text-xs text-on-surface-variant">{t('rewardsPanel.generateLinkDesc')}</p>
           </div>
         </div>
         {error && (
@@ -129,7 +131,7 @@ export function ReferralShareCard({ productId, compact = false }: ReferralShareC
           disabled={loading}
           className="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-surface font-display text-sm font-bold tracking-wide hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50"
         >
-          {loading ? 'Generating...' : 'Generate My Link'}
+          {loading ? t('rewardsPanel.generating') : t('rewardsPanel.generateLink')}
         </button>
       </motion.div>
     );
@@ -159,9 +161,9 @@ export function ReferralShareCard({ productId, compact = false }: ReferralShareC
             <Link2 className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <p className="font-display text-sm font-semibold text-on-surface">Your Referral Link</p>
+            <p className="font-display text-sm font-semibold text-on-surface">{t('rewardsPanel.yourReferralLink')}</p>
             <p className="text-xs text-on-surface-variant">
-              {link?.clicks || 0} clicks · {link?.conversions || 0} conversions
+              {link?.clicks || 0} {t('rewardsPanel.clicks')} · {link?.conversions || 0} {t('rewardsPanel.conversions')}
             </p>
           </div>
         </div>

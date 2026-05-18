@@ -3,25 +3,62 @@
 // ============================================
 
 import { motion } from 'motion/react';
-import { Trophy, ChevronRight, Zap, Star } from 'lucide-react';
-import { usePoints, LEVEL_COLORS, LEVEL_ICONS, LEVEL_ORDER } from '../../hooks/usePoints';
+import { Trophy, ChevronRight, Zap, Star, Award, Medal, Crown, Gem, Sparkles } from 'lucide-react';
+import { usePoints, LEVEL_COLORS, LEVEL_ORDER } from '../../hooks/usePoints';
+import { useTranslation } from 'react-i18next';
+
+// Map level names to Lucide icon components
+const LEVEL_ICON_COMPONENTS: Record<string, typeof Star> = {
+  starter: Star,
+  bronze: Award,
+  silver: Medal,
+  gold: Crown,
+  platinum: Gem,
+};
 
 export function LevelCard() {
+  const { t } = useTranslation('member');
   const { balance } = usePoints();
 
   if (!balance) return null;
 
   const level = balance.level || 'starter';
   const colors = LEVEL_COLORS[level] || LEVEL_COLORS.starter;
-  const icon = LEVEL_ICONS[level] || '⭐';
+  const LevelIcon = LEVEL_ICON_COMPONENTS[level] || Star;
   const li = balance.levelInfo;
 
   const benefits: Record<string, string[]> = {
-    starter: ['Earn points on every purchase', 'Share referral links', '1x point multiplier'],
-    bronze: ['1.2x point multiplier', '5% discount coupon', 'All starter benefits'],
-    silver: ['1.5x point multiplier', '10% discount coupon', '3-day early access', 'All bronze benefits'],
-    gold: ['2x point multiplier', '20% discount coupon', '7-day early access', 'Exclusive products', 'All silver benefits'],
-    platinum: ['3x point multiplier', '30% discount coupon', '14-day early access', 'VIP support', 'Exclusive content', 'All gold benefits'],
+    starter: [
+      t('rewardsPanel.benefits.starter.1'),
+      t('rewardsPanel.benefits.starter.2'),
+      t('rewardsPanel.benefits.starter.3')
+    ],
+    bronze: [
+      t('rewardsPanel.benefits.bronze.1'),
+      t('rewardsPanel.benefits.bronze.2'),
+      t('rewardsPanel.benefits.bronze.3')
+    ],
+    silver: [
+      t('rewardsPanel.benefits.silver.1'),
+      t('rewardsPanel.benefits.silver.2'),
+      t('rewardsPanel.benefits.silver.3'),
+      t('rewardsPanel.benefits.silver.4')
+    ],
+    gold: [
+      t('rewardsPanel.benefits.gold.1'),
+      t('rewardsPanel.benefits.gold.2'),
+      t('rewardsPanel.benefits.gold.3'),
+      t('rewardsPanel.benefits.gold.4'),
+      t('rewardsPanel.benefits.gold.5')
+    ],
+    platinum: [
+      t('rewardsPanel.benefits.platinum.1'),
+      t('rewardsPanel.benefits.platinum.2'),
+      t('rewardsPanel.benefits.platinum.3'),
+      t('rewardsPanel.benefits.platinum.4'),
+      t('rewardsPanel.benefits.platinum.5'),
+      t('rewardsPanel.benefits.platinum.6')
+    ],
   };
 
   const levelIdx = LEVEL_ORDER.indexOf(level as any);
@@ -36,13 +73,15 @@ export function LevelCard() {
       <div className={`p-6 ${colors.bg} relative`}>
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/5 to-transparent rounded-bl-full" />
         <div className="flex items-center gap-4 relative z-10">
-          <div className="text-4xl">{icon}</div>
+          <div className={`w-14 h-14 rounded-full ${colors.bg} ${colors.border} border-2 flex items-center justify-center`}>
+            <LevelIcon className={`w-7 h-7 ${colors.text}`} />
+          </div>
           <div>
             <p className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant">
-              Your Level
+              {t('rewardsPanel.yourLevel')}
             </p>
             <h3 className={`font-display text-2xl font-bold capitalize ${colors.text}`}>
-              {level}
+              {t(`rewardsPanel.levels.${level}`)}
             </h3>
           </div>
           <div className="ml-auto flex items-center gap-1 bg-white/5 px-3 py-1.5 rounded-full">
@@ -59,7 +98,7 @@ export function LevelCard() {
               <span className="flex items-center gap-1">
                 {li.nextThreshold?.toLocaleString()} pts
                 <ChevronRight className="w-3 h-3" />
-                <span className="capitalize font-semibold">{li.nextLevel}</span>
+                <span className="capitalize font-semibold">{t(`rewardsPanel.levels.${li.nextLevel}`)}</span>
               </span>
             </div>
             <div className="h-2.5 bg-surface-highest/50 rounded-full overflow-hidden">
@@ -73,8 +112,9 @@ export function LevelCard() {
           </div>
         )}
         {li?.isMaxLevel && (
-          <p className="mt-3 text-xs text-cyan-300 font-display tracking-wider uppercase relative z-10">
-            ✨ Maximum Level Reached
+          <p className="mt-3 text-xs text-cyan-300 font-display tracking-wider uppercase relative z-10 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            {t('rewardsPanel.maximumLevelReached')}
           </p>
         )}
       </div>
@@ -83,7 +123,7 @@ export function LevelCard() {
       <div className="p-5">
         <h4 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-3 flex items-center gap-2">
           <Trophy className="w-4 h-4 text-primary" />
-          Your Benefits
+          {t('rewardsPanel.yourBenefits')}
         </h4>
         <ul className="space-y-2">
           {(benefits[level] || []).map((benefit, i) => (
@@ -103,22 +143,25 @@ export function LevelCard() {
         {/* Level roadmap */}
         <div className="mt-5 pt-4 border-t border-white/5">
           <div className="flex items-center gap-1">
-            {LEVEL_ORDER.map((l, i) => (
-              <div key={l} className="flex items-center">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${
-                    i <= levelIdx
-                      ? `${LEVEL_COLORS[l].bg} ${LEVEL_COLORS[l].border} border`
-                      : 'bg-surface-highest/30 border border-white/5'
-                  }`}
-                >
-                  {LEVEL_ICONS[l]}
+            {LEVEL_ORDER.map((l, i) => {
+              const LevelRoadmapIcon = LEVEL_ICON_COMPONENTS[l];
+              return (
+                <div key={l} className="flex items-center">
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                      i <= levelIdx
+                        ? `${LEVEL_COLORS[l].bg} ${LEVEL_COLORS[l].border} border`
+                        : 'bg-surface-highest/30 border border-white/5'
+                    }`}
+                  >
+                    <LevelRoadmapIcon className={`w-3.5 h-3.5 ${i <= levelIdx ? LEVEL_COLORS[l].text : 'text-on-surface-variant/30'}`} />
+                  </div>
+                  {i < LEVEL_ORDER.length - 1 && (
+                    <div className={`w-4 h-0.5 ${i < levelIdx ? 'bg-primary/50' : 'bg-white/5'}`} />
+                  )}
                 </div>
-                {i < LEVEL_ORDER.length - 1 && (
-                  <div className={`w-4 h-0.5 ${i < levelIdx ? 'bg-primary/50' : 'bg-white/5'}`} />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

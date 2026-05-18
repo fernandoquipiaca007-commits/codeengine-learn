@@ -4,8 +4,9 @@
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Gift, Lock, Check, Ticket, Eye, Sparkles, Award, Copy, CheckCircle } from 'lucide-react';
-import { usePoints, LEVEL_COLORS, LEVEL_ICONS, type Reward } from '../../hooks/usePoints';
+import { Gift, Lock, Check, Ticket, Eye, Sparkles, Award, Copy, CheckCircle, Star, Medal, Crown, Gem } from 'lucide-react';
+import { usePoints, LEVEL_COLORS, type Reward } from '../../hooks/usePoints';
+import { useTranslation } from 'react-i18next';
 
 const REWARD_ICONS: Record<string, typeof Gift> = {
   coupon: Ticket,
@@ -14,7 +15,17 @@ const REWARD_ICONS: Record<string, typeof Gift> = {
   exclusive_offer: Award,
 };
 
+// Map level names to Lucide icon components
+const LEVEL_ICON_COMPONENTS: Record<string, typeof Star> = {
+  starter: Star,
+  bronze: Award,
+  silver: Medal,
+  gold: Crown,
+  platinum: Gem,
+};
+
 export function RewardsList() {
+  const { t } = useTranslation('member');
   const { rewards, claimReward } = usePoints();
   const [claimedCoupons, setClaimedCoupons] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -60,10 +71,53 @@ export function RewardsList() {
   const renderReward = (reward: Reward, idx: number) => {
     const Icon = REWARD_ICONS[reward.reward_type] || Gift;
     const colors = LEVEL_COLORS[reward.level] || LEVEL_COLORS.starter;
-    const levelIcon = LEVEL_ICONS[reward.level] || '⭐';
+    const LevelIcon = LEVEL_ICON_COMPONENTS[reward.level] || Star;
     const isLocked = reward.status === 'locked';
     const isClaimed = reward.status === 'claimed';
     const couponCode = claimedCoupons[reward.id];
+
+    // Translate reward description based on type and level
+    const getRewardDescription = () => {
+      const desc = reward.description.toLowerCase();
+      
+      // Check for bonus points
+      if (desc.includes('bonus') && desc.includes('points')) {
+        const points = desc.match(/\d+/)?.[0] || '';
+        return t('rewardsPanel.rewardDescriptions.bonusPoints', { points });
+      }
+      
+      // Check for discount coupon
+      if (desc.includes('discount') && desc.includes('coupon')) {
+        const percent = desc.match(/\d+/)?.[0] || '';
+        return t('rewardsPanel.rewardDescriptions.discountCoupon', { percent });
+      }
+      
+      // Check for early access
+      if (desc.includes('early access')) {
+        const days = desc.match(/\d+/)?.[0] || '';
+        return t('rewardsPanel.rewardDescriptions.earlyAccess', { days });
+      }
+      
+      // Check for welcome bonus
+      if (desc.includes('welcome') && desc.includes('bonus')) {
+        const points = desc.match(/\d+/)?.[0] || '';
+        return t('rewardsPanel.rewardDescriptions.welcomeBonus', { points });
+      }
+      
+      // Fallback to original description
+      return reward.description;
+    };
+
+    // Translate reward type
+    const getRewardType = () => {
+      const typeMap: Record<string, string> = {
+        'coupon': t('rewardsPanel.rewardTypes.coupon'),
+        'early_access': t('rewardsPanel.rewardTypes.earlyAccess'),
+        'bonus_points': t('rewardsPanel.rewardTypes.bonusPoints'),
+        'exclusive_offer': t('rewardsPanel.rewardTypes.exclusiveOffer'),
+      };
+      return typeMap[reward.reward_type] || reward.reward_type.replace('_', ' ');
+    };
 
     return (
       <motion.div
@@ -80,7 +134,9 @@ export function RewardsList() {
         } relative overflow-hidden`}
       >
         {/* Level badge */}
-        <div className="absolute top-2 right-2 text-xs">{levelIcon}</div>
+        <div className="absolute top-2 right-2">
+          <LevelIcon className={`w-4 h-4 ${colors.text}`} />
+        </div>
 
         <div className="flex items-start gap-3">
           <div className={`p-2 rounded-xl ${isLocked ? 'bg-surface-highest/30' : colors.bg}`}>
@@ -94,10 +150,10 @@ export function RewardsList() {
           </div>
           <div className="flex-1 min-w-0">
             <p className={`font-display text-sm font-semibold ${isLocked ? 'text-on-surface-variant/50' : 'text-on-surface'}`}>
-              {reward.description}
+              {getRewardDescription()}
             </p>
             <p className={`text-xs mt-0.5 capitalize ${isLocked ? 'text-on-surface-variant/30' : 'text-on-surface-variant'}`}>
-              {reward.level} · {reward.reward_type.replace('_', ' ')}
+              {t(`rewardsPanel.levels.${reward.level}`)} · {getRewardType()}
             </p>
           </div>
         </div>
@@ -109,8 +165,9 @@ export function RewardsList() {
             animate={{ opacity: 1, height: 'auto' }}
             className="mt-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20"
           >
-            <p className="text-xs text-green-400 font-semibold mb-1.5">
-              🎉 Seu cupom foi gerado!
+            <p className="text-xs text-green-400 font-semibold mb-1.5 flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5" />
+              {t('rewardsPanel.couponGenerated')}
             </p>
             <div className="flex items-center gap-2">
               <code className="flex-1 px-3 py-2 rounded-lg bg-surface-highest/50 font-mono text-sm text-primary font-bold tracking-wider">
@@ -119,7 +176,7 @@ export function RewardsList() {
               <button
                 onClick={() => copyToClipboard(couponCode, reward.id)}
                 className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors"
-                title="Copiar código"
+                title={t('rewardsPanel.copyCode')}
               >
                 {copiedId === reward.id ? (
                   <CheckCircle className="w-4 h-4 text-green-400" />
@@ -129,7 +186,7 @@ export function RewardsList() {
               </button>
             </div>
             <p className="text-[10px] text-on-surface-variant mt-1.5">
-              Use este código no checkout para obter o desconto
+              {t('rewardsPanel.useCodeAtCheckout')}
             </p>
           </motion.div>
         )}
@@ -141,17 +198,17 @@ export function RewardsList() {
             disabled={claimingId === reward.id}
             className="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-surface font-display text-xs font-bold tracking-wide hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-50"
           >
-            {claimingId === reward.id ? 'Liberando...' : 'Liberar Recompensa'}
+            {claimingId === reward.id ? t('rewardsPanel.claiming') : t('rewardsPanel.claimReward')}
           </button>
         )}
         {isClaimed && !reward.is_used && !couponCode && (
           <div className="mt-2 flex items-center gap-1 text-green-400 text-xs">
-            <Check className="w-3 h-3" /> Resgatado
+            <Check className="w-3 h-3" /> {t('rewardsPanel.claimed')}
           </div>
         )}
         {isLocked && (
           <div className="mt-2 flex items-center gap-1 text-on-surface-variant/30 text-xs">
-            <Lock className="w-3 h-3" /> Alcance o nível {reward.level} para desbloquear
+            <Lock className="w-3 h-3" /> {t('rewardsPanel.reachLevel', { level: t(`rewardsPanel.levels.${reward.level}`) })}
           </div>
         )}
       </motion.div>
@@ -164,7 +221,7 @@ export function RewardsList() {
       {available.length > 0 && (
         <div>
           <h4 className="font-display text-xs font-semibold tracking-widest uppercase text-primary mb-3 flex items-center gap-2">
-            <Gift className="w-4 h-4" /> Recompensas Disponíveis ({available.length})
+            <Gift className="w-4 h-4" /> {t('rewardsPanel.availableRewards')} ({available.length})
           </h4>
           <div className="grid gap-3 sm:grid-cols-2">
             {available.map((r, i) => renderReward(r, i))}
@@ -176,7 +233,7 @@ export function RewardsList() {
       {claimed.length > 0 && (
         <div>
           <h4 className="font-display text-xs font-semibold tracking-widest uppercase text-green-400 mb-3 flex items-center gap-2">
-            <Check className="w-4 h-4" /> Resgatados ({claimed.length})
+            <Check className="w-4 h-4" /> {t('rewardsPanel.claimedRewards')} ({claimed.length})
           </h4>
           <div className="grid gap-3 sm:grid-cols-2">
             {claimed.map((r, i) => renderReward(r, i))}
@@ -188,7 +245,7 @@ export function RewardsList() {
       {locked.length > 0 && (
         <div>
           <h4 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/50 mb-3 flex items-center gap-2">
-            <Lock className="w-4 h-4" /> Bloqueados ({locked.length})
+            <Lock className="w-4 h-4" /> {t('rewardsPanel.lockedRewards')} ({locked.length})
           </h4>
           <div className="grid gap-3 sm:grid-cols-2">
             {locked.map((r, i) => renderReward(r, i))}
