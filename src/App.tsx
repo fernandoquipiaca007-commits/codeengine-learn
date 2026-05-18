@@ -87,6 +87,8 @@ export default function App() {
     // Handle ?screen=success or ?screen=cancel
     if (screen === 'success' || screen === 'cancel') {
       setScreen(screen);
+      // Remove o parâmetro da URL para não prender o utilizador no refresh
+      window.history.replaceState({}, '', window.location.pathname);
       return;
     }
 

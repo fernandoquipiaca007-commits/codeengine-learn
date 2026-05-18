@@ -2,7 +2,7 @@
 // RewardsList — Available & Locked Rewards
 // ============================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Gift, Lock, Check, Ticket, Eye, Sparkles, Award, Copy, CheckCircle, Star, Medal, Crown, Gem } from 'lucide-react';
 import { usePoints, LEVEL_COLORS, type Reward } from '../../hooks/usePoints';
@@ -31,7 +31,20 @@ export function RewardsList() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
 
-  if (!rewards.length) return null;
+  // Initialize claimed coupons from backend data
+  useEffect(() => {
+    const loadedCoupons: Record<string, string> = {};
+    if (Array.isArray(rewards)) {
+      rewards.forEach((r) => {
+        if (r.status === 'claimed' && r?.reward_data?.coupon_code) {
+          loadedCoupons[r.id] = r.reward_data.coupon_code;
+        }
+      });
+    }
+    setClaimedCoupons(loadedCoupons);
+  }, [rewards]);
+
+  if (!rewards || !Array.isArray(rewards) || !rewards.length) return null;
 
   const available = rewards.filter((r) => r.status === 'available');
   const claimed = rewards.filter((r) => r.status === 'claimed');
@@ -41,6 +54,10 @@ export function RewardsList() {
     setClaimingId(rewardId);
     try {
       const result = await claimReward(rewardId);
+      if (result && !result.success) {
+        alert(t('rewardsPanel.errorClaiming') || 'Failed to claim reward. Please try again.');
+        return;
+      }
       // If the API returned a coupon code, store it for display
       if (result?.couponCode) {
         setClaimedCoupons((prev) => ({ ...prev, [rewardId]: result.couponCode }));
@@ -78,6 +95,7 @@ export function RewardsList() {
 
     // Translate reward description based on type and level
     const getRewardDescription = () => {
+      if (!reward || !reward.description) return '';
       const desc = reward.description.toLowerCase();
       
       // Check for bonus points
@@ -110,6 +128,7 @@ export function RewardsList() {
 
     // Translate reward type
     const getRewardType = () => {
+      if (!reward || !reward.reward_type) return '';
       const typeMap: Record<string, string> = {
         'coupon': t('rewardsPanel.rewardTypes.coupon'),
         'early_access': t('rewardsPanel.rewardTypes.earlyAccess'),

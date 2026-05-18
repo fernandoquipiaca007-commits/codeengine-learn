@@ -35,6 +35,7 @@ export interface Reward {
   description: string;
   status: 'available' | 'claimed' | 'locked';
   is_used: boolean;
+  reward_data?: Record<string, any> | null;
 }
 
 export function usePoints() {

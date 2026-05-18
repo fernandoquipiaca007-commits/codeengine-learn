@@ -22,45 +22,98 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // 1. First, check product_coupons (global or product-specific campaigns)
+      let { data: couponData, error: couponError } = await supabase
         .from('product_coupons')
         .select('*')
         .eq('product_id', productId)
         .eq('code', couponCode.toUpperCase())
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
-        showMessage('error', 'Cupom inválido ou expirado');
-        return;
-      }
+      let discount = 0;
+      let appliedCode = '';
 
-      // Validate expiration
-      if (data.valid_until) {
-        const expirationDate = new Date(data.valid_until);
-        if (expirationDate < new Date()) {
-          showMessage('error', 'Este cupom expirou');
+      if (couponData) {
+        // Validate product coupon expiration
+        if (couponData.valid_until) {
+          const expirationDate = new Date(couponData.valid_until);
+          if (expirationDate < new Date()) {
+            showMessage('error', 'Este cupom expirou');
+            return;
+          }
+        }
+
+        // Validate max uses
+        if (couponData.max_uses && couponData.current_uses >= couponData.max_uses) {
+          showMessage('error', 'Este cupom atingiu o limite de usos');
           return;
         }
-      }
 
-      // Validate max uses
-      if (data.max_uses && data.current_uses >= data.max_uses) {
-        showMessage('error', 'Este cupom atingiu o limite de usos');
-        return;
-      }
-
-      // Calculate discount
-      let discount = 0;
-      if (data.discount_type === 'percentage') {
-        discount = (originalPrice * data.discount_value) / 100;
+        // Calculate discount
+        if (couponData.discount_type === 'percentage') {
+          discount = (originalPrice * couponData.discount_value) / 100;
+        } else {
+          discount = couponData.discount_value;
+        }
+        appliedCode = couponData.code;
       } else {
-        discount = data.discount_value;
+        // 2. If not found, check member_coupons (personal rewards)
+        const { data: authData } = await supabase.auth.getUser();
+        if (!authData || !authData.user) {
+          showMessage('error', 'Cupom inválido ou expirado');
+          return;
+        }
+        
+        // Find member id
+        const { data: member } = await supabase
+          .from('members')
+          .select('id')
+          .eq('auth_id', authData.user.id)
+          .single();
+
+        if (!member) {
+          showMessage('error', 'Cupom inválido ou expirado');
+          return;
+        }
+
+        const { data: memberCoupon, error: memberCouponError } = await supabase
+          .from('member_coupons')
+          .select('*')
+          .eq('code', couponCode.toUpperCase())
+          .eq('member_id', member.id)
+          .single();
+
+        if (memberCouponError || !memberCoupon) {
+          showMessage('error', 'Cupom inválido ou expirado');
+          return;
+        }
+
+        if (memberCoupon.status === 'USED') {
+          showMessage('error', 'Este cupom já foi utilizado.');
+          return;
+        }
+
+        if (memberCoupon.status !== 'ACTIVE') {
+          showMessage('error', 'Este cupom não está mais ativo.');
+          return;
+        }
+
+        // Member coupons currently only support percentage (based on points-service generation)
+        // or fixed value depending on the implementation. Let's assume the value stored is percentage 
+        // as points-service sets discountValue. We should check if it's PCT or OFF.
+        const isPercentage = memberCoupon.code.includes('PCT');
+        if (isPercentage) {
+          discount = (originalPrice * memberCoupon.discount_percentage) / 100;
+        } else {
+          discount = memberCoupon.discount_percentage;
+        }
+        appliedCode = memberCoupon.code;
       }
 
       // Apply coupon
-      setAppliedCoupon(data.code);
-      onCouponApplied(discount, data.code);
+      setAppliedCoupon(appliedCode);
+      onCouponApplied(discount, appliedCode);
       showMessage('success', `Cupom aplicado! Desconto de R$ ${discount.toFixed(2)}`);
     } catch (error) {
       console.error('Error validating coupon:', error);
