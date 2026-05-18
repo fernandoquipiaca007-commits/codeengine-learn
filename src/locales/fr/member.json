@@ -4,6 +4,7 @@
   "purchases": "Achats",
   "notifications": "Notifications",
   "favorites": "Favoris",
+  "rewards": "Récompenses",
   "downloadsTitle": "Mes Téléchargements",
   "downloadsAvailable": "{{count}} produit disponible au téléchargement",
   "downloadsAvailable_plural": "{{count}} produits disponibles au téléchargement",
@@ -41,5 +42,92 @@
   "accountSettings": "Paramètres du Compte",
   "emailSettings": "Paramètres Email",
   "privacySettings": "Paramètres de Confidentialité",
-  "securitySettings": "Paramètres de Sécurité"
+  "securitySettings": "Paramètres de Sécurité",
+  "rewardsPanel": {
+    "title": "Vos Récompenses",
+    "yourLevel": "Votre Niveau",
+    "yourBenefits": "Vos Avantages",
+    "maximumLevelReached": "Niveau Maximum Atteint",
+    "shareAndEarn": "Partager et Gagner",
+    "generateLink": "Générer Mon Lien",
+    "generateLinkDesc": "Générez votre lien de parrainage pour gagner des récompenses",
+    "generating": "Génération...",
+    "yourReferralLink": "Votre Lien de Parrainage",
+    "clicks": "clics",
+    "conversions": "conversions",
+    "recentActivity": "Activité Récente",
+    "howToEarnPoints": "Comment Gagner des Points",
+    "buyProducts": "Acheter des Produits",
+    "buyProductsDesc": "Gagnez des points à chaque achat",
+    "referFriends": "Parrainer des Amis",
+    "referFriendsDesc": "Gagnez des points quand vos amis achètent",
+    "completeCourses": "Terminer des Cours",
+    "completeCoursesDesc": "Gagnez des points en terminant des cours",
+    "participateEvents": "Participer aux Événements",
+    "participateEventsDesc": "Gagnez des points lors de promotions spéciales",
+    "availableRewards": "Récompenses Disponibles",
+    "claimedRewards": "Réclamées",
+    "lockedRewards": "Verrouillées",
+    "claimReward": "Réclamer la Récompense",
+    "claiming": "Réclamation...",
+    "claimed": "Réclamée",
+    "couponGenerated": "Votre coupon a été généré!",
+    "useCodeAtCheckout": "Utilisez ce code lors du paiement pour obtenir la réduction",
+    "copyCode": "Copier le code",
+    "reachLevel": "Atteignez le niveau {{level}} pour débloquer",
+    "levels": {
+      "starter": "Débutant",
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or",
+      "platinum": "Platine"
+    },
+    "benefits": {
+      "starter": {
+        "1": "Gagnez des points à chaque achat",
+        "2": "Partagez des liens de parrainage",
+        "3": "Multiplicateur de points 1x"
+      },
+      "bronze": {
+        "1": "Multiplicateur de points 1.2x",
+        "2": "Coupon de réduction de 5%",
+        "3": "Tous les avantages débutant"
+      },
+      "silver": {
+        "1": "Multiplicateur de points 1.5x",
+        "2": "Coupon de réduction de 10%",
+        "3": "Accès anticipé de 3 jours",
+        "4": "Tous les avantages bronze"
+      },
+      "gold": {
+        "1": "Multiplicateur de points 2x",
+        "2": "Coupon de réduction de 20%",
+        "3": "Accès anticipé de 7 jours",
+        "4": "Produits exclusifs",
+        "5": "Tous les avantages argent"
+      },
+      "platinum": {
+        "1": "Multiplicateur de points 3x",
+        "2": "Coupon de réduction de 30%",
+        "3": "Accès anticipé de 14 jours",
+        "4": "Support VIP",
+        "5": "Contenu exclusif",
+        "6": "Tous les avantages or"
+      }
+    },
+    "rewardTypes": {
+      "coupon": "Coupon",
+      "earlyAccess": "Accès Anticipé",
+      "bonusPoints": "Points Bonus",
+      "exclusiveOffer": "Offre Exclusive"
+    },
+    "rewardDescriptions": {
+      "bonusPoints": "Bonus de {{points}} points",
+      "discountCoupon": "Coupon de réduction de {{percent}}%",
+      "earlyAccess": "Accès anticipé de {{days}} jours aux nouveaux produits",
+      "welcomeBonus": "Bonus de bienvenue: {{points}} points"
+    },
+    "pointsBadgeTooltip": "{{points}} points · Niveau {{level}}",
+    "medal": "Médaille"
+  }
 }

@@ -4,6 +4,7 @@
   "purchases": "Compras",
   "notifications": "Notificações",
   "favorites": "Favoritos",
+  "rewards": "Recompensas",
   "downloadsTitle": "Meus Downloads",
   "downloadsAvailable": "{{count}} produto disponível para download",
   "downloadsAvailable_plural": "{{count}} produtos disponíveis para download",
@@ -41,5 +42,92 @@
   "accountSettings": "Configurações da Conta",
   "emailSettings": "Configurações de Email",
   "privacySettings": "Configurações de Privacidade",
-  "securitySettings": "Configurações de Segurança"
+  "securitySettings": "Configurações de Segurança",
+  "rewardsPanel": {
+    "title": "Suas Recompensas",
+    "yourLevel": "Seu Nível",
+    "yourBenefits": "Seus Benefícios",
+    "maximumLevelReached": "Nível Máximo Alcançado",
+    "shareAndEarn": "Compartilhar e Ganhar",
+    "generateLink": "Gerar Meu Link",
+    "generateLinkDesc": "Gere seu link de indicação para ganhar recompensas",
+    "generating": "Gerando...",
+    "yourReferralLink": "Seu Link de Indicação",
+    "clicks": "cliques",
+    "conversions": "conversões",
+    "recentActivity": "Atividade Recente",
+    "howToEarnPoints": "Como Ganhar Pontos",
+    "buyProducts": "Compre Produtos",
+    "buyProductsDesc": "Ganhe pontos a cada compra realizada",
+    "referFriends": "Indique Amigos",
+    "referFriendsDesc": "Ganhe pontos quando seus amigos comprarem",
+    "completeCourses": "Complete Cursos",
+    "completeCoursesDesc": "Ganhe pontos ao concluir cursos",
+    "participateEvents": "Participe de Eventos",
+    "participateEventsDesc": "Ganhe pontos em promoções especiais",
+    "availableRewards": "Recompensas Disponíveis",
+    "claimedRewards": "Resgatados",
+    "lockedRewards": "Bloqueados",
+    "claimReward": "Liberar Recompensa",
+    "claiming": "Liberando...",
+    "claimed": "Resgatado",
+    "couponGenerated": "Seu cupom foi gerado!",
+    "useCodeAtCheckout": "Use este código no checkout para obter o desconto",
+    "copyCode": "Copiar código",
+    "reachLevel": "Alcance o nível {{level}} para desbloquear",
+    "levels": {
+      "starter": "Iniciante",
+      "bronze": "Bronze",
+      "silver": "Prata",
+      "gold": "Ouro",
+      "platinum": "Platina"
+    },
+    "benefits": {
+      "starter": {
+        "1": "Ganhe pontos em cada compra",
+        "2": "Compartilhe links de indicação",
+        "3": "Multiplicador de pontos 1x"
+      },
+      "bronze": {
+        "1": "Multiplicador de pontos 1.2x",
+        "2": "Cupom de desconto de 5%",
+        "3": "Todos os benefícios iniciante"
+      },
+      "silver": {
+        "1": "Multiplicador de pontos 1.5x",
+        "2": "Cupom de desconto de 10%",
+        "3": "Acesso antecipado de 3 dias",
+        "4": "Todos os benefícios bronze"
+      },
+      "gold": {
+        "1": "Multiplicador de pontos 2x",
+        "2": "Cupom de desconto de 20%",
+        "3": "Acesso antecipado de 7 dias",
+        "4": "Produtos exclusivos",
+        "5": "Todos os benefícios prata"
+      },
+      "platinum": {
+        "1": "Multiplicador de pontos 3x",
+        "2": "Cupom de desconto de 30%",
+        "3": "Acesso antecipado de 14 dias",
+        "4": "Suporte VIP",
+        "5": "Conteúdo exclusivo",
+        "6": "Todos os benefícios ouro"
+      }
+    },
+    "rewardTypes": {
+      "coupon": "Cupom",
+      "earlyAccess": "Acesso Antecipado",
+      "bonusPoints": "Pontos Bônus",
+      "exclusiveOffer": "Oferta Exclusiva"
+    },
+    "rewardDescriptions": {
+      "bonusPoints": "Bônus de {{points}} pontos",
+      "discountCoupon": "Cupom de desconto de {{percent}}%",
+      "earlyAccess": "Acesso antecipado de {{days}} dias a novos produtos",
+      "welcomeBonus": "Bônus de boas-vindas: {{points}} pontos"
+    },
+    "pointsBadgeTooltip": "{{points}} pontos · Nível {{level}}",
+    "medal": "Medalha"
+  }
 }

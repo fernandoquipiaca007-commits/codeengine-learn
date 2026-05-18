@@ -4,6 +4,7 @@
   "purchases": "Purchases",
   "notifications": "Notifications",
   "favorites": "Favorites",
+  "rewards": "Rewards",
   "downloadsTitle": "My Downloads",
   "downloadsAvailable": "{{count}} product available for download",
   "downloadsAvailable_plural": "{{count}} products available for download",
@@ -41,5 +42,92 @@
   "accountSettings": "Account Settings",
   "emailSettings": "Email Settings",
   "privacySettings": "Privacy Settings",
-  "securitySettings": "Security Settings"
+  "securitySettings": "Security Settings",
+  "rewardsPanel": {
+    "title": "Your Rewards",
+    "yourLevel": "Your Level",
+    "yourBenefits": "Your Benefits",
+    "maximumLevelReached": "Maximum Level Reached",
+    "shareAndEarn": "Share & Earn",
+    "generateLink": "Generate My Link",
+    "generateLinkDesc": "Generate your referral link to earn rewards",
+    "generating": "Generating...",
+    "yourReferralLink": "Your Referral Link",
+    "clicks": "clicks",
+    "conversions": "conversions",
+    "recentActivity": "Recent Activity",
+    "howToEarnPoints": "How to Earn Points",
+    "buyProducts": "Buy Products",
+    "buyProductsDesc": "Earn points on every purchase",
+    "referFriends": "Refer Friends",
+    "referFriendsDesc": "Earn points when your friends make purchases",
+    "completeCourses": "Complete Courses",
+    "completeCoursesDesc": "Earn points by completing courses",
+    "participateEvents": "Participate in Events",
+    "participateEventsDesc": "Earn points in special promotions",
+    "availableRewards": "Available Rewards",
+    "claimedRewards": "Claimed",
+    "lockedRewards": "Locked",
+    "claimReward": "Claim Reward",
+    "claiming": "Claiming...",
+    "claimed": "Claimed",
+    "couponGenerated": "Your coupon has been generated!",
+    "useCodeAtCheckout": "Use this code at checkout to get the discount",
+    "copyCode": "Copy code",
+    "reachLevel": "Reach {{level}} level to unlock",
+    "levels": {
+      "starter": "Starter",
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "benefits": {
+      "starter": {
+        "1": "Earn points on every purchase",
+        "2": "Share referral links",
+        "3": "1x point multiplier"
+      },
+      "bronze": {
+        "1": "1.2x point multiplier",
+        "2": "5% discount coupon",
+        "3": "All starter benefits"
+      },
+      "silver": {
+        "1": "1.5x point multiplier",
+        "2": "10% discount coupon",
+        "3": "3-day early access",
+        "4": "All bronze benefits"
+      },
+      "gold": {
+        "1": "2x point multiplier",
+        "2": "20% discount coupon",
+        "3": "7-day early access",
+        "4": "Exclusive products",
+        "5": "All silver benefits"
+      },
+      "platinum": {
+        "1": "3x point multiplier",
+        "2": "30% discount coupon",
+        "3": "14-day early access",
+        "4": "VIP support",
+        "5": "Exclusive content",
+        "6": "All gold benefits"
+      }
+    },
+    "rewardTypes": {
+      "coupon": "Coupon",
+      "earlyAccess": "Early Access",
+      "bonusPoints": "Bonus Points",
+      "exclusiveOffer": "Exclusive Offer"
+    },
+    "rewardDescriptions": {
+      "bonusPoints": "{{points}} points bonus",
+      "discountCoupon": "{{percent}}% discount coupon",
+      "earlyAccess": "{{days}}-day early access to new products",
+      "welcomeBonus": "Welcome bonus: {{points}} points"
+    },
+    "pointsBadgeTooltip": "{{points}} points · Level {{level}}",
+    "medal": "Medal"
+  }
 }
