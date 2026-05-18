@@ -14,7 +14,21 @@ interface ProductBonusesProps {
 }
 
 export function ProductBonuses({ productId }: ProductBonusesProps) {
-  const [bonuses, setBonuses] = useState<Bonus[]>([]);
+  const [bonuses, setBonuses] = useState<Bonus[]>([
+    // Inicializar com bônus padrão
+    {
+      id: 'default-1',
+      title: 'Comunidade Exclusiva',
+      description: 'Acesso ao grupo privado com outros membros para networking e troca de experiências.',
+      original_value: 97
+    },
+    {
+      id: 'default-2',
+      title: 'Atualizações Gratuitas',
+      description: 'Receba todas as atualizações e novos conteúdos sem custo adicional.',
+      original_value: 147
+    }
+  ]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,17 +44,20 @@ export function ProductBonuses({ productId }: ProductBonusesProps) {
         .eq('is_active', true)
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      setBonuses(data || []);
+      // Se houver dados do banco, usar eles
+      if (!error && data && data.length > 0) {
+        setBonuses(data);
+      }
+      // Caso contrário, manter os bônus padrão
     } catch (error) {
       console.error('Error loading bonuses:', error);
+      // Em caso de erro, manter os bônus padrão
     } finally {
       setLoading(false);
     }
   }
 
-  if (loading || bonuses.length === 0) return null;
-
+  // Sempre renderizar, nunca retornar null
   const icons = [Book, Users, Gift];
 
   return (

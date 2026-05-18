@@ -15,10 +15,40 @@ interface ProductFAQProps {
   productId: string;
 }
 
+const DEFAULT_FAQS: FAQ[] = [
+  {
+    id: 'default-1',
+    question: 'Como funciona o acesso ao conteúdo?',
+    answer: 'Após a confirmação do pagamento, você receberá acesso imediato ao conteúdo completo. Basta fazer login na sua conta para começar.',
+    is_highlighted: true,
+    is_expanded_by_default: true
+  },
+  {
+    id: 'default-2',
+    question: 'O acesso é vitalício?',
+    answer: 'Sim! Você paga uma única vez e tem acesso para sempre, incluindo todas as atualizações futuras do conteúdo.',
+    is_highlighted: false,
+    is_expanded_by_default: false
+  },
+  {
+    id: 'default-3',
+    question: 'Posso acessar de qualquer dispositivo?',
+    answer: 'Sim, você pode acessar o conteúdo de qualquer dispositivo (computador, tablet ou celular) através do seu navegador.',
+    is_highlighted: false,
+    is_expanded_by_default: false
+  },
+  {
+    id: 'default-4',
+    question: 'Há garantia de reembolso?',
+    answer: 'Sim, oferecemos garantia de 7 dias. Se você não ficar satisfeito, devolvemos 100% do seu investimento.',
+    is_highlighted: false,
+    is_expanded_by_default: false
+  }
+];
+
 export function ProductFAQ({ productId }: ProductFAQProps) {
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [faqs, setFaqs] = useState<FAQ[]>(DEFAULT_FAQS);
+  const [expandedId, setExpandedId] = useState<string | null>('default-1');
 
   useEffect(() => {
     loadFAQs();
@@ -32,22 +62,22 @@ export function ProductFAQ({ productId }: ProductFAQProps) {
         .eq('product_id', productId)
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      setFaqs(data || []);
-      
-      // Expandir o primeiro por padrão se configurado
-      const defaultExpanded = data?.find(f => f.is_expanded_by_default);
-      if (defaultExpanded) {
-        setExpandedId(defaultExpanded.id);
+      // Se houver dados do banco, usar eles
+      if (!error && data && data.length > 0) {
+        setFaqs(data);
+        const defaultExpanded = data.find(f => f.is_expanded_by_default);
+        if (defaultExpanded) {
+          setExpandedId(defaultExpanded.id);
+        } else {
+          setExpandedId(data[0]?.id || null);
+        }
       }
+      // Caso contrário, manter os FAQs padrão
     } catch (error) {
       console.error('Error loading FAQs:', error);
-    } finally {
-      setLoading(false);
+      // Em caso de erro, manter os FAQs padrão
     }
   }
-
-  if (loading || faqs.length === 0) return null;
 
   return (
     <section className="mt-24">
@@ -84,7 +114,7 @@ export function ProductFAQ({ productId }: ProductFAQProps) {
 
             <AnimatePresence>
               {expandedId === faq.id && (
-                <div
+                <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -94,7 +124,7 @@ export function ProductFAQ({ productId }: ProductFAQProps) {
                   <div className="px-8 pb-6 font-sans text-base text-on-surface-variant">
                     {faq.answer}
                   </div>
-                </div>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>

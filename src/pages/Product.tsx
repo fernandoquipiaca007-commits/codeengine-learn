@@ -32,15 +32,16 @@ export function Product({ setScreen, productId }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
   const [product, setProduct] = useState<ProductType | null>(null);
   const [customCopy, setCustomCopy] = useState<any>(null);
-  const [layoutConfig, setLayoutConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [discount, setDiscount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [campaignPrice, setCampaignPrice] = useState<number | null>(null);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [referralDiscount, setReferralDiscount] = useState(0);
+  const [showStickyButton, setShowStickyButton] = useState(false);
   const prevLocaleRef = useRef(locale);
   const { referralCode } = useReferral();
+  const mainCtaRef = useRef<HTMLDivElement>(null);
 
   const loadProduct = useCallback(
     async (silent = false) => {
@@ -107,7 +108,6 @@ export function Product({ setScreen, productId }: ProductProps) {
           const row = localized as unknown as Record<string, unknown>;
           setProduct(localized);
           setCustomCopy(parseJsonField(t?.custom_copy || row.custom_copy, {}));
-          setLayoutConfig(parseJsonField(row.page_layout_config, {}));
         } else if (!silent) {
           setProduct(null);
         }
@@ -155,18 +155,33 @@ export function Product({ setScreen, productId }: ProductProps) {
     };
   }, [product?.id, loadProduct]);
 
-  const sectionsEnabled =
-    layoutConfig && typeof layoutConfig === 'object' && layoutConfig.sections_enabled
-      ? layoutConfig.sections_enabled
-      : {};
-  const isSectionOn = (key: string, defaultOn = true) => {
-    if (!sectionsEnabled || typeof sectionsEnabled !== 'object') return defaultOn;
-    const val = (sectionsEnabled as Record<string, unknown>)[key];
-    return val !== undefined ? Boolean(val) : defaultOn;
-  };
+  // Intersection Observer para controlar visibilidade do sticky button
+  useEffect(() => {
+    const mainCta = mainCtaRef.current;
+    if (!mainCta) return;
 
-  const isAnySectionOn = (keys: string[], defaultOn = true) =>
-    keys.some((key) => isSectionOn(key, defaultOn));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Se o botão principal está visível, esconde o sticky
+          // Se o botão principal não está visível, mostra o sticky
+          setShowStickyButton(!entry.isIntersecting);
+        });
+      },
+      {
+        // Threshold 0 significa que detecta assim que qualquer parte entra/sai
+        threshold: 0,
+        // rootMargin negativo cria uma margem de segurança
+        rootMargin: '-50px 0px -50px 0px'
+      }
+    );
+
+    observer.observe(mainCta);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   function handleCouponApplied(discountAmount: number, couponCode: string) {
     setDiscount(discountAmount);
@@ -180,11 +195,12 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   const description = safeText(product?.description);
   const listPrice = safePrice(product?.price);
-  const showVideos = isAnySectionOn(['video', 'features'], true);
-  const showBenefits = isSectionOn('benefits', true);
-  const showBonuses = isSectionOn('bonuses', true);
-  const showCustomSections = isAnySectionOn(['custom_sections', 'testimonials', 'comparison'], true);
-  const showFaq = isSectionOn('faq', true);
+  // Todas as seções sempre ativadas por padrão
+  const showVideos = true;
+  const showBenefits = true;
+  const showBonuses = true;
+  const showCustomSections = true;
+  const showFaq = true;
 
   if (loading) {
     return (
@@ -216,16 +232,9 @@ export function Product({ setScreen, productId }: ProductProps) {
     );
   }
 
-  const showCta = isSectionOn('cta', true);
-  const ctaText = safeText(layoutConfig?.cta_text || product.cta_text, 'Comprar Agora');
-  const ctaSecondary = safeText(
-    layoutConfig?.cta_secondary_text,
-    'Pagamento 100% seguro via Stripe'
-  );
-
   return (
     <ProductPurchaseProvider productId={product.id}>
-    <div className="pt-28 pb-32 md:pb-24 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+    <div className="pt-28 pb-40 md:pb-24 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
       {/* Campaign Banner */}
       <CampaignBanner productId={product.id} onSpecialPrice={setCampaignPrice} />
       
@@ -332,15 +341,17 @@ export function Product({ setScreen, productId }: ProductProps) {
             />
             
             {/* Checkout Button */}
-            <ProductActionButton
-              productId={product.id}
-              price={getFinalPrice()}
-              isFree={product.is_free || false}
-              productType={product.product_type || 'file'}
-              couponCode={appliedCoupon}
-              onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
-              onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
-            />
+            <div ref={mainCtaRef}>
+              <ProductActionButton
+                productId={product.id}
+                price={getFinalPrice()}
+                isFree={product.is_free || false}
+                productType={product.product_type || 'file'}
+                couponCode={appliedCoupon}
+                onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
+                onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
+              />
+            </div>
 
             {/* Referral Progressive Discount */}
             <ReferralProgress
@@ -371,7 +382,11 @@ export function Product({ setScreen, productId }: ProductProps) {
       </section>
 
       {/* Mobile sticky CTA */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 bg-surface/95 backdrop-blur-xl border-t border-white/10">
+      <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-surface/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out ${
+        showStickyButton 
+          ? 'translate-y-0 opacity-100' 
+          : 'translate-y-full opacity-0 pointer-events-none'
+      }`}>
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
             <p className="font-sans text-xs text-on-surface-variant">Final price</p>
@@ -468,31 +483,6 @@ export function Product({ setScreen, productId }: ProductProps) {
       {showCustomSections && <ProductCustomSections productId={product.id} />}
 
       {showFaq && <ProductFAQ productId={product.id} />}
-
-      {showCta && (
-        <section className="mt-24 mb-8">
-          <div className="glass-panel rounded-2xl p-8 sm:p-12 text-center border border-primary/20">
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-on-surface mb-4">
-              Pronto para começar?
-            </h2>
-            <p className="font-sans text-sm sm:text-base text-on-surface-variant mb-8 max-w-xl mx-auto">
-              {ctaSecondary}
-            </p>
-            <ProductActionButton
-              productId={product.id}
-              price={getFinalPrice()}
-              isFree={product.is_free || false}
-              productType={product.product_type || 'file'}
-              couponCode={appliedCoupon}
-              onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
-              onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
-            />
-            <p className="mt-4 font-display text-xs tracking-widest uppercase text-on-surface-variant">
-              {ctaText}
-            </p>
-          </div>
-        </section>
-      )}
     </div>
     </ProductPurchaseProvider>
   );

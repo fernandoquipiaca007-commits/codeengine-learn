@@ -27,7 +27,27 @@ interface ProductBenefitsProps {
 }
 
 export function ProductBenefits({ productId, title, subtitle }: ProductBenefitsProps) {
-  const [benefits, setBenefits] = useState<Benefit[]>([]);
+  const [benefits, setBenefits] = useState<Benefit[]>([
+    // Inicializar com benefícios padrão
+    {
+      id: 'default-1',
+      icon: 'Zap',
+      title: 'Acesso Imediato',
+      description: 'Comece a aprender assim que finalizar sua compra. Sem espera, sem complicação.'
+    },
+    {
+      id: 'default-2',
+      icon: 'Shield',
+      title: 'Garantia de Qualidade',
+      description: 'Conteúdo premium desenvolvido por especialistas da área.'
+    },
+    {
+      id: 'default-3',
+      icon: 'Infinity',
+      title: 'Acesso Vitalício',
+      description: 'Pague uma vez e tenha acesso para sempre, incluindo atualizações futuras.'
+    }
+  ]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,18 +62,20 @@ export function ProductBenefits({ productId, title, subtitle }: ProductBenefitsP
         .eq('product_id', productId)
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      setBenefits(data ?? []);
+      // Se houver dados do banco, usar eles
+      if (!error && data && data.length > 0) {
+        setBenefits(data);
+      }
+      // Caso contrário, manter os benefícios padrão que já estão no state
     } catch (err) {
       console.error('Error loading benefits:', err);
-      setBenefits([]);
+      // Em caso de erro, manter os benefícios padrão
     } finally {
       setLoading(false);
     }
   }
 
-  if (loading || benefits.length === 0) return null;
-
+  // Sempre renderizar, nunca retornar null
   return (
     <section className="mt-24">
       <div className="text-center mb-16">
