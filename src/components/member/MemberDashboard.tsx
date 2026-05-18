@@ -2,9 +2,6 @@ import { motion } from 'motion/react';
 import { User, ShoppingBag, Bell, BookOpen, Play } from 'lucide-react';
 import { LearningHub } from './LearningHub';
 import { useTranslation } from 'react-i18next';
-import { LevelCard } from '../referral/LevelCard';
-import { RewardsList } from '../referral/RewardsList';
-import { ReferralShareCard } from '../referral/ReferralShareCard';
 
 interface MemberDashboardProps {
   memberName: string;
@@ -96,13 +93,6 @@ export function MemberDashboard({
           <Play className="w-5 h-5" />
           {t('memberDashboard.myCourses')}
         </button>
-      </div>
-
-      {/* Gamification Panel */}
-      <div className="space-y-6">
-        <LevelCard />
-        <ReferralShareCard />
-        <RewardsList />
       </div>
     </div>
   );

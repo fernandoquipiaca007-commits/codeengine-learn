@@ -7,6 +7,7 @@ import { PurchaseHistory } from '../components/member/PurchaseHistory';
 import { NotificationPanel } from '../components/member/NotificationPanel';
 import { LearningHub } from '../components/member/LearningHub';
 import { MyLibrary } from '../components/member/MyLibrary';
+import { RewardsPanel } from '../components/member/RewardsPanel';
 import { downloadProduct } from '../lib/download-file';
 import { useLocale } from '../contexts/LocaleContext';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +25,7 @@ interface MemberProps {
   initialSection?: string;
 }
 
-type Section = 'inicio' | 'biblioteca' | 'compras' | 'notificacoes';
+type Section = 'inicio' | 'biblioteca' | 'compras' | 'notificacoes' | 'recompensas';
 
 type LearnView = {
   type: 'course' | 'ebook';
@@ -38,10 +39,12 @@ const LEGACY_SECTION: Record<string, Section> = {
   downloads: 'biblioteca',
   favorites: 'biblioteca',
   notifications: 'notificacoes',
+  rewards: 'recompensas',
   inicio: 'inicio',
   biblioteca: 'biblioteca',
   compras: 'compras',
   notificacoes: 'notificacoes',
+  recompensas: 'recompensas',
 };
 
 function parseInitial(section: string): { tab: Section; learn: LearnView | null } {
@@ -255,6 +258,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
     { id: 'biblioteca', label: t('member.tabs.library') },
     { id: 'compras', label: t('member.tabs.purchases') },
     { id: 'notificacoes', label: t('member.tabs.notifications') },
+    { id: 'recompensas', label: t('member:rewards').toUpperCase() },
   ];
 
   return (
@@ -348,6 +352,10 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
               }
             }}
           />
+        )}
+
+        {currentSection === 'recompensas' && (
+          <RewardsPanel memberId={memberData.id} />
         )}
       </motion.div>
     </div>
