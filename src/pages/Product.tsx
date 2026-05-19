@@ -347,6 +347,8 @@ export function Product({ setScreen, productId }: ProductProps) {
                 price={getFinalPrice()}
                 isFree={product.is_free || false}
                 productType={product.product_type || 'file'}
+                productTitle={product.title}
+                fastpayLink={(product as any).fastpay_link}
                 couponCode={appliedCoupon}
                 onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
                 onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
@@ -397,6 +399,8 @@ export function Product({ setScreen, productId }: ProductProps) {
             price={getFinalPrice()}
             isFree={product.is_free || false}
             productType={product.product_type || 'file'}
+            productTitle={product.title}
+            fastpayLink={(product as any).fastpay_link}
             couponCode={appliedCoupon}
             variant="mobile"
             onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}

@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight, Lock, Loader2, CheckCircle, Download, Library } from 'lucide-react';
+import { ArrowRight, Lock, Loader2, CheckCircle, Download, Library, Smartphone } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useProductPurchaseOptional } from '../contexts/ProductPurchaseContext';
 import { mapStoreError } from '../lib/error-messages';
 import { useTranslation } from 'react-i18next';
 import { downloadProduct } from '../lib/download-file';
 import { useLocale } from '../contexts/LocaleContext';
+import { PaymentMethodSelector } from './payment/PaymentMethodSelector';
+import { FastPayFlow } from './payment/FastPayFlow';
 
 interface ProductActionButtonProps {
   productId: string;
   price: number;
   isFree: boolean;
   productType?: 'file' | 'course' | 'ebook';
+  productTitle?: string;
+  fastpayLink?: string | null;
   couponCode?: string;
   className?: string;
   variant?: 'primary' | 'mobile';
@@ -29,11 +33,15 @@ export function ProductActionButton({
   className,
   variant = 'primary',
   productType = 'file',
+  productTitle = '',
+  fastpayLink,
   onNavigateToLibrary,
   onStartLearning,
 }: ProductActionButtonProps) {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
+  const [showFastPayFlow, setShowFastPayFlow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,9 +78,20 @@ export function ProductActionButton({
     }
   }
 
+  const handleBuyClick = () => {
+    if (loading || ownsProduct) return;
+    // If product has FastPay link, show payment method selector
+    if (fastpayLink) {
+      setShowPaymentSelector(true);
+    } else {
+      handlePaidCheckout();
+    }
+  };
+
   const handlePaidCheckout = async () => {
     if (loading) return; // Prevent double-click
     if (ownsProduct) return; // Already owns
+    setShowPaymentSelector(false);
     setLoading(true);
     setError(null);
 
@@ -347,47 +366,92 @@ export function ProductActionButton({
 
   // Paid product - not owned
   return (
-    <div className="flex flex-col gap-4">
-      <button
-        onClick={handlePaidCheckout}
-        disabled={loading}
-        className={`
-          bg-on-surface text-background font-display text-lg sm:text-xl md:text-2xl 
-          font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-xl 
-          hover:bg-primary hover:text-on-primary transition-all duration-300 
-          w-full md:w-auto text-center flex justify-center items-center gap-3 
-          shadow-[0_0_20px_rgba(255,255,255,0.1)] 
-          hover:shadow-[0_0_30px_rgba(192,193,255,0.3)] 
-          group disabled:opacity-50 disabled:cursor-not-allowed
-          ${className || ''}
-        `}
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-6 h-6 animate-spin" />
-            <span>Processando...</span>
-          </>
-        ) : (
-          <>
-            <span>Comprar Agora</span>
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </>
+    <>
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={handleBuyClick}
+          disabled={loading}
+          className={`
+            bg-on-surface text-background font-display text-lg sm:text-xl md:text-2xl 
+            font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-xl 
+            hover:bg-primary hover:text-on-primary transition-all duration-300 
+            w-full md:w-auto text-center flex justify-center items-center gap-3 
+            shadow-[0_0_20px_rgba(255,255,255,0.1)] 
+            hover:shadow-[0_0_30px_rgba(192,193,255,0.3)] 
+            group disabled:opacity-50 disabled:cursor-not-allowed
+            ${className || ''}
+          `}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span>Processando...</span>
+            </>
+          ) : (
+            <>
+              <span>Comprar Agora</span>
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
+        </button>
+        
+        <div className="flex items-center justify-center md:justify-start gap-2 font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/60">
+          <Lock className="w-4 h-4" />
+          Pagamento 100% seguro via{' '}
+          <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#635bff] to-[#00d4ff]">
+            Stripe
+          </span>
+          {fastpayLink && (
+            <>
+              {' '}ou{' '}
+              <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
+                FastPay
+              </span>
+            </>
+          )}
+        </div>
+
+        {error && (
+          <div className="text-red-500 text-sm text-center md:text-left">
+            {error}
+          </div>
         )}
-      </button>
-      
-      <div className="flex items-center justify-center md:justify-start gap-2 font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/60">
-        <Lock className="w-4 h-4" />
-        Pagamento 100% seguro via{' '}
-        <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#635bff] to-[#00d4ff]">
-          Stripe
-        </span>
       </div>
 
-      {error && (
-        <div className="text-red-500 text-sm text-center md:text-left">
-          {error}
-        </div>
+      {/* Payment Method Selector Modal */}
+      {showPaymentSelector && (
+        <PaymentMethodSelector
+          product={{
+            id: productId,
+            title: productTitle,
+            price,
+            fastpay_link: fastpayLink,
+          }}
+          onSelectStripe={() => {
+            setShowPaymentSelector(false);
+            handlePaidCheckout();
+          }}
+          onSelectFastPay={() => {
+            setShowPaymentSelector(false);
+            setShowFastPayFlow(true);
+          }}
+          onClose={() => setShowPaymentSelector(false)}
+        />
       )}
-    </div>
+
+      {/* FastPay Flow Modal */}
+      {showFastPayFlow && (
+        <FastPayFlow
+          product={{
+            id: productId,
+            title: productTitle,
+            price,
+            fastpay_link: fastpayLink,
+          }}
+          onClose={() => setShowFastPayFlow(false)}
+          onComplete={() => refetch()}
+        />
+      )}
+    </>
   );
 }

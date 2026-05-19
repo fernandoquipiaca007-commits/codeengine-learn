@@ -8,6 +8,7 @@ import { NotificationPanel } from '../components/member/NotificationPanel';
 import { LearningHub } from '../components/member/LearningHub';
 import { MyLibrary } from '../components/member/MyLibrary';
 import { RewardsPanel } from '../components/member/RewardsPanel';
+import { OrderStatusTracker } from '../components/member/OrderStatusTracker';
 import { downloadProduct } from '../lib/download-file';
 import { useLocale } from '../contexts/LocaleContext';
 import { useTranslation } from 'react-i18next';
@@ -335,7 +336,10 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
         )}
 
         {currentSection === 'compras' && (
-          <PurchaseHistory memberId={memberData.id} onDownload={handleDownload} />
+          <div className="space-y-8">
+            <OrderStatusTracker />
+            <PurchaseHistory memberId={memberData.id} onDownload={handleDownload} />
+          </div>
         )}
 
         {currentSection === 'notificacoes' && (
