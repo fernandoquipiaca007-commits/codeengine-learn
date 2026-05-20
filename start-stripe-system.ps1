@@ -47,9 +47,9 @@ Write-Host ""
 Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
 Write-Host "║   ALL SERVICES STARTED!                ║" -ForegroundColor Green
 Write-Host "╠════════════════════════════════════════╣" -ForegroundColor Green
-Write-Host "║   Backend API:  http://localhost:3001  ║" -ForegroundColor White
-Write-Host "║   Admin Panel:  http://localhost:5174  ║" -ForegroundColor White
-Write-Host "║   Store:        http://localhost:3000  ║" -ForegroundColor White
+Write-Host "║   Backend API:  http://localhost:3041  ║" -ForegroundColor White
+Write-Host "║   Admin Panel:  http://localhost:5180  ║" -ForegroundColor White
+Write-Host "║   Store:        http://localhost:3040  ║" -ForegroundColor White
 Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
 Write-Host "📝 Next Steps:" -ForegroundColor Cyan
