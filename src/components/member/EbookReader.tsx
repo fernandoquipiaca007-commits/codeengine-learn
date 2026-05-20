@@ -1,6 +1,6 @@
-// Este componente foi substituído pela versão Pro
-// Importando a versão melhorada
-export { EbookReaderPro as EbookReader } from './EbookReaderPro';
+// Este componente foi substituído pela versão Edge
+// Importando a versão melhorada com estilo Microsoft Edge
+export { EbookReaderEdge as EbookReader } from './EbookReaderEdge';
 
 // Versão legada mantida para compatibilidade
 import { useState, useEffect, useCallback } from 'react';

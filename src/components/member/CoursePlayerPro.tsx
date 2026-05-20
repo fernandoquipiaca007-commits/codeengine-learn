@@ -379,154 +379,134 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="bg-surface border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0 flex-1">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="hidden sm:inline">Voltar</span>
-              </button>
-              <div className="min-w-0">
-                <h1 className="font-display text-xl font-bold text-white truncate">{product?.title}</h1>
-                <p className="text-sm text-on-surface-variant">
-                  {Math.round(courseProgress)}% concluído • {lessons.length} aulas
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowPlaylist(!showPlaylist)}
-              className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Barra de progresso do curso */}
-          <div className="mt-3 h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${courseProgress}%` }}
-            />
-          </div>
-        </div>
+    <div ref={containerRef} className="min-h-screen pb-20">
+      {/* Header simples */}
+      <div className="px-4 sm:px-6 py-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-display font-semibold text-lg">CodeEngine <span className="text-gray-500">Learn</span></span>
+        </button>
       </div>
 
-      {/* Conteúdo principal */}
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-          {/* Player de vídeo */}
-          <div className={`${showPlaylist ? 'lg:col-span-2' : 'lg:col-span-3'} relative bg-black`}>
-            <div className="relative aspect-video bg-black group">
-              {videoLoading && (
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary" />
-                </div>
-              )}
-
-              {videoUrl && (
-                <>
-                  <video
-                    ref={videoRef}
-                    src={videoUrl}
-                    className="w-full h-full"
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={goToNextLesson}
-                  />
-
-                  {/* Overlay de controles */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 transition-opacity duration-300 ${
-                      showControls || !isPlaying ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  >
-                    {/* Play/Pause central */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <button
-                        onClick={togglePlay}
-                        className="w-20 h-20 rounded-full bg-primary/90 hover:bg-primary flex items-center justify-center transition-all transform hover:scale-110"
-                      >
-                        {isPlaying ? <Pause className="w-10 h-10" /> : <Play className="w-10 h-10 ml-1" />}
-                      </button>
+      {/* Container principal */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Coluna do Player - 2/3 */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Player Premium */}
+            <div className="relative rounded-3xl overflow-hidden bg-black border-2 border-white/10 shadow-2xl">
+              <div className="relative aspect-video bg-gradient-to-br from-black via-gray-900 to-black">
+                {videoLoading && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/80">
+                    <div className="relative">
+                      <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-primary" />
+                      <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
                     </div>
+                    <p className="mt-4 text-gray-400 font-medium">Carregando vídeo...</p>
+                  </div>
+                )}
 
-                    {/* Controles inferiores */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
-                      {/* Barra de progresso */}
-                      <div className="group/progress">
-                        <input
-                          type="range"
-                          min={0}
-                          max={duration || 0}
-                          value={currentTime}
-                          onChange={(e) => handleSeek(parseFloat(e.target.value))}
-                          className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer group-hover/progress:h-2 transition-all"
-                          style={{
-                            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                              (currentTime / duration) * 100
-                            }%, rgba(255,255,255,0.3) ${(currentTime / duration) * 100}%, rgba(255,255,255,0.3) 100%)`,
-                          }}
-                        />
+                {videoUrl && (
+                  <>
+                    <video
+                      ref={videoRef}
+                      src={videoUrl}
+                      className="w-full h-full object-cover"
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={handleLoadedMetadata}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                      onEnded={goToNextLesson}
+                    />
+
+                    {/* Controles do player */}
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent transition-opacity duration-300 ${
+                        showControls || !isPlaying ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      {/* Play/Pause central */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <button
+                          onClick={togglePlay}
+                          className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-10 h-10 text-white" />
+                          ) : (
+                            <Play className="w-10 h-10 ml-1 text-white" />
+                          )}
+                        </button>
                       </div>
 
-                      {/* Controles */}
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <button onClick={togglePlay} className="hover:text-primary transition-colors">
-                            {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-                          </button>
-
-                          <button onClick={goToPreviousLesson} className="hover:text-primary transition-colors">
-                            <SkipBack className="w-5 h-5" />
-                          </button>
-
-                          <button onClick={goToNextLesson} className="hover:text-primary transition-colors">
-                            <SkipForward className="w-5 h-5" />
-                          </button>
-
-                          <div className="flex items-center gap-2 group/volume">
-                            <button onClick={toggleMute} className="hover:text-primary transition-colors">
-                              {isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                            </button>
-                            <input
-                              type="range"
-                              min={0}
-                              max={1}
-                              step={0.1}
-                              value={volume}
-                              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                              className="w-0 group-hover/volume:w-20 transition-all"
-                            />
-                          </div>
-
-                          <span className="text-sm font-mono">
-                            {formatTime(currentTime)} / {formatTime(duration)}
-                          </span>
+                      {/* Controles inferiores */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4 space-y-3">
+                        {/* Barra de progresso */}
+                        <div className="relative">
+                          <input
+                            type="range"
+                            min={0}
+                            max={duration || 0}
+                            value={currentTime}
+                            onChange={(e) => handleSeek(parseFloat(e.target.value))}
+                            className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer hover:h-1.5 transition-all"
+                            style={{
+                              background: `linear-gradient(to right, #fff 0%, #fff ${
+                                (currentTime / duration) * 100
+                              }%, rgba(255,255,255,0.2) ${(currentTime / duration) * 100}%, rgba(255,255,255,0.2) 100%)`,
+                            }}
+                          />
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
+                        {/* Controles */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
                             <button
-                              onClick={() => setShowSettings(!showSettings)}
-                              className="hover:text-primary transition-colors"
+                              onClick={togglePlay}
+                              className="p-2 hover:bg-white/10 rounded-lg transition-all"
                             >
-                              <Settings className="w-5 h-5" />
+                              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
                             </button>
 
-                            {showSettings && (
-                              <div className="absolute bottom-full right-0 mb-2 bg-surface rounded-lg p-3 min-w-[200px] space-y-2">
-                                <div>
-                                  <p className="text-xs text-on-surface-variant mb-2">Velocidade</p>
-                                  <div className="grid grid-cols-4 gap-1">
+                            <button
+                              onClick={goToPreviousLesson}
+                              className="p-2 hover:bg-white/10 rounded-lg transition-all"
+                            >
+                              <SkipBack className="w-5 h-5" />
+                            </button>
+
+                            <button
+                              onClick={goToNextLesson}
+                              className="p-2 hover:bg-white/10 rounded-lg transition-all"
+                            >
+                              <SkipForward className="w-5 h-5" />
+                            </button>
+
+                            <button onClick={toggleMute} className="p-2 hover:bg-white/10 rounded-lg transition-all">
+                              {isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                            </button>
+
+                            <span className="text-sm font-mono text-white">
+                              {formatTime(currentTime)} / {formatTime(duration)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className="relative">
+                              <button
+                                onClick={() => setShowSettings(!showSettings)}
+                                className="p-2 hover:bg-white/10 rounded-lg transition-all"
+                              >
+                                <Settings className="w-5 h-5" />
+                              </button>
+
+                              {showSettings && (
+                                <div className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur-xl rounded-2xl p-4 min-w-[200px] border border-white/10">
+                                  <p className="text-xs text-gray-400 mb-2 font-semibold">Velocidade</p>
+                                  <div className="grid grid-cols-4 gap-2">
                                     {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
                                       <button
                                         key={rate}
@@ -534,8 +514,10 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                                           changePlaybackRate(rate);
                                           setShowSettings(false);
                                         }}
-                                        className={`px-2 py-1 text-xs rounded ${
-                                          playbackRate === rate ? 'bg-primary text-white' : 'bg-white/10'
+                                        className={`px-2 py-1 text-sm rounded-lg transition-all ${
+                                          playbackRate === rate
+                                            ? 'bg-primary text-white'
+                                            : 'bg-white/10 hover:bg-white/20'
                                         }`}
                                       >
                                         {rate}x
@@ -543,112 +525,219 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                                     ))}
                                   </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
+                              )}
+                            </div>
 
-                          <button onClick={toggleFullscreen} className="hover:text-primary transition-colors">
-                            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-                          </button>
+                            <button onClick={toggleFullscreen} className="p-2 hover:bg-white/10 rounded-lg transition-all">
+                              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Informações da aula */}
             {currentLesson && (
-              <div className="p-6 bg-surface">
-                <h2 className="font-display text-2xl font-bold text-white mb-2">{currentLesson.title}</h2>
-                {currentLesson.description && (
-                  <p className="text-on-surface-variant leading-relaxed">{currentLesson.description}</p>
-                )}
+              <div className="space-y-3">
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-white leading-tight">
+                  {currentLesson.title}
+                </h2>
+                <div className="flex items-center gap-4 text-sm text-gray-400">
+                  <span className="font-semibold">Progresso Total: {Math.round(courseProgress)}%</span>
+                  <span>•</span>
+                  <span>
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </span>
+                </div>
               </div>
             )}
-          </div>
 
-          {/* Playlist */}
-          {showPlaylist && (
-            <div className="bg-surface border-l border-white/10 max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div className="sticky top-0 bg-surface border-b border-white/10 p-4 flex items-center justify-between">
-                <h3 className="font-display text-lg font-semibold">Conteúdo do Curso</h3>
-                <button onClick={() => setShowPlaylist(false)} className="lg:hidden">
-                  <X className="w-5 h-5" />
-                </button>
+            {/* Playlist Mobile */}
+            <div className="lg:hidden space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-xl font-bold text-white">Playlist</h3>
+                <span className="text-sm text-gray-400">
+                  {progress.filter((p) => p.status === 'completed').length} / {lessons.length} aulas
+                </span>
               </div>
 
-              <div className="p-2">
-                {modules.map((module) => (
-                  <div key={module.id} className="mb-2">
+              <div className="space-y-3">
+                {lessons.map((lesson) => {
+                  const status = lessonStatus(lesson.id);
+                  const isActive = lesson.id === currentLessonId;
+                  const progressPercent = progress.find((p) => p.lesson_id === lesson.id)?.position_seconds
+                    ? ((progress.find((p) => p.lesson_id === lesson.id)?.position_seconds || 0) /
+                        (lesson.video_duration_seconds || 1)) *
+                      100
+                    : 0;
+
+                  return (
                     <button
-                      onClick={() => {
-                        const newExpanded = new Set(expandedModules);
-                        if (newExpanded.has(module.id)) {
-                          newExpanded.delete(module.id);
-                        } else {
-                          newExpanded.add(module.id);
-                        }
-                        setExpandedModules(newExpanded);
-                      }}
-                      className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors"
+                      key={lesson.id}
+                      onClick={() => setCurrentLessonId(lesson.id)}
+                      className={`w-full rounded-2xl p-4 transition-all ${
+                        isActive
+                          ? 'bg-primary/10 border-2 border-primary'
+                          : 'bg-surface/50 border-2 border-white/5 hover:border-white/10'
+                      }`}
                     >
-                      <span className="font-semibold text-sm">{module.title}</span>
-                      {expandedModules.has(module.id) ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
+                      <div className="flex items-center gap-4">
+                        {/* Thumbnail */}
+                        <div className="flex-shrink-0 w-24 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                          {status === 'completed' ? (
+                            <CheckCircle className="w-8 h-8 text-green-400" />
+                          ) : (
+                            <Play className="w-6 h-6 text-gray-500" />
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 text-left">
+                          <p className={`font-medium text-sm mb-1 ${isActive ? 'text-primary' : 'text-white'}`}>
+                            {lesson.title}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            {lesson.video_duration_seconds && (
+                              <span>{formatTime(lesson.video_duration_seconds)}</span>
+                            )}
+                            {status === 'in_progress' && progressPercent > 0 && (
+                              <>
+                                <span>•</span>
+                                <span className="text-primary">Em progresso</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        {status === 'completed' && (
+                          <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0" />
+                        )}
+                      </div>
+
+                      {/* Barra de progresso */}
+                      {progressPercent > 0 && (
+                        <div className="mt-3 h-1 bg-white/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
                       )}
                     </button>
-
-                    {expandedModules.has(module.id) && (
-                      <div className="space-y-1 mt-1">
-                        {module.lessons.map((lesson) => {
-                          const status = lessonStatus(lesson.id);
-                          const isActive = lesson.id === currentLessonId;
-
-                          return (
-                            <button
-                              key={lesson.id}
-                              onClick={() => setCurrentLessonId(lesson.id)}
-                              className={`w-full text-left p-3 rounded-lg transition-all ${
-                                isActive
-                                  ? 'bg-primary/20 border-l-4 border-primary'
-                                  : 'hover:bg-white/5 border-l-4 border-transparent'
-                              }`}
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 mt-0.5">
-                                  {status === 'completed' ? (
-                                    <CheckCircle className="w-5 h-5 text-green-400" />
-                                  ) : status === 'in_progress' ? (
-                                    <PlayCircle className="w-5 h-5 text-primary" />
-                                  ) : (
-                                    <Clock className="w-5 h-5 text-on-surface-variant" />
-                                  )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className={`text-sm font-medium truncate ${isActive ? 'text-primary' : 'text-white'}`}>
-                                    {lesson.title}
-                                  </p>
-                                  {lesson.video_duration_seconds && (
-                                    <p className="text-xs text-on-surface-variant mt-1">
-                                      {formatTime(lesson.video_duration_seconds)}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Playlist Desktop - Sidebar */}
+          <div className="hidden lg:block space-y-4">
+            <div className="sticky top-6">
+              <div className="bg-surface/50 backdrop-blur-xl rounded-3xl border border-white/10 p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-lg font-bold text-white">Playlist</h3>
+                  <span className="text-xs text-gray-400 bg-white/5 px-3 py-1 rounded-full">
+                    {lessons.length} aulas
+                  </span>
+                </div>
+
+                {/* Progresso total */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-300">Progresso Total</span>
+                    <span className="text-lg font-bold text-primary">{Math.round(courseProgress)}%</span>
+                  </div>
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500"
+                      style={{ width: `${courseProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    {progress.filter((p) => p.status === 'completed').length} de {lessons.length} concluídas
+                  </p>
+                </div>
+
+                {/* Lista de aulas */}
+                <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2">
+                  {lessons.map((lesson) => {
+                    const status = lessonStatus(lesson.id);
+                    const isActive = lesson.id === currentLessonId;
+                    const progressPercent = progress.find((p) => p.lesson_id === lesson.id)?.position_seconds
+                      ? ((progress.find((p) => p.lesson_id === lesson.id)?.position_seconds || 0) /
+                          (lesson.video_duration_seconds || 1)) *
+                        100
+                      : 0;
+
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => setCurrentLessonId(lesson.id)}
+                        className={`w-full text-left rounded-2xl p-3 transition-all relative overflow-hidden ${
+                          isActive
+                            ? 'bg-primary/10 border-2 border-primary'
+                            : 'bg-white/5 hover:bg-white/10 border-2 border-transparent'
+                        }`}
+                      >
+                        {/* Barra de progresso */}
+                        {progressPercent > 0 && (
+                          <div
+                            className="absolute bottom-0 left-0 h-1 bg-primary/50 transition-all"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        )}
+
+                        <div className="flex items-center gap-3">
+                          {/* Thumbnail */}
+                          <div className="flex-shrink-0 w-16 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                            {status === 'completed' ? (
+                              <CheckCircle className="w-5 h-5 text-green-400" />
+                            ) : status === 'in_progress' ? (
+                              <PlayCircle className="w-5 h-5 text-primary" />
+                            ) : (
+                              <Play className="w-4 h-4 text-gray-500" />
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm font-medium truncate ${
+                                isActive ? 'text-primary' : 'text-white'
+                              }`}
+                            >
+                              {lesson.title}
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                              {lesson.video_duration_seconds && (
+                                <span>{formatTime(lesson.video_duration_seconds)}</span>
+                              )}
+                              {status === 'in_progress' && progressPercent > 0 && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-primary">{Math.round(progressPercent)}%</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Status icon */}
+                          {status === 'completed' && (
+                            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
