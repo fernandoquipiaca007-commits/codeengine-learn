@@ -374,13 +374,8 @@ export function ProductActionButton({
           onClick={handleBuyClick}
           disabled={loading}
           className={`
-            bg-on-surface text-background font-display text-lg sm:text-xl md:text-2xl 
-            font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-xl 
-            hover:bg-primary hover:text-on-primary transition-all duration-300 
-            w-full md:w-auto text-center flex justify-center items-center gap-3 
-            shadow-[0_0_20px_rgba(255,255,255,0.1)] 
-            hover:shadow-[0_0_30px_rgba(192,193,255,0.3)] 
-            group disabled:opacity-50 disabled:cursor-not-allowed
+            buy-button 
+            text-center flex justify-center items-center gap-3 
             ${className || ''}
           `}
         >
