@@ -93,8 +93,19 @@ export function CoursePlayerLegacy({ productId, initialLessonId, onBack }: Cours
     setVideoLoading(true);
     setVideoUrl(null);
     try {
-      const url = await getLessonStreamUrl(lessonId);
-      setVideoUrl(url);
+      const media = await getLessonStreamUrl(lessonId);
+      if (media.type === 'link') {
+        window.open(media.url, '_blank');
+        // Auto-complete if it's a link
+        saveProgress({
+          product_id: productId,
+          lesson_id: lessonId,
+          progress_type: 'video',
+          status: 'completed',
+        });
+      } else {
+        setVideoUrl(media.url);
+      }
     } catch (e) {
       console.error(e);
     } finally {

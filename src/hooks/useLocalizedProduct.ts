@@ -23,9 +23,13 @@ export interface LocalizedProduct {
   is_free?: boolean;
   stripe_price_id: string;
   category_id: string;
+  subcategory_id?: string | null;
+  aoa_price?: number | null;
+  fastpay_link?: string | null;
   tags: string[];
   status: string;
   video_url?: string;
+  category_name?: string | null;
 }
 
 export function useLocalizedProduct(productId: string | null) {
@@ -96,9 +100,13 @@ export function useLocalizedProduct(productId: string | null) {
           is_free: base.is_free,
           stripe_price_id: base.stripe_price_id,
           category_id: base.category_id,
+          subcategory_id: base.subcategory_id,
+          aoa_price: base.aoa_price,
+          fastpay_link: base.fastpay_link,
           tags: base.tags,
           status: base.status,
           video_url: base.video_url,
+          category_name: t?.category_name || null,
         });
       } else {
         setProduct(data as LocalizedProduct);
@@ -116,7 +124,7 @@ export function useLocalizedProduct(productId: string | null) {
 export async function fetchLocalizedProducts(lang: AppLocale, status = 'active') {
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, price, is_free, category_id, tags, status, created_at, stripe_price_id, video_url, cover_url, cover_storage_path')
+    .select('id, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url')
     .eq('status', status)
     .order('created_at', { ascending: false });
 
@@ -132,15 +140,18 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
   return products.map((p) => {
     const t = translations?.find((tr) => tr.product_id === p.id && tr.language === lang);
     const fb = translations?.find((tr) => tr.product_id === p.id && tr.language === 'pt');
+    const shared = p.use_shared_content;
+
     return {
       ...p,
       title: t?.title || fb?.title || '',
       description: t?.description || fb?.description || '',
-      cover_url: t?.cover_url || fb?.cover_url || p.cover_url || '',
+      cover_url: shared ? p.cover_url : (t?.cover_url || fb?.cover_url || p.cover_url || ''),
       cover_storage_path: p.cover_storage_path,
       cta_text: t?.cta_text || fb?.cta_text || 'Comprar Agora',
-      storage_url: t?.storage_url || fb?.storage_url,
-      preview_url: t?.preview_url || fb?.preview_url,
+      storage_url: shared ? p.storage_url : (t?.storage_url || fb?.storage_url),
+      preview_url: shared ? p.preview_url : (t?.preview_url || fb?.preview_url),
+      category_name: t?.category_name || fb?.category_name || null,
     };
   });
 }

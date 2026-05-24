@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { motion } from 'motion/react';
 import { LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -12,6 +12,10 @@ import { OrderStatusTracker } from '../components/member/OrderStatusTracker';
 import { downloadProduct } from '../lib/download-file';
 import { useLocale } from '../contexts/LocaleContext';
 import { useTranslation } from 'react-i18next';
+import { useAuthSession } from '../hooks/useAuthSession';
+import { LanguageSelectorModal } from '../components/LanguageSelectorModal';
+import { CourseDownloadModal } from '../components/CourseDownloadModal';
+import { AppLocale } from '../lib/locale';
 
 const CoursePlayer = lazy(() =>
   import('../components/member/CoursePlayer').then((m) => ({ default: m.CoursePlayer }))
@@ -24,6 +28,7 @@ interface MemberProps {
   setScreen: (screen: string, section?: string) => void;
   onProductClick?: (productId: string) => void;
   initialSection?: string;
+  onLearnViewChange?: (isImmersive: boolean) => void;
 }
 
 type Section = 'inicio' | 'biblioteca' | 'compras' | 'notificacoes' | 'recompensas';
@@ -32,6 +37,7 @@ type LearnView = {
   type: 'course' | 'ebook';
   productId: string;
   lessonId?: string;
+  lang?: any;
 };
 
 const LEGACY_SECTION: Record<string, Section> = {
@@ -60,22 +66,36 @@ function parseInitial(section: string): { tab: Section; learn: LearnView | null 
   return { tab: LEGACY_SECTION[section] || 'inicio', learn: null };
 }
 
-export function Member({ setScreen, onProductClick, initialSection = 'inicio' }: MemberProps) {
+export function Member({ setScreen, onProductClick, initialSection = 'inicio', onLearnViewChange }: MemberProps) {
   const { t } = useTranslation();
   const { locale } = useLocale();
+  const { user, session, loading: authLoading } = useAuthSession();
   const parsed = parseInitial(initialSection);
   const [currentSection, setCurrentSection] = useState<Section>(parsed.tab);
   const [learnView, setLearnView] = useState<LearnView | null>(parsed.learn);
+  const [ebookLangOpen, setEbookLangOpen] = useState(false);
+  const [ebookLangAction, setEbookLangAction] = useState<{ type: 'read' | 'download'; productId: string } | null>(null);
+  const [courseModalOpen, setCourseModalOpen] = useState(false);
+  const [courseModalProduct, setCourseModalProduct] = useState<{ id: string; title: string } | null>(null);
   const [memberData, setMemberData] = useState<{ id: string; name: string; email: string } | null>(null);
   const [stats, setStats] = useState({
     purchaseCount: 0,
     unreadNotifications: 0,
   });
   const [loading, setLoading] = useState(true);
+  const loadSeqRef = useRef(0);
 
   useEffect(() => {
-    loadMemberData();
-  }, []);
+    onLearnViewChange?.(learnView !== null);
+    return () => {
+      onLearnViewChange?.(false);
+    };
+  }, [learnView, onLearnViewChange]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    void loadMemberData();
+  }, [authLoading, user?.id]);
 
   useEffect(() => {
     const next = parseInitial(initialSection);
@@ -84,33 +104,37 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
   }, [initialSection]);
 
   async function loadMemberData() {
+    const seq = ++loadSeqRef.current;
     setLoading(true);
     try {
-      // 1. Check auth session (local, fast)
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      if (!user) {
         setScreen('auth');
         return;
       }
 
-      const user = session.user;
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
       // 2. Lookup member record
-      let { data: member } = await supabase
-        .from('members')
-        .select('*')
-        .eq('auth_id', user.id)
-        .maybeSingle();
+      let { data: member } = await withTimeout(
+        supabase
+          .from('members')
+          .select('*')
+          .eq('auth_id', user.id)
+          .maybeSingle(),
+        7000
+      );
 
       // If member not found, wait a moment and retry (trigger may be creating it)
       if (!member) {
         await new Promise(r => setTimeout(r, 1500));
-        const { data: retry } = await supabase
-          .from('members')
-          .select('*')
-          .eq('auth_id', user.id)
-          .maybeSingle();
+        const { data: retry } = await withTimeout(
+          supabase
+            .from('members')
+            .select('*')
+            .eq('auth_id', user.id)
+            .maybeSingle(),
+          7000
+        );
         member = retry;
       }
 
@@ -118,13 +142,13 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
       if (!member) {
         console.warn('No member record found, calling ensure-member endpoint for:', user.id);
         try {
-          const response = await fetch(`${BACKEND_URL}/api/auth/ensure-member`, {
+          const response = await fetchWithTimeout(`${BACKEND_URL}/api/auth/ensure-member`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
+              ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
             },
-          });
+          }, 6000);
           const data = await response.json();
           if (data.success && data.member) {
             member = {
@@ -149,6 +173,8 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
         return;
       }
 
+      if (seq !== loadSeqRef.current) return;
+
       setMemberData({
         id: member.id,
         name: member.profile_data?.name || user.email?.split('@')[0] || 'Membro',
@@ -159,13 +185,32 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
     } catch (error) {
       console.error('Error loading member data:', error);
       // Only redirect if no session
-      const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-      if (!session) {
+      if (!user) {
         setScreen('auth');
       }
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) {
+        setLoading(false);
+      }
     }
+  }
+
+  async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timeout));
   }
 
   async function loadStats(memberId: string) {
@@ -200,12 +245,42 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
     }
   }
 
+  const handleEbookLangSelect = async (selectedLocale: AppLocale) => {
+    setEbookLangOpen(false);
+    if (!ebookLangAction) return;
+
+    if (ebookLangAction.type === 'read') {
+      setLearnView({ type: 'ebook', productId: ebookLangAction.productId, lang: selectedLocale });
+    } else {
+      try {
+        await downloadProduct(ebookLangAction.productId, selectedLocale);
+      } catch (err) {
+        console.error('Ebook download failed:', err);
+      }
+    }
+    setEbookLangAction(null);
+  };
+
   async function handleDownload(productId: string) {
     try {
-      await downloadProduct(productId, locale);
+      const { data: prod } = await supabase
+        .from('products')
+        .select('product_type, title')
+        .eq('id', productId)
+        .single();
+      
+      if (prod?.product_type === 'course') {
+        setCourseModalProduct({ id: productId, title: prod.title });
+        setCourseModalOpen(true);
+      } else if (prod?.product_type === 'ebook') {
+        setEbookLangAction({ type: 'download', productId });
+        setEbookLangOpen(true);
+      } else {
+        await downloadProduct(productId, locale);
+      }
     } catch (err) {
       console.error('Download failed:', err);
-      setCurrentSection('biblioteca');
+      await downloadProduct(productId, locale).catch(() => {});
     }
   }
 
@@ -214,7 +289,8 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
   }
 
   function openEbook(productId: string) {
-    setLearnView({ type: 'ebook', productId });
+    setEbookLangAction({ type: 'read', productId });
+    setEbookLangOpen(true);
   }
 
   if (loading) {
@@ -228,11 +304,25 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
     );
   }
 
-  if (!memberData) return null;
+  if (!memberData) {
+    return (
+      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <p className="font-sans text-base text-on-surface-variant">Nao foi possivel carregar os dados da conta.</p>
+          <button
+            onClick={() => setScreen('auth')}
+            className="px-4 py-2 rounded-full border border-white/15 hover:border-primary/50 text-on-surface-variant hover:text-primary transition-colors"
+          >
+            Voltar ao login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (learnView) {
     return (
-      <div className="pt-28 pb-32 px-4 sm:px-6 md:px-10 max-w-[min(100%,1100px)] mx-auto min-h-screen page-wrapper">
+      <div className="w-full min-h-screen bg-black text-white pt-0 pb-16">
         <Suspense
           fallback={
             <div className="flex justify-center py-20">
@@ -247,7 +337,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
               onBack={() => setLearnView(null)}
             />
           ) : (
-            <EbookReader productId={learnView.productId} onBack={() => setLearnView(null)} />
+            <EbookReader productId={learnView.productId} lang={learnView.lang} onBack={() => setLearnView(null)} />
           )}
         </Suspense>
       </div>
@@ -362,6 +452,27 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio' }:
           <RewardsPanel memberId={memberData.id} />
         )}
       </motion.div>
+
+      <LanguageSelectorModal
+        isOpen={ebookLangOpen}
+        onClose={() => {
+          setEbookLangOpen(false);
+          setEbookLangAction(null);
+        }}
+        onSelect={handleEbookLangSelect}
+      />
+
+      {courseModalProduct && (
+        <CourseDownloadModal
+          isOpen={courseModalOpen}
+          onClose={() => {
+            setCourseModalOpen(false);
+            setCourseModalProduct(null);
+          }}
+          productId={courseModalProduct.id}
+          productTitle={courseModalProduct.title}
+        />
+      )}
     </div>
   );
 }

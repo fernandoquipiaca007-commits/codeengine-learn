@@ -7,8 +7,19 @@ import { useOwnedProducts } from '../hooks/useOwnedProducts';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { fetchLocalizedProducts } from '../hooks/useLocalizedProduct';
 import { useLocale } from '../contexts/LocaleContext';
+import { usePoints } from '../hooks/usePoints';
+import { canViewProduct } from '../lib/product-visibility';
 import { getProductCoverUrl } from '../lib/storage-path';
 import { useTranslation } from 'react-i18next';
+import { useAuthSession } from '../hooks/useAuthSession';
+
+interface Subcategory {
+  id: string;
+  category_id: string;
+  name: string;
+  description?: string;
+  display_order: number;
+}
 
 export function Library({ setScreen, onProductClick }: { 
   setScreen: (s: string) => void;
@@ -19,32 +30,52 @@ export function Library({ setScreen, onProductClick }: {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuthSession();
   const { locale } = useLocale();
+  const { balance } = usePoints();
+  const memberLevel = balance?.level ?? 'starter';
 
   // Get favorites and owned products hooks
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
   const { isOwned } = useOwnedProducts(user?.id);
 
-  // Load user session
+  // Load products and categories (re-fetch when locale changes)
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    void loadData();
+  }, [locale, memberLevel, user?.id]);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Load products and categories
+  // Load subcategories when selectedCategory changes
   useEffect(() => {
-    loadData();
-  }, []);
+    async function loadSubcategories() {
+      if (!selectedCategory) {
+        setSubcategories([]);
+        setSelectedSubcategory(null);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('subcategories')
+          .select('*')
+          .eq('category_id', selectedCategory)
+          .order('display_order', { ascending: true });
+        
+        if (!error && data) {
+          setSubcategories(data);
+        } else {
+          setSubcategories([]);
+        }
+      } catch (err) {
+        console.error('Error fetching subcategories:', err);
+        setSubcategories([]);
+      }
+      setSelectedSubcategory(null);
+    }
+    void loadSubcategories();
+  }, [selectedCategory]);
 
   // Setup realtime subscription for products
   useEffect(() => {
@@ -108,7 +139,10 @@ export function Library({ setScreen, onProductClick }: {
       setCategories(categoriesData || []);
 
       const localized = await fetchLocalizedProducts(locale, 'active');
-      setProducts(localized as Product[]);
+      const visible = (localized as Product[]).filter((p) =>
+        canViewProduct(p as Product & { visibility?: string; min_member_level?: string }, memberLevel, Boolean(user))
+      );
+      setProducts(visible);
     } catch (err) {
       console.error('Error loading data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -117,10 +151,12 @@ export function Library({ setScreen, onProductClick }: {
     }
   }
 
-  // Filter products by category
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category_id === selectedCategory)
-    : products;
+  // Filter products by category and subcategory
+  const filteredProducts = products.filter((p) => {
+    const matchesCategory = selectedCategory ? p.category_id === selectedCategory : true;
+    const matchesSubcategory = selectedSubcategory ? p.subcategory_id === selectedSubcategory : true;
+    return matchesCategory && matchesSubcategory;
+  });
 
   // Get category icon
   function getCategoryIcon(categoryName: string) {
@@ -198,6 +234,8 @@ export function Library({ setScreen, onProductClick }: {
                 {categories.map((category) => {
                   const Icon = getCategoryIcon(category.name);
                   const count = products.filter((p) => p.category_id === category.id).length;
+                  const localizedProd = products.find((p) => p.category_id === category.id);
+                  const displayCategoryName = (localizedProd as any)?.category_name || category.name;
                   
                   return (
                     <li key={category.id}>
@@ -213,7 +251,7 @@ export function Library({ setScreen, onProductClick }: {
                             : 'text-on-surface-variant hover:bg-white/5 hover:text-on-surface'
                         }`}
                       >
-                        <Icon className="w-5 h-5" /> {category.name} ({count})
+                        <Icon className="w-5 h-5" /> {displayCategoryName} ({count})
                       </button>
                     </li>
                   );
@@ -223,7 +261,44 @@ export function Library({ setScreen, onProductClick }: {
           </aside>
 
           {/* Product Grid */}
-          <div className="flex-grow">
+          <div className="flex-grow animate__animated animate__fadeIn">
+            {/* Subcategories Filter Bar */}
+            {subcategories.length > 0 && (
+              <div className="glass-panel rounded-xl p-3 mb-8 flex flex-wrap gap-2 items-center border border-white/5 shadow-[0_0_20px_rgba(0,0,0,0.3)] relative overflow-hidden backdrop-blur-md">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-50 z-0 pointer-events-none"></div>
+                <span className="font-display text-[10px] font-bold tracking-widest uppercase text-on-surface-variant/60 px-3 py-1 relative z-10">
+                  Subcategoria:
+                </span>
+                <div className="flex flex-wrap gap-2 relative z-10">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSubcategory(null)}
+                    className={`px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider transition-all duration-300 border ${
+                      selectedSubcategory === null
+                        ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_15px_rgba(192,193,255,0.15)] font-bold'
+                        : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface hover:border-white/10'
+                    }`}
+                  >
+                    Todas
+                  </button>
+                  {subcategories.map((sub) => (
+                    <button
+                      key={sub.id}
+                      type="button;submit"
+                      onClick={() => setSelectedSubcategory(sub.id)}
+                      className={`px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider transition-all duration-300 border ${
+                        selectedSubcategory === sub.id
+                          ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_15px_rgba(192,193,255,0.15)] font-bold'
+                          : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface hover:border-white/10'
+                      }`}
+                    >
+                      {sub.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {filteredProducts.length === 0 ? (
               <div className="glass-panel rounded-xl p-12 text-center">
                 <p className="font-sans text-lg text-on-surface-variant">
@@ -290,7 +365,7 @@ export function Library({ setScreen, onProductClick }: {
                           )}
                           {category && (
                             <span className="bg-surface/50 backdrop-blur-md border border-white/20 text-on-surface px-3 py-1 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase shadow-lg shadow-black/50">
-                              {category.name}
+                              {(product as any).category_name || category.name}
                             </span>
                           )}
                         </div>
@@ -320,14 +395,26 @@ export function Library({ setScreen, onProductClick }: {
                         )}
 
                         {/* Price and CTA */}
-                        <div className="flex items-center justify-between mt-auto">
-                          <span className="font-mono text-xl font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)]">
-                            {product.is_free ? t('library.free') : `R$ ${product.price.toFixed(2)}`}
+                        <div className="flex items-center justify-between mt-auto w-full gap-2">
+                          <span className="font-mono text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] shrink-0">
+                            {product.is_free ? t('library.free') : `$ ${product.price.toFixed(2)}`}
                           </span>
-                          <button className="secondary-btn px-5 py-2.5 rounded-full font-display text-xs font-semibold tracking-widest uppercase flex items-center gap-2 group-hover:bg-white/10 group-hover:border-primary/50">
-                            {product.cta_text}{' '}
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </button>
+                          {isOwned(product.id) ? (
+                            <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Produto Adquirido
+                            </div>
+                          ) : product.is_free ? (
+                            <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1 transition-all">
+                              Acesso Livre
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </div>
+                          ) : (
+                            <button className="secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 text-white transition-all shrink-0">
+                              {product.cta_text || 'Comprar'}{' '}
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </article>

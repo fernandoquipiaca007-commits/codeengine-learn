@@ -16,6 +16,7 @@ interface ProductActionButtonProps {
   productType?: 'file' | 'course' | 'ebook';
   productTitle?: string;
   fastpayLink?: string | null;
+  aoaPrice?: number | null;
   couponCode?: string;
   className?: string;
   variant?: 'primary' | 'mobile';
@@ -35,6 +36,7 @@ export function ProductActionButton({
   productType = 'file',
   productTitle = '',
   fastpayLink,
+  aoaPrice,
   onNavigateToLibrary,
   onStartLearning,
 }: ProductActionButtonProps) {
@@ -425,6 +427,7 @@ export function ProductActionButton({
             id: productId,
             title: productTitle,
             price,
+            aoa_price: aoaPrice,
             fastpay_link: fastpayLink,
           }}
           onSelectStripe={() => {
@@ -446,6 +449,7 @@ export function ProductActionButton({
             id: productId,
             title: productTitle,
             price,
+            aoa_price: aoaPrice,
             fastpay_link: fastpayLink,
           }}
           onClose={() => setShowFastPayFlow(false)}

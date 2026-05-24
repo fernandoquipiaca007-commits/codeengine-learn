@@ -23,13 +23,24 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
     setLoading(true);
     try {
       // 1. First, check product_coupons (global or product-specific campaigns)
-      let { data: couponData, error: couponError } = await supabase
+      let { data: couponData } = await supabase
         .from('product_coupons')
         .select('*')
         .eq('product_id', productId)
         .eq('code', couponCode.toUpperCase())
         .eq('is_active', true)
         .maybeSingle();
+
+      if (!couponData) {
+        const { data: globalCoupon } = await supabase
+          .from('product_coupons')
+          .select('*')
+          .is('product_id', null)
+          .eq('code', couponCode.toUpperCase())
+          .eq('is_active', true)
+          .maybeSingle();
+        couponData = globalCoupon;
+      }
 
       let discount = 0;
       let appliedCode = '';
@@ -58,8 +69,47 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
         }
         appliedCode = couponData.code;
       } else {
-        // 2. If not found, check member_coupons (personal rewards)
-        const { data: authData } = await supabase.auth.getUser();
+        // Fallback: Check global coupons table
+        const { data: globalCoupon } = await supabase
+          .from('coupons')
+          .select('*')
+          .eq('code', couponCode.toUpperCase())
+          .maybeSingle();
+
+        if (globalCoupon) {
+          // Validate global coupon expiration
+          if (globalCoupon.expiration_date) {
+            const expirationDate = new Date(globalCoupon.expiration_date);
+            if (expirationDate < new Date()) {
+              showMessage('error', 'Este cupom expirou');
+              return;
+            }
+          }
+
+          // Validate max uses
+          if (globalCoupon.usage_limit && globalCoupon.usage_count >= globalCoupon.usage_limit) {
+            showMessage('error', 'Este cupom atingiu o limite de usos');
+            return;
+          }
+
+          // Validate applicable products if any
+          if (globalCoupon.applicable_products && globalCoupon.applicable_products.length > 0) {
+            if (!globalCoupon.applicable_products.includes(productId)) {
+              showMessage('error', 'Este cupom não é válido para este produto');
+              return;
+            }
+          }
+
+          // Calculate discount
+          if (globalCoupon.discount_type === 'percentage') {
+            discount = (originalPrice * globalCoupon.discount_value) / 100;
+          } else {
+            discount = globalCoupon.discount_value;
+          }
+          appliedCode = globalCoupon.code;
+        } else {
+          // 2. If not found, check member_coupons (personal rewards)
+          const { data: authData } = await supabase.auth.getUser();
         if (!authData || !authData.user) {
           showMessage('error', 'Cupom inválido ou expirado');
           return;
@@ -109,12 +159,13 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
           discount = memberCoupon.discount_percentage;
         }
         appliedCode = memberCoupon.code;
+        }
       }
 
       // Apply coupon
       setAppliedCoupon(appliedCode);
       onCouponApplied(discount, appliedCode);
-      showMessage('success', `Cupom aplicado! Desconto de R$ ${discount.toFixed(2)}`);
+      showMessage('success', `Cupom aplicado! Desconto de $ ${discount.toFixed(2)}`);
     } catch (error) {
       console.error('Error validating coupon:', error);
       showMessage('error', 'Erro ao validar cupom');

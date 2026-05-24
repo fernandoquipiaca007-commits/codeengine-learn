@@ -31,7 +31,7 @@ function normalizeCampaign(row: Record<string, unknown>): Campaign | null {
   const startDate = (row.start_date as string) || (row.valid_from as string) || null;
   const now = new Date();
 
-  if (startDate && new Date(startDate) > now) return null;
+  if (startDate && new Date(startDate) > new Date(now.getTime() + 5 * 60 * 1000)) return null;
   if (endDate && new Date(endDate) < now) return null;
 
   return {

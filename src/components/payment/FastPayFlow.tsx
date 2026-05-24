@@ -16,6 +16,7 @@ interface FastPayFlowProps {
     id: string;
     title: string;
     price: number;
+    aoa_price?: number | null;
     fastpay_link?: string | null;
   };
   onClose: () => void;
@@ -30,7 +31,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
   const [step, setStep] = useState<Step>('instructions');
   const [orderId, setOrderId] = useState<string | null>(null);
   const [fastpayLink, setFastpayLink] = useState<string | null>(null);
-  const [orderAmount, setOrderAmount] = useState<number>(product.price);
+  const [orderAmount, setOrderAmount] = useState<number>(product.aoa_price || product.price);
   const [error, setError] = useState<string | null>(null);
 
   const createOrder = async () => {
@@ -172,7 +173,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                 <div>
                   <p className="text-sm font-medium text-on-surface">Valor a pagar</p>
                   <p className="text-xl font-display font-bold text-primary">
-                    {product.price.toFixed(2)} Kz
+                    {product.aoa_price ? `${product.aoa_price.toFixed(2)} AOA` : `${product.price.toFixed(2)} Kz`}
                   </p>
                 </div>
               </div>

@@ -119,7 +119,7 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
 
   function formatPrice(amount: number, isFree?: boolean) {
     if (isFree || amount === 0) return t('purchases.status.free');
-    return `R$ ${amount.toFixed(2)}`;
+    return `$ ${amount.toFixed(2)}`;
   }
 
   function formatDate(dateString: string) {

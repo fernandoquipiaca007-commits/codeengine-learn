@@ -13,46 +13,18 @@ interface FAQ {
 
 interface ProductFAQProps {
   productId: string;
+  refreshKey?: number;
+  title?: string;
 }
 
-const DEFAULT_FAQS: FAQ[] = [
-  {
-    id: 'default-1',
-    question: 'Como funciona o acesso ao conteúdo?',
-    answer: 'Após a confirmação do pagamento, você receberá acesso imediato ao conteúdo completo. Basta fazer login na sua conta para começar.',
-    is_highlighted: true,
-    is_expanded_by_default: true
-  },
-  {
-    id: 'default-2',
-    question: 'O acesso é vitalício?',
-    answer: 'Sim! Você paga uma única vez e tem acesso para sempre, incluindo todas as atualizações futuras do conteúdo.',
-    is_highlighted: false,
-    is_expanded_by_default: false
-  },
-  {
-    id: 'default-3',
-    question: 'Posso acessar de qualquer dispositivo?',
-    answer: 'Sim, você pode acessar o conteúdo de qualquer dispositivo (computador, tablet ou celular) através do seu navegador.',
-    is_highlighted: false,
-    is_expanded_by_default: false
-  },
-  {
-    id: 'default-4',
-    question: 'Há garantia de reembolso?',
-    answer: 'Sim, oferecemos garantia de 7 dias. Se você não ficar satisfeito, devolvemos 100% do seu investimento.',
-    is_highlighted: false,
-    is_expanded_by_default: false
-  }
-];
-
-export function ProductFAQ({ productId }: ProductFAQProps) {
-  const [faqs, setFaqs] = useState<FAQ[]>(DEFAULT_FAQS);
-  const [expandedId, setExpandedId] = useState<string | null>('default-1');
+export function ProductFAQ({ productId, refreshKey = 0, title }: ProductFAQProps) {
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    loadFAQs();
-  }, [productId]);
+    void loadFAQs();
+  }, [productId, refreshKey]);
 
   async function loadFAQs() {
     try {
@@ -62,33 +34,40 @@ export function ProductFAQ({ productId }: ProductFAQProps) {
         .eq('product_id', productId)
         .order('display_order', { ascending: true });
 
-      // Se houver dados do banco, usar eles
       if (!error && data && data.length > 0) {
         setFaqs(data);
-        const defaultExpanded = data.find(f => f.is_expanded_by_default);
-        if (defaultExpanded) {
-          setExpandedId(defaultExpanded.id);
-        } else {
-          setExpandedId(data[0]?.id || null);
-        }
+        const defaultExpanded = data.find((f) => f.is_expanded_by_default);
+        setExpandedId(defaultExpanded?.id ?? data[0]?.id ?? null);
+      } else {
+        setFaqs([]);
+        setExpandedId(null);
       }
-      // Caso contrário, manter os FAQs padrão
     } catch (error) {
       console.error('Error loading FAQs:', error);
-      // Em caso de erro, manter os FAQs padrão
+      setFaqs([]);
+    } finally {
+      setLoaded(true);
     }
   }
 
+  if (!loaded) return null;
+  if (faqs.length === 0) return null;
+
   return (
     <section className="mt-24">
-      <div className="text-center mb-16">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
         <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-on-surface mb-4">
-          Perguntas Frequentes
+          {title?.trim() || 'Perguntas Frequentes'}
         </h2>
         <p className="font-sans text-lg text-on-surface-variant max-w-2xl mx-auto">
           Tire suas dúvidas sobre o produto
         </p>
-      </div>
+      </motion.div>
 
       <div className="max-w-3xl mx-auto space-y-4">
         {faqs.map((faq) => (
@@ -121,9 +100,9 @@ export function ProductFAQ({ productId }: ProductFAQProps) {
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-8 pb-6 font-sans text-base text-on-surface-variant">
+                  <motion.div className="px-8 pb-6 font-sans text-base text-on-surface-variant">
                     {faq.answer}
-                  </div>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>

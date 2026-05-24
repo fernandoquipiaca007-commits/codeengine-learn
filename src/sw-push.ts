@@ -1,5 +1,11 @@
 /// <reference lib="webworker" />
-declare const self: ServiceWorkerGlobalScope;
+import { precacheAndRoute } from 'workbox-precaching';
+
+declare const self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: any;
+};
+
+precacheAndRoute(self.__WB_MANIFEST || []);
 
 self.addEventListener('push', (event) => {
   if (!event.data) return;

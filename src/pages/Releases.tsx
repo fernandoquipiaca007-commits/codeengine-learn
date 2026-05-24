@@ -240,7 +240,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
                     {product.is_free || product.price === 0 ? (
                       <span className="text-green-400">{t('releases.badges.free')}</span>
                     ) : (
-                      <>R$ {product.price.toFixed(2)}</>
+                      <>$ {product.price.toFixed(2)}</>
                     )}
                   </div>
                   

@@ -3,10 +3,10 @@ import { LucideSearch, Menu, User, LogOut, Heart, ShoppingBag, Bell, Settings } 
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { NotificationDropdown } from './NotificationDropdown';
 import { PointsBadge } from './referral/PointsBadge';
 import { setAppBadgeCount } from '../lib/app-badge';
+import { useAuthSession } from '../hooks/useAuthSession';
 
 interface NavBarProps {
   currentScreen: string;
@@ -16,35 +16,90 @@ interface NavBarProps {
 
 export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps) {
   const { t } = useTranslation('common');
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { user } = useAuthSession();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadUnreadCount(session.user.id);
-      }
-    });
+    if (!user?.id) {
+      setAvatarUrl(null);
+      return;
+    }
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadUnreadCount(session.user.id);
-      } else {
+    const loadAvatar = async () => {
+      try {
+        const { data } = await supabase
+          .from('members')
+          .select('profile_data')
+          .eq('auth_id', user.id)
+          .maybeSingle();
+        
+        if (data?.profile_data?.avatar_url) {
+          setAvatarUrl(data.profile_data.avatar_url);
+        } else {
+          setAvatarUrl(null);
+        }
+      } catch (err) {
+        console.error('Error loading avatar in navbar:', err);
+      }
+    };
+
+    void loadAvatar();
+    
+    // Also listen for any profile changes or uploads to dynamically update
+    const channel = supabase
+      .channel(`navbar-avatar-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'members',
+          filter: `auth_id=eq.${user.id}`
+        },
+        (payload: any) => {
+          if (payload.new?.profile_data?.avatar_url) {
+            setAvatarUrl(payload.new.profile_data.avatar_url);
+          } else {
+            setAvatarUrl(null);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    const syncUnread = async () => {
+      if (!user?.id) {
         setUnreadCount(0);
+        await setAppBadgeCount(0);
+        return;
       }
-    });
+      channel = await loadUnreadCount(user.id);
+      if (cancelled && channel) {
+        supabase.removeChannel(channel);
+      }
+    };
 
-    return () => subscription.unsubscribe();
-  }, []);
+    void syncUnread();
+
+    return () => {
+      cancelled = true;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!showMobileMenu) return;
@@ -60,9 +115,9 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         .from('members')
         .select('id')
         .eq('auth_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (!member) return;
+      if (!member) return null;
 
       const { count, error } = await supabase
         .from('notifications')
@@ -112,14 +167,16 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
               });
             }
           }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
+        );
+      channel.subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.warn('Notifications realtime channel error for member:', member.id);
+        }
+      });
+      return channel;
     } catch (error) {
       console.error('Error loading unread count:', error);
+      return null;
     }
   }
 
@@ -283,9 +340,15 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                   setShowProfileMenu(!showProfileMenu);
                   setShowNotifications(false);
                 }}
-                className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-transparent hover:border-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex items-center justify-center flex-shrink-0"
               >
-                <User className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6 flex-shrink-0" />
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-on-surface text-background hover:bg-primary hover:text-on-primary flex items-center justify-center transition-colors">
+                    <User className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6 flex-shrink-0" />
+                  </div>
+                )}
               </button>
               
               {showProfileMenu && (

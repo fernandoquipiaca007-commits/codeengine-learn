@@ -89,11 +89,11 @@ export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryPr
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((item) => (
           <article
             key={item.id}
-            className="glass-panel rounded-xl border border-white/10 overflow-hidden flex gap-4 p-4 hover:border-primary/30 transition-colors"
+            className="group glass-panel rounded-xl border border-white/10 overflow-hidden flex gap-4 p-4 hover:border-primary/30 hover:-translate-y-0.5 transition-all"
           >
             <img
               src={getProductCoverUrl(item)}
@@ -114,7 +114,9 @@ export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryPr
                   </span>
                 )}
               </div>
-              <h3 className="font-display font-semibold text-white truncate mb-2">{item.title}</h3>
+              <h3 className="font-display font-semibold text-white line-clamp-2 mb-2 min-h-[2.5rem]">
+                {item.title}
+              </h3>
               {item.product_type !== 'file' && (
                 <div className="h-1.5 rounded-full bg-white/10 mb-3 overflow-hidden">
                   <div
@@ -126,7 +128,7 @@ export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryPr
               <button
                 type="button"
                 onClick={() => handleOpen(item)}
-                className="mt-auto inline-flex items-center gap-2 text-sm font-display font-semibold text-primary hover:text-secondary"
+                className="mt-auto inline-flex items-center gap-2 text-sm font-display font-semibold text-primary group-hover:text-secondary"
               >
                 {item.product_type === 'course' && (
                   <>

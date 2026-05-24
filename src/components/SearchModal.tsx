@@ -167,7 +167,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
                         {product.description}
                       </p>
                       <p className="font-display text-sm font-bold text-primary mt-1">
-                        R$ {product.price.toFixed(2)}
+                        $ {product.price.toFixed(2)}
                       </p>
                     </div>
                     <ArrowRight className="w-5 h-5 text-on-surface-variant group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />

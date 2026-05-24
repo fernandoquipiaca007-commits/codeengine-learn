@@ -75,6 +75,34 @@ export function usePurchaseStatus(productId: string | undefined, authUserId: str
           setStatus((prev) => ({ ...prev, loading: true, error: null }));
         }
 
+        // 1. Check member_grants first (manual/gifted lifetime access)
+        const now = new Date().toISOString();
+        const { data: grant, error: grantError } = await supabase
+          .from('member_grants')
+          .select('id, expires_at, created_at')
+          .eq('member_id', memberId)
+          .eq('product_id', productId)
+          .or(`expires_at.is.null,expires_at.gt.${now}`)
+          .limit(1)
+          .maybeSingle();
+
+        if (grantError) {
+          console.warn('Error querying member_grants, proceeding to purchases:', grantError);
+        }
+
+        if (grant) {
+          setStatus({
+            ownsProduct: true,
+            purchaseId: grant.id,
+            accessType: 'gift',
+            purchaseDate: grant.created_at,
+            loading: false,
+            error: null,
+          });
+          return;
+        }
+
+        // 2. Check purchases
         const { data, error } = await supabase
           .from('purchases')
           .select('id, access_type, purchase_date, product_id')
@@ -133,7 +161,7 @@ export function usePurchaseStatus(productId: string | undefined, authUserId: str
 
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const channel = supabase
+    const channelPurchases = supabase
       .channel(`purchases-${memberId}-${productId}`)
       .on(
         'postgres_changes',
@@ -157,9 +185,34 @@ export function usePurchaseStatus(productId: string | undefined, authUserId: str
       )
       .subscribe();
 
+    const channelGrants = supabase
+      .channel(`grants-${memberId}-${productId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'member_grants',
+          filter: `member_id=eq.${memberId}`,
+        },
+        (payload) => {
+          const row = payload.new as { product_id?: string } | undefined;
+          const oldRow = payload.old as { product_id?: string } | undefined;
+          const pid = row?.product_id ?? oldRow?.product_id;
+          if (pid && pid !== productId) return;
+
+          if (debounceTimer) clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            void checkPurchaseStatus({ silent: true });
+          }, 300);
+        }
+      )
+      .subscribe();
+
     return () => {
       if (debounceTimer) clearTimeout(debounceTimer);
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(channelPurchases);
+      void supabase.removeChannel(channelGrants);
     };
   }, [memberId, productId, checkPurchaseStatus]);
 

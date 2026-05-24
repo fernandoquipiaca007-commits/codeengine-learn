@@ -12,12 +12,14 @@ import { CampaignBanner } from '../components/product/CampaignBanner';
 import { ProductActionButton } from '../components/ProductActionButton';
 import { CourseCurriculum } from '../components/product/CourseCurriculum';
 import { parseJsonField, safePrice, safeText } from '../lib/safe-display';
+import { parsePageLayoutConfig, isSectionEnabled, type PageLayoutConfig } from '../lib/page-layout';
+import { resolveContentLocale } from '../lib/content-locale';
 import { useLocale } from '../contexts/LocaleContext';
-import { ProductPurchaseProvider } from '../contexts/ProductPurchaseContext';
+import { ProductPurchaseProvider, useProductPurchaseOptional } from '../contexts/ProductPurchaseContext';
 import { getProductCoverUrl } from '../lib/storage-path';
 import { ReferralProgress } from '../components/referral/ReferralProgress';
 import { ReferralShareCard } from '../components/referral/ReferralShareCard';
-import { useReferral } from '../hooks/useReferral';
+
 
 interface ProductProps {
   setScreen?: (screen: string, section?: string) => void;
@@ -28,8 +30,46 @@ function hasCopy(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+const TRANSLATIONS = {
+  pt: {
+    before: 'Antes:',
+    now: 'Agora:'
+  },
+  en: {
+    before: 'Before:',
+    now: 'Now:'
+  },
+  fr: {
+    before: 'Avant:',
+    now: 'Maintenant:'
+  }
+};
+
+interface ProductCouponSectionProps {
+  productId: string;
+  originalPrice: number;
+  onCouponApplied: (discount: number, couponCode: string) => void;
+}
+
+function ProductCouponSection({ productId, originalPrice, onCouponApplied }: ProductCouponSectionProps) {
+  const purchase = useProductPurchaseOptional();
+  const ownsProduct = purchase?.ownsProduct ?? false;
+
+  if (ownsProduct) return null;
+
+  return (
+    <CouponInput
+      productId={productId}
+      originalPrice={originalPrice}
+      onCouponApplied={onCouponApplied}
+    />
+  );
+}
+
 export function Product({ setScreen, productId }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
+  const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
+  const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
   const [product, setProduct] = useState<ProductType | null>(null);
   const [customCopy, setCustomCopy] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -37,11 +77,27 @@ export function Product({ setScreen, productId }: ProductProps) {
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [campaignPrice, setCampaignPrice] = useState<number | null>(null);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
-  const [referralDiscount, setReferralDiscount] = useState(0);
+  const [pageLayout, setPageLayout] = useState<PageLayoutConfig | null>(null);
   const [showStickyButton, setShowStickyButton] = useState(false);
+  const [childRefreshKey, setChildRefreshKey] = useState(0);
+  const [referralDiscount, setReferralDiscount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const prevLocaleRef = useRef(locale);
-  const { referralCode } = useReferral();
   const mainCtaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const loadProduct = useCallback(
     async (silent = false) => {
@@ -79,11 +135,15 @@ export function Product({ setScreen, productId }: ProductProps) {
         }
 
         if (data) {
+          const contentLang = resolveContentLocale(locale);
+          const useShared = Boolean((data as { use_shared_content?: boolean }).use_shared_content);
+          const translationLang = useShared ? 'pt' : contentLang;
+
           const { data: tr } = await supabase
             .from('products_translations')
             .select('*')
             .eq('product_id', data.id)
-            .eq('language', locale)
+            .eq('language', translationLang)
             .maybeSingle();
           const { data: trFb } = !tr
             ? await supabase
@@ -107,7 +167,10 @@ export function Product({ setScreen, productId }: ProductProps) {
             : data;
           const row = localized as unknown as Record<string, unknown>;
           setProduct(localized);
-          setCustomCopy(parseJsonField(t?.custom_copy || row.custom_copy, {}));
+          setPageLayout(parsePageLayoutConfig(row.page_layout_config));
+          setCustomCopy(
+            parseJsonField(t?.custom_copy || row.custom_copy, {})
+          );
         } else if (!silent) {
           setProduct(null);
         }
@@ -141,12 +204,48 @@ export function Product({ setScreen, productId }: ProductProps) {
   useEffect(() => {
     if (!product?.id) return;
 
+    const pid = product.id;
+    const bump = () => {
+      void loadProduct(true);
+      setChildRefreshKey((k) => k + 1);
+    };
+
     const channel = supabase
-      .channel(`product-page-${product.id}`)
+      .channel(`product-page-${pid}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products', filter: `id=eq.${product.id}` },
-        () => void loadProduct(true)
+        { event: 'UPDATE', schema: 'public', table: 'products', filter: `id=eq.${pid}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_faqs', filter: `product_id=eq.${pid}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_bonuses', filter: `product_id=eq.${pid}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_benefits', filter: `product_id=eq.${pid}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_campaigns', filter: `product_id=eq.${pid}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_custom_sections', filter: `product_id=eq.${pid}` },
+        bump
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_videos', filter: `product_id=eq.${pid}` },
+        bump
       )
       .subscribe();
 
@@ -195,12 +294,14 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   const description = safeText(product?.description);
   const listPrice = safePrice(product?.price);
-  // Todas as seções sempre ativadas por padrão
-  const showVideos = true;
-  const showBenefits = true;
-  const showBonuses = true;
-  const showCustomSections = true;
-  const showFaq = true;
+  const layout = pageLayout ?? parsePageLayoutConfig(null);
+  const showVideos = isSectionEnabled(layout, 'video');
+  const showBenefits = isSectionEnabled(layout, 'benefits');
+  const showBonuses = isSectionEnabled(layout, 'bonuses');
+  const showCustomSections = isSectionEnabled(layout, 'features') || isSectionEnabled(layout, 'comparison');
+  const showFaq = isSectionEnabled(layout, 'faq');
+  const showHeroSocialProof = isSectionEnabled(layout, 'hero');
+  const ctaLabel = safeText(layout.cta_text || product?.cta_text, 'Comprar Agora');
 
   if (loading) {
     return (
@@ -301,40 +402,30 @@ export function Product({ setScreen, productId }: ProductProps) {
             </div>
           )}
           
-          {/* Social Proof */}
-          <div className="flex flex-wrap items-center gap-4 py-4 border-y border-outline/20 max-w-md glass-panel px-4 sm:px-6 rounded-xl">
-            <div className="flex -space-x-3">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-vsQHmcbr1IAaziLVRNtxbKohHOnqLb0Ke1fBjoqmwqOqLSBdW_vQn2n_Sld8a6Su1OTEZXcT8GvmLRvy01gtABdbMtOSQmkfBOujx2Yph0b2IpwIT-Ny-06zu69Rt31bO3FmVlTkklHFEJ7XJnX_pX0X1VIrFD9V8VylrQHB8TA51bI5mWTg1YuypFaqzA91eD0J8esIQzsseGfHnb-KQs3ZNglmiJdhAOu6IgxMqrPrhkJZ5LLgzyH1llfpsgB8YYUG4qWPlfU" alt="Usuário 1" className="w-10 h-10 rounded-full border-2 border-surface-lowest" />
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIcynfBSr8vTpaxNydl3wDK0lLjgcZGAGBABky2RwuhuTtTD1GV45IUoNXsEcrIGUmZtvzN1XYNer__ayzmDo-9zh6IZsNi60C8YW1rikziRTuN08uNahHrUGkU-GWwASgwr6ZR_5qGW4I5IZowPPq-W-YZ32OrdT99WGqp3I1Ee3lft2KmN1SSiJSf5_aBty6-za-QkzVitmq3bIDCPInecGuFz2YbNxi3BBf40EeHEFeENwVn5DH9dMjzYjI37tD8HfVdXIaw1g" alt="Usuário 2" className="w-10 h-10 rounded-full border-2 border-surface-lowest" />
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFDgiuk6EjP3ZyB2a3WVha3Ar9dZXk2sjFo07HjGmOMNI50vfb8C1h85p5Zsbb2QNgNsec6uE7eKF2tHOYf4XPRlM9Hk10OqC1lUdyoFbNwaJLLyPXeG89AkxyUQR738LfV4SFUbfNSL0kRvXCZ1opEKxzFRaXIk07hRhh3xdrQUvK5ffzQacuVmDL1pcnukxcUpWwL1S4vMEGNAhmq9KgnBsCn2yNfseTYNIAo4XuGB6jZJriQIV4tOtFfrqVT0fp5IeVXAE0quc" alt="Usuário 3" className="w-10 h-10 rounded-full border-2 border-surface-lowest" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1 text-secondary">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-4 h-4 fill-current" />
-                ))}
-              </div>
-              <p className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mt-1">
-                {safeText(customCopy?.cta_headline, 'Junte-se a +2.500 desenvolvedores')}
-              </p>
-            </div>
-          </div>
+
           
           {/* Conversion */}
           <div className="flex flex-col gap-4 mt-4">
             <div className="flex items-baseline gap-2 sm:gap-4 mb-2 flex-wrap">
-              {(campaignPrice || discount > 0) && (
-                <span className="font-mono text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/50 line-through">
-                  R$ {listPrice.toFixed(2)}
+              {(campaignPrice || discount > 0) ? (
+                <div className="flex items-center gap-2 flex-wrap font-mono">
+                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/50 line-through">
+                    {tDict.before} ${listPrice.toFixed(2)}
+                  </span>
+                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/30">|</span>
+                  <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                    {tDict.now} ${getFinalPrice().toFixed(2)}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-mono text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                  $ {getFinalPrice().toFixed(2)}
                 </span>
               )}
-              <span className="font-mono text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                $ {getFinalPrice().toFixed(2)}
-              </span>
             </div>
             
             {/* Coupon Input */}
-            <CouponInput
+            <ProductCouponSection
               productId={product.id}
               originalPrice={campaignPrice ?? listPrice}
               onCouponApplied={handleCouponApplied}
@@ -349,21 +440,27 @@ export function Product({ setScreen, productId }: ProductProps) {
                 productType={product.product_type || 'file'}
                 productTitle={product.title}
                 fastpayLink={(product as any).fastpay_link}
+                aoaPrice={(product as any).aoa_price}
                 couponCode={appliedCoupon}
                 onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
                 onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
               />
             </div>
 
-            {/* Referral Progressive Discount */}
-            <ReferralProgress
-              productId={product.id}
-              originalPrice={campaignPrice ?? listPrice}
-              onDiscountChange={setReferralDiscount}
-            />
+            {/* Sistema de Partilha & Desconto Progressivo */}
+            {product && (
+              <div className="space-y-4 pt-6 border-t border-white/10 mt-6">
+                <div className={isLoggedIn ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "w-full"}>
+                  <ReferralProgress
+                    productId={product.id}
+                    originalPrice={listPrice}
+                    onDiscountChange={(discount) => setReferralDiscount(discount)}
+                  />
+                  <ReferralShareCard productId={product.id} compact={isLoggedIn} />
+                </div>
+              </div>
+            )}
 
-            {/* Share & Earn */}
-            <ReferralShareCard productId={product.id} compact />
           </div>
         </div>
         
@@ -401,6 +498,7 @@ export function Product({ setScreen, productId }: ProductProps) {
             productType={product.product_type || 'file'}
             productTitle={product.title}
             fastpayLink={(product as any).fastpay_link}
+            aoaPrice={(product as any).aoa_price}
             couponCode={appliedCoupon}
             variant="mobile"
             onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
@@ -472,21 +570,37 @@ export function Product({ setScreen, productId }: ProductProps) {
       )}
 
       {/* Video Section - Dynamic from Database */}
-      {showVideos && <ProductVideo productId={product.id} />}
+      {showVideos && <ProductVideo productId={product.id} refreshKey={childRefreshKey} />}
 
       {showBenefits && (
         <ProductBenefits
           productId={product.id}
+          refreshKey={childRefreshKey}
           title={safeText(customCopy?.benefits_title)}
           subtitle={safeText(customCopy?.benefits_subtitle)}
         />
       )}
 
-      {showBonuses && <ProductBonuses productId={product.id} />}
+      {showBonuses && (
+        <ProductBonuses
+          productId={product.id}
+          refreshKey={childRefreshKey}
+          title={safeText(customCopy?.bonuses_title)}
+          subtitle={safeText(customCopy?.bonuses_subtitle)}
+        />
+      )}
 
-      {showCustomSections && <ProductCustomSections productId={product.id} />}
+      {showCustomSections && (
+        <ProductCustomSections productId={product.id} refreshKey={childRefreshKey} />
+      )}
 
-      {showFaq && <ProductFAQ productId={product.id} />}
+      {showFaq && (
+        <ProductFAQ
+          productId={product.id}
+          refreshKey={childRefreshKey}
+          title={safeText(customCopy?.faq_title)}
+        />
+      )}
     </div>
     </ProductPurchaseProvider>
   );

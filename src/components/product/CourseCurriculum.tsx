@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lock, Play, Clock } from 'lucide-react';
+import { Lock, Play, Clock, Headphones, Link as LinkIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useProductPurchaseOptional } from '../../contexts/ProductPurchaseContext';
 
@@ -11,6 +11,8 @@ interface Lesson {
   module_id?: string | null;
   is_preview: boolean;
   video_duration_seconds?: number;
+  lesson_type?: 'video' | 'audio' | 'link';
+  external_url?: string;
 }
 
 interface Module {
@@ -72,9 +74,17 @@ export function CourseCurriculum({ productId }: CourseCurriculumProps) {
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center ${canWatch ? 'bg-primary/20' : 'bg-surface-container'}`}
         >
-          {canWatch ? <Play className="w-4 h-4 text-primary" /> : <Lock className="w-4 h-4 text-on-surface-variant" />}
+          {!canWatch ? (
+            <Lock className="w-4 h-4 text-on-surface-variant" />
+          ) : lesson.lesson_type === 'audio' ? (
+            <Headphones className="w-4 h-4 text-primary" />
+          ) : lesson.lesson_type === 'link' ? (
+            <LinkIcon className="w-4 h-4 text-primary" />
+          ) : (
+            <Play className="w-4 h-4 text-primary" />
+          )}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => canWatch && onPreviewLesson?.(lesson.id)}>
           <p className="font-display font-semibold text-white truncate">{lesson.title}</p>
           {lesson.description && (
             <p className="font-sans text-xs text-on-surface-variant line-clamp-1">{lesson.description}</p>

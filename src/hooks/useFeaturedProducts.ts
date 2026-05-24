@@ -91,6 +91,11 @@ export function useFeaturedProducts() {
   useEffect(() => {
     void load();
 
+    // 10-second polling safety net
+    const intervalId = setInterval(() => {
+      void load();
+    }, 10000);
+
     const channel = supabase
       .channel('featured-products-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'featured_products' }, () => {
@@ -102,6 +107,7 @@ export function useFeaturedProducts() {
       .subscribe();
 
     return () => {
+      clearInterval(intervalId);
       void supabase.removeChannel(channel);
     };
   }, [load]);

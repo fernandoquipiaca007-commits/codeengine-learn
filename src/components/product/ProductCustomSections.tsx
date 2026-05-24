@@ -12,15 +12,16 @@ interface CustomSection {
 
 interface ProductCustomSectionsProps {
   productId: string;
+  refreshKey?: number;
 }
 
-export function ProductCustomSections({ productId }: ProductCustomSectionsProps) {
+export function ProductCustomSections({ productId, refreshKey = 0 }: ProductCustomSectionsProps) {
   const [sections, setSections] = useState<CustomSection[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     void loadSections();
-  }, [productId]);
+  }, [productId, refreshKey]);
 
   async function loadSections() {
     try {

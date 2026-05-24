@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
@@ -28,6 +28,8 @@ export function Settings({ setScreen }: SettingsProps) {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -55,6 +57,7 @@ export function Settings({ setScreen }: SettingsProps) {
         setMemberData(member);
         setName(member.profile_data?.name || authUser.email?.split('@')[0] || '');
         setEmailNotifications(member.profile_data?.email_notifications !== false);
+        setAvatarUrl(member.profile_data?.avatar_url || null);
       } else {
         // User is authenticated but no member record yet — don't redirect to auth
         setName(authUser.email?.split('@')[0] || '');
@@ -69,23 +72,159 @@ export function Settings({ setScreen }: SettingsProps) {
     }
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'A imagem deve ter no máximo 2MB.' });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setMessage(null);
+
+    try {
+      let activeMemberId = memberData?.id;
+      let activeProfileData = memberData?.profile_data || {};
+
+      if (!activeMemberId && user) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('*')
+          .eq('auth_id', user.id)
+          .maybeSingle();
+        
+        if (member) {
+          activeMemberId = member.id;
+          activeProfileData = member.profile_data || {};
+          setMemberData(member);
+        } else {
+          const { data: newMember, error: createError } = await supabase
+            .from('members')
+            .insert({
+              auth_id: user.id,
+              profile_data: { name: name || user.email?.split('@')[0] || '' }
+            })
+            .select()
+            .single();
+          
+          if (createError || !newMember) {
+            throw new Error('Não foi possível inicializar os dados de perfil.');
+          }
+          activeMemberId = newMember.id;
+          activeProfileData = newMember.profile_data || {};
+          setMemberData(newMember);
+        }
+      }
+
+      if (!activeMemberId) {
+        throw new Error('Usuário não autenticado.');
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${activeMemberId}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const publicUrl = data.publicUrl;
+
+      const updatedProfile = {
+        ...activeProfileData,
+        avatar_url: publicUrl,
+      };
+
+      const { error: updateError } = await supabase
+        .from('members')
+        .update({
+          profile_data: updatedProfile,
+        })
+        .eq('id', activeMemberId);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      setMemberData({
+        ...(memberData || {}),
+        id: activeMemberId,
+        auth_id: user.id,
+        profile_data: updatedProfile,
+      });
+
+      setMessage({ type: 'success', text: 'Foto de perfil atualizada com sucesso!' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error: any) {
+      console.error('Avatar upload error:', error);
+      setMessage({ type: 'error', text: error.message || 'Erro ao carregar imagem.' });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
   async function handleSaveProfile() {
     setSaving(true);
     setMessage(null);
 
     try {
+      let activeMember = memberData;
+      if (!activeMember && user) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('*')
+          .eq('auth_id', user.id)
+          .maybeSingle();
+        
+        if (member) {
+          activeMember = member;
+          setMemberData(member);
+        } else {
+          const { data: newMember, error: createError } = await supabase
+            .from('members')
+            .insert({
+              auth_id: user.id,
+              profile_data: { name: name || user.email?.split('@')[0] || '' }
+            })
+            .select()
+            .single();
+          
+          if (createError || !newMember) {
+            throw new Error('Não foi possível inicializar os dados de perfil.');
+          }
+          activeMember = newMember;
+          setMemberData(newMember);
+        }
+      }
+
+      if (!activeMember) {
+        throw new Error('Usuário não autenticado.');
+      }
+
       const { error } = await supabase
         .from('members')
         .update({
           profile_data: {
-            ...memberData.profile_data,
+            ...activeMember.profile_data,
             name,
             email_notifications: emailNotifications,
           },
         })
-        .eq('id', memberData.id);
+        .eq('id', activeMember.id);
 
       if (error) throw error;
+
+      setMemberData({
+        ...activeMember,
+        profile_data: {
+          ...activeMember.profile_data,
+          name,
+          email_notifications: emailNotifications,
+        }
+      });
 
       setMessage({ type: 'success', text: t('pages:settings.saved') });
       setTimeout(() => setMessage(null), 3000);
@@ -197,6 +336,42 @@ export function Settings({ setScreen }: SettingsProps) {
           </div>
 
           <div className="space-y-4">
+            {/* Avatar Picker Widget */}
+            <div className="flex flex-col items-center sm:flex-row gap-6 mb-8 p-4 rounded-xl bg-surface-container/30 border border-white/5">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30 flex items-center justify-center bg-surface-high relative shadow-[0_0_15px_rgba(192,193,255,0.1)]">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-tr from-primary/20 to-secondary/20 flex items-center justify-center text-white text-3xl font-display font-bold">
+                      {name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center cursor-pointer hover:bg-primary/95 transition-colors shadow-lg border border-surface-high group-hover:scale-105 transform duration-200">
+                  <Camera className="w-4 h-4" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    disabled={uploadingAvatar}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              <div className="text-center sm:text-left space-y-1">
+                <h3 className="font-display text-base font-semibold text-white">Foto de Perfil</h3>
+                <p className="font-sans text-xs text-on-surface-variant max-w-[280px]">
+                  Formatos aceitos: JPG, PNG ou WEBP. Tamanho máximo de 2MB.
+                </p>
+              </div>
+            </div>
+
             <div>
               <label className="block font-display text-sm font-semibold text-on-surface mb-2">
                 {t('pages:settings.name')}

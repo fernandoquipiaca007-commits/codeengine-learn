@@ -11,15 +11,15 @@ async function authHeaders() {
   };
 }
 
-export async function getLessonStreamUrl(lessonId: string): Promise<string> {
+export async function getLessonStreamUrl(lessonId: string): Promise<{ url: string; type: 'video' | 'audio' | 'link' }> {
   const headers = await authHeaders();
   const res = await fetch(`${BACKEND_URL}/api/lessons/${lessonId}/stream`, { headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: string }).error || 'Failed to load video');
+    throw new Error((err as { error?: string }).error || 'Failed to load media');
   }
   const data = await res.json();
-  return data.url;
+  return { url: data.url, type: data.type || 'video' };
 }
 
 export async function saveProgress(payload: {

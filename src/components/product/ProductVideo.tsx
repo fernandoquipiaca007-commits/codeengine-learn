@@ -13,16 +13,17 @@ interface Video {
 
 interface ProductVideoProps {
   productId: string;
+  refreshKey?: number;
 }
 
-export function ProductVideo({ productId }: ProductVideoProps) {
+export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   useEffect(() => {
     loadVideos();
-  }, [productId]);
+  }, [productId, refreshKey]);
 
   async function loadVideos() {
     try {

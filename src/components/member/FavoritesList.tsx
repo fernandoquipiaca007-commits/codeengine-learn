@@ -179,7 +179,7 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
                 {/* Price and Action */}
                 <div className="flex items-center justify-between pt-2 border-t border-white/10">
                   <span className="font-mono text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)]">
-                    R$ {product.price.toFixed(2)}
+                    $ {product.price.toFixed(2)}
                   </span>
                   <button
                     onClick={() => onViewProduct(product.id)}

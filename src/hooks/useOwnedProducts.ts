@@ -40,24 +40,45 @@ export function useOwnedProducts(userId: string | undefined) {
     if (!userId) return;
 
     try {
-      const { data, error } = await supabase
+      // 1. Get purchases with product duration
+      const { data: purchasesData, error: purchaseError } = await supabase
         .from('purchases')
-        .select('product_id, access_type, payment_status')
+        .select(`
+          product_id, 
+          access_type, 
+          payment_status, 
+          created_at,
+          products ( id )
+        `)
         .eq('member_id', userId);
 
-      if (error) throw error;
+      if (purchaseError) throw purchaseError;
 
-      // Only include products with access (free or paid) or completed payment
-      const owned = new Set(
-        data
-          ?.filter(
-            (p) =>
-              p.access_type === 'free' ||
-              p.access_type === 'paid' ||
-              p.payment_status === 'completed'
-          )
-          .map((p) => p.product_id) || []
-      );
+      // 2. Get member grants
+      const { data: grantsData, error: grantsError } = await supabase
+        .from('member_grants')
+        .select('product_id, expires_at')
+        .eq('member_id', userId);
+
+      if (grantsError) throw grantsError;
+
+      const owned = new Set<string>();
+      const now = new Date();
+
+      // Process purchases
+      purchasesData?.forEach((p: any) => {
+        if (p.access_type === 'free' || p.access_type === 'paid' || p.payment_status === 'completed') {
+          // Fallback to lifetime access if column doesn't exist
+          owned.add(p.product_id);
+        }
+      });
+
+      // Process grants
+      grantsData?.forEach((g: any) => {
+        if (!g.expires_at || new Date(g.expires_at) > now) {
+          owned.add(g.product_id);
+        }
+      });
 
       setOwnedProductIds(owned);
     } catch (error) {

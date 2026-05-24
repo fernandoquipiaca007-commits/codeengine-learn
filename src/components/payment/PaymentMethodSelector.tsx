@@ -11,6 +11,7 @@ interface PaymentMethodSelectorProps {
     id: string;
     title: string;
     price: number;
+    aoa_price?: number | null;
     fastpay_link?: string | null;
   };
   onSelectStripe: () => void;
@@ -140,7 +141,7 @@ export function PaymentMethodSelector({
             <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-on-surface-variant leading-relaxed">
               Descontos e cupons são aplicáveis apenas a pagamentos via Stripe.
-              O FastPay utiliza o preço original do produto.
+              O FastPay utiliza o preço original do produto ({product.aoa_price ? `${product.aoa_price.toFixed(2)} AOA` : `${product.price.toFixed(2)} Kz`}).
             </p>
           </div>
         </div>

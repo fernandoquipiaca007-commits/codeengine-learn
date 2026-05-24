@@ -24,6 +24,16 @@ const LocaleContext = createContext<LocaleContextValue>({
   isLoading: true,
 });
 
+const PT_COUNTRIES = new Set(['PT', 'BR', 'AO', 'MZ', 'CV', 'ST', 'GW', 'TL']);
+const FR_COUNTRIES = new Set(['FR', 'BE', 'CH', 'SN', 'CI', 'ML', 'BF', 'NE', 'TD', 'CG', 'CD', 'MG', 'CM', 'RW', 'BI', 'DJ', 'KM']);
+
+function mapCountryToLocale(code: string): AppLocale {
+  const upper = code.toUpperCase();
+  if (PT_COUNTRIES.has(upper)) return 'pt';
+  if (FR_COUNTRIES.has(upper)) return 'fr';
+  return 'en';
+}
+
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const { i18n } = useTranslation();
   const [locale, setLocaleState] = useState<AppLocale>('pt');
@@ -32,6 +42,28 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const detectLocale = useCallback(async (): Promise<AppLocale> => {
     const stored = getStoredLocale();
     if (stored) return stored;
+
+    // 1. Tentar detectar por IP usando ip-api.com
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+      
+      const res = await fetch('https://ip-api.com/json/?fields=countryCode', {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (res.ok) {
+        const { countryCode } = await res.json();
+        if (countryCode) {
+          const detected = mapCountryToLocale(countryCode);
+          console.log(`[locale] Detected country ${countryCode} -> mapped to ${detected}`);
+          return detected;
+        }
+      }
+    } catch (err) {
+      console.warn('[locale] IP-based locale detection failed, trying other methods:', err);
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();

@@ -25,6 +25,7 @@ import { Rewards } from './pages/Rewards';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { PushPermissionPrompt } from './components/PushPermissionPrompt';
+import { ResetPassword } from './pages/ResetPassword';
 
 const pageVariants = {
   initial: {
@@ -52,6 +53,7 @@ export default function App() {
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [memberSection, setMemberSection] = useState<string>('inicio');
   const [showSearch, setShowSearch] = useState(false);
+  const [isImmersive, setIsImmersive] = useState(false);
 
   const navigateToProduct = (productId: string) => {
     setCurrentProductId(productId);
@@ -76,6 +78,13 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const screen = params.get('screen');
     const pathname = window.location.pathname;
+    const hash = window.location.hash;
+
+    // Detect recovery sessions or reset password routes
+    if (hash.includes('type=recovery') || hash.includes('access_token=') || pathname === '/reset-password' || pathname === '/reset-password/') {
+      setScreen('reset-password');
+      return;
+    }
 
     // Save referral code if present (works with any URL)
     const ref = params.get('ref');
@@ -142,11 +151,13 @@ export default function App() {
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">
       <Background3D />
-      <NavBar
-        currentScreen={currentScreen}
-        setScreen={navigateToScreen}
-        onSearchClick={() => setShowSearch(true)}
-      />
+      {!isImmersive && (
+        <NavBar
+          currentScreen={currentScreen}
+          setScreen={navigateToScreen}
+          onSearchClick={() => setShowSearch(true)}
+        />
+      )}
 
       <SearchModal
         isOpen={showSearch}
@@ -161,7 +172,7 @@ export default function App() {
         }}
       />
 
-      <main className="flex-grow flex flex-col pt-8">
+      <main className={`flex-grow flex flex-col ${isImmersive ? 'pt-0' : 'pt-8'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={currentScreen === 'product' ? `product-${currentProductId ?? 'default'}` : currentScreen}
@@ -183,12 +194,14 @@ export default function App() {
             )}
             {currentScreen === 'auth' && <Auth setScreen={navigateToScreen} />}
             {currentScreen === 'signup' && <Auth setScreen={navigateToScreen} initialMode="signup" />}
+            {currentScreen === 'reset-password' && <ResetPassword setScreen={navigateToScreen} />}
             {currentScreen === 'member' && (
               <Member
                 key={memberSection}
                 setScreen={navigateToScreen}
                 onProductClick={navigateToProduct}
                 initialSection={memberSection}
+                onLearnViewChange={setIsImmersive}
               />
             )}
             {currentScreen === 'about' && <About setScreen={navigateToScreen} />}
@@ -210,7 +223,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      <Footer setScreen={navigateToScreen} />
+      {!isImmersive && <Footer setScreen={navigateToScreen} />}
       <PwaInstallBanner />
       <UpdatePrompt />
       <PushPermissionPrompt />
