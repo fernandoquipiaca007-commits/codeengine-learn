@@ -50,15 +50,25 @@ export function useFeaturedProducts() {
       if (error) throw error;
 
       const mapped: FeaturedProductCard[] = (data ?? [])
-        .filter((row) => row.products && (row.products as { status?: string }).status === 'active')
-        .map((row) => {
-          const product = row.products as {
-            title: string;
-            description: string;
-            cover_url: string;
-            cover_storage_path?: string | null;
-            tags?: string[];
-          };
+        .filter((row: any) => {
+          const product = Array.isArray(row.products) ? row.products[0] : row.products;
+          return product && product.status === 'active';
+        })
+        .map((row: any) => {
+          const product = Array.isArray(row.products) ? row.products[0] : row.products;
+          if (!product) {
+            return {
+              id: row.id,
+              product_id: row.product_id,
+              order_position: row.order_position,
+              title: '',
+              subtitle: '',
+              description: '',
+              cover_url: '',
+              cta: '',
+              tag: '',
+            };
+          }
           const tags = product.tags ?? [];
           // Resolve cover: custom_cover > cover_storage_path > cover_url
           const resolvedCover = row.custom_cover?.trim() ||

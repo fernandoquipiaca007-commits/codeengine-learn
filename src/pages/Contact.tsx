@@ -35,7 +35,7 @@ export function Contact({ setScreen }: ContactProps) {
       const categoryLabel =
         categories.find((c) => c.value === formData.category)?.label || formData.category;
       const text = [
-        `*Contato CodeEngine Learn*`,
+        `*Contato CodeEngine 1*`,
         ``,
         `Nome: ${formData.name}`,
         `Email: ${formData.email}`,
@@ -331,7 +331,7 @@ export function Contact({ setScreen }: ContactProps) {
         </h2>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {t('contact.faq.questions', { returnObjects: true }).map((faq: { q: string; a: string }, index: number) => (
+          {(t('contact.faq.questions', { returnObjects: true }) as any[]).map((faq: { q: string; a: string }, index: number) => (
             <div
               key={index}
               className="glass-card rounded-xl p-6 hover:scale-105 transition-transform duration-300"

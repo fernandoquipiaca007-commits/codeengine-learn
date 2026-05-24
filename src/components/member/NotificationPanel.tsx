@@ -293,7 +293,7 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
 
       {/* Notifications List */}
       {filteredNotifications.length === 0 ? (
-        <div
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="glass-panel rounded-2xl p-12 text-center border border-white/10"
@@ -307,12 +307,12 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
               ? t('notificationPanel.empty.unreadDesc')
               : t('notificationPanel.empty.allDesc')}
           </p>
-        </div>
+        </motion.div>
       ) : (
         <div className="space-y-3">
           <AnimatePresence>
             {filteredNotifications.map((notification, index) => (
-              <div
+              <motion.div
                 key={notification.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -381,7 +381,7 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
                     <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </AnimatePresence>
         </div>

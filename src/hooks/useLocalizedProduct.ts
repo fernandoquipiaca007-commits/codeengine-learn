@@ -124,7 +124,7 @@ export function useLocalizedProduct(productId: string | null) {
 export async function fetchLocalizedProducts(lang: AppLocale, status = 'active') {
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url')
+    .select('id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url')
     .eq('status', status)
     .order('created_at', { ascending: false });
 
@@ -144,8 +144,8 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
 
     return {
       ...p,
-      title: t?.title || fb?.title || '',
-      description: t?.description || fb?.description || '',
+      title: t?.title || fb?.title || p.title || '',
+      description: t?.description || fb?.description || p.description || '',
       cover_url: shared ? p.cover_url : (t?.cover_url || fb?.cover_url || p.cover_url || ''),
       cover_storage_path: p.cover_storage_path,
       cta_text: t?.cta_text || fb?.cta_text || 'Comprar Agora',

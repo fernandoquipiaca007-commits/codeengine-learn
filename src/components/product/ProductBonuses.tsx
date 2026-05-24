@@ -40,6 +40,8 @@ interface ProductBonusesProps {
   refreshKey?: number;
   title?: string;
   subtitle?: string;
+  productOriginalPrice?: number;
+  productFinalPrice?: number;
 }
 
 export function ProductBonuses({
@@ -47,10 +49,13 @@ export function ProductBonuses({
   refreshKey = 0,
   title,
   subtitle,
+  productOriginalPrice,
+  productFinalPrice,
 }: ProductBonusesProps) {
   const { i18n } = useTranslation();
   const currentLang = ((i18n.language || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
+  const todayPrefix = tDict.free.split(':')[0] || 'Hoje';
   const [bonuses, setBonuses] = useState<Bonus[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -236,12 +241,31 @@ export function ProductBonuses({
                 </p>
                 <div className="font-display text-xs font-semibold tracking-widest uppercase flex flex-wrap items-center gap-2">
                   <span className="text-on-surface-variant/70">{tDict.value}</span>
-                  <span className="text-on-surface-variant/50 mr-1">
-                    {tDict.before} <span className="line-through">${Number(bonus.original_value ?? 0).toFixed(2)}</span>
-                  </span>
-                  <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                    {tDict.free}
-                  </span>
+                  {productOriginalPrice !== undefined && productFinalPrice !== undefined && productFinalPrice < productOriginalPrice ? (
+                    <>
+                      <span className="text-on-surface-variant/50 mr-1">
+                        {tDict.before} <span className="line-through">${productOriginalPrice.toFixed(2)}</span>
+                      </span>
+                      <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
+                        {todayPrefix}: ${productFinalPrice.toFixed(2)}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {productOriginalPrice !== undefined && productOriginalPrice > 0 ? (
+                        <span className="text-on-surface-variant/50 mr-1">
+                          {tDict.before} <span className="line-through">${productOriginalPrice.toFixed(2)}</span>
+                        </span>
+                      ) : (
+                        <span className="text-on-surface-variant/50 mr-1">
+                          {tDict.before} <span className="line-through">${Number(bonus.original_value ?? 0).toFixed(2)}</span>
+                        </span>
+                      )}
+                      <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
+                        {todayPrefix}: ${productFinalPrice !== undefined ? productFinalPrice.toFixed(2) : Number(bonus.original_value ?? 0).toFixed(2)}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

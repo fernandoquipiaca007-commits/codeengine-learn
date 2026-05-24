@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 interface Lesson {
   id: string;
   title: string;
-  duration_seconds: number | null;
+  video_duration_seconds: number | null;
   display_order: number;
 }
 
@@ -43,7 +43,7 @@ export function CourseDownloadModal({
     try {
       const { data, error } = await supabase
         .from('course_lessons')
-        .select('id, title, duration_seconds, display_order')
+        .select('id, title, video_duration_seconds, display_order')
         .eq('product_id', productId)
         .eq('is_active', true)
         .order('display_order', { ascending: true });
@@ -268,7 +268,7 @@ export function CourseDownloadModal({
                         {lesson.display_order.toString().padStart(2, '0')}. {lesson.title}
                       </p>
                       <p className="font-sans text-xs text-on-surface-variant mt-0.5">
-                        Duração: {formatDuration(lesson.duration_seconds)}
+                        Duração: {formatDuration(lesson.video_duration_seconds)}
                       </p>
                     </div>
                   </div>

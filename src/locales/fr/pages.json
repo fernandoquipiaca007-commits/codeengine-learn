@@ -2,7 +2,7 @@
   "terms": {
     "title": "Conditions d'Utilisation",
     "heading": "Termes et Conditions",
-    "description": "En utilisant CodeEngine Learn, vous acceptez ces conditions. Veuillez lire attentivement avant d'utiliser nos services.",
+    "description": "En utilisant CodeEngine 1, vous acceptez ces conditions. Veuillez lire attentivement avant d'utiliser nos services.",
     "lastUpdate": "Dernière mise à jour: {{date}}",
     "allowedUse": "Utilisation Autorisée",
     "allowedUseDesc": "Vous pouvez utiliser nos produits à des fins personnelles et professionnelles.",
@@ -133,7 +133,7 @@
     "title": "Contact",
     "subtitle": "Contactez-nous",
     "heroTitle": "Contactez-Nous",
-    "heroSubtitle": "Nous sommes là pour vous aider. Que ce soit pour le support CodeEngine Learn, les partenariats ou la publication de contenu, notre équipe est prête à vous assister.",
+    "heroSubtitle": "Nous sommes là pour vous aider. Que ce soit pour le support CodeEngine 1, les partenariats ou la publication de contenu, notre équipe est prête à vous assister.",
     "howCanWeHelp": "Comment Pouvons-Nous Aider?",
     "responseTime": "Temps de Réponse",
     "responseTimeDesc": "Notre équipe répond sous 24 heures en jours ouvrables.",
@@ -195,7 +195,7 @@
   },
   "about": {
     "title": "À Propos",
-    "subtitle": "Découvrez CodeEngine Learn",
+    "subtitle": "Découvrez CodeEngine 1",
     "mission": "Notre Mission",
     "missionDesc": "Démocratiser l'accès à des connaissances numériques de qualité.",
     "vision": "Notre Vision",
@@ -293,7 +293,7 @@
   "support": {
     "badge": "Centre de Support",
     "heading": "Comment Pouvons-Nous Aider?",
-    "subtitle": "Notre équipe est prête à vous aider à tirer le meilleur parti de CodeEngine Learn. Choisissez le canal de support le plus adapté à vos besoins.",
+    "subtitle": "Notre équipe est prête à vous aider à tirer le meilleur parti de CodeEngine 1. Choisissez le canal de support le plus adapté à vos besoins.",
     "channels": {
       "whatsappForm": {
         "title": "Formulaire WhatsApp",
@@ -346,7 +346,7 @@
   "privacy": {
     "badge": "Politique de Confidentialité",
     "heading": "Votre Vie Privée est Notre Priorité",
-    "subtitle": "Chez CodeEngine Learn, nous prenons la protection de vos données au sérieux. Cette politique décrit comment nous collectons, utilisons et protégeons vos informations personnelles.",
+    "subtitle": "Chez CodeEngine 1, nous prenons la protection de vos données au sérieux. Cette politique décrit comment nous collectons, utilisons et protégeons vos informations personnelles.",
     "lastUpdate": "Dernière mise à jour: {{date}}",
     "dataCollection": {
       "title": "Informations que Nous Collectons",

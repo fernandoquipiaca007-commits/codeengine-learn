@@ -409,7 +409,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-display font-semibold text-lg">CodeEngine <span className="text-gray-500">Learn</span></span>
+          <span className="font-display font-semibold text-lg">CodeEngine <span className="text-gray-500">1</span></span>
         </button>
         <button
           onClick={() => setShowPlaylist(!showPlaylist)}

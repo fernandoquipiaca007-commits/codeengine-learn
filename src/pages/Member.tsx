@@ -75,6 +75,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   const [learnView, setLearnView] = useState<LearnView | null>(parsed.learn);
   const [ebookLangOpen, setEbookLangOpen] = useState(false);
   const [ebookLangAction, setEbookLangAction] = useState<{ type: 'read' | 'download'; productId: string } | null>(null);
+  const [ebookAvailableLangs, setEbookAvailableLangs] = useState<AppLocale[]>([]);
   const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [courseModalProduct, setCourseModalProduct] = useState<{ id: string; title: string } | null>(null);
   const [memberData, setMemberData] = useState<{ id: string; name: string; email: string } | null>(null);
@@ -115,26 +116,26 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
       // 2. Lookup member record
-      let { data: member } = await withTimeout(
+      let { data: member } = (await withTimeout(
         supabase
           .from('members')
           .select('*')
           .eq('auth_id', user.id)
-          .maybeSingle(),
+          .maybeSingle() as any,
         7000
-      );
+      )) as any;
 
       // If member not found, wait a moment and retry (trigger may be creating it)
       if (!member) {
         await new Promise(r => setTimeout(r, 1500));
-        const { data: retry } = await withTimeout(
+        const { data: retry } = (await withTimeout(
           supabase
             .from('members')
             .select('*')
             .eq('auth_id', user.id)
-            .maybeSingle(),
+            .maybeSingle() as any,
           7000
-        );
+        )) as any;
         member = retry;
       }
 
@@ -261,6 +262,62 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
     setEbookLangAction(null);
   };
 
+  async function resolveEbookLanguageAction(actionType: 'read' | 'download', productId: string) {
+    try {
+      const { data: prod } = await supabase
+        .from('products')
+        .select('file_storage_path, storage_url')
+        .eq('id', productId)
+        .single();
+      
+      const { data: translations } = await supabase
+        .from('products_translations')
+        .select('language, storage_url')
+        .eq('product_id', productId);
+      
+      const available: AppLocale[] = [];
+      if (prod?.file_storage_path || prod?.storage_url) {
+        available.push('pt');
+      }
+
+      if (translations) {
+        translations.forEach(t => {
+          if (t.storage_url && t.storage_url.trim() !== '') {
+            const langCode = t.language as AppLocale;
+            if (!available.includes(langCode)) {
+              available.push(langCode);
+            }
+          }
+        });
+      }
+
+      // Default to pt if none found
+      if (available.length === 0) {
+        available.push('pt');
+      }
+
+      if (available.length === 1) {
+        const lang = available[0];
+        if (actionType === 'read') {
+          setLearnView({ type: 'ebook', productId, lang });
+        } else {
+          await downloadProduct(productId, lang).catch(() => {});
+        }
+      } else {
+        setEbookAvailableLangs(available);
+        setEbookLangAction({ type: actionType, productId });
+        setEbookLangOpen(true);
+      }
+    } catch (err) {
+      console.error('Error resolving ebook languages:', err);
+      if (actionType === 'read') {
+        setLearnView({ type: 'ebook', productId, lang: 'pt' });
+      } else {
+        await downloadProduct(productId, 'pt').catch(() => {});
+      }
+    }
+  }
+
   async function handleDownload(productId: string) {
     try {
       const { data: prod } = await supabase
@@ -273,8 +330,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
         setCourseModalProduct({ id: productId, title: prod.title });
         setCourseModalOpen(true);
       } else if (prod?.product_type === 'ebook') {
-        setEbookLangAction({ type: 'download', productId });
-        setEbookLangOpen(true);
+        await resolveEbookLanguageAction('download', productId);
       } else {
         await downloadProduct(productId, locale);
       }
@@ -289,8 +345,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   }
 
   function openEbook(productId: string) {
-    setEbookLangAction({ type: 'read', productId });
-    setEbookLangOpen(true);
+    void resolveEbookLanguageAction('read', productId);
   }
 
   if (loading) {
@@ -455,6 +510,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
       <LanguageSelectorModal
         isOpen={ebookLangOpen}
+        availableLanguages={ebookAvailableLangs}
         onClose={() => {
           setEbookLangOpen(false);
           setEbookLangAction(null);

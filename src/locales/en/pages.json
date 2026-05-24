@@ -2,7 +2,7 @@
   "terms": {
     "title": "Terms of Use",
     "heading": "Terms and Conditions",
-    "description": "By using CodeEngine Learn, you agree to these terms. Please read carefully before using our services.",
+    "description": "By using CodeEngine 1, you agree to these terms. Please read carefully before using our services.",
     "lastUpdate": "Last update: {{date}}",
     "allowedUse": "Allowed Use",
     "allowedUseDesc": "You can use our products for personal and professional purposes.",
@@ -133,7 +133,7 @@
     "title": "Contact",
     "subtitle": "Get in touch with us",
     "heroTitle": "Contact Us",
-    "heroSubtitle": "We're here to help. Whether it's CodeEngine Learn support, partnerships, or content publishing, our team is ready to assist you.",
+    "heroSubtitle": "We're here to help. Whether it's CodeEngine 1 support, partnerships, or content publishing, our team is ready to assist you.",
     "howCanWeHelp": "How Can We Help?",
     "responseTime": "Response Time",
     "responseTimeDesc": "Our team responds within 24 hours on business days.",
@@ -195,9 +195,9 @@
   },
   "about": {
     "title": "About",
-    "subtitle": "Learn about CodeEngine Learn",
+    "subtitle": "Learn about CodeEngine 1",
     "heroTitle": "Transforming Knowledge into Power",
-    "heroSubtitle": "CodeEngine Learn is more than a digital content platform. We are a premium ecosystem dedicated to empowering professionals through high-quality knowledge in technology and artificial intelligence.",
+    "heroSubtitle": "CodeEngine 1 is more than a digital content platform. We are a premium ecosystem dedicated to empowering professionals through high-quality knowledge in technology and artificial intelligence.",
     "stats": {
       "activeMembers": "Active Members",
       "premiumContent": "Premium Content",
@@ -211,7 +211,7 @@
     "visionDesc": "To be the leading platform for high-quality digital content, recognized for excellence and constant innovation.",
     "values": "Our Values",
     "valuesDesc": "Excellence, innovation, accessibility, and commitment to the professional transformation of our members.",
-    "whyChoose": "Why Choose CodeEngine Learn",
+    "whyChoose": "Why Choose CodeEngine 1",
     "curatedContent": "Curated Content",
     "curatedContentDesc": "Each material is carefully selected and validated by industry experts.",
     "premiumCommunity": "Premium Community",
@@ -317,7 +317,7 @@
   "support": {
     "badge": "Support Center",
     "heading": "How Can We Help?",
-    "subtitle": "Our team is ready to help you get the most out of CodeEngine Learn. Choose the most suitable support channel for your needs.",
+    "subtitle": "Our team is ready to help you get the most out of CodeEngine 1. Choose the most suitable support channel for your needs.",
     "channels": {
       "whatsappForm": {
         "title": "WhatsApp Form",
@@ -370,7 +370,7 @@
   "privacy": {
     "badge": "Privacy Policy",
     "heading": "Your Privacy is Our Priority",
-    "subtitle": "At CodeEngine Learn, we take the protection of your data seriously. This policy describes how we collect, use and protect your personal information.",
+    "subtitle": "At CodeEngine 1, we take the protection of your data seriously. This policy describes how we collect, use and protect your personal information.",
     "lastUpdate": "Last update: {{date}}",
     "dataCollection": {
       "title": "Information We Collect",

@@ -52,7 +52,7 @@
     "loadMore": "Load more"
   },
   "pwa": {
-    "installTitle": "Install CodeEngine Learn",
+    "installTitle": "Install CodeEngine 1",
     "installDesc": "Quick access as an app on your device",
     "updateTitle": "New version available",
     "updateDesc": "An update is ready to install"
@@ -128,7 +128,7 @@
     }
   },
   "profile": {
-    "memberSince": "CodeEngine Learn Member",
+    "memberSince": "CodeEngine 1 Member",
     "editProfile": "Edit Profile",
     "changePassword": "Change Password",
     "emailPreferences": "Email Preferences",

@@ -93,9 +93,18 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           }, 1000);
         }
       } else if (mode === 'reset') {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
         if (!codeSent) {
-          const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
-          if (resetError) throw resetError;
+          const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Falha ao enviar o código de redefinição.');
+          }
 
           setCodeSent(true);
           setSuccess('Código de verificação enviado! Verifique a sua caixa de entrada.');
@@ -107,25 +116,35 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
             throw new Error('A senha deve ter no mínimo 6 caracteres.');
           }
 
-          const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-            email,
-            token: verificationCode.trim(),
-            type: 'recovery',
+          const response = await fetch(`${backendUrl}/api/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              code: verificationCode.trim(),
+              newPassword,
+            }),
           });
 
-          if (verifyError || !verifyData?.user) {
-            throw verifyError || new Error('Código de verificação inválido.');
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Código de verificação inválido ou expirado.');
           }
 
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: newPassword,
-          });
-
-          if (updateError) throw updateError;
-
-          setSuccess('Senha redefinida com sucesso!');
-          setTimeout(() => {
-            setScreen('member');
+          setSuccess('Senha redefinida com sucesso! Redirecionando...');
+          setTimeout(async () => {
+            try {
+              const { error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password: newPassword,
+              });
+              if (signInError) throw signInError;
+              setScreen('member');
+            } catch {
+              // If auto-login fails, redirect to login mode
+              setSuccess('');
+              window.location.reload();
+            }
           }, 1500);
         }
       }
@@ -155,8 +174,8 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="font-display text-4xl font-bold text-white mb-2">
-                {mode === 'login' && 'Bem-vindo de volta à CodeEngine Learn'}
-                {mode === 'signup' && 'Junte-se à CodeEngine Learn'}
+                {mode === 'login' && 'Bem-vindo de volta à CodeEngine 1'}
+                {mode === 'signup' && 'Junte-se à CodeEngine 1'}
                 {mode === 'reset' && 'Recuperar Senha'}
               </h1>
               <p className="font-sans text-base text-on-surface-variant">

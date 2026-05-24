@@ -13,11 +13,11 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: 'CodeEngine Learn', body: event.data.text() };
+    payload = { title: 'CodeEngine 1', body: event.data.text() };
   }
 
   event.waitUntil(
-    self.registration.showNotification(payload.title || 'CodeEngine Learn', {
+    self.registration.showNotification(payload.title || 'CodeEngine 1', {
       body: payload.body || '',
       icon: payload.icon || '/icons/icon-192.svg',
       badge: payload.badge || '/icons/icon-192.svg',

@@ -7,6 +7,7 @@ interface LanguageSelectorModalProps {
   onSelect: (locale: AppLocale) => void;
   title?: string;
   subtitle?: string;
+  availableLanguages?: AppLocale[];
 }
 
 export function LanguageSelectorModal({
@@ -15,14 +16,19 @@ export function LanguageSelectorModal({
   onSelect,
   title = 'Selecione o Idioma',
   subtitle = 'Escolha sua tradução preferida antes de continuar',
+  availableLanguages,
 }: LanguageSelectorModalProps) {
   if (!isOpen) return null;
 
-  const languages: { code: AppLocale; name: string; nativeName: string; flag: string }[] = [
+  const allLanguages: { code: AppLocale; name: string; nativeName: string; flag: string }[] = [
     { code: 'pt', name: 'Português', nativeName: 'Português', flag: '🇵🇹' },
     { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
     { code: 'fr', name: 'Français', nativeName: 'Français', flag: '🇫🇷' },
   ];
+
+  const languages = availableLanguages
+    ? allLanguages.filter((l) => availableLanguages.includes(l.code))
+    : allLanguages;
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">

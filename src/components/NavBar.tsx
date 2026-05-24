@@ -196,8 +196,8 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         onClick={() => setScreen('home')}
       >
         <span className="inline sm:hidden">CE</span>
-        <span className="hidden sm:inline md:hidden">CodeEngine</span>
-        <span className="hidden md:inline">CodeEngine Learn</span>
+        <span className="hidden sm:inline md:hidden">CodeEngine 1</span>
+        <span className="hidden md:inline">CodeEngine 1</span>
       </div>
       
       {/* Desktop Navigation - Hidden on tablet and below */}

@@ -61,20 +61,12 @@ export function DownloadList({ memberId }: DownloadListProps) {
       // Get download stats for each product
       const productsWithStats = await Promise.all(
         (purchases || [])
-          .filter((purchase: { products: { id: string } | null }) => purchase.products?.id)
-          .map(async (purchase: {
-            purchase_date: string;
-            product_id: string;
-            products: { 
-              id: string; 
-              title: string; 
-              cover_url: string; 
-              cover_storage_path: string | null;
-              storage_url: string;
-              file_storage_path: string | null;
-            };
-          }) => {
-            const product = purchase.products;
+          .filter((purchase: any) => {
+            const prod = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
+            return prod?.id;
+          })
+          .map(async (purchase: any) => {
+            const product = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
             const { data: downloads } = await supabase
               .from('downloads')
               .select('download_timestamp')
@@ -162,7 +154,7 @@ export function DownloadList({ memberId }: DownloadListProps) {
       </div>
 
       {/* Info Banner */}
-      <div
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="glass-panel rounded-xl p-4 border border-primary/30 bg-primary/5"
@@ -175,11 +167,11 @@ export function DownloadList({ memberId }: DownloadListProps) {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Products List */}
       {products.length === 0 ? (
-        <div
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="glass-panel rounded-2xl p-12 text-center border border-white/10"
@@ -191,11 +183,11 @@ export function DownloadList({ memberId }: DownloadListProps) {
           <p className="font-sans text-base text-on-surface-variant">
             Você ainda não comprou nenhum produto. Explore nossa biblioteca!
           </p>
-        </div>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {products.map((product, index) => (
-            <div
+            <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -266,7 +258,7 @@ export function DownloadList({ memberId }: DownloadListProps) {
                   </>
                 )}
               </button>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

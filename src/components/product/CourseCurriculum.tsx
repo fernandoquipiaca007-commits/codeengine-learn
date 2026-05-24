@@ -26,7 +26,7 @@ interface CourseCurriculumProps {
   onPreviewLesson?: (lessonId: string) => void;
 }
 
-export function CourseCurriculum({ productId }: CourseCurriculumProps) {
+export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculumProps) {
   const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const purchase = useProductPurchaseOptional();

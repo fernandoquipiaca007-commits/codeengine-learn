@@ -82,8 +82,9 @@ export function Success({ setScreen }: SuccessProps) {
         .maybeSingle();
 
       const metaProductId = session.metadata?.product_id;
+      const productObj = purchase && (Array.isArray((purchase as any).products) ? (purchase as any).products[0] : (purchase as any).products);
       const productTitle =
-        purchase?.products?.title ||
+        productObj?.title ||
         (metaProductId ? t('success.acquiredProduct') : t('success.product'));
 
       setSessionData({

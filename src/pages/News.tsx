@@ -24,6 +24,30 @@ interface NewsArticle {
   likes_count?: number;
 }
 
+function getGroupLabel(dateString: string, currentLocale: string) {
+  const date = new Date(dateString);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+  if (isSameDay(date, today)) {
+    return currentLocale === 'pt' ? 'Hoje' : currentLocale === 'fr' ? "Aujourd'hui" : 'Today';
+  } else if (isSameDay(date, yesterday)) {
+    return currentLocale === 'pt' ? 'Ontem' : currentLocale === 'fr' ? 'Hier' : 'Yesterday';
+  } else {
+    return date.toLocaleDateString(currentLocale === 'pt' ? 'pt-PT' : currentLocale === 'fr' ? 'fr-FR' : 'en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+}
+
 interface NewsProps {
   setScreen: (screen: string) => void;
 }
@@ -42,6 +66,7 @@ export function News({ setScreen }: NewsProps) {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(20);
 
   // Sharing states
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -57,7 +82,7 @@ export function News({ setScreen }: NewsProps) {
 
   const handleTwitterShare = (article: NewsArticle) => {
     const shareUrl = `${window.location.origin}/?screen=noticias&newsId=${article.id}`;
-    const text = `🔥 ${article.title}\n\nLeia a notícia completa na CodeEngine Learn:\n`;
+    const text = `🔥 ${article.title}\n\nLeia a notícia completa na CodeEngine 1:\n`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
   };
 
@@ -75,7 +100,7 @@ export function News({ setScreen }: NewsProps) {
 
   const handleCopyCaption = (article: NewsArticle) => {
     const shareUrl = `${window.location.origin}/?screen=noticias&newsId=${article.id}`;
-    const text = `🔥 ${article.title}\n\n${article.excerpt}\n\nConfira as últimas novidades de tecnologia e inteligência artificial no hub de conhecimento da CodeEngine Learn!\n\nLink: ${shareUrl}`;
+    const text = `🔥 ${article.title}\n\n${article.excerpt}\n\nConfira as últimas novidades de tecnologia e inteligência artificial no hub de conhecimento da CodeEngine 1!\n\nLink: ${shareUrl}`;
     navigator.clipboard.writeText(text);
     setCopiedCaption(true);
     setTimeout(() => setCopiedCaption(false), 2000);
@@ -691,89 +716,130 @@ export function News({ setScreen }: NewsProps) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {normalArticles.map((article, index) => (
-            <motion.article
-              key={article.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="glass-panel rounded-2xl overflow-hidden group cursor-pointer hover:shadow-[0_0_40px_rgba(192,193,255,0.15)] hover:border-primary/20 border border-white/5 transition-all flex flex-col h-full"
-              onClick={() => {
-                setSelectedArticle(article);
-                void trackView(article.id);
-              }}
-            >
-              {/* Thumbnail */}
-              {article.thumbnail_url && (
-                <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
-                  <img
-                    src={article.thumbnail_url}
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
-                </div>
-              )}
+        <div className="space-y-12">
+          {(() => {
+            const visibleArticles = normalArticles.slice(0, visibleCount);
+            const groupedArticles: Record<string, NewsArticle[]> = {};
+            
+            visibleArticles.forEach((article) => {
+              const label = getGroupLabel(article.published_at, locale);
+              if (!groupedArticles[label]) {
+                groupedArticles[label] = [];
+              }
+              groupedArticles[label].push(article);
+            });
 
-              {/* Content */}
-              <div className="p-6 flex flex-col flex-1">
-                {/* Category Badge */}
-                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${getCategoryColor(article.category)} font-display text-[10px] font-bold uppercase tracking-wider mb-4 border w-fit`}>
-                  <TrendingUp className="w-3 h-3" />
-                  {translateCategory(article.category)}
+            return Object.entries(groupedArticles).map(([dayLabel, articlesInDay]) => (
+              <div key={dayLabel} className="space-y-6">
+                {/* Epoch Header */}
+                <div className="flex items-center gap-4 py-4">
+                  <div className="h-[1px] bg-white/10 flex-grow" />
+                  <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-primary bg-primary/10 border border-primary/20 px-5 py-2 rounded-full backdrop-blur-md shadow-lg shadow-black/20">
+                    {dayLabel}
+                  </span>
+                  <div className="h-[1px] bg-white/10 flex-grow" />
                 </div>
 
-                {/* Title */}
-                <h3 className="font-display text-xl font-semibold text-white mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                  {article.title}
-                </h3>
+                {/* Grid for this Day */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {articlesInDay.map((article, index) => (
+                    <motion.article
+                      key={article.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.05 }}
+                      className="glass-panel rounded-2xl overflow-hidden group cursor-pointer hover:shadow-[0_0_40px_rgba(192,193,255,0.15)] hover:border-primary/20 border border-white/5 transition-all flex flex-col h-full"
+                      onClick={() => {
+                        setSelectedArticle(article);
+                        void trackView(article.id);
+                      }}
+                    >
+                      {/* Thumbnail */}
+                      {article.thumbnail_url && (
+                        <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
+                          <img
+                            src={article.thumbnail_url}
+                            alt={article.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+                        </div>
+                      )}
 
-                {/* Excerpt */}
-                <p className="font-sans text-sm text-on-surface-variant mb-6 line-clamp-3 flex-1">
-                  {article.excerpt}
-                </p>
+                      {/* Content */}
+                      <div className="p-6 flex flex-col flex-1">
+                        {/* Category Badge */}
+                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${getCategoryColor(article.category)} font-display text-[10px] font-bold uppercase tracking-wider mb-4 border w-fit`}>
+                          <TrendingUp className="w-3 h-3" />
+                          {translateCategory(article.category)}
+                        </div>
 
-                {/* Meta */}
-                <div className="flex items-center justify-between text-xs text-on-surface-variant border-t border-white/5 pt-4 flex-shrink-0">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{formatDate(article.published_at)}</span>
-                  </div>
-                  {isAdmin && (
-                    <div className="flex items-center gap-1.5 font-medium bg-white/5 px-2 py-0.5 rounded">
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>{article.views} {locale === 'fr' ? 'vues' : locale === 'pt' ? 'visualizações' : 'views'}</span>
-                    </div>
-                  )}
+                        {/* Title */}
+                        <h3 className="font-display text-xl font-semibold text-white mb-3 group-hover:text-primary transition-colors line-clamp-2 break-words">
+                          {article.title}
+                        </h3>
+
+                        {/* Excerpt */}
+                        <p className="font-sans text-sm text-on-surface-variant mb-6 line-clamp-3 flex-1 break-words">
+                          {article.excerpt}
+                        </p>
+
+                        {/* Meta */}
+                        <div className="flex items-center justify-between text-xs text-on-surface-variant border-t border-white/5 pt-4 flex-shrink-0">
+                          <div className="flex items-center gap-2 font-medium">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{formatDate(article.published_at)}</span>
+                          </div>
+                          {isAdmin && (
+                            <div className="flex items-center gap-1.5 font-medium bg-white/5 px-2 py-0.5 rounded">
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>{article.views} {locale === 'fr' ? 'vues' : locale === 'pt' ? 'visualizações' : 'views'}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Actions row */}
+                        <div className="flex items-center justify-between mt-4 pt-2 flex-shrink-0">
+                          <div className="flex items-center gap-1.5 text-[#6366f1] group-hover:gap-2.5 transition-all text-xs font-bold uppercase tracking-widest font-display">
+                            <span>{t('news.readMore') || 'Read More'}</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </div>
+                          
+                          {/* Heart/Like Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation(); // prevent opening the article twice
+                              toggleLike(article.id);
+                            }}
+                            className={`p-2 rounded-full border transition-all ${
+                              likedArticles.includes(article.id)
+                                ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                                : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            <Heart className={`w-4 h-4 ${likedArticles.includes(article.id) ? 'fill-current text-red-500' : ''}`} />
+                          </button>
+                        </div>
+
+                      </div>
+                    </motion.article>
+                  ))}
                 </div>
-
-                {/* Actions row */}
-                <div className="flex items-center justify-between mt-4 pt-2 flex-shrink-0">
-                  <div className="flex items-center gap-1.5 text-[#6366f1] group-hover:gap-2.5 transition-all text-xs font-bold uppercase tracking-widest font-display">
-                    <span>{t('news.readMore') || 'Read More'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </div>
-                  
-                  {/* Heart/Like Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // prevent opening the article twice
-                      toggleLike(article.id);
-                    }}
-                    className={`p-2 rounded-full border transition-all ${
-                      likedArticles.includes(article.id)
-                        ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <Heart className={`w-4 h-4 ${likedArticles.includes(article.id) ? 'fill-current text-red-500' : ''}`} />
-                  </button>
-                </div>
-
               </div>
-            </motion.article>
-          ))}
+            ));
+          })()}
+
+          {/* Load More Button */}
+          {normalArticles.length > visibleCount && (
+            <div className="flex justify-center mt-12 mb-6">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 20)}
+                className="px-8 py-3.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 text-white rounded-full font-display text-xs font-bold tracking-widest uppercase flex items-center gap-2.5 transition-all shadow-lg hover:scale-105 cursor-pointer relative z-10"
+              >
+                <span>+ {locale === 'pt' ? 'Ver Notícias Anteriores' : locale === 'fr' ? 'Voir les Articles Précédents' : 'Load Previous News'}</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -970,7 +1036,7 @@ export function News({ setScreen }: NewsProps) {
                 </span>
                 <div className="text-right">
                   <span className="font-display text-[8px] font-extrabold tracking-widest text-on-surface-variant uppercase">
-                    CodeEngine Learn
+                    CodeEngine 1
                   </span>
                 </div>
               </div>

@@ -87,7 +87,7 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
 
       {/* Favorites List */}
       {products.length === 0 ? (
-        <div
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="glass-panel rounded-2xl p-12 text-center border border-white/10"
@@ -106,11 +106,11 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
             Explorar Produtos
             <ArrowRight className="w-4 h-4" />
           </button>
-        </div>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product, index) => (
-            <div
+            <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -190,7 +190,7 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

@@ -5,7 +5,7 @@ import { Product, Category } from '../types/store';
 import { useFavorites } from '../hooks/useFavorites';
 import { useOwnedProducts } from '../hooks/useOwnedProducts';
 import { FavoriteButton } from '../components/FavoriteButton';
-import { fetchLocalizedProducts } from '../hooks/useLocalizedProduct';
+import { fetchLocalizedProducts, LocalizedProduct } from '../hooks/useLocalizedProduct';
 import { useLocale } from '../contexts/LocaleContext';
 import { usePoints } from '../hooks/usePoints';
 import { canViewProduct } from '../lib/product-visibility';
@@ -27,7 +27,7 @@ export function Library({ setScreen, onProductClick }: {
 }) {
   const { t } = useTranslation('pages');
   const { t: tCommon } = useTranslation();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
@@ -139,8 +139,8 @@ export function Library({ setScreen, onProductClick }: {
       setCategories(categoriesData || []);
 
       const localized = await fetchLocalizedProducts(locale, 'active');
-      const visible = (localized as Product[]).filter((p) =>
-        canViewProduct(p as Product & { visibility?: string; min_member_level?: string }, memberLevel, Boolean(user))
+      const visible = (localized as any[]).filter((p) =>
+        canViewProduct(p as any, memberLevel, Boolean(user))
       );
       setProducts(visible);
     } catch (err) {
@@ -284,7 +284,7 @@ export function Library({ setScreen, onProductClick }: {
                   {subcategories.map((sub) => (
                     <button
                       key={sub.id}
-                      type="button;submit"
+                      type="button"
                       onClick={() => setSelectedSubcategory(sub.id)}
                       className={`px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider transition-all duration-300 border ${
                         selectedSubcategory === sub.id
@@ -373,10 +373,10 @@ export function Library({ setScreen, onProductClick }: {
 
                       {/* Product Info */}
                       <div className="px-4 pb-6 flex-grow flex flex-col z-10 relative">
-                        <h2 className="font-display text-2xl font-semibold text-white mb-2 group-hover:text-primary transition-colors">
+                        <h2 className="font-display text-2xl font-semibold text-white mb-2 group-hover:text-primary transition-colors break-words">
                           {product.title}
                         </h2>
-                        <p className="font-sans text-base text-on-surface-variant/80 line-clamp-2 mb-6 flex-grow">
+                        <p className="font-sans text-base text-on-surface-variant/80 line-clamp-2 mb-6 flex-grow break-words">
                           {product.description}
                         </p>
 
@@ -395,8 +395,8 @@ export function Library({ setScreen, onProductClick }: {
                         )}
 
                         {/* Price and CTA */}
-                        <div className="flex items-center justify-between mt-auto w-full gap-2">
-                          <span className="font-mono text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] shrink-0">
+                        <div className="flex flex-wrap items-center justify-between mt-auto w-full gap-3">
+                          <span className="font-mono text-base sm:text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
                             {product.is_free ? t('library.free') : `$ ${product.price.toFixed(2)}`}
                           </span>
                           {isOwned(product.id) ? (

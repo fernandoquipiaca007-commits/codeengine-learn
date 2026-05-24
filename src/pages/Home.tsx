@@ -31,7 +31,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="animate__animated animate__fadeInDown font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary pb-2"
           >
-            CodeEngine Learn
+            CodeEngine 1
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}

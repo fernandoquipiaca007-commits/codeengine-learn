@@ -29,7 +29,7 @@ export function Privacy({ setScreen }: PrivacyProps) {
           </h1>
           
           <p className="font-sans text-base sm:text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
-            Na CodeEngine Learn, levamos a proteção dos seus dados a sério. Esta política descreve como coletamos, 
+            Na CodeEngine 1, levamos a proteção dos seus dados a sério. Esta política descreve como coletamos, 
             usamos e protegemos suas informações pessoais.
           </p>
           

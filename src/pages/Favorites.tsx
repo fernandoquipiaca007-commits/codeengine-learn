@@ -53,7 +53,14 @@ export function Favorites({ setScreen }: FavoritesProps) {
         console.error('Error loading favorites:', error);
         setFavorites([]);
       } else {
-        setFavorites(data || []);
+        const mapped = (data || []).map((fav: any) => {
+          const product = Array.isArray(fav.product) ? fav.product[0] : fav.product;
+          return {
+            ...fav,
+            product
+          };
+        }).filter(fav => fav.product);
+        setFavorites(mapped as any);
       }
     } catch (error) {
       console.error('Error:', error);

@@ -2,7 +2,7 @@
   "terms": {
     "title": "Termos de Uso",
     "heading": "Termos e Condições",
-    "description": "Ao utilizar a CodeEngine Learn, você concorda com estes termos. Leia atentamente antes de usar nossos serviços.",
+    "description": "Ao utilizar a CodeEngine 1, você concorda com estes termos. Leia atentamente antes de usar nossos serviços.",
     "lastUpdate": "Última atualização: {{date}}",
     "allowedUse": "Uso Permitido",
     "allowedUseDesc": "Você pode usar nossos produtos para fins pessoais e profissionais.",
@@ -138,7 +138,7 @@
     "title": "Contato",
     "subtitle": "Entre em contato conosco",
     "heroTitle": "Fale Conosco",
-    "heroSubtitle": "Estamos aqui para ajudar. Seja para suporte CodeEngine Learn, parcerias ou publicação de conteúdo, nossa equipe está pronta para atendê-lo.",
+    "heroSubtitle": "Estamos aqui para ajudar. Seja para suporte CodeEngine 1, parcerias ou publicação de conteúdo, nossa equipe está pronta para atendê-lo.",
     "howCanWeHelp": "Como Podemos Ajudar?",
     "responseTime": "Tempo de Resposta",
     "responseTimeDesc": "Nossa equipe responde em até 24 horas em dias úteis.",
@@ -200,9 +200,9 @@
   },
   "about": {
     "title": "Sobre",
-    "subtitle": "Conheça a CodeEngine Learn",
+    "subtitle": "Conheça a CodeEngine 1",
     "heroTitle": "Transformando Conhecimento em Poder",
-    "heroSubtitle": "A CodeEngine Learn é mais que uma plataforma de conteúdo digital. Somos um ecossistema premium dedicado a capacitar profissionais através do conhecimento de alta qualidade em tecnologia e inteligência artificial.",
+    "heroSubtitle": "A CodeEngine 1 é mais que uma plataforma de conteúdo digital. Somos um ecossistema premium dedicado a capacitar profissionais através do conhecimento de alta qualidade em tecnologia e inteligência artificial.",
     "stats": {
       "activeMembers": "Membros Ativos",
       "premiumContent": "Conteúdos Premium",
@@ -216,7 +216,7 @@
     "visionDesc": "Ser a plataforma líder em conteúdo digital de alta qualidade, reconhecida pela excelência e inovação constante.",
     "values": "Nossos Valores",
     "valuesDesc": "Excelência, inovação, acessibilidade e compromisso com a transformação profissional de nossos membros.",
-    "whyChoose": "Por Que Escolher a CodeEngine Learn",
+    "whyChoose": "Por Que Escolher a CodeEngine 1",
     "curatedContent": "Conteúdo Curado",
     "curatedContentDesc": "Cada material é cuidadosamente selecionado e validado por especialistas da indústria.",
     "premiumCommunity": "Comunidade Premium",
@@ -322,7 +322,7 @@
   "support": {
     "badge": "Central de Suporte",
     "heading": "Como Podemos Ajudar?",
-    "subtitle": "Nossa equipe está pronta para ajudar você a aproveitar ao máximo a CodeEngine Learn. Escolha o canal de suporte mais adequado para sua necessidade.",
+    "subtitle": "Nossa equipe está pronta para ajudar você a aproveitar ao máximo a CodeEngine 1. Escolha o canal de suporte mais adequado para sua necessidade.",
     "channels": {
       "whatsappForm": {
         "title": "Formulário WhatsApp",
@@ -375,7 +375,7 @@
   "privacy": {
     "badge": "Política de Privacidade",
     "heading": "Sua Privacidade é Nossa Prioridade",
-    "subtitle": "Na CodeEngine Learn, levamos a proteção dos seus dados a sério. Esta política descreve como coletamos, usamos e protegemos suas informações pessoais.",
+    "subtitle": "Na CodeEngine 1, levamos a proteção dos seus dados a sério. Esta política descreve como coletamos, usamos e protegemos suas informações pessoais.",
     "lastUpdate": "Última atualização: {{date}}",
     "dataCollection": {
       "title": "Informações que Coletamos",

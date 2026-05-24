@@ -17,7 +17,7 @@ export function Footer({ setScreen }: FooterProps = {}) {
   return (
     <footer className="w-full py-16 px-6 flex flex-col items-center gap-8 bg-surface-lowest border-t border-outline/20 mt-24">
       <div className="font-display text-2xl font-black text-on-surface">
-        CodeEngine Learn
+        CodeEngine 1
       </div>
       <div className="flex flex-wrap justify-center gap-8">
         <button 
@@ -52,7 +52,7 @@ export function Footer({ setScreen }: FooterProps = {}) {
         </button>
       </div>
       <div className="font-sans text-base text-secondary opacity-60 text-center">
-        © 2026 CodeEngine Learn. {t('footer.tagline')}.
+        © 2026 CodeEngine 1. {t('footer.tagline')}.
       </div>
     </footer>
   );

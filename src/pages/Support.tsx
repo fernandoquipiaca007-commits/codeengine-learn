@@ -28,7 +28,7 @@ export function Support({ setScreen }: SupportProps) {
           </h1>
           
           <p className="animate__animated animate__fadeInUp font-sans text-base sm:text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
-            Nossa equipe está pronta para ajudar você a aproveitar ao máximo a CodeEngine Learn. 
+            Nossa equipe está pronta para ajudar você a aproveitar ao máximo a CodeEngine 1. 
             Escolha o canal de suporte mais adequado para sua necessidade.
           </p>
         </motion.div>

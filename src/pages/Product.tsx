@@ -353,7 +353,7 @@ export function Product({ setScreen, productId }: ProductProps) {
       {/* Hero Section */}
       <section className="grid gap-10 md:grid-cols-2 md:gap-16 items-center mb-24 relative">
         {/* Content Left */}
-        <div className="flex flex-col gap-8 relative z-10">
+        <div className="flex flex-col gap-8 relative z-10 min-w-0 w-full">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel w-fit border border-primary/30">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
             <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
@@ -361,12 +361,12 @@ export function Product({ setScreen, productId }: ProductProps) {
             </span>
           </div>
           
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-on-surface">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-on-surface break-words">
             {hasCopy(customCopy?.hero_headline)
               ? safeText(customCopy.hero_headline)
               : (product.title || 'Produto').split(' ').slice(0, 2).join(' ')}{' '}
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary break-words">
               {hasCopy(customCopy?.hero_subheadline)
                 ? safeText(customCopy.hero_subheadline)
                 : (product.title || '').split(' ').slice(2).join(' ')}
@@ -374,7 +374,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           </h1>
           
           <div className="max-w-lg">
-            <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant">
+            <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant break-words">
               {descriptionExpanded ? description : `${description.slice(0, 170)}${description.length > 170 ? '...' : ''}`}
             </p>
             {description.length > 170 && (
@@ -587,6 +587,8 @@ export function Product({ setScreen, productId }: ProductProps) {
           refreshKey={childRefreshKey}
           title={safeText(customCopy?.bonuses_title)}
           subtitle={safeText(customCopy?.bonuses_subtitle)}
+          productOriginalPrice={listPrice}
+          productFinalPrice={getFinalPrice()}
         />
       )}
 

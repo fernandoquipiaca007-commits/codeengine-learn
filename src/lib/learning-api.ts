@@ -30,6 +30,7 @@ export async function saveProgress(payload: {
   position_percent?: number;
   page_number?: number;
   status?: string;
+  preferences?: any;
 }) {
   const headers = await authHeaders();
   await fetch(`${BACKEND_URL}/api/progress`, {
@@ -67,7 +68,8 @@ export async function getEbookReadUrl(productId: string, locale: AppLocale = 'pt
   const headers = await authHeaders();
   const res = await fetch(`${BACKEND_URL}/api/ebooks/${productId}/read?lang=${locale}`, { headers });
   if (!res.ok) throw new Error('Failed to load ebook');
-  return res.json() as { url: string; format: string };
+  const data = await res.json();
+  return data as { url: string; format: string };
 }
 
 export interface LibraryItem {
