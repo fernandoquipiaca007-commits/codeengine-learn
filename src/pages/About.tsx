@@ -61,10 +61,10 @@ export function About({ setScreen }: AboutProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">
+          <h1 className="animate__animated animate__fadeInDown font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">
             {t('about.heroTitle')}
           </h1>
-          <p className="font-sans text-base sm:text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
+          <p className="animate__animated animate__fadeInUp font-sans text-base sm:text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
             {t('about.heroSubtitle')}
           </p>
         </motion.div>
@@ -77,11 +77,30 @@ export function About({ setScreen }: AboutProps) {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="mb-32"
       >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-4 gap-6"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1,
+                delayChildren: 0.3,
+              },
+            },
+          }}
+        >
           {stats.map((stat, index) => (
-            <div
+            <motion.div
               key={index}
-              className="glass-panel rounded-2xl p-8 text-center relative group hover:scale-105 transition-transform duration-300"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="glass-panel rounded-2xl p-8 text-center relative group hover:scale-105 transition-transform duration-300 animate__animated animate__slideInUp"
             >
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="font-display text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-primary to-white mb-2">
@@ -90,9 +109,9 @@ export function About({ setScreen }: AboutProps) {
               <div className="font-sans text-sm text-on-surface-variant uppercase tracking-wider">
                 {stat.label}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.section>
 
       {/* Values Section */}
@@ -102,7 +121,7 @@ export function About({ setScreen }: AboutProps) {
         transition={{ duration: 0.6, delay: 0.3 }}
         className="mb-32"
       >
-        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-16">
+        <h2 className="animate__animated animate__slideInLeft font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-16">
           {t('about.whatMovesUs')}
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
@@ -136,7 +155,7 @@ export function About({ setScreen }: AboutProps) {
         transition={{ duration: 0.6, delay: 0.4 }}
         className="mb-32"
       >
-        <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-16">
+        <h2 className="animate__animated animate__slideInRight font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-16">
           {t('about.whyChoose')}
         </h2>
         <div className="grid md:grid-cols-3 gap-8">

@@ -17,7 +17,7 @@ export function Licensing({ setScreen }: LicensingProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6 animate__animated animate__fadeInDown">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
               <Award className="w-6 h-6 text-primary" />
             </div>
@@ -26,11 +26,11 @@ export function Licensing({ setScreen }: LicensingProps) {
             </span>
           </div>
           
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">
+          <h1 className="animate__animated animate__fadeInDown font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">
             {t('licensing.heading')}
           </h1>
           
-          <p className="font-sans text-base sm:text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
+          <p className="animate__animated animate__fadeInUp font-sans text-base sm:text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
             {t('licensing.subtitle')}
           </p>
         </motion.div>
@@ -41,7 +41,8 @@ export function Licensing({ setScreen }: LicensingProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="glass-panel rounded-2xl p-4 sm:p-6 md:p-8">
+          className="glass-panel rounded-2xl p-4 sm:p-6 md:p-8 animate__animated animate__slideInLeft"
+        >
           <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-6">
             <Users className="w-6 h-6 text-primary" />
           </div>
@@ -74,7 +75,8 @@ export function Licensing({ setScreen }: LicensingProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="glass-panel rounded-2xl p-4 sm:p-6 md:p-8 border border-primary/30">
+          className="glass-panel rounded-2xl p-4 sm:p-6 md:p-8 border border-primary/30 animate__animated animate__slideInRight"
+        >
           <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-6">
             <Building className="w-6 h-6 text-primary" />
           </div>

@@ -1,4 +1,5 @@
 import { ArrowRight, Book, Settings, Cpu } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useFeaturedProducts } from '../hooks/useFeaturedProducts';
 import { getProductCoverUrl } from '../lib/storage-path';
 import { useTranslation } from 'react-i18next';
@@ -24,21 +25,36 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     <div className="pt-28 pb-24 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
       <header className="relative flex flex-col items-center justify-center text-center overflow-hidden mb-24 sm:mb-28">
         <div className="max-w-3xl z-10 space-y-6">
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary pb-2">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="animate__animated animate__fadeInDown font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary pb-2"
+          >
             CodeEngine Learn
-          </h1>
-          <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant max-w-xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+            className="animate__animated animate__fadeInUp font-sans text-sm sm:text-base md:text-lg text-on-surface-variant max-w-xl mx-auto"
+          >
             {t('home.heroSubtitle')}
-          </p>
-          <div className="pt-6">
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
+            className="pt-6"
+          >
             <button
               onClick={() => setScreen('library')}
-              className="bg-on-surface text-background font-display text-base sm:text-lg md:text-xl font-semibold px-5 sm:px-7 md:px-10 py-3 sm:py-4 rounded-full transition-transform hover:scale-[0.98] duration-200 inline-flex items-center justify-center gap-2 w-full sm:w-auto"
+              className="animate__animated animate__pulse bg-on-surface text-background font-display text-base sm:text-lg md:text-xl font-semibold px-5 sm:px-7 md:px-10 py-3 sm:py-4 rounded-full transition-transform hover:scale-[0.98] duration-200 inline-flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               {t('home.exploreVault')}
               <ArrowRight className="w-5 h-5" />
             </button>
-          </div>
+          </motion.div>
         </div>
         <div className="absolute inset-0 z-0 hidden sm:flex items-center justify-center opacity-30 pointer-events-none hero-abstract">
           <div className="w-[800px] h-[800px] bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-[100px] mix-blend-screen"></div>
@@ -47,12 +63,22 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
       <section className="relative z-10">
         <div className="text-center mb-16">
-          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-on-surface mb-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
+            className="animate__animated animate__slideInDown font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-on-surface mb-4"
+          >
             {t('home.featuredTitle')}
-          </h2>
-          <p className="font-sans text-sm sm:text-base text-on-surface-variant max-w-xl mx-auto">
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+            className="animate__animated animate__fadeInUp font-sans text-sm sm:text-base text-on-surface-variant max-w-xl mx-auto"
+          >
             {t('home.featuredSubtitle')}
-          </p>
+          </motion.p>
         </div>
 
         {loading ? (

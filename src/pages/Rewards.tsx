@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import {
   Star, Gift, Share2, ShoppingCart, BookOpen,
   TrendingUp, Zap, Crown, Award, ArrowRight,
-  Ticket, Sparkles, Trophy
+  Ticket, Sparkles, Trophy, Medal, Gem
 } from 'lucide-react';
 
 interface RewardsProps {
@@ -14,11 +14,11 @@ interface RewardsProps {
 }
 
 const LEVELS = [
-  { name: 'Starter', icon: '⭐', threshold: 0, multiplier: '1x', color: 'from-gray-500 to-gray-600', border: 'border-gray-500/30' },
-  { name: 'Bronze', icon: '🥉', threshold: 100, multiplier: '1.2x', color: 'from-amber-700 to-amber-800', border: 'border-amber-700/30' },
-  { name: 'Silver', icon: '🥈', threshold: 500, multiplier: '1.5x', color: 'from-slate-400 to-slate-500', border: 'border-slate-400/30' },
-  { name: 'Gold', icon: '🥇', threshold: 2000, multiplier: '2x', color: 'from-yellow-500 to-yellow-600', border: 'border-yellow-500/30' },
-  { name: 'Platinum', icon: '💎', threshold: 5000, multiplier: '3x', color: 'from-purple-500 to-purple-600', border: 'border-purple-500/30' },
+  { name: 'Starter', icon: Star, threshold: 0, multiplier: '1x', color: 'from-gray-500 to-gray-600', border: 'border-gray-500/30', iconColor: 'text-gray-400' },
+  { name: 'Bronze', icon: Award, threshold: 100, multiplier: '1.2x', color: 'from-amber-700 to-amber-800', border: 'border-amber-700/30', iconColor: 'text-amber-600' },
+  { name: 'Silver', icon: Medal, threshold: 500, multiplier: '1.5x', color: 'from-slate-400 to-slate-500', border: 'border-slate-400/30', iconColor: 'text-slate-300' },
+  { name: 'Gold', icon: Crown, threshold: 2000, multiplier: '2x', color: 'from-yellow-500 to-yellow-600', border: 'border-yellow-500/30', iconColor: 'text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]' },
+  { name: 'Platinum', icon: Gem, threshold: 5000, multiplier: '3x', color: 'from-purple-500 to-purple-600', border: 'border-purple-500/30', iconColor: 'text-purple-400 shadow-[0_0_10px_rgba(192,132,252,0.3)]' },
 ];
 
 const EARN_METHODS = [
@@ -46,19 +46,19 @@ export function Rewards({ setScreen }: RewardsProps) {
         transition={{ duration: 0.6 }}
         className="text-center mb-20"
       >
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-primary/30 mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-primary/30 mb-6 animate__animated animate__fadeInDown">
           <Trophy className="w-4 h-4 text-primary" />
           <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
             Programa de Recompensas
           </span>
         </div>
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-on-surface tracking-[-0.04em] mb-6">
+        <h1 className="animate__animated animate__slideInDown font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-on-surface tracking-[-0.04em] mb-6">
           Ganhe Pontos,{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
             Desbloqueie Recompensas
           </span>
         </h1>
-        <p className="font-sans text-base sm:text-lg text-on-surface-variant max-w-2xl mx-auto">
+        <p className="animate__animated animate__fadeInUp font-sans text-base sm:text-lg text-on-surface-variant max-w-2xl mx-auto">
           Cada ação na plataforma vale pontos. Compre, partilhe, aprenda — e receba descontos reais,
           acesso exclusivo e muito mais.
         </p>
@@ -72,10 +72,10 @@ export function Rewards({ setScreen }: RewardsProps) {
         className="mb-20"
       >
         <div className="text-center mb-10">
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-on-surface mb-3">
+          <h2 className="animate__animated animate__fadeInDown font-display text-2xl sm:text-3xl font-bold text-on-surface mb-3">
             Como Ganhar Pontos
           </h2>
-          <p className="text-on-surface-variant text-sm sm:text-base max-w-lg mx-auto">
+          <p className="animate__animated animate__fadeInUp text-on-surface-variant text-sm sm:text-base max-w-lg mx-auto">
             Existem várias formas de acumular pontos na plataforma
           </p>
         </div>
@@ -132,7 +132,9 @@ export function Rewards({ setScreen }: RewardsProps) {
               className={`glass-panel rounded-xl p-5 border ${level.border} relative overflow-hidden`}
             >
               <div className="flex items-center gap-4">
-                <div className="text-3xl">{level.icon}</div>
+                <div className={`p-2 sm:p-2.5 rounded-full bg-white/5 border border-white/10 ${level.iconColor} shadow-[0_0_15px_rgba(255,255,255,0.02)] flex-shrink-0 flex items-center justify-center`}>
+                  <level.icon className="w-6 h-6 sm:w-8 sm:h-8" />
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h3 className="font-display text-lg font-bold text-on-surface">{level.name}</h3>
@@ -166,10 +168,10 @@ export function Rewards({ setScreen }: RewardsProps) {
         className="mb-20"
       >
         <div className="text-center mb-10">
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-on-surface mb-3">
+          <h2 className="animate__animated animate__fadeInDown font-display text-2xl sm:text-3xl font-bold text-on-surface mb-3">
             Tipos de Recompensas
           </h2>
-          <p className="text-on-surface-variant text-sm sm:text-base max-w-lg mx-auto">
+          <p className="animate__animated animate__fadeInUp text-on-surface-variant text-sm sm:text-base max-w-lg mx-auto">
             Desbloqueia recompensas reais que pode utilizar na plataforma
           </p>
         </div>
