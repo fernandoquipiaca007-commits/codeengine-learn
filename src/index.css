@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
+@import "animate.css";
 @import "tailwindcss";
 
 @theme {
@@ -283,3 +284,114 @@
     word-break: break-word;
   }
 }
+
+  /* Custom Scrollbar Premium */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(192, 193, 255, 0.5), rgba(192, 193, 255, 0.3));
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(192, 193, 255, 0.7), rgba(192, 193, 255, 0.5));
+    background-clip: padding-box;
+  }
+
+  /* Animação shimmer para loading */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
+  /* Glow effect premium */
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(192, 193, 255, 0.3),
+                0 0 40px rgba(192, 193, 255, 0.15),
+                0 0 60px rgba(192, 193, 255, 0.1);
+  }
+
+  /* Video player range input styling */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    transition: all 0.2s ease;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    transition: all 0.2s ease;
+  }
+
+  input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+  }
+
+  /* Smooth scroll para PDF reader */
+  .pdf-scroll-container {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pdf-scroll-container::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  .pdf-scroll-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+
+  .pdf-scroll-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(192, 193, 255, 0.5), rgba(192, 193, 255, 0.3));
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .pdf-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(192, 193, 255, 0.7), rgba(192, 193, 255, 0.5));
+    background-clip: padding-box;
+  }
