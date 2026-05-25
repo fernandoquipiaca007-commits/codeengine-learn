@@ -12,6 +12,7 @@ import { canViewProduct } from '../lib/product-visibility';
 import { getProductCoverUrl } from '../lib/storage-path';
 import { useTranslation } from 'react-i18next';
 import { useAuthSession } from '../hooks/useAuthSession';
+import { LazyImage } from '../components/ui/LazyImage';
 
 interface Subcategory {
   id: string;
@@ -325,13 +326,11 @@ export function Library({ setScreen, onProductClick }: {
                       
                       {/* Product Image */}
                       <div className="aspect-[4/3] rounded-xl mb-4 overflow-hidden relative bg-surface-highest">
-                        <img
+                        <LazyImage
                           src={getProductCoverUrl(product)}
                           alt={product.title}
                           className="object-cover w-full h-full opacity-80 group-hover:scale-110 transition-transform duration-1000 ease-out"
-                          onError={(e) => {
-                            e.currentTarget.src = `https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`;
-                          }}
+                          fallback={`https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent"></div>
                         

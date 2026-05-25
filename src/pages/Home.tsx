@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useFeaturedProducts } from '../hooks/useFeaturedProducts';
 import { getProductCoverUrl } from '../lib/storage-path';
 import { useTranslation } from 'react-i18next';
+import { LazyImage } from '../components/ui/LazyImage';
 
 const CARD_ICONS = [Book, Settings, Cpu];
 const CARD_ACCENTS = ['text-primary', 'text-secondary', 'text-tertiary'];
@@ -107,13 +108,11 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     </div>
                     <div className="h-40 sm:h-48 rounded-md mb-4 sm:mb-6 overflow-hidden bg-surface-container relative">
                       <div className={`absolute inset-0 bg-gradient-to-tr ${gradient} to-transparent mix-blend-overlay z-10`} />
-                      <img
+                      <LazyImage
                         src={getProductCoverUrl(item)}
                         alt={item.title}
                         className="w-full h-full object-cover opacity-80 mix-blend-luminosity group-hover:mix-blend-normal transition-all duration-500"
-                        onError={(e) => {
-                          e.currentTarget.src = `https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(item.title?.charAt(0) || 'P')}`;
-                        }}
+                        fallback={`https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(item.title?.charAt(0) || 'P')}`}
                       />
                     </div>
                     <h3 className="font-display text-lg sm:text-xl md:text-2xl font-semibold text-on-surface mb-2">

@@ -7,6 +7,8 @@ import type { Product } from '../types/store';
 import { useFavorites } from '../hooks/useFavorites';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { useTranslation } from 'react-i18next';
+import { LazyImage } from '../components/ui/LazyImage';
+
 
 interface ReleasesProps {
   setScreen: (screen: string) => void;
@@ -203,13 +205,11 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
               
               {/* Cover Image */}
               <div className="relative w-full h-64 overflow-hidden">
-                <img
+                <LazyImage
                   src={getProductCoverUrl(product)}
                   alt={product.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`;
-                  }}
+                  fallbackSrc={`https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent"></div>
               </div>

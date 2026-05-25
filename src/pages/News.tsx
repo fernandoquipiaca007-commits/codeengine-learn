@@ -7,6 +7,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
+import { LazyImage } from '../components/ui/LazyImage';
 
 interface NewsArticle {
   id: string;
@@ -563,7 +564,7 @@ export function News({ setScreen }: NewsProps) {
                 {/* Background Cover Image */}
                 <div className="absolute inset-0 z-0">
                   {article.thumbnail_url ? (
-                    <img
+                    <LazyImage
                       src={article.thumbnail_url}
                       alt={article.title}
                       className="w-full h-full object-cover animate-fade-in"
@@ -757,7 +758,7 @@ export function News({ setScreen }: NewsProps) {
                       {/* Thumbnail */}
                       {article.thumbnail_url && (
                         <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
-                          <img
+                          <LazyImage
                             src={article.thumbnail_url}
                             alt={article.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -851,7 +852,7 @@ export function News({ setScreen }: NewsProps) {
             {/* Header / Cover Image */}
             <div className="relative h-48 sm:h-64 flex-shrink-0">
               {selectedArticle.thumbnail_url ? (
-                <img
+                <LazyImage
                   src={selectedArticle.thumbnail_url}
                   alt={selectedArticle.title}
                   className="w-full h-full object-cover"
@@ -1045,7 +1046,7 @@ export function News({ setScreen }: NewsProps) {
               <div className="z-10 flex-1 flex flex-col justify-center gap-4 my-8">
                 {selectedArticle.thumbnail_url && (
                   <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/5">
-                    <img src={selectedArticle.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                    <LazyImage src={selectedArticle.thumbnail_url} alt="" className="w-full h-full object-cover" />
                   </div>
                 )}
                 <h2 className="font-display text-lg font-extrabold text-white leading-tight tracking-tight">

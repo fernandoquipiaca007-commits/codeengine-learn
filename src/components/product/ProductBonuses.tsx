@@ -247,23 +247,30 @@ export function ProductBonuses({
                         {tDict.before} <span className="line-through">${productOriginalPrice.toFixed(2)}</span>
                       </span>
                       <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                        {todayPrefix}: ${productFinalPrice.toFixed(2)}
+                        {todayPrefix}: {productFinalPrice === 0 ? (currentLang === 'pt' ? 'Grátis' : currentLang === 'fr' ? 'Gratuit' : 'Free') : `$${productFinalPrice.toFixed(2)}`}
                       </span>
                     </>
                   ) : (
                     <>
                       {productOriginalPrice !== undefined && productOriginalPrice > 0 ? (
-                        <span className="text-on-surface-variant/50 mr-1">
-                          {tDict.before} <span className="line-through">${productOriginalPrice.toFixed(2)}</span>
-                        </span>
+                        <>
+                          <span className="text-on-surface-variant/50 mr-1">
+                            {tDict.before} <span className="line-through">${productOriginalPrice.toFixed(2)}</span>
+                          </span>
+                          <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
+                            {todayPrefix}: {productFinalPrice !== undefined ? (productFinalPrice === 0 ? (currentLang === 'pt' ? 'Grátis' : currentLang === 'fr' ? 'Gratuit' : 'Free') : `$${productFinalPrice.toFixed(2)}`) : `$${productOriginalPrice.toFixed(2)}`}
+                          </span>
+                        </>
                       ) : (
-                        <span className="text-on-surface-variant/50 mr-1">
-                          {tDict.before} <span className="line-through">${Number(bonus.original_value ?? 0).toFixed(2)}</span>
-                        </span>
+                        <>
+                          <span className="text-on-surface-variant/50 mr-1">
+                            {tDict.before} <span className="line-through">${Number(bonus.original_value ?? 0).toFixed(2)}</span>
+                          </span>
+                          <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
+                            {todayPrefix}: {currentLang === 'pt' ? 'Grátis' : currentLang === 'fr' ? 'Gratuit' : 'Free'}
+                          </span>
+                        </>
                       )}
-                      <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                        {todayPrefix}: ${productFinalPrice !== undefined ? productFinalPrice.toFixed(2) : Number(bonus.original_value ?? 0).toFixed(2)}
-                      </span>
                     </>
                   )}
                 </div>
