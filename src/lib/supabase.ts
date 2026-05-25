@@ -1,15 +1,14 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Environment variables validation
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Environment variables validation with resilient fallbacks
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder-project.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key-to-prevent-startup-crash';
 
-if (!supabaseUrl) {
-  throw new Error('Missing VITE_SUPABASE_URL environment variable');
-}
-
-if (!supabaseAnonKey) {
-  throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  console.warn(
+    '⚠️ WARNING: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables are missing! ' +
+    'The app will load but database queries will fail until these are configured in Vercel settings.'
+  );
 }
 
 // Create Supabase client with anon key (for public access with RLS)
