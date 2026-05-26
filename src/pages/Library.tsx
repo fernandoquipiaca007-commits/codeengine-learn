@@ -145,8 +145,11 @@ export function Library({ setScreen, onProductClick }: {
       );
       setProducts(visible);
     } catch (err) {
-      console.error('Error loading data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      console.error('[Library] Critical error loading data:', err);
+      const detail = err && typeof err === 'object'
+        ? (err as any).message || (err as any).details || (err as any).hint || JSON.stringify(err)
+        : String(err);
+      setError(`Erro ao carregar dados: ${detail}`);
     } finally {
       setLoading(false);
     }
