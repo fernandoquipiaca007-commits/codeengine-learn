@@ -128,7 +128,10 @@ export function PaymentMethodSelector({
                 </span>
               </div>
               <div className="text-sm text-on-surface-variant mt-0.5">
-                Multicaixa Express, TPA, Transferência • Aprovação até 24h
+                <span className="font-sans font-bold text-orange-400">
+                  {product.aoa_price ? `${product.aoa_price.toFixed(2)} AOA` : `${product.price.toFixed(2)} Kz`}
+                </span>
+                {" • Multicaixa Express, TPA, Transf. • Aprovação até 24h"}
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-on-surface-variant group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />

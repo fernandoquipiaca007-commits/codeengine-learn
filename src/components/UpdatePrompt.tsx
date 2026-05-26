@@ -32,6 +32,20 @@ export function UpdatePrompt() {
         .maybeSingle();
       if (data?.value && data.value !== BUILD_VERSION) {
         setServerVersion(data.value);
+
+        // Check if running in installed PWA standalone mode
+        const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+        if (!isStandalonePWA) {
+          console.log('[PWA] Site version mismatch detected. Silent auto-updating...');
+          try {
+            await updateServiceWorker(true);
+            window.location.reload();
+          } catch {
+            window.location.reload();
+          }
+          return;
+        }
+
         setShowUpdate(true);
       }
     } catch {

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera } from 'lucide-react';
+import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera, Globe, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
 import { SUPPORTED_LOCALES, LOCALE_LABELS, AppLocale } from '../lib/locale';
-import { Globe } from 'lucide-react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 interface SettingsProps {
   setScreen: (screen: string) => void;
@@ -20,6 +20,17 @@ export function Settings({ setScreen }: SettingsProps) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // PWA app version & updates states
+  const BUILD_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [serverVersion, setServerVersion] = useState<string | null>(null);
+  const [checkingVersion, setCheckingVersion] = useState(false);
+
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
+
   // Form states
   const [name, setName] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -33,7 +44,48 @@ export function Settings({ setScreen }: SettingsProps) {
 
   useEffect(() => {
     loadUserData();
-  }, []);
+    checkAppVersion();
+  }, [needRefresh]);
+
+  async function checkAppVersion(manual = false) {
+    if (needRefresh) {
+      setUpdateAvailable(true);
+      return;
+    }
+    if (manual) setCheckingVersion(true);
+    try {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'app_version')
+        .maybeSingle();
+      if (data?.value && data.value !== BUILD_VERSION) {
+        setServerVersion(data.value);
+        setUpdateAvailable(true);
+      } else {
+        setUpdateAvailable(false);
+        if (manual) {
+          setMessage({ type: 'success', text: 'Você já possui a versão mais recente do aplicativo!' });
+          setTimeout(() => setMessage(null), 3000);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setCheckingVersion(false);
+    }
+  }
+
+  async function handleAppUpdate() {
+    setSaving(true);
+    try {
+      await updateServiceWorker(true);
+      setNeedRefresh(false);
+      window.location.reload();
+    } catch {
+      window.location.reload();
+    }
+  }
 
   async function loadUserData() {
     try {
@@ -535,6 +587,61 @@ export function Settings({ setScreen }: SettingsProps) {
                 <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
               </div>
             </label>
+          </div>
+        </motion.section>
+
+        {/* PWA System Version & Updates Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="glass-panel rounded-2xl p-8 border border-white/10"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <RefreshCw className="w-6 h-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold text-white">
+              Versão do Aplicativo
+            </h2>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-surface-container/30 border border-white/5">
+              <div>
+                <p className="font-display text-sm font-semibold text-white">Versão Atual</p>
+                <p className="font-mono text-xs text-on-surface-variant mt-1">
+                  v{BUILD_VERSION}
+                </p>
+              </div>
+              {updateAvailable && serverVersion && (
+                <div className="px-3 py-1 rounded bg-orange-500/10 border border-orange-500/25 text-orange-400 font-sans text-xs font-semibold">
+                  Nova versão disponível: v{serverVersion}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => checkAppVersion(true)}
+                disabled={checkingVersion || saving}
+                className="px-6 py-3 rounded-full border border-white/10 text-on-surface font-display text-sm font-semibold hover:bg-white/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {checkingVersion && <RefreshCw className="w-4 h-4 animate-spin text-primary" />}
+                Verificar Atualizações
+              </button>
+
+              {updateAvailable && (
+                <button
+                  type="button"
+                  onClick={handleAppUpdate}
+                  disabled={saving}
+                  className="px-6 py-3 rounded-full bg-primary text-on-primary font-display text-sm font-semibold hover:shadow-[0_0_20px_rgba(192,193,255,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <RefreshCw className="w-4 h-4 text-on-primary animate-[spin_3s_linear_infinite]" />
+                  Atualizar Aplicativo
+                </button>
+              )}
+            </div>
           </div>
         </motion.section>
       </div>
