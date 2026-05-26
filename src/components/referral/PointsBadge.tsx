@@ -16,7 +16,7 @@ export function PointsBadge({ compact = true, showPoints = true, onClick }: Poin
   const { t } = useTranslation('member');
   const { balance } = usePoints();
 
-  if (!balance) return null;
+  if (!balance || typeof balance.available_points !== 'number' || typeof balance.total_points !== 'number') return null;
 
   const level = balance.level || 'starter';
   const colors = LEVEL_COLORS[level] || LEVEL_COLORS.starter;

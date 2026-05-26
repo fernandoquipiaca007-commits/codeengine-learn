@@ -21,15 +21,17 @@ export function PushPermissionPrompt() {
 
   useEffect(() => {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+
+    if (Notification.permission === 'granted') {
+      void subscribe();
+      return;
+    }
+
     if (Notification.permission !== 'default') return;
 
     const dismissed = localStorage.getItem('push_prompt_dismissed');
-    const installed = window.matchMedia('(display-mode: standalone)').matches;
-    const visits = parseInt(localStorage.getItem('visit_count') || '0', 10) + 1;
-    localStorage.setItem('visit_count', visits.toString());
-
-    if (!dismissed && (installed || visits >= 2)) {
-      const timer = setTimeout(() => setShow(true), 3000);
+    if (!dismissed) {
+      const timer = setTimeout(() => setShow(true), 1500);
       return () => clearTimeout(timer);
     }
   }, []);

@@ -13,6 +13,7 @@ interface MemberDashboardProps {
   onGoToLibrary: () => void;
   onGoToPurchases: () => void;
   onGoToNotifications: () => void;
+  memberAvatarUrl?: string;
 }
 
 export function MemberDashboard({
@@ -25,6 +26,7 @@ export function MemberDashboard({
   onGoToLibrary,
   onGoToPurchases,
   onGoToNotifications,
+  memberAvatarUrl,
 }: MemberDashboardProps) {
   const { t } = useTranslation('pages');
   
@@ -37,8 +39,12 @@ export function MemberDashboard({
       >
         <div className="absolute top-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center border-2 border-white/20 shadow-lg">
-            <User className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center border-2 border-white/20 shadow-lg overflow-hidden flex-shrink-0">
+            {memberAvatarUrl ? (
+              <img src={memberAvatarUrl} alt={memberName} className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-10 h-10 text-white" />
+            )}
           </div>
           <div className="flex-grow">
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2 animate__animated animate__slideInDown">

@@ -58,9 +58,19 @@ export function usePoints() {
       const res = await fetch(`${API_URL}/api/points/balance`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) {
+        setBalance(null);
+        return;
+      }
       const data = await res.json();
-      if (data.success !== false) setBalance(data);
-    } catch {}
+      if (data && data.success === true && typeof data.available_points === 'number' && typeof data.total_points === 'number') {
+        setBalance(data);
+      } else {
+        setBalance(null);
+      }
+    } catch {
+      setBalance(null);
+    }
   }, [getToken]);
 
   const fetchHistory = useCallback(async (limit = 50) => {

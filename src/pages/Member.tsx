@@ -78,7 +78,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   const [ebookAvailableLangs, setEbookAvailableLangs] = useState<AppLocale[]>([]);
   const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [courseModalProduct, setCourseModalProduct] = useState<{ id: string; title: string } | null>(null);
-  const [memberData, setMemberData] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [memberData, setMemberData] = useState<{ id: string; name: string; email: string; avatarUrl?: string } | null>(null);
   const [stats, setStats] = useState({
     purchaseCount: 0,
     unreadNotifications: 0,
@@ -180,6 +180,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
         id: member.id,
         name: member.profile_data?.name || user.email?.split('@')[0] || 'Membro',
         email: member.email || user.email || '',
+        avatarUrl: member.profile_data?.avatar_url || '',
       });
 
       await loadStats(member.id);
@@ -469,6 +470,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
             onGoToLibrary={() => setCurrentSection('biblioteca')}
             onGoToPurchases={() => setCurrentSection('compras')}
             onGoToNotifications={() => setCurrentSection('notificacoes')}
+            memberAvatarUrl={memberData.avatarUrl}
           />
         )}
 

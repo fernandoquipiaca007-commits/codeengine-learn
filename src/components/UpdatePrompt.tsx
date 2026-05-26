@@ -12,6 +12,8 @@ export function UpdatePrompt() {
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [showUpdate, setShowUpdate] = useState(false);
 
+  const [dismissed, setDismissed] = useState(false);
+
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
@@ -42,13 +44,16 @@ export function UpdatePrompt() {
   }, [needRefresh]);
 
   async function handleUpdate() {
-    await updateServiceWorker(true);
+    try {
+      await updateServiceWorker(true);
+    } catch {}
     setNeedRefresh(false);
     setShowUpdate(false);
+    setDismissed(true);
     window.location.reload();
   }
 
-  if (!showUpdate && !needRefresh) return null;
+  if (dismissed || (!showUpdate && !needRefresh)) return null;
 
   return (
     <AnimatePresence>
@@ -72,7 +77,10 @@ export function UpdatePrompt() {
             {t('actions.updateNow')}
           </button>
           <button
-            onClick={() => setShowUpdate(false)}
+            onClick={() => {
+              setShowUpdate(false);
+              setDismissed(true);
+            }}
             className="px-3 py-1.5 rounded-lg border border-white/10 text-on-surface-variant font-display text-xs"
           >
             {t('actions.updateLater')}
