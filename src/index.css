@@ -430,15 +430,15 @@
     transform: scale(1.04) translateY(-3px);
     animation: premiumPulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 
-      0 20px 40px -10px rgba(255, 255, 255, 0.4),
-      0 0 0 4px rgba(192, 193, 255, 0.2),
-      0 0 80px rgba(192, 193, 255, 0.4),
+      0 20px 40px -10px rgba(192, 193, 255, 0.4),
+      0 0 0 4px rgba(192, 193, 255, 0.3),
+      0 0 80px rgba(192, 193, 255, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 1);
   }
 
   /* Estado ativo - pressão */
   .buy-button:active {
-    transform: scale(0.95) translateY(0);
+    transform: scale(0.96) translateY(0);
   }
 
   /* Desabilitado */
@@ -459,7 +459,7 @@
     background: linear-gradient(
       120deg,
       transparent,
-      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.9),
       transparent
     );
     z-index: 1;
@@ -472,8 +472,8 @@
     content: "";
     position: absolute;
     inset: -3px;
-    border-radius: 18px;
-    border: 2px solid rgba(192, 193, 255, 0.6);
+    border-radius: 22px;
+    border: 2px solid rgba(192, 193, 255, 0.5);
     z-index: 0;
     pointer-events: none;
     animation: borderPulse 1.4s infinite cubic-bezier(0.4, 0, 0.6, 1);
@@ -485,15 +485,27 @@
     z-index: 2;
   }
 
+  /* Mobile active touch states for product cards */
+  @media (max-width: 768px) {
+    .glass-card-hover:active {
+      transform: translateY(-4px) scale(0.98) !important;
+      box-shadow: 
+        0 15px 30px -10px rgba(0, 0, 0, 0.8), 
+        0 0 25px rgba(192, 193, 255, 0.25), 
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.2) !important;
+      border-color: rgba(192, 193, 255, 0.5) !important;
+    }
+  }
+
   /* ========== KEYFRAMES ========== */
 
   /* Pulsação Premium */
   @keyframes premiumPulse {
     0%, 100% {
-      box-shadow: 0 20px 40px -10px rgba(255, 255, 255, 0.4), 0 0 0 4px rgba(192, 193, 255, 0.2), 0 0 80px rgba(192, 193, 255, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(192, 193, 255, 0.4), 0 0 0 4px rgba(192, 193, 255, 0.2), 0 0 80px rgba(192, 193, 255, 0.4);
     }
     50% {
-      box-shadow: 0 25px 50px -12px rgba(255, 255, 255, 0.6), 0 0 0 6px rgba(192, 193, 255, 0.3), 0 0 100px rgba(192, 193, 255, 0.6);
+      box-shadow: 0 25px 50px -12px rgba(192, 193, 255, 0.6), 0 0 0 6px rgba(192, 193, 255, 0.3), 0 0 100px rgba(192, 193, 255, 0.6);
     }
   }
 
@@ -525,23 +537,25 @@
       opacity: 0.2;
     }
     50% {
-      transform: scale(1.05, 1.15);
+      transform: scale(1.03, 1.08);
       opacity: 0.6;
     }
   }
 
-  /* Versão mobile do botão - animação mais suave */
+  /* Versão mobile do botão - animação de respiração persuasiva */
   @media (max-width: 640px) {
     .buy-button {
       font-size: 16px;
-      padding: 18px 24px;
-      animation: 
-        wormMove 2.5s infinite cubic-bezier(0.34, 1.56, 0.64, 1),
-        pulseGlow 1.8s infinite alternate cubic-bezier(0.4, 0, 0.6, 1);
+      padding: 16px 24px;
+      animation: premiumPulse 2.5s infinite ease-in-out;
     }
 
     .buy-button:hover {
-      transform: scale(1.05) rotate(-0.3deg) translateY(-1px);
+      transform: scale(1.02) translateY(-1px);
+    }
+    
+    .buy-button:active {
+      transform: scale(0.97) translateY(0);
     }
   }
 

@@ -7,8 +7,10 @@ function Stars(props: any) {
   
   // Generate random particles within a sphere (memoized to avoid regeneration)
   const positions = useMemo(() => {
-    const pos = new Float32Array(5000 * 3);
-    for (let i = 0; i < 5000; i++) {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const count = isMobile ? 1500 : 5000;
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
       const r = 1.5 * Math.cbrt(Math.random());
       const theta = Math.random() * 2 * Math.PI;
       const phi = Math.acos(2 * Math.random() - 1);
@@ -40,16 +42,13 @@ export function Background3D() {
   const [isLowPowerMode, setIsLowPowerMode] = useState(false);
 
   useEffect(() => {
-    const mediaMobile = window.matchMedia('(max-width: 768px)');
     const mediaReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    const update = () => setIsLowPowerMode(mediaMobile.matches || mediaReducedMotion.matches);
+    const update = () => setIsLowPowerMode(mediaReducedMotion.matches);
     update();
 
-    mediaMobile.addEventListener('change', update);
     mediaReducedMotion.addEventListener('change', update);
     return () => {
-      mediaMobile.removeEventListener('change', update);
       mediaReducedMotion.removeEventListener('change', update);
     };
   }, []);

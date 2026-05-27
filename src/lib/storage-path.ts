@@ -8,7 +8,7 @@ export function getStoragePath(storageUrl: string): string {
   const trimmed = storageUrl.trim();
 
   if (!trimmed.startsWith('http')) {
-    return trimmed.replace(/^\//, '');
+    return decodeURIComponent(trimmed.replace(/^\//, ''));
   }
 
   const publicMatch = trimmed.match(

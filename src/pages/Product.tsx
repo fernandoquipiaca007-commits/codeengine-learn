@@ -448,7 +448,7 @@ export function Product({ setScreen, productId }: ProductProps) {
             </div>
 
             {/* Sistema de Partilha & Desconto Progressivo */}
-            {product && (
+            {product && !product.is_free && listPrice > 0 && (
               <div className="space-y-4 pt-6 border-t border-white/10 mt-6">
                 <div className={isLoggedIn ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "w-full"}>
                   <ReferralProgress
