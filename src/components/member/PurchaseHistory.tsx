@@ -219,7 +219,7 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                     {purchase.products?.title || 'Produto'}
                   </h3>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-on-surface-variant">
+                  <div className="hidden sm:flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-on-surface-variant">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       <span className="font-sans">{formatDate(purchase.purchase_date)}</span>

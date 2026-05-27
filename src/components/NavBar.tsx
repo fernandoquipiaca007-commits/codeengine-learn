@@ -207,7 +207,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
             e.currentTarget.style.display = 'none';
           }}
         />
-        <span className="font-display text-sm sm:text-base md:text-lg font-bold tracking-tighter text-on-surface whitespace-nowrap">
+        <span className="hidden md:inline font-display text-sm sm:text-base md:text-lg font-bold tracking-tighter text-on-surface whitespace-nowrap">
           CodeEngine 1
         </span>
       </div>

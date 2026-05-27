@@ -91,7 +91,13 @@
     }
     
     .mockup-rotate {
-      transform: rotateY(-10deg) rotateX(4deg) scale(0.95) !important;
+      transform: rotateY(-10deg) rotateX(4deg) scale(0.95);
+      transition: transform 0.5s ease;
+    }
+    
+    .mockup-rotate:hover,
+    .mockup-rotate:active {
+      transform: rotateY(-5deg) rotateX(2deg) scale(0.98);
     }
     
     .perspective-container {
