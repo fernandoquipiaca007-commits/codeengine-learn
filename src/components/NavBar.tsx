@@ -187,7 +187,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-3 lg:mt-4 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1280px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-3.5 md:py-4 bg-surface/80 backdrop-blur-xl rounded-full mt-3 sm:mt-3 lg:mt-4 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1280px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
       <div className="nav-beam"></div>
       
       {/* Logo - Progressive sizing */}
@@ -340,7 +340,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                   setShowProfileMenu(!showProfileMenu);
                   setShowNotifications(false);
                 }}
-                className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-transparent hover:border-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex items-center justify-center flex-shrink-0"
               >
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
@@ -474,68 +474,82 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         )}
       </div>
       
-      {/* Mobile Menu Panel - Compact & Modern Floating Design */}
+      {/* Mobile Menu Drawer - Intelligent Responsive */}
       {showMobileMenu && (
         <>
+          {/* Backdrop with blur */}
           <div
-            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 xl:hidden"
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300"
             onClick={() => setShowMobileMenu(false)}
           />
           
-          <div className="fixed left-1/2 top-20 z-[70] w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl bg-surface/95 backdrop-blur-xl border border-white/10 p-3 shadow-[0_0_60px_rgba(0,0,0,0.45)] xl:hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-4 py-3 border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent flex items-center justify-between">
-              <span className="font-display text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">{t('nav.menu')}</span>
+          {/* Drawer - Adaptive width */}
+          <div className="fixed inset-y-0 right-0 z-[70] h-screen w-[min(90vw,380px)] sm:w-[min(85vw,360px)] md:w-[min(70vw,340px)] rounded-l-2xl sm:rounded-l-[1.75rem] bg-surface/98 backdrop-blur-xl border-l border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 sm:px-5 py-4 sm:py-5 border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent flex-shrink-0">
+              <span className="font-display text-xs sm:text-sm uppercase tracking-[0.25em] sm:tracking-[0.3em] text-on-surface-variant">{t('nav.menu')}</span>
               <button
                 onClick={() => setShowMobileMenu(false)}
-                className="text-on-surface-variant hover:text-primary p-1 rounded-full hover:bg-white/5"
+                className="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-white/5 transition-all"
+                aria-label={t('nav.closeMenu')}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {[
-                { label: t('nav.home'), screen: 'home' },
-                { label: t('nav.library'), screen: 'library' },
-                { label: t('nav.releases'), screen: 'releases' },
-                ...(user ? [{ label: t('nav.news'), screen: 'news' }] : []),
-                { label: t('nav.about'), screen: 'about' },
-                { label: t('nav.contact'), screen: 'contact' },
-              ].map((item) => (
-                <button
-                  key={item.screen}
-                  onClick={() => {
-                    setScreen(item.screen);
-                    setShowMobileMenu(false);
-                  }}
-                  className={cn(
-                    "flex items-center justify-center rounded-xl px-3 py-3 font-sans text-xs font-bold transition-all border",
-                    currentScreen === item.screen
-                      ? 'bg-primary/10 text-primary border-primary/20 shadow-[0_0_15px_rgba(192,193,255,0.1)]'
-                      : 'text-on-surface-variant hover:text-primary hover:bg-white/5 border-transparent'
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            {!user && (
-              <div className="mt-2 pt-2 border-t border-white/10">
-                <button
-                  onClick={() => {
-                    setScreen('auth');
-                    setShowMobileMenu(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 font-sans text-xs font-bold text-on-surface bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span>{t('profile.signInOrCreate')}</span>
-                </button>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4">
+              
+              {/* Navigation Links */}
+              <div className="space-y-1.5 sm:space-y-2">
+                {[
+                  { label: t('nav.home'), screen: 'home' },
+                  { label: t('nav.library'), screen: 'library' },
+                  { label: t('nav.releases'), screen: 'releases' },
+                  ...(user ? [{ label: t('nav.news'), screen: 'news' }] : []),
+                  { label: t('nav.about'), screen: 'about' },
+                  { label: t('nav.contact'), screen: 'contact' },
+                ].map((item) => (
+                  <button
+                    key={item.screen}
+                    onClick={() => {
+                      setScreen(item.screen);
+                      setShowMobileMenu(false);
+                    }}
+                    className={cn(
+                      "w-full text-left rounded-xl sm:rounded-2xl px-4 py-3.5 sm:py-4 font-sans text-sm sm:text-base font-semibold transition-all",
+                      currentScreen === item.screen
+                        ? 'bg-primary/15 text-primary shadow-[0_0_20px_rgba(192,193,255,0.15)]'
+                        : 'text-on-surface-variant hover:text-primary hover:bg-white/5'
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
-            )}
+              
+              {/* User Actions - Only show if NOT logged in */}
+              {!user && (
+                <>
+                  <div className="my-4 border-t border-white/10" />
+                  <div className="space-y-1.5">
+                    <button
+                      onClick={() => {
+                        setScreen('auth');
+                        setShowMobileMenu(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left font-sans text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-xl transition-all"
+                    >
+                      <User className="w-4 h-4 flex-shrink-0" />
+                      <span>{t('profile.signInOrCreate')}</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </>
       )}
