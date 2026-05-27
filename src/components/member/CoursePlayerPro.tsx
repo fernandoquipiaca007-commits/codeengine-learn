@@ -192,14 +192,31 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
       const pct = v.duration ? (v.currentTime / v.duration) * 100 : 0;
       const status = pct >= 90 ? 'completed' : 'in_progress';
 
-      saveProgress({
+      const progressData: {
+        product_id: string;
+        lesson_id: string;
+        progress_type: 'video' | 'ebook';
+        position_seconds: number;
+        position_percent: number;
+        status: string;
+      } = {
         product_id: productId,
         lesson_id: currentLessonId,
         progress_type: 'video',
         position_seconds: Math.floor(v.currentTime),
         position_percent: pct,
         status,
-      });
+      };
+
+      // Save to server
+      saveProgress(progressData);
+
+      // Save to localStorage for instant persistence/offline support
+      localStorage.setItem(`course_progress_${productId}`, JSON.stringify({
+        last_lesson_id: currentLessonId,
+        last_position: Math.floor(v.currentTime),
+        timestamp: Date.now()
+      }));
 
       setProgress((prev) => {
         const rest = prev.filter((p) => p.lesson_id !== currentLessonId);
@@ -214,10 +231,30 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
     setDuration(v.duration);
 
-    // Restaurar posição salva
-    const currentProgress = progress.find((p) => p.lesson_id === currentLessonId);
-    if (currentProgress?.position_seconds && currentProgress.position_seconds > 5) {
-      v.currentTime = currentProgress.position_seconds;
+    // Restaurar posição salva (preferência para localStorage se for mais recente)
+    const localData = localStorage.getItem(`course_progress_${productId}`);
+    let startTime = 0;
+
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        if (parsed.last_lesson_id === currentLessonId && parsed.last_position > 5) {
+          startTime = parsed.last_position;
+        }
+      } catch (e) {
+        console.error("Error parsing local progress:", e);
+      }
+    }
+
+    if (startTime === 0) {
+      const serverProgress = progress.find((p) => p.lesson_id === currentLessonId);
+      if (serverProgress?.position_seconds && serverProgress.position_seconds > 5) {
+        startTime = serverProgress.position_seconds;
+      }
+    }
+
+    if (startTime > 0) {
+      v.currentTime = startTime;
     }
   };
 
@@ -403,13 +440,15 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   return (
     <div ref={containerRef} className="min-h-screen bg-black pb-20 font-sans">
       {/* Header simples (Estilo Design Branch) */}
-      <div className="px-4 sm:px-6 py-6 flex items-center justify-between">
+      <div className="px-4 sm:px-6 py-4 flex items-center justify-between border-b border-white/5 bg-surface/20 backdrop-blur-md mb-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          className="flex items-center gap-2.5 text-on-surface-variant hover:text-primary transition-all group"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-display font-semibold text-lg">CodeEngine <span className="text-gray-500">1</span></span>
+          <div className="p-2 rounded-full bg-white/5 group-hover:bg-primary/10 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+          </div>
+          <span className="font-display font-bold text-base tracking-tight text-on-surface">CodeEngine <span className="text-primary/60">1</span></span>
         </button>
         <button
           onClick={() => setShowPlaylist(!showPlaylist)}
@@ -638,12 +677,21 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
             {/* Informações da aula */}
             {currentLesson && (
-              <div className="bg-surface/50 backdrop-blur-xl border border-white/5 rounded-3xl p-6 sm:p-8">
-                <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-4">{currentLesson.title}</h2>
+              <div className="bg-surface/30 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-secondary/50 to-transparent opacity-30" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{currentLesson.title}</h2>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-primary/80">
+                    <Clock className="w-3 h-3" />
+                    {currentLesson.video_duration_seconds ? formatTime(currentLesson.video_duration_seconds) : 'Interativo'}
+                  </div>
+                </div>
                 {currentLesson.description ? (
-                  <p className="text-gray-400 leading-relaxed text-sm sm:text-base">{currentLesson.description}</p>
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-on-surface-variant leading-relaxed text-base sm:text-lg font-sans opacity-80">{currentLesson.description}</p>
+                  </div>
                 ) : (
-                  <p className="text-gray-600 italic">Sem descrição disponível para esta aula.</p>
+                  <p className="text-on-surface-variant/40 italic font-sans">Nenhuma descrição detalhada para esta aula.</p>
                 )}
               </div>
             )}

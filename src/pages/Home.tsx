@@ -97,9 +97,11 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               const offsetClass = index > 0 ? 'lg:-translate-y-4' : '';
 
               return (
-                <div
+                <motion.div
                   key={item.id}
                   onClick={() => onProductClick?.(item.product_id)}
+                  whileTap={{ scale: 0.95, rotateY: 0, rotateX: 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   className={`glass-card rounded-xl p-1 mockup-rotate group cursor-pointer ${offsetClass}`}
                 >
                   <div className="bg-surface-container-low rounded-lg p-4 sm:p-6 h-full border border-white/5 relative overflow-hidden">
@@ -130,7 +132,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                       </span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>

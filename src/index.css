@@ -60,7 +60,7 @@
   /* Mobile optimizations */
   @media (max-width: 768px) {
     h1 {
-      @apply text-3xl leading-tight;
+      @apply text-3xl leading-[1.1] tracking-tight;
     }
     
     h2 {
@@ -91,11 +91,11 @@
     }
     
     .mockup-rotate {
-      transform: none !important;
+      transform: rotateY(-10deg) rotateX(4deg) scale(0.95) !important;
     }
     
     .perspective-container {
-      perspective: none !important;
+      perspective: 800px !important;
     }
     
     .hero-abstract {
@@ -103,8 +103,8 @@
     }
     
     .page-wrapper {
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
     }
     
     .overlay-premium,
@@ -133,16 +133,16 @@
 
   @media (max-width: 479px) {
     h1 {
-      @apply text-[1.75rem] leading-tight;
+      @apply text-[1.5rem] leading-[1.1];
     }
 
     h2 {
-      @apply text-2xl leading-tight;
+      @apply text-xl leading-tight;
     }
 
     .page-wrapper {
-      padding-left: 0.75rem;
-      padding-right: 0.75rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
     }
   }
 
@@ -405,33 +405,35 @@
     position: relative;
     overflow: hidden;
     width: 100%;
-    padding: 22px 30px;
+    padding: 20px 32px;
     border: none;
-    border-radius: 18px;
-    background: linear-gradient(135deg, #ffffff 0%, #e5e2e1 100%);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f5 100%);
     color: #000;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 800;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
-    letter-spacing: 0.5px;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
     
     /* Brilho suave em repouso */
     box-shadow: 
-      0 0 15px rgba(255, 255, 255, 0.3),
-      0 0 25px rgba(192, 193, 255, 0.1);
+      0 10px 20px -5px rgba(255, 255, 255, 0.2),
+      0 0 1px 1px rgba(255, 255, 255, 0.8) inset,
+      0 0 30px rgba(192, 193, 255, 0.1);
   }
 
   /* Estado hover - serpente em movimento */
   .buy-button:hover {
-    transform: scale(1.08) translateY(-2px);
-    animation: realSnakeMotion 1.8s ease-in-out infinite;
+    transform: scale(1.04) translateY(-3px);
+    animation: premiumPulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 
-      0 0 30px rgba(255, 255, 255, 0.5),
-      0 0 60px rgba(192, 193, 255, 0.3),
-      0 20px 40px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      0 20px 40px -10px rgba(255, 255, 255, 0.4),
+      0 0 0 4px rgba(192, 193, 255, 0.2),
+      0 0 80px rgba(192, 193, 255, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
   }
 
   /* Estado ativo - pressão */
@@ -485,34 +487,13 @@
 
   /* ========== KEYFRAMES ========== */
 
-  /* Movimento realista de serpente - ondulação natural */
-  @keyframes realSnakeMotion {
-    0% {
-      transform: translateX(0px) rotateZ(0deg);
-    }
-    12% {
-      transform: translateX(-8px) rotateZ(-3deg);
-    }
-    25% {
-      transform: translateX(-10px) rotateZ(-4deg);
-    }
-    37% {
-      transform: translateX(-6px) rotateZ(-2deg);
+  /* Pulsação Premium */
+  @keyframes premiumPulse {
+    0%, 100% {
+      box-shadow: 0 20px 40px -10px rgba(255, 255, 255, 0.4), 0 0 0 4px rgba(192, 193, 255, 0.2), 0 0 80px rgba(192, 193, 255, 0.4);
     }
     50% {
-      transform: translateX(0px) rotateZ(0deg);
-    }
-    62% {
-      transform: translateX(6px) rotateZ(2deg);
-    }
-    75% {
-      transform: translateX(10px) rotateZ(4deg);
-    }
-    87% {
-      transform: translateX(8px) rotateZ(3deg);
-    }
-    100% {
-      transform: translateX(0px) rotateZ(0deg);
+      box-shadow: 0 25px 50px -12px rgba(255, 255, 255, 0.6), 0 0 0 6px rgba(192, 193, 255, 0.3), 0 0 100px rgba(192, 193, 255, 0.6);
     }
   }
 
@@ -541,13 +522,11 @@
   @keyframes borderPulse {
     0%, 100% {
       transform: scale(1);
-      opacity: 0.4;
-      box-shadow: 0 0 0 0 rgba(192, 193, 255, 0.3);
+      opacity: 0.2;
     }
     50% {
-      transform: scale(1.12);
-      opacity: 0.8;
-      box-shadow: 0 0 15px 4px rgba(192, 193, 255, 0.2);
+      transform: scale(1.05, 1.15);
+      opacity: 0.6;
     }
   }
 

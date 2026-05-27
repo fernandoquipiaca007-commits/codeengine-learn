@@ -15,11 +15,11 @@ export function Footer({ setScreen }: FooterProps = {}) {
   };
 
   return (
-    <footer className="w-full py-10 px-6 flex flex-col items-center gap-6 bg-surface-lowest border-t border-outline/20 mt-16">
-      <div className="font-display text-2xl font-black text-on-surface">
+    <footer className="w-full py-8 px-6 flex flex-col items-center gap-4 bg-surface-lowest border-t border-outline/10 mt-16">
+      <div className="font-display text-xl font-black text-on-surface/90 tracking-tighter">
         CodeEngine 1
       </div>
-      <div className="flex flex-wrap justify-center gap-6">
+      <div className="flex flex-wrap justify-center gap-x-8 gap-y-3">
         <button 
           onClick={() => handleNavigation('privacy')}
           className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors focus:underline focus:underline-offset-4"
@@ -51,7 +51,7 @@ export function Footer({ setScreen }: FooterProps = {}) {
           Recompensas
         </button>
       </div>
-      <div className="font-sans text-base text-secondary opacity-60 text-center">
+      <div className="font-sans text-xs text-on-surface-variant opacity-40 text-center mt-2">
         © 2026 CodeEngine 1. {t('footer.tagline')}.
       </div>
     </footer>

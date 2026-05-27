@@ -180,10 +180,35 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         getProductProgress(productId).catch(() => null),
       ]);
       setUrl(ebook.url);
-      const savedPage = prog?.progress?.find((p: { lesson_id: null; page_number?: number }) => !p.lesson_id)?.page_number;
-      if (savedPage && savedPage > 1) {
-        setCurrentPage(savedPage);
-        setVisiblePages(new Set([Math.max(1, savedPage - 1), savedPage, savedPage + 1]));
+
+      // Restore position from localStorage (priority) or server
+      const localData = localStorage.getItem(`ebook_progress_${productId}`);
+      let initialPage = 1;
+
+      if (localData) {
+        try {
+          const parsed = JSON.parse(localData);
+          if (parsed.page_number > 1) {
+            initialPage = parsed.page_number;
+          }
+        } catch (e) {}
+      }
+
+      if (initialPage === 1) {
+        const serverPage = prog?.progress?.find((p: { lesson_id: null; page_number?: number }) => !p.lesson_id)?.page_number;
+        if (serverPage && serverPage > 1) {
+          initialPage = serverPage;
+        }
+      }
+
+      if (initialPage > 1) {
+        setCurrentPage(initialPage);
+        setVisiblePages(new Set([Math.max(1, initialPage - 1), initialPage, initialPage + 1]));
+
+        // Use timeout to allow document to load before scrolling
+        setTimeout(() => {
+          goToPage(initialPage);
+        }, 1000);
       }
       const prefs = prog?.preferences;
       if (prefs && prefs.bookmarks) setBookmarks(prefs.bookmarks);
@@ -202,6 +227,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       const pct = (currentPage / numPages) * 100;
+
+      // Save to server
       saveProgress({
         product_id: productId,
         progress_type: 'ebook',
@@ -209,6 +236,12 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         position_percent: pct,
         status: pct >= 95 ? 'completed' : 'in_progress',
       }).catch(() => {});
+
+      // Save to localStorage for instant "Continue" support
+      localStorage.setItem(`ebook_progress_${productId}`, JSON.stringify({
+        page_number: currentPage,
+        timestamp: Date.now()
+      }));
     }, 2000);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
   }, [currentPage, numPages, productId]);
