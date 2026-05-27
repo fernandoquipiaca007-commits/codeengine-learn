@@ -101,12 +101,16 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
     };
   }, [user?.id]);
 
+  // Since mobile menu is now a dropdown, we don't lock body scroll
   useEffect(() => {
+    // Commented out to allow natural scrolling while dropdown is open
+    /*
     if (!showMobileMenu) return;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
     };
+    */
   }, [showMobileMenu]);
 
   async function loadUnreadCount(userId: string) {
@@ -187,17 +191,25 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-3 sm:py-3.5 md:py-4 bg-surface/80 backdrop-blur-xl rounded-full mt-3 sm:mt-3 lg:mt-4 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1280px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-2.5 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-2.5 lg:mt-3 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1280px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
       <div className="nav-beam"></div>
       
-      {/* Logo - Progressive sizing */}
+      {/* Logo - Brand Icon and Name */}
       <div 
-        className="font-display text-base sm:text-lg md:text-xl lg:text-xl xl:text-2xl font-bold tracking-tighter text-on-surface cursor-pointer whitespace-nowrap flex-shrink-0 min-w-0"
+        className="flex items-center gap-2 cursor-pointer flex-shrink-0 min-w-0"
         onClick={() => setScreen('home')}
       >
-        <span className="inline sm:hidden">CE</span>
-        <span className="hidden sm:inline md:hidden">CodeEngine 1</span>
-        <span className="hidden md:inline">CodeEngine 1</span>
+        <img 
+          src="/logo.png" 
+          alt="Logo" 
+          className="h-6 sm:h-7 md:h-8 w-auto object-contain flex-shrink-0"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+        <span className="font-display text-sm sm:text-base md:text-lg font-bold tracking-tighter text-on-surface whitespace-nowrap">
+          CodeEngine 1
+        </span>
       </div>
       
       {/* Desktop Navigation - Hidden on tablet and below */}
@@ -295,7 +307,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
             <div className="flex-shrink-0">
               <PointsBadge onClick={() => setScreen('member', 'recompensas')} />
             </div>
-
+ 
             {/* Notification Bell - Always visible */}
             <div className="relative flex-shrink-0">
               <button
@@ -332,7 +344,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                 </>
               )}
             </div>
-
+ 
             {/* Profile Button - Always visible but adaptive */}
             <div className="relative flex-shrink-0">
               <button
@@ -377,7 +389,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                       <User className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
                       <span className="truncate">{t('profile.memberArea')}</span>
                     </button>
-
+ 
                     <button
                       onClick={() => {
                         setScreen('member', 'biblioteca');
@@ -388,7 +400,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                       <Heart className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
                       <span className="truncate">{t('profile.myLibrary')}</span>
                     </button>
-
+ 
                     <button
                       onClick={() => {
                         setScreen('member', 'compras');
@@ -474,82 +486,82 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         )}
       </div>
       
-      {/* Mobile Menu Drawer - Intelligent Responsive */}
+      {/* Mobile Menu Dropdown Overlay */}
       {showMobileMenu && (
         <>
           {/* Backdrop with blur */}
           <div
-            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
             onClick={() => setShowMobileMenu(false)}
           />
           
-          {/* Drawer - Adaptive width */}
-          <div className="fixed inset-y-0 right-0 z-[70] h-screen w-[min(90vw,380px)] sm:w-[min(85vw,360px)] md:w-[min(70vw,340px)] rounded-l-2xl sm:rounded-l-[1.75rem] bg-surface/98 backdrop-blur-xl border-l border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
-            
+          {/* Floating Dropdown - Matching Profile/Notifications */}
+          <div className="fixed left-1/2 top-20 sm:top-24 z-50 w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl bg-surface/95 backdrop-blur-xl border border-white/10 p-3 sm:p-4 shadow-[0_0_60px_rgba(0,0,0,0.45)] max-h-[calc(100vh-6rem)] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-5 py-4 sm:py-5 border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent flex-shrink-0">
-              <span className="font-display text-xs sm:text-sm uppercase tracking-[0.25em] sm:tracking-[0.3em] text-on-surface-variant">{t('nav.menu')}</span>
+            <div className="flex items-center justify-between px-3 py-2 border-b border-white/15 bg-gradient-to-b from-white/5 to-transparent rounded-t-xl mb-2">
+              <span className="font-display text-xs uppercase tracking-wider text-on-surface-variant font-bold">
+                {t('nav.menu')}
+              </span>
               <button
                 onClick={() => setShowMobileMenu(false)}
-                className="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-white/5 transition-all"
+                className="text-on-surface-variant hover:text-primary p-1.5 rounded-full hover:bg-white/5 transition-all"
                 aria-label={t('nav.closeMenu')}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 py-3 sm:py-4">
-              
-              {/* Navigation Links */}
-              <div className="space-y-1.5 sm:space-y-2">
-                {[
-                  { label: t('nav.home'), screen: 'home' },
-                  { label: t('nav.library'), screen: 'library' },
-                  { label: t('nav.releases'), screen: 'releases' },
-                  ...(user ? [{ label: t('nav.news'), screen: 'news' }] : []),
-                  { label: t('nav.about'), screen: 'about' },
-                  { label: t('nav.contact'), screen: 'contact' },
-                ].map((item) => (
+            {/* Navigation Links */}
+            <div className="space-y-1">
+              {[
+                { label: t('nav.home'), screen: 'home' },
+                { label: t('nav.library'), screen: 'library' },
+                { label: t('nav.releases'), screen: 'releases' },
+                ...(user ? [{ label: t('nav.news'), screen: 'news' }] : []),
+                { label: t('nav.about'), screen: 'about' },
+                { label: t('nav.contact'), screen: 'contact' },
+              ].map((item) => (
+                <button
+                  key={item.screen}
+                  onClick={() => {
+                    setScreen(item.screen);
+                    setShowMobileMenu(false);
+                  }}
+                  className={cn(
+                    "w-full text-left rounded-xl px-4 py-3 font-sans text-sm font-semibold transition-all flex items-center justify-between",
+                    currentScreen === item.screen
+                      ? 'bg-primary/10 text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] border-l-2 border-primary'
+                      : 'text-on-surface-variant hover:text-primary hover:bg-white/5'
+                  )}
+                >
+                  <span>{item.label}</span>
+                  {currentScreen === item.screen && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  )}
+                </button>
+              ))}
+            </div>
+            
+            {/* User Actions - Only show if NOT logged in */}
+            {!user && (
+              <>
+                <div className="my-2 border-t border-white/10" />
+                <div className="space-y-1">
                   <button
-                    key={item.screen}
                     onClick={() => {
-                      setScreen(item.screen);
+                      setScreen('auth');
                       setShowMobileMenu(false);
                     }}
-                    className={cn(
-                      "w-full text-left rounded-xl sm:rounded-2xl px-4 py-3.5 sm:py-4 font-sans text-sm sm:text-base font-semibold transition-all",
-                      currentScreen === item.screen
-                        ? 'bg-primary/15 text-primary shadow-[0_0_20px_rgba(192,193,255,0.15)]'
-                        : 'text-on-surface-variant hover:text-primary hover:bg-white/5'
-                    )}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left font-sans text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-xl transition-all"
                   >
-                    {item.label}
+                    <User className="w-4 h-4 flex-shrink-0" />
+                    <span>{t('profile.signInOrCreate')}</span>
                   </button>
-                ))}
-              </div>
-              
-              {/* User Actions - Only show if NOT logged in */}
-              {!user && (
-                <>
-                  <div className="my-4 border-t border-white/10" />
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => {
-                        setScreen('auth');
-                        setShowMobileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left font-sans text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-xl transition-all"
-                    >
-                      <User className="w-4 h-4 flex-shrink-0" />
-                      <span>{t('profile.signInOrCreate')}</span>
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}

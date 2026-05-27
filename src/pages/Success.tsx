@@ -53,11 +53,16 @@ export function Success({ setScreen }: SuccessProps) {
 
     try {
       // Garante registro da compra (webhook pode atrasar em dev local)
-      await fetch(`${backendUrl}/api/stripe/fulfill-session`, {
+      const fulfillRes = await fetch(`${backendUrl}/api/stripe/fulfill-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
       });
+
+      if (!fulfillRes.ok) {
+        const fulfillData = await fulfillRes.json().catch(() => ({}));
+        throw new Error(fulfillData.error || 'Falha ao processar e liberar a compra no sistema.');
+      }
 
       const response = await fetch(`${backendUrl}/api/stripe/session/${sessionId}`);
 
