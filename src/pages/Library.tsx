@@ -375,7 +375,7 @@ export function Library({ setScreen, onProductClick }: {
 
                       {/* Product Info */}
                       <div className="px-4 pb-6 flex-grow flex flex-col z-10 relative">
-                        <h2 className="font-display text-2xl font-semibold text-white mb-2 group-hover:text-primary transition-colors break-words">
+                        <h2 className="font-display text-2xl font-semibold text-white mb-2 group-hover:text-primary group-active:text-primary transition-colors break-words">
                           {product.title}
                         </h2>
                         <p className="font-sans text-base text-on-surface-variant/80 line-clamp-2 mb-6 flex-grow break-words">
@@ -412,9 +412,9 @@ export function Library({ setScreen, onProductClick }: {
                               <ArrowRight className="w-3.5 h-3.5" />
                             </div>
                           ) : (
-                            <button className="secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 text-white transition-all shrink-0">
+                            <button className="secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 group-active:bg-white/10 group-active:border-primary/50 text-white transition-all shrink-0">
                               {product.cta_text || 'Comprar'}{' '}
-                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-active:translate-x-0.5 transition-transform" />
                             </button>
                           )}
                         </div>

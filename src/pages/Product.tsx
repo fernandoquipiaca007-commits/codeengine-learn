@@ -19,6 +19,8 @@ import { ProductPurchaseProvider, useProductPurchaseOptional } from '../contexts
 import { getProductCoverUrl } from '../lib/storage-path';
 import { ReferralProgress } from '../components/referral/ReferralProgress';
 import { ReferralShareCard } from '../components/referral/ReferralShareCard';
+import { useAuthSession } from '../hooks/useAuthSession';
+import { useOwnedProducts } from '../hooks/useOwnedProducts';
 
 
 interface ProductProps {
@@ -84,6 +86,8 @@ export function Product({ setScreen, productId }: ProductProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const prevLocaleRef = useRef(locale);
   const mainCtaRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuthSession();
+  const { isOwned } = useOwnedProducts(user?.id);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -448,7 +452,7 @@ export function Product({ setScreen, productId }: ProductProps) {
             </div>
 
             {/* Sistema de Partilha & Desconto Progressivo */}
-            {product && !product.is_free && listPrice > 0 && (
+            {product && !product.is_free && listPrice > 0 && !isOwned(product.id) && (
               <div className="space-y-4 pt-6 border-t border-white/10 mt-6">
                 <div className={isLoggedIn ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "w-full"}>
                   <ReferralProgress
