@@ -82,6 +82,7 @@
     "noFeatured": "Nenhum destaque ativo. Configure no painel admin em Produtos em Destaque."
   },
   "product": {
+    "alreadyOwned": "Produto já adquirido",
     "owned": "Você já possui este produto",
     "ownedBadge": "Adquirido",
     "free": "Gratuito",

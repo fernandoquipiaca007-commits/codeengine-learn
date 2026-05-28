@@ -332,7 +332,7 @@ export function Library({ setScreen, onProductClick }: {
                         <LazyImage
                           src={getProductCoverUrl(product)}
                           alt={product.title}
-                          className="object-cover w-full h-full opacity-80 group-hover:scale-110 transition-transform duration-1000 ease-out"
+                          className="object-cover w-full h-full"
                           fallback={`https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent"></div>
@@ -404,7 +404,7 @@ export function Library({ setScreen, onProductClick }: {
                           {isOwned(product.id) ? (
                             <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">
                               <CheckCircle className="w-3.5 h-3.5" />
-                              Produto já adquirido
+                              {tCommon('product.alreadyOwned')}
                             </div>
                           ) : product.is_free ? (
                             <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1 transition-all">

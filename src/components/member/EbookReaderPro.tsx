@@ -77,6 +77,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialPageRef = useRef(1);
+  const scrolledOnLoad = useRef(false);
 
   const [url, setUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState(0);
@@ -201,14 +203,18 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         }
       }
 
+      initialPageRef.current = initialPage;
+
       if (initialPage > 1) {
         setCurrentPage(initialPage);
         setVisiblePages(new Set([Math.max(1, initialPage - 1), initialPage, initialPage + 1]));
 
-        // Use timeout to allow document to load before scrolling
+        // Fallback timeout to scroll as a secondary mechanism
         setTimeout(() => {
-          goToPage(initialPage);
-        }, 1000);
+          if (!scrolledOnLoad.current) {
+            goToPage(initialPage);
+          }
+        }, 1500);
       }
       const prefs = prog?.preferences;
       if (prefs && prefs.bookmarks) setBookmarks(prefs.bookmarks);
@@ -327,14 +333,23 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
 
   // ═══ Navegação ═══
   const goToPage = useCallback((pageNum: number) => {
-    if (!scrollContainerRef.current || pageNum < 1 || pageNum > numPages) return;
-    const pages = scrollContainerRef.current.querySelectorAll('[data-page]');
-    const targetPage = pages[pageNum - 1];
+    if (!scrollContainerRef.current || pageNum < 1) return;
+    const targetPage = scrollContainerRef.current.querySelector(`[data-page="${pageNum}"]`);
     if (targetPage) {
       targetPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setCurrentPage(pageNum);
     }
-  }, [numPages]);
+  }, []);
+
+  // ═══ PRECISION SCROLL ON LOAD ═══
+  useEffect(() => {
+    if (numPages > 0 && !scrolledOnLoad.current && initialPageRef.current > 1) {
+      scrolledOnLoad.current = true;
+      setTimeout(() => {
+        goToPage(initialPageRef.current);
+      }, 300);
+    }
+  }, [numPages, goToPage]);
 
   const handleZoomChange = useCallback((newZoom: number) => {
     const clampedZoom = Math.max(0.2, Math.min(10, newZoom));

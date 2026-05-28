@@ -22,18 +22,31 @@ export function PushPermissionPrompt() {
   useEffect(() => {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
 
-    if (Notification.permission === 'granted') {
-      void subscribe();
-      return;
-    }
+    let timer: any;
 
-    if (Notification.permission !== 'default') return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        if (Notification.permission === 'granted') {
+          void subscribe();
+          return;
+        }
 
-    const dismissed = localStorage.getItem('push_prompt_dismissed');
-    if (!dismissed) {
-      const timer = setTimeout(() => setShow(true), 1500);
-      return () => clearTimeout(timer);
-    }
+        if (Notification.permission !== 'default') return;
+
+        const dismissed = localStorage.getItem('push_prompt_dismissed');
+        if (!dismissed) {
+          timer = setTimeout(() => setShow(true), 1500);
+        }
+      } else {
+        setShow(false);
+        if (timer) clearTimeout(timer);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   async function subscribe() {

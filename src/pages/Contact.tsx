@@ -35,12 +35,12 @@ export function Contact({ setScreen }: ContactProps) {
       const categoryLabel =
         categories.find((c) => c.value === formData.category)?.label || formData.category;
       const text = [
-        `*Contato CodeEngine 1*`,
+        `*${t('contact.title')} CodeEngine 1*`,
         ``,
-        `Nome: ${formData.name}`,
-        `Email: ${formData.email}`,
-        `Categoria: ${categoryLabel}`,
-        `Assunto: ${formData.subject}`,
+        `${t('contact.name')}: ${formData.name}`,
+        `${t('contact.email')}: ${formData.email}`,
+        `${t('contact.category')}: ${categoryLabel}`,
+        `${t('contact.subject')}: ${formData.subject}`,
         ``,
         formData.message,
       ].join('\n');
@@ -85,7 +85,7 @@ export function Contact({ setScreen }: ContactProps) {
               <Mail className="w-6 h-6 text-primary" />
             </div>
             <span className="font-display text-sm font-semibold tracking-widest uppercase text-primary">
-              {t('contact.heroTitle')}
+              {t('contact.title')}
             </span>
           </div>
 
@@ -237,7 +237,7 @@ export function Contact({ setScreen }: ContactProps) {
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                      placeholder="seu@email.com"
+                      placeholder={t('contact.emailPlaceholder')}
                     />
                   </div>
                 </div>
@@ -331,7 +331,7 @@ export function Contact({ setScreen }: ContactProps) {
         </h2>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {(t('contact.faq.questions', { returnObjects: true }) as any[]).map((faq: { q: string; a: string }, index: number) => (
+          {((t('contact.faq.questions', { returnObjects: true }) as any[]) || []).map((faq: { q: string; a: string }, index: number) => (
             <div
               key={index}
               className="glass-card rounded-xl p-6 hover:scale-105 transition-transform duration-300"

@@ -69,6 +69,12 @@ export function News({ setScreen }: NewsProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [visibleCount, setVisibleCount] = useState(20);
 
+  // Pagination and sorting states
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   // Sharing states
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -128,11 +134,16 @@ export function News({ setScreen }: NewsProps) {
     checkAuth();
   }, []);
 
+  // Load featured news once on mount or locale changes
   useEffect(() => {
-    if (user) {
-      loadNews();
-    }
-  }, [selectedCategory, locale, user]);
+    loadFeaturedNews();
+  }, [locale]);
+
+  // Load normal news on category, sorting or locale changes
+  useEffect(() => {
+    setPage(0);
+    loadNews(0, false);
+  }, [selectedCategory, sortBy, locale]);
 
   useEffect(() => {
     if (featuredArticles.length <= 1) return;
@@ -142,12 +153,13 @@ export function News({ setScreen }: NewsProps) {
     return () => clearInterval(interval);
   }, [featuredArticles]);
 
-  // Deep linking: Auto-open article from URL query param
+  // Deep linking: Auto-open article from URL query param or sessionStorage
   useEffect(() => {
     if (news.length === 0) return;
     const params = new URLSearchParams(window.location.search);
-    const urlNewsId = params.get('newsId');
+    const urlNewsId = params.get('newsId') || sessionStorage.getItem('pendingNewsId');
     if (urlNewsId) {
+      sessionStorage.removeItem('pendingNewsId');
       const art = news.find(n => n.id === urlNewsId);
       if (art) {
         setSelectedArticle(art);
@@ -155,9 +167,52 @@ export function News({ setScreen }: NewsProps) {
         // Clean URL parameter
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, '', newUrl);
+      } else {
+        // Fallback: Se o artigo não estiver no array carregado inicialmente (devido a filtros ou paginação),
+        // buscamos diretamente no banco de dados para abrir o artigo correto!
+        async function fetchSingleArticle(id: string) {
+          try {
+            const { data, error } = await supabase
+              .from('news')
+              .select('*')
+              .eq('id', id)
+              .maybeSingle();
+            
+            if (data && !error) {
+              let art = data;
+              if (locale !== 'pt') {
+                const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
+                const { data: trans } = await supabase
+                  .from('news_translations')
+                  .select('*')
+                  .eq('news_id', id)
+                  .in('language', langOrder);
+
+                if (trans && trans.length > 0) {
+                  // Priorizar o idioma ativo, senão inglês se houver
+                  const tr = trans.find(t => t.language === locale) || trans[0];
+                  art = {
+                    ...art,
+                    title: tr.title || art.title,
+                    excerpt: tr.excerpt || art.excerpt,
+                    content: tr.content || art.content,
+                  };
+                }
+              }
+              setSelectedArticle(art);
+              void trackView(art.id);
+            }
+          } catch (e) {
+            console.error('Error fetching single deep-linked news article:', e);
+          }
+        }
+        fetchSingleArticle(urlNewsId);
+        // Clean URL parameter
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
       }
     }
-  }, [news]);
+  }, [news, locale]);
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -186,6 +241,14 @@ export function News({ setScreen }: NewsProps) {
       } catch (err) {
         console.error('Error fetching member role:', err);
       }
+    } else {
+      // Load guest likes from localStorage
+      const localLikes = localStorage.getItem('guest_liked_news');
+      if (localLikes) {
+        try {
+          setLikedArticles(JSON.parse(localLikes));
+        } catch (e) {}
+      }
     }
   }
 
@@ -204,8 +267,7 @@ export function News({ setScreen }: NewsProps) {
     }
   }
 
-  async function loadNews() {
-    setLoading(true);
+  async function loadFeaturedNews() {
     try {
       let query = supabase
         .from('news')
@@ -219,11 +281,10 @@ export function News({ setScreen }: NewsProps) {
 
       let baseNews = data || [];
 
-      // If locale is not PT, try to load translations
+      // Mapear traduções
       if (locale !== 'pt' && baseNews.length > 0) {
         const newsIds = baseNews.map(n => n.id);
         const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
-
         const { data: trans } = await supabase
           .from('news_translations')
           .select('*')
@@ -238,7 +299,6 @@ export function News({ setScreen }: NewsProps) {
               transMap.set(t.news_id, t);
             }
           }
-
           baseNews = baseNews.map(article => {
             const tr = transMap.get(article.id);
             if (!tr) return article;
@@ -254,25 +314,101 @@ export function News({ setScreen }: NewsProps) {
       }
 
       setNews(baseNews);
-      
-      // Split into Featured (tagged with 'Destaque') and Normal
+
+      // Split into Featured (tagged with 'Destaque')
       const featured = baseNews.filter(a => 
         a.tags?.some(tag => tag.toLowerCase() === 'destaque')
       ).slice(0, 4);
 
       setFeaturedArticles(featured);
+    } catch (e) {
+      console.error('Error loading featured news:', e);
+    }
+  }
 
-      // Normal news below are everything else, optionally filtered by category
-      let normal = baseNews.filter(a => !featured.some(f => f.id === a.id));
+  const PAGE_SIZE = 6;
+
+  async function loadNews(pageToLoad = 0, append = false) {
+    if (pageToLoad === 0 && !append) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
+      const from = pageToLoad * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      let query = supabase
+        .from('news')
+        .select('*')
+        .eq('status', 'published')
+        .lte('published_at', new Date().toISOString())
+        .order('published_at', { ascending: sortBy === 'oldest' });
+
       if (selectedCategory) {
-        normal = normal.filter(a => a.category.toLowerCase() === selectedCategory.toLowerCase());
+        query = query.eq('category', selectedCategory);
       }
-      setNormalArticles(normal);
 
+      // Exclude featured news from grid to avoid duplicate cards on screen
+      // If we are on page 0 and no category is selected, we can skip featured news
+      const featuredIds = featuredArticles.map(f => f.id);
+      
+      query = query.range(from, to);
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      let fetchedNews = data || [];
+
+      // Mapear traduções
+      if (locale !== 'pt' && fetchedNews.length > 0) {
+        const newsIds = fetchedNews.map(n => n.id);
+        const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
+        const { data: trans } = await supabase
+          .from('news_translations')
+          .select('*')
+          .in('news_id', newsIds)
+          .in('language', langOrder);
+
+        if (trans && trans.length > 0) {
+          const transMap = new Map<string, any>();
+          for (const t of trans) {
+            const existing = transMap.get(t.news_id);
+            if (!existing || t.language === locale) {
+              transMap.set(t.news_id, t);
+            }
+          }
+          fetchedNews = fetchedNews.map(article => {
+            const tr = transMap.get(article.id);
+            if (!tr) return article;
+            return {
+              ...article,
+              title: tr.title || article.title,
+              slug: tr.slug || article.slug,
+              excerpt: tr.excerpt || article.excerpt,
+              content: tr.content || article.content,
+            };
+          });
+        }
+      }
+
+      if (append) {
+        setNormalArticles(prev => {
+          const existingIds = new Set(prev.map(a => a.id));
+          const filtered = fetchedNews.filter(a => !existingIds.has(a.id));
+          return [...prev, ...filtered];
+        });
+      } else {
+        setNormalArticles(fetchedNews);
+      }
+
+      setHasMore(fetchedNews.length === PAGE_SIZE);
     } catch (error) {
       console.error('Error loading news:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }
 
@@ -295,7 +431,24 @@ export function News({ setScreen }: NewsProps) {
 
   async function toggleLike(articleId: string) {
     if (!user) {
-      alert(locale === 'fr' ? 'Veuillez vous connecter pour aimer cet article.' : locale === 'pt' ? 'Por favor, faça login para curtir.' : 'Please sign in to like this article.');
+      // Guest local liked articles persistence in localStorage
+      const isLiked = likedArticles.includes(articleId);
+      let newLiked: string[];
+      if (isLiked) {
+        newLiked = likedArticles.filter(id => id !== articleId);
+        const updateFn = (a: NewsArticle) => a.id === articleId ? { ...a, likes_count: Math.max(0, (a.likes_count || 0) - 1) } : a;
+        setNews(prev => prev.map(updateFn));
+        setFeaturedArticles(prev => prev.map(updateFn));
+        setNormalArticles(prev => prev.map(updateFn));
+      } else {
+        newLiked = [...likedArticles, articleId];
+        const updateFn = (a: NewsArticle) => a.id === articleId ? { ...a, likes_count: (a.likes_count || 0) + 1 } : a;
+        setNews(prev => prev.map(updateFn));
+        setFeaturedArticles(prev => prev.map(updateFn));
+        setNormalArticles(prev => prev.map(updateFn));
+      }
+      setLikedArticles(newLiked);
+      localStorage.setItem('guest_liked_news', JSON.stringify(newLiked));
       return;
     }
 
@@ -317,7 +470,6 @@ export function News({ setScreen }: NewsProps) {
     }
 
     if (!activeMemberId) {
-      alert(locale === 'fr' ? 'Veuillez vous connecter pour aimer cet article.' : locale === 'pt' ? 'Por favor, faça login para curtir.' : 'Please sign in to like this article.');
       return;
     }
 
@@ -482,31 +634,7 @@ export function News({ setScreen }: NewsProps) {
     });
   }
 
-  if (!user) {
-    return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen">
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="glass-panel rounded-2xl p-12 max-w-md text-center">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-6">
-              <Newspaper className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-white mb-4">
-              {t('news.exclusiveContent')}
-            </h2>
-            <p className="font-sans text-sm text-on-surface-variant mb-8">
-              {t('news.exclusiveDesc')}
-            </p>
-            <button
-              onClick={() => setScreen('auth')}
-              className="font-display text-xs font-semibold tracking-widest uppercase px-8 py-3 rounded-full bg-primary text-on-primary hover:bg-white hover:text-background transition-all shadow-[0_0_25px_rgba(192,193,255,0.4)]"
-            >
-              {t('news.signInNow')}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen">
@@ -691,6 +819,26 @@ export function News({ setScreen }: NewsProps) {
         ))}
       </motion.div>
 
+      {/* 2.5 Sort Filter Bar */}
+      <div className="flex justify-between items-center mb-8">
+        <span className="font-sans text-xs text-on-surface-variant font-medium">
+          {locale === 'pt' ? `${normalArticles.length} notícias encontradas` : locale === 'fr' ? `${normalArticles.length} articles trouvés` : `${normalArticles.length} articles found`}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-display text-[10px] font-bold tracking-wider uppercase text-on-surface-variant">
+            {locale === 'pt' ? 'Ordenar por:' : locale === 'fr' ? 'Trier par:' : 'Sort by:'}
+          </span>
+          <button
+            onClick={() => setSortBy(sortBy === 'newest' ? 'oldest' : 'newest')}
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full font-display text-[10px] font-bold tracking-wider uppercase text-white transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            {sortBy === 'newest'
+              ? (locale === 'pt' ? 'Mais Recentes' : locale === 'fr' ? 'Plus Récents' : 'Most Recent')
+              : (locale === 'pt' ? 'Mais Antigas' : locale === 'fr' ? 'Plus Anciens' : 'Oldest')}
+          </button>
+        </div>
+      </div>
+
       {/* 3. News Grid List (Normal articles) */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -718,126 +866,104 @@ export function News({ setScreen }: NewsProps) {
         </div>
       ) : (
         <div className="space-y-12">
-          {(() => {
-            const visibleArticles = normalArticles.slice(0, visibleCount);
-            const groupedArticles: Record<string, NewsArticle[]> = {};
-            
-            visibleArticles.forEach((article) => {
-              const label = getGroupLabel(article.published_at, locale);
-              if (!groupedArticles[label]) {
-                groupedArticles[label] = [];
-              }
-              groupedArticles[label].push(article);
-            });
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {normalArticles.map((article, index) => (
+              <motion.article
+                key={article.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.05 }}
+                className="glass-panel rounded-2xl overflow-hidden group cursor-pointer hover:shadow-[0_0_40px_rgba(192,193,255,0.15)] hover:border-primary/20 border border-white/5 transition-all flex flex-col h-full"
+                onClick={() => {
+                  setSelectedArticle(article);
+                  void trackView(article.id);
+                }}
+              >
+                {/* Thumbnail */}
+                {article.thumbnail_url && (
+                  <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
+                    <LazyImage
+                      src={article.thumbnail_url}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+                  </div>
+                )}
 
-            return Object.entries(groupedArticles).map(([dayLabel, articlesInDay]) => (
-              <div key={dayLabel} className="space-y-6">
-                {/* Epoch Header */}
-                <div className="flex items-center gap-4 py-4">
-                  <div className="h-[1px] bg-white/10 flex-grow" />
-                  <span className="font-display text-xs font-bold uppercase tracking-[0.2em] text-primary bg-primary/10 border border-primary/20 px-5 py-2 rounded-full backdrop-blur-md shadow-lg shadow-black/20">
-                    {dayLabel}
-                  </span>
-                  <div className="h-[1px] bg-white/10 flex-grow" />
-                </div>
+                {/* Content */}
+                <div className="p-6 flex flex-col flex-1">
+                  {/* Category Badge */}
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${getCategoryColor(article.category)} font-display text-[10px] font-bold uppercase tracking-wider mb-4 border w-fit`}>
+                    <TrendingUp className="w-3 h-3" />
+                    {translateCategory(article.category)}
+                  </div>
 
-                {/* Grid for this Day */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {articlesInDay.map((article, index) => (
-                    <motion.article
-                      key={article.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.05 }}
-                      className="glass-panel rounded-2xl overflow-hidden group cursor-pointer hover:shadow-[0_0_40px_rgba(192,193,255,0.15)] hover:border-primary/20 border border-white/5 transition-all flex flex-col h-full"
-                      onClick={() => {
-                        setSelectedArticle(article);
-                        void trackView(article.id);
-                      }}
-                    >
-                      {/* Thumbnail */}
-                      {article.thumbnail_url && (
-                        <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
-                          <LazyImage
-                            src={article.thumbnail_url}
-                            alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
-                        </div>
-                      )}
+                  {/* Title */}
+                  <h3 className="font-display text-xl font-semibold text-white mb-3 group-hover:text-primary transition-colors line-clamp-2 break-words">
+                    {article.title}
+                  </h3>
 
-                      {/* Content */}
-                      <div className="p-6 flex flex-col flex-1">
-                        {/* Category Badge */}
-                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${getCategoryColor(article.category)} font-display text-[10px] font-bold uppercase tracking-wider mb-4 border w-fit`}>
-                          <TrendingUp className="w-3 h-3" />
-                          {translateCategory(article.category)}
-                        </div>
+                  {/* Excerpt */}
+                  <p className="font-sans text-sm text-on-surface-variant mb-6 line-clamp-3 flex-1 break-words">
+                    {article.excerpt}
+                  </p>
 
-                        {/* Title */}
-                        <h3 className="font-display text-xl font-semibold text-white mb-3 group-hover:text-primary transition-colors line-clamp-2 break-words">
-                          {article.title}
-                        </h3>
-
-                        {/* Excerpt */}
-                        <p className="font-sans text-sm text-on-surface-variant mb-6 line-clamp-3 flex-1 break-words">
-                          {article.excerpt}
-                        </p>
-
-                        {/* Meta */}
-                        <div className="flex items-center justify-between text-xs text-on-surface-variant border-t border-white/5 pt-4 flex-shrink-0">
-                          <div className="flex items-center gap-2 font-medium">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{formatDate(article.published_at)}</span>
-                          </div>
-                          {isAdmin && (
-                            <div className="flex items-center gap-1.5 font-medium bg-white/5 px-2 py-0.5 rounded">
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>{article.views} {locale === 'fr' ? 'vues' : locale === 'pt' ? 'visualizações' : 'views'}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Actions row */}
-                        <div className="flex items-center justify-between mt-4 pt-2 flex-shrink-0">
-                          <div className="flex items-center gap-1.5 text-[#6366f1] group-hover:gap-2.5 transition-all text-xs font-bold uppercase tracking-widest font-display">
-                            <span>{t('news.readMore') || 'Read More'}</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </div>
-                          
-                          {/* Heart/Like Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation(); // prevent opening the article twice
-                              toggleLike(article.id);
-                            }}
-                            className={`p-2 rounded-full border transition-all ${
-                              likedArticles.includes(article.id)
-                                ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                                : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
-                            }`}
-                          >
-                            <Heart className={`w-4 h-4 ${likedArticles.includes(article.id) ? 'fill-current text-red-500' : ''}`} />
-                          </button>
-                        </div>
-
+                  {/* Meta */}
+                  <div className="flex items-center justify-between text-xs text-on-surface-variant border-t border-white/5 pt-4 flex-shrink-0">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{formatDate(article.published_at)}</span>
+                    </div>
+                    {isAdmin && (
+                      <div className="flex items-center gap-1.5 font-medium bg-white/5 px-2 py-0.5 rounded">
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{article.views} {locale === 'fr' ? 'vues' : locale === 'pt' ? 'visualizações' : 'views'}</span>
                       </div>
-                    </motion.article>
-                  ))}
+                    )}
+                  </div>
+
+                  {/* Actions row */}
+                  <div className="flex items-center justify-between mt-4 pt-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 text-[#6366f1] group-hover:gap-2.5 transition-all text-xs font-bold uppercase tracking-widest font-display">
+                      <span>{t('news.readMore') || 'Read More'}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                    
+                    {/* Heart/Like Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevent opening the article twice
+                        toggleLike(article.id);
+                      }}
+                      className={`p-2 rounded-full border transition-all ${
+                        likedArticles.includes(article.id)
+                          ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <Heart className={`w-4 h-4 ${likedArticles.includes(article.id) ? 'fill-current text-red-500' : ''}`} />
+                    </button>
+                  </div>
+
                 </div>
-              </div>
-            ));
-          })()}
+              </motion.article>
+            ))}
+          </div>
 
           {/* Load More Button */}
-          {normalArticles.length > visibleCount && (
+          {hasMore && (
             <div className="flex justify-center mt-12 mb-6">
               <button
-                onClick={() => setVisibleCount((prev) => prev + 20)}
-                className="px-8 py-3.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 text-white rounded-full font-display text-xs font-bold tracking-widest uppercase flex items-center gap-2.5 transition-all shadow-lg hover:scale-105 cursor-pointer relative z-10"
+                onClick={() => {
+                  const nextPage = page + 1;
+                  setPage(nextPage);
+                  loadNews(nextPage, true);
+                }}
+                disabled={loadingMore}
+                className="px-8 py-3.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 text-white rounded-full font-display text-xs font-bold tracking-widest uppercase flex items-center gap-2.5 transition-all shadow-lg hover:scale-105 cursor-pointer relative z-10 disabled:opacity-50"
               >
-                <span>+ {locale === 'pt' ? 'Ver Notícias Anteriores' : locale === 'fr' ? 'Voir les Articles Précédents' : 'Load Previous News'}</span>
+                <span>{loadingMore ? (locale === 'pt' ? 'Carregando...' : 'Loading...') : `+ ${locale === 'pt' ? 'Ver Notícias Anteriores' : locale === 'fr' ? 'Voir les Articles Précédents' : 'Load Previous News'}`}</span>
               </button>
             </div>
           )}

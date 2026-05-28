@@ -33,7 +33,19 @@ export function LearningHub({ onOpenCourse, onOpenEbook, onGoToLibrary }: Learni
         getContinueWatching(),
         getMemberLibrary().catch(() => [] as LibraryItem[]),
       ]);
-      setContinueItem(cont);
+      if (cont) {
+        const prod = (cont as any).products;
+        setContinueItem({
+          product_id: cont.product_id,
+          product_title: prod?.title || (cont as any).product_title || '',
+          cover_url: prod?.cover_url || (cont as any).cover_url,
+          lesson_id: cont.lesson_id,
+          progress_type: cont.progress_type,
+          product_type: prod?.product_type || (cont as any).product_type,
+        });
+      } else {
+        setContinueItem(null);
+      }
       const inProgress = library
         .filter((i) => i.status === 'in_progress' && i.percentComplete > 0 && i.percentComplete < 100)
         .slice(0, 4);

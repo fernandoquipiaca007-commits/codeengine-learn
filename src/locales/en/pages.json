@@ -328,9 +328,9 @@
         "description": "Talk to us directly via WhatsApp for quick support."
       },
       "form": {
-        "title": "Form",
-        "description": "Fill out our detailed form for specific questions.",
-        "action": "Open form →"
+        "title": "E-mail",
+        "description": "Send us an alternative email for support and any additional questions.",
+        "action": "codeengine2@gmail.com"
       }
     },
     "faq": {

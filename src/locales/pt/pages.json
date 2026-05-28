@@ -333,9 +333,9 @@
         "description": "Fale conosco diretamente pelo WhatsApp para suporte rápido."
       },
       "form": {
-        "title": "Formulário",
-        "description": "Preencha nosso formulário detalhado para questões específicas.",
-        "action": "Abrir formulário →"
+        "title": "E-mail",
+        "description": "Envie-nos um e-mail alternativo para suporte e qualquer dúvida complementar.",
+        "action": "codeengine2@gmail.com"
       }
     },
     "faq": {

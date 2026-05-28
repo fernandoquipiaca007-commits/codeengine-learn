@@ -82,6 +82,7 @@
     "noFeatured": "No active featured products. Configure in the admin panel under Featured Products."
   },
   "product": {
+    "alreadyOwned": "Product already owned",
     "owned": "You already own this product",
     "ownedBadge": "Owned",
     "free": "Free",

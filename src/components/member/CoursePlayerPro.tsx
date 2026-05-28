@@ -46,6 +46,11 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   const containerRef = useRef<HTMLDivElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const mediaRequestRef = useRef(0);
+  const hasRestoredTime = useRef(false);
+
+  useEffect(() => {
+    hasRestoredTime.current = false;
+  }, [currentLessonId]);
 
   // Estado básico
   const [product, setProduct] = useState<{ title: string; cover_url: string } | null>(null);
@@ -231,6 +236,8 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
     setDuration(v.duration);
 
+    if (hasRestoredTime.current) return;
+
     // Restaurar posição salva (preferência para localStorage se for mais recente)
     const localData = localStorage.getItem(`course_progress_${productId}`);
     let startTime = 0;
@@ -255,6 +262,36 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
     if (startTime > 0) {
       v.currentTime = startTime;
+      hasRestoredTime.current = true;
+    }
+  };
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+    
+    // Fallback double check to restore position if it was missed or blocked in onLoadedMetadata
+    const v = videoRef.current;
+    if (v && !hasRestoredTime.current) {
+      const localData = localStorage.getItem(`course_progress_${productId}`);
+      let startTime = 0;
+      if (localData) {
+        try {
+          const parsed = JSON.parse(localData);
+          if (parsed.last_lesson_id === currentLessonId && parsed.last_position > 5) {
+            startTime = parsed.last_position;
+          }
+        } catch (e) {}
+      }
+      if (startTime === 0) {
+        const serverProgress = progress.find((p) => p.lesson_id === currentLessonId);
+        if (serverProgress?.position_seconds && serverProgress.position_seconds > 5) {
+          startTime = serverProgress.position_seconds;
+        }
+      }
+      if (startTime > 0) {
+        v.currentTime = startTime;
+        hasRestoredTime.current = true;
+      }
     }
   };
 
@@ -516,7 +553,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                       className={`w-full h-full ${mediaType === 'audio' ? 'hidden' : isFullscreen ? 'object-contain' : 'object-cover'}`}
                       onTimeUpdate={handleTimeUpdate}
                       onLoadedMetadata={handleLoadedMetadata}
-                      onPlay={() => setIsPlaying(true)}
+                      onPlay={handlePlay}
                       onPause={() => setIsPlaying(false)}
                       onEnded={goToNextLesson}
                       onError={handleVideoError}

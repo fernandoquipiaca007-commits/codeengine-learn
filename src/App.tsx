@@ -202,7 +202,14 @@ export default function App() {
 
     // Handle any ?screen= parameter
     if (screen && screen !== 'product') {
-      setScreen(screen);
+      const targetScreen = screen === 'noticias' ? 'news' : screen;
+      if (targetScreen === 'news') {
+        const newsId = params.get('newsId');
+        if (newsId) {
+          sessionStorage.setItem('pendingNewsId', newsId);
+        }
+      }
+      setScreen(targetScreen);
       window.history.replaceState({}, '', '/');
     }
   }, []);

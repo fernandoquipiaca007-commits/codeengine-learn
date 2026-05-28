@@ -452,15 +452,17 @@ export function Product({ setScreen, productId }: ProductProps) {
             </div>
 
             {/* Sistema de Partilha & Desconto Progressivo */}
-            {product && !product.is_free && listPrice > 0 && !isOwned(product.id) && (
+            {product && !product.is_free && listPrice > 0 && (
               <div className="space-y-4 pt-6 border-t border-white/10 mt-6">
-                <div className={isLoggedIn ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "w-full"}>
-                  <ReferralProgress
-                    productId={product.id}
-                    originalPrice={listPrice}
-                    onDiscountChange={(discount) => setReferralDiscount(discount)}
-                  />
-                  <ReferralShareCard productId={product.id} compact={isLoggedIn} />
+                <div className={isLoggedIn && !isOwned(product.id) ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "w-full"}>
+                  {!isOwned(product.id) && (
+                    <ReferralProgress
+                      productId={product.id}
+                      originalPrice={listPrice}
+                      onDiscountChange={(discount) => setReferralDiscount(discount)}
+                    />
+                  )}
+                  <ReferralShareCard productId={product.id} compact={isLoggedIn && !isOwned(product.id)} />
                 </div>
               </div>
             )}

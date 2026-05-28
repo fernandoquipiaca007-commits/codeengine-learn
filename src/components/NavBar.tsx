@@ -250,19 +250,17 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           {t('nav.releases')}
         </button>
         
-        {user && (
-          <button 
-            onClick={() => setScreen('news')}
-            className={cn(
-              "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
-              currentScreen === 'news' 
-                ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
-                : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
-            )}
-          >
-            {t('nav.news')}
-          </button>
-        )}
+        <button 
+          onClick={() => setScreen('news')}
+          className={cn(
+            "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
+            currentScreen === 'news' 
+              ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
+              : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
+          )}
+        >
+          {t('nav.news')}
+        </button>
         
         <button 
           onClick={() => setScreen('about')}
@@ -519,7 +517,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                 { label: t('nav.home'), screen: 'home' },
                 { label: t('nav.library'), screen: 'library' },
                 { label: t('nav.releases'), screen: 'releases' },
-                ...(user ? [{ label: t('nav.news'), screen: 'news' }] : []),
+                { label: t('nav.news'), screen: 'news' },
                 { label: t('nav.about'), screen: 'about' },
                 { label: t('nav.contact'), screen: 'contact' },
               ].map((item) => (
