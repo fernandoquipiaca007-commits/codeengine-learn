@@ -54,7 +54,15 @@ export function UpdatePrompt() {
   }
 
   useEffect(() => {
-    if (needRefresh) setShowUpdate(true);
+    if (needRefresh) {
+      const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+      if (!isStandalonePWA) {
+        console.log('[PWA] Silent auto-updating service worker on website...');
+        void handleUpdate();
+      } else {
+        setShowUpdate(true);
+      }
+    }
   }, [needRefresh]);
 
   async function handleUpdate() {
