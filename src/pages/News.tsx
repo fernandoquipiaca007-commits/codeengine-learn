@@ -611,6 +611,19 @@ export function News({ setScreen }: NewsProps) {
     const lines = content.split('\n');
     return lines.map((line, idx) => {
       const trimmed = line.trim();
+      
+      // Parse markdown images: ![alt](url)
+      const imageMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+      if (imageMatch) {
+        const alt = imageMatch[1];
+        const src = imageMatch[2];
+        return (
+          <div key={idx} className="my-6 rounded-2xl overflow-hidden border border-white/10 bg-white/5 flex justify-center shadow-lg">
+            <img src={src} alt={alt} className="max-w-full max-h-[500px] object-contain rounded-xl hover:scale-[1.01] transition-transform duration-300" />
+          </div>
+        );
+      }
+
       if (trimmed.startsWith('# ')) {
         return <h1 key={idx} className="font-display text-2xl sm:text-3xl font-bold text-white mt-8 mb-4 border-b border-white/5 pb-2">{trimmed.replace('# ', '')}</h1>;
       }

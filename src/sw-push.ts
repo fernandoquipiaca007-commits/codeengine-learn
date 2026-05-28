@@ -9,7 +9,7 @@ precacheAndRoute(self.__WB_MANIFEST || []);
 
 self.addEventListener('push', (event) => {
   if (!event.data) return;
-  let payload: { title?: string; body?: string; icon?: string; badge?: string; badgeCount?: number; data?: { url?: string; badgeCount?: number } } = {};
+  let payload: { title?: string; body?: string; icon?: string; badge?: string; image?: string; badgeCount?: number; data?: { url?: string; badgeCount?: number } } = {};
   try {
     payload = event.data.json();
   } catch {
@@ -27,8 +27,9 @@ self.addEventListener('push', (event) => {
       body: payload.body || '',
       icon: payload.icon || '/icons/icon-192.svg',
       badge: payload.badge || '/icons/icon-192.svg',
+      image: payload.image || undefined,
       data: payload.data || { url: '/' },
-    })
+    } as any)
   );
 });
 

@@ -48,15 +48,15 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   const mediaRequestRef = useRef(0);
   const hasRestoredTime = useRef(false);
 
-  useEffect(() => {
-    hasRestoredTime.current = false;
-  }, [currentLessonId]);
-
   // Estado básico
   const [product, setProduct] = useState<{ title: string; cover_url: string } | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState<ProgressRow[]>([]);
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(initialLessonId || null);
+
+  useEffect(() => {
+    hasRestoredTime.current = false;
+  }, [currentLessonId]);
   
   // Estado da Mídia
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
