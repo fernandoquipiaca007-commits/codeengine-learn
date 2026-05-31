@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera, Globe, RefreshCw } from 'lucide-react';
+import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera, Globe, RefreshCw, Download } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
@@ -26,6 +26,10 @@ export function Settings({ setScreen }: SettingsProps) {
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [checkingVersion, setCheckingVersion] = useState(false);
 
+  // PWA install states
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
@@ -46,6 +50,49 @@ export function Settings({ setScreen }: SettingsProps) {
     loadUserData();
     checkAppVersion();
   }, [needRefresh]);
+
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches
+      || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    setIsStandalone(!!standalone);
+
+    setInstallPrompt((window as any).deferredPwaPrompt || null);
+
+    const handlePrompt = () => {
+      setInstallPrompt((window as any).deferredPwaPrompt || null);
+    };
+
+    window.addEventListener('pwa-prompt-available', handlePrompt);
+    window.addEventListener('pwa-prompt-dismissed', handlePrompt);
+    
+    const handleInstalled = () => {
+      setIsStandalone(true);
+      setInstallPrompt(null);
+    };
+    window.addEventListener('appinstalled', handleInstalled);
+
+    return () => {
+      window.removeEventListener('pwa-prompt-available', handlePrompt);
+      window.removeEventListener('pwa-prompt-dismissed', handlePrompt);
+      window.removeEventListener('appinstalled', handleInstalled);
+    };
+  }, []);
+
+  async function handleInstallApp() {
+    const prompt = installPrompt || (window as any).deferredPwaPrompt;
+    if (!prompt) return;
+    try {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === 'accepted') {
+        (window as any).deferredPwaPrompt = null;
+        setInstallPrompt(null);
+        window.dispatchEvent(new CustomEvent('pwa-prompt-dismissed'));
+      }
+    } catch (err) {
+      console.error('PWA install prompt error:', err);
+    }
+  }
 
   async function checkAppVersion(manual = false) {
     if (needRefresh) {
@@ -640,6 +687,60 @@ export function Settings({ setScreen }: SettingsProps) {
                   <RefreshCw className="w-4 h-4 text-on-primary animate-[spin_3s_linear_infinite]" />
                   Atualizar Aplicativo
                 </button>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-white/5 my-6" />
+
+            {/* PWA Installation Area */}
+            <div>
+              <h3 className="font-display text-base font-bold text-white mb-2 flex items-center gap-2">
+                <Download className="w-4 h-4 text-primary" />
+                Instalação do Aplicativo
+              </h3>
+              
+              {isStandalone ? (
+                <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-sans flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold">Aplicativo Instalado!</p>
+                    <p className="text-xs text-green-400/80">Você já está rodando a versão otimizada com suporte a uso offline e carregamento instantâneo.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                    Instale a plataforma em seu dispositivo para ter uma experiência nativa em tela cheia, suporte offline aprimorado, inicialização instantânea e menor consumo de dados.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {installPrompt ? (
+                      <button
+                        type="button"
+                        onClick={handleInstallApp}
+                        className="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-on-primary font-display text-sm font-semibold hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-[0.98]"
+                      >
+                        <Download className="w-4 h-4" />
+                        Instalar no Dispositivo
+                      </button>
+                    ) : (
+                      <div className="w-full">
+                        {/* If on iOS Safari */}
+                        {/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream ? (
+                          <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs sm:text-sm font-sans leading-relaxed">
+                            <span className="font-bold block mb-1">📲 Dica de Instalação no iOS/Safari:</span>
+                            Para instalar a plataforma no seu iPhone ou iPad: toque no botão de <span className="font-semibold text-white">Compartilhar</span> (ícone de quadrado com seta para cima) na barra do Safari e selecione <span className="font-semibold text-white">"Adicionar à Tela de Início"</span>.
+                          </div>
+                        ) : (
+                          <div className="p-4 rounded-xl bg-surface-container/50 border border-white/5 text-on-surface-variant text-xs sm:text-sm font-sans leading-relaxed">
+                            💡 O instalador automático não está ativo no momento. Caso queira instalar, clique nos <span className="font-semibold text-white">três pontos ou menu de opções</span> do seu navegador e selecione <span className="font-semibold text-white">"Instalar aplicativo"</span> ou <span className="font-semibold text-white">"Adicionar à tela de início"</span>.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </div>

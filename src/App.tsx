@@ -148,6 +148,20 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Listen for PWA installation prompt globally
+    const handleInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      (window as any).deferredPwaPrompt = e;
+      window.dispatchEvent(new CustomEvent('pwa-prompt-available'));
+    };
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    
+    const handleAppInstalled = () => {
+      (window as any).deferredPwaPrompt = null;
+      window.dispatchEvent(new CustomEvent('pwa-prompt-dismissed'));
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
+
     const params = new URLSearchParams(window.location.search);
     const screen = params.get('screen');
     const pathname = window.location.pathname;
@@ -212,6 +226,11 @@ export default function App() {
       setScreen(targetScreen);
       window.history.replaceState({}, '', '/');
     }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   useEffect(() => {
