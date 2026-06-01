@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ArrowRight, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Product, Category } from '../types/store';
@@ -13,6 +13,7 @@ import { getProductCoverUrl } from '../lib/storage-path';
 import { useTranslation } from 'react-i18next';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { LazyImage } from '../components/ui/LazyImage';
+import { queryCache } from '../lib/queryCache';
 
 interface Subcategory {
   id: string;
@@ -44,10 +45,56 @@ export function Library({ setScreen, onProductClick }: {
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
   const { isOwned } = useOwnedProducts(user?.id);
 
+  const loadData = useCallback(
+    async (revalidate = true) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const fetcher = async () => {
+          // Load categories
+          const { data: categoriesData, error: categoriesError } = await supabase
+            .from('categories')
+            .select('*')
+            .order('display_order', { ascending: true });
+
+          if (categoriesError) throw categoriesError;
+
+          const localized = await fetchLocalizedProducts(locale, 'active');
+          const visible = (localized as any[]).filter((p) =>
+            canViewProduct(p as any, memberLevel, Boolean(user))
+          );
+          
+          return {
+            categories: categoriesData || [],
+            products: visible,
+          };
+        };
+
+        const cacheKey = `library-data-${locale}-${memberLevel}-${Boolean(user)}`;
+        const cachedData = await queryCache.get(cacheKey, fetcher, { revalidate });
+
+        if (cachedData) {
+          setCategories(cachedData.categories);
+          setProducts(cachedData.products);
+        }
+      } catch (err) {
+        console.error('[Library] Critical error loading data:', err);
+        const detail = err && typeof err === 'object'
+          ? (err as any).message || (err as any).details || (err as any).hint || JSON.stringify(err)
+          : String(err);
+        setError(`Erro ao carregar dados: ${detail}`);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [locale, memberLevel, user?.id]
+  );
+
   // Load products and categories (re-fetch when locale changes)
   useEffect(() => {
     void loadData();
-  }, [locale, memberLevel, user?.id]);
+  }, [loadData]);
 
   // Load subcategories when selectedCategory changes
   useEffect(() => {
@@ -78,82 +125,32 @@ export function Library({ setScreen, onProductClick }: {
     void loadSubcategories();
   }, [selectedCategory]);
 
-  // Setup realtime subscription for products
+  // Setup realtime subscription for products with queryCache SWR invalidation
   useEffect(() => {
+    const bump = () => {
+      const cacheKey = `library-data-${locale}-${memberLevel}-${Boolean(user)}`;
+      queryCache.invalidate(cacheKey);
+      void loadData(true);
+    };
+
     const channel = supabase
-      .channel('products-realtime')
+      .channel('products-realtime-caching')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'products' },
-        (payload) => {
-          console.log('New product:', payload.new);
-          if ((payload.new as Product).status === 'active') {
-            setProducts((prev) => [payload.new as Product, ...prev]);
-          }
-        }
+        { event: '*', schema: 'public', table: 'products' },
+        bump
       )
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products' },
-        (payload) => {
-          console.log('Updated product:', payload.new);
-          const updatedProduct = payload.new as Product;
-          if (updatedProduct.status === 'active') {
-            setProducts((prev) =>
-              prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
-            );
-          } else {
-            // Remove if no longer active
-            setProducts((prev) => prev.filter((p) => p.id !== updatedProduct.id));
-          }
-        }
+        { event: '*', schema: 'public', table: 'categories' },
+        bump
       )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'products' },
-        (payload) => {
-          console.log('Deleted product:', payload.old);
-          setProducts((prev) => prev.filter((p) => p.id !== (payload.old as Product).id));
-        }
-      )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      channel.unsubscribe();
+      void supabase.removeChannel(channel);
     };
-  }, []);
-
-  async function loadData() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Load categories
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (categoriesError) throw categoriesError;
-      setCategories(categoriesData || []);
-
-      const localized = await fetchLocalizedProducts(locale, 'active');
-      const visible = (localized as any[]).filter((p) =>
-        canViewProduct(p as any, memberLevel, Boolean(user))
-      );
-      setProducts(visible);
-    } catch (err) {
-      console.error('[Library] Critical error loading data:', err);
-      const detail = err && typeof err === 'object'
-        ? (err as any).message || (err as any).details || (err as any).hint || JSON.stringify(err)
-        : String(err);
-      setError(`Erro ao carregar dados: ${detail}`);
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [locale, memberLevel, user?.id, loadData]);
 
   // Filter products by category and subcategory
   const filteredProducts = products.filter((p) => {

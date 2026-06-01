@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { 
   Newspaper, Calendar, Eye, ArrowRight, Sparkles, TrendingUp,
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
 import { LazyImage } from '../components/ui/LazyImage';
+import { queryCache } from '../lib/queryCache';
 
 interface NewsArticle {
   id: string;
@@ -81,6 +82,157 @@ export function News({ setScreen }: NewsProps) {
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [showInstagramGraphic, setShowInstagramGraphic] = useState(false);
 
+  const loadFeaturedNews = useCallback(async (revalidate = true) => {
+    try {
+      const fetcher = async () => {
+        let query = supabase
+          .from('news')
+          .select('*')
+          .eq('status', 'published')
+          .lte('published_at', new Date().toISOString())
+          .order('published_at', { ascending: false });
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        let baseNews = data || [];
+
+        // Mapear traduções
+        if (locale !== 'pt' && baseNews.length > 0) {
+          const newsIds = baseNews.map(n => n.id);
+          const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
+          const { data: trans } = await supabase
+            .from('news_translations')
+            .select('*')
+            .in('news_id', newsIds)
+            .in('language', langOrder);
+
+          if (trans && trans.length > 0) {
+            const transMap = new Map<string, any>();
+            for (const t of trans) {
+              const existing = transMap.get(t.news_id);
+              if (!existing || t.language === locale) {
+                transMap.set(t.news_id, t);
+              }
+            }
+            baseNews = baseNews.map(article => {
+              const tr = transMap.get(article.id);
+              if (!tr) return article;
+              return {
+                ...article,
+                title: tr.title || article.title,
+                slug: tr.slug || article.slug,
+                excerpt: tr.excerpt || article.excerpt,
+                content: tr.content || article.content,
+              };
+            });
+          }
+        }
+        return baseNews;
+      };
+
+      const baseNews = await queryCache.get(`news-featured-base-${locale}`, fetcher, { revalidate });
+      setNews(baseNews);
+
+      // Split into Featured (tagged with 'Destaque')
+      const featured = baseNews.filter(a => 
+        a.tags?.some(tag => tag.toLowerCase() === 'destaque')
+      ).slice(0, 4);
+
+      setFeaturedArticles(featured);
+    } catch (e) {
+      console.error('Error loading featured news:', e);
+    }
+  }, [locale]);
+
+  const PAGE_SIZE = 6;
+
+  const loadNews = useCallback(async (pageToLoad = 0, append = false, revalidate = true) => {
+    if (pageToLoad === 0 && !append) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
+      const from = pageToLoad * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const fetcher = async () => {
+        let query = supabase
+          .from('news')
+          .select('*')
+          .eq('status', 'published')
+          .lte('published_at', new Date().toISOString())
+          .order('published_at', { ascending: sortBy === 'oldest' });
+
+        if (selectedCategory) {
+          query = query.eq('category', selectedCategory);
+        }
+
+        query = query.range(from, to);
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        let fetchedNews = data || [];
+
+        // Mapear traduções
+        if (locale !== 'pt' && fetchedNews.length > 0) {
+          const newsIds = fetchedNews.map(n => n.id);
+          const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
+          const { data: trans } = await supabase
+            .from('news_translations')
+            .select('*')
+            .in('news_id', newsIds)
+            .in('language', langOrder);
+
+          if (trans && trans.length > 0) {
+            const transMap = new Map<string, any>();
+            for (const t of trans) {
+              const existing = transMap.get(t.news_id);
+              if (!existing || t.language === locale) {
+                transMap.set(t.news_id, t);
+              }
+            }
+            fetchedNews = fetchedNews.map(article => {
+              const tr = transMap.get(article.id);
+              if (!tr) return article;
+              return {
+                ...article,
+                title: tr.title || article.title,
+                slug: tr.slug || article.slug,
+                excerpt: tr.excerpt || article.excerpt,
+                content: tr.content || article.content,
+              };
+            });
+          }
+        }
+        return fetchedNews;
+      };
+
+      const cacheKey = `news-grid-${selectedCategory || 'all'}-${sortBy}-${pageToLoad}-${locale}`;
+      const fetchedNews = await queryCache.get(cacheKey, fetcher, { revalidate });
+
+      if (append) {
+        setNormalArticles(prev => {
+          const existingIds = new Set(prev.map(a => a.id));
+          const filtered = fetchedNews.filter((a: any) => !existingIds.has(a.id));
+          return [...prev, ...filtered];
+        });
+      } else {
+        setNormalArticles(fetchedNews);
+      }
+
+      setHasMore(fetchedNews.length === PAGE_SIZE);
+    } catch (error) {
+      console.error('Error loading news:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [selectedCategory, sortBy, locale]);
+
   const handleWhatsAppShare = (article: NewsArticle) => {
     const shareUrl = `${window.location.origin}/?screen=noticias&newsId=${article.id}`;
     const text = `🔥 *${article.title}*\n\n${article.excerpt}\n\n👉 Leia a notícia completa aqui: ${shareUrl}`;
@@ -145,6 +297,39 @@ export function News({ setScreen }: NewsProps) {
     loadNews(0, false);
   }, [selectedCategory, sortBy, locale]);
 
+  // Realtime updates subscription to invalidate cache
+  useEffect(() => {
+    const channel = supabase
+      .channel('news-realtime-caching')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'news' },
+        () => {
+          queryCache.invalidate(`news-featured-base-${locale}`);
+          const cacheKey = `news-grid-${selectedCategory || 'all'}-${sortBy}-${page}-${locale}`;
+          queryCache.invalidate(cacheKey);
+          void loadFeaturedNews(true);
+          void loadNews(page, false, true);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'news_translations' },
+        () => {
+          queryCache.invalidate(`news-featured-base-${locale}`);
+          const cacheKey = `news-grid-${selectedCategory || 'all'}-${sortBy}-${page}-${locale}`;
+          queryCache.invalidate(cacheKey);
+          void loadFeaturedNews(true);
+          void loadNews(page, false, true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [locale, selectedCategory, sortBy, page, loadFeaturedNews, loadNews]);
+
   useEffect(() => {
     if (featuredArticles.length <= 1) return;
     const interval = setInterval(() => {
@@ -153,66 +338,7 @@ export function News({ setScreen }: NewsProps) {
     return () => clearInterval(interval);
   }, [featuredArticles]);
 
-  // Deep linking: Auto-open article from URL query param or sessionStorage
-  useEffect(() => {
-    if (news.length === 0) return;
-    const params = new URLSearchParams(window.location.search);
-    const urlNewsId = params.get('newsId') || sessionStorage.getItem('pendingNewsId');
-    if (urlNewsId) {
-      sessionStorage.removeItem('pendingNewsId');
-      const art = news.find(n => n.id === urlNewsId);
-      if (art) {
-        setSelectedArticle(art);
-        void trackView(art.id);
-        // Clean URL parameter
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-      } else {
-        // Fallback: Se o artigo não estiver no array carregado inicialmente (devido a filtros ou paginação),
-        // buscamos diretamente no banco de dados para abrir o artigo correto!
-        async function fetchSingleArticle(id: string) {
-          try {
-            const { data, error } = await supabase
-              .from('news')
-              .select('*')
-              .eq('id', id)
-              .maybeSingle();
-            
-            if (data && !error) {
-              let art = data;
-              if (locale !== 'pt') {
-                const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
-                const { data: trans } = await supabase
-                  .from('news_translations')
-                  .select('*')
-                  .eq('news_id', id)
-                  .in('language', langOrder);
 
-                if (trans && trans.length > 0) {
-                  // Priorizar o idioma ativo, senão inglês se houver
-                  const tr = trans.find(t => t.language === locale) || trans[0];
-                  art = {
-                    ...art,
-                    title: tr.title || art.title,
-                    excerpt: tr.excerpt || art.excerpt,
-                    content: tr.content || art.content,
-                  };
-                }
-              }
-              setSelectedArticle(art);
-              void trackView(art.id);
-            }
-          } catch (e) {
-            console.error('Error fetching single deep-linked news article:', e);
-          }
-        }
-        fetchSingleArticle(urlNewsId);
-        // Clean URL parameter
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-      }
-    }
-  }, [news, locale]);
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession();
@@ -267,150 +393,7 @@ export function News({ setScreen }: NewsProps) {
     }
   }
 
-  async function loadFeaturedNews() {
-    try {
-      let query = supabase
-        .from('news')
-        .select('*')
-        .eq('status', 'published')
-        .lte('published_at', new Date().toISOString())
-        .order('published_at', { ascending: false });
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      let baseNews = data || [];
-
-      // Mapear traduções
-      if (locale !== 'pt' && baseNews.length > 0) {
-        const newsIds = baseNews.map(n => n.id);
-        const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
-        const { data: trans } = await supabase
-          .from('news_translations')
-          .select('*')
-          .in('news_id', newsIds)
-          .in('language', langOrder);
-
-        if (trans && trans.length > 0) {
-          const transMap = new Map<string, any>();
-          for (const t of trans) {
-            const existing = transMap.get(t.news_id);
-            if (!existing || t.language === locale) {
-              transMap.set(t.news_id, t);
-            }
-          }
-          baseNews = baseNews.map(article => {
-            const tr = transMap.get(article.id);
-            if (!tr) return article;
-            return {
-              ...article,
-              title: tr.title || article.title,
-              slug: tr.slug || article.slug,
-              excerpt: tr.excerpt || article.excerpt,
-              content: tr.content || article.content,
-            };
-          });
-        }
-      }
-
-      setNews(baseNews);
-
-      // Split into Featured (tagged with 'Destaque')
-      const featured = baseNews.filter(a => 
-        a.tags?.some(tag => tag.toLowerCase() === 'destaque')
-      ).slice(0, 4);
-
-      setFeaturedArticles(featured);
-    } catch (e) {
-      console.error('Error loading featured news:', e);
-    }
-  }
-
-  const PAGE_SIZE = 6;
-
-  async function loadNews(pageToLoad = 0, append = false) {
-    if (pageToLoad === 0 && !append) {
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
-
-    try {
-      const from = pageToLoad * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-
-      let query = supabase
-        .from('news')
-        .select('*')
-        .eq('status', 'published')
-        .lte('published_at', new Date().toISOString())
-        .order('published_at', { ascending: sortBy === 'oldest' });
-
-      if (selectedCategory) {
-        query = query.eq('category', selectedCategory);
-      }
-
-      // Exclude featured news from grid to avoid duplicate cards on screen
-      // If we are on page 0 and no category is selected, we can skip featured news
-      const featuredIds = featuredArticles.map(f => f.id);
-      
-      query = query.range(from, to);
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      let fetchedNews = data || [];
-
-      // Mapear traduções
-      if (locale !== 'pt' && fetchedNews.length > 0) {
-        const newsIds = fetchedNews.map(n => n.id);
-        const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
-        const { data: trans } = await supabase
-          .from('news_translations')
-          .select('*')
-          .in('news_id', newsIds)
-          .in('language', langOrder);
-
-        if (trans && trans.length > 0) {
-          const transMap = new Map<string, any>();
-          for (const t of trans) {
-            const existing = transMap.get(t.news_id);
-            if (!existing || t.language === locale) {
-              transMap.set(t.news_id, t);
-            }
-          }
-          fetchedNews = fetchedNews.map(article => {
-            const tr = transMap.get(article.id);
-            if (!tr) return article;
-            return {
-              ...article,
-              title: tr.title || article.title,
-              slug: tr.slug || article.slug,
-              excerpt: tr.excerpt || article.excerpt,
-              content: tr.content || article.content,
-            };
-          });
-        }
-      }
-
-      if (append) {
-        setNormalArticles(prev => {
-          const existingIds = new Set(prev.map(a => a.id));
-          const filtered = fetchedNews.filter(a => !existingIds.has(a.id));
-          return [...prev, ...filtered];
-        });
-      } else {
-        setNormalArticles(fetchedNews);
-      }
-
-      setHasMore(fetchedNews.length === PAGE_SIZE);
-    } catch (error) {
-      console.error('Error loading news:', error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }
 
   async function trackView(newsId: string) {
     if (!user || !memberId) return;
@@ -594,6 +577,67 @@ export function News({ setScreen }: NewsProps) {
     };
     return colors[normalizedCategory] || 'from-primary/20 to-primary/5 text-primary border-primary/30';
   };
+
+  // Deep linking: Auto-open article from URL query param or sessionStorage
+  useEffect(() => {
+    if (news.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const urlNewsId = params.get('newsId') || sessionStorage.getItem('pendingNewsId');
+    if (urlNewsId) {
+      sessionStorage.removeItem('pendingNewsId');
+      const art = news.find(n => n.id === urlNewsId);
+      if (art) {
+        setSelectedArticle(art);
+        void trackView(art.id);
+        // Clean URL parameter
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      } else {
+        // Fallback: Se o artigo não estiver no array carregado inicialmente (devido a filtros ou paginação),
+        // buscamos diretamente no banco de dados para abrir o artigo correto!
+        async function fetchSingleArticle(id: string) {
+          try {
+            const { data, error } = await supabase
+              .from('news')
+              .select('*')
+              .eq('id', id)
+              .maybeSingle();
+            
+            if (data && !error) {
+              let art = data;
+              if (locale !== 'pt') {
+                const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
+                const { data: trans } = await supabase
+                  .from('news_translations')
+                  .select('*')
+                  .eq('news_id', id)
+                  .in('language', langOrder);
+
+                if (trans && trans.length > 0) {
+                  // Priorizar o idioma ativo, senão inglês se houver
+                  const tr = trans.find(t => t.language === locale) || trans[0];
+                  art = {
+                    ...art,
+                    title: tr.title || art.title,
+                    excerpt: tr.excerpt || art.excerpt,
+                    content: tr.content || art.content,
+                  };
+                }
+              }
+              setSelectedArticle(art);
+              void trackView(art.id);
+            }
+          } catch (e) {
+            console.error('Error fetching single deep-linked news article:', e);
+          }
+        }
+        fetchSingleArticle(urlNewsId);
+        // Clean URL parameter
+        const newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [news, locale]);
 
   function parseInlineFormatting(text: string) {
     if (!text) return '';

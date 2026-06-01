@@ -21,6 +21,7 @@ import { ReferralProgress } from '../components/referral/ReferralProgress';
 import { ReferralShareCard } from '../components/referral/ReferralShareCard';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { useOwnedProducts } from '../hooks/useOwnedProducts';
+import { queryCache } from '../lib/queryCache';
 
 
 interface ProductProps {
@@ -104,41 +105,43 @@ export function Product({ setScreen, productId }: ProductProps) {
   }, []);
 
   const loadProduct = useCallback(
-    async (silent = false) => {
+    async (silent = false, revalidate = true) => {
       if (!silent) setLoading(true);
       try {
-        let data: ProductType | null = null;
+        const fetcher = async () => {
+          let data: ProductType | null = null;
 
-        if (productId) {
-          const active = await supabase
-            .from('products')
-            .select('*')
-            .eq('id', productId)
-            .eq('status', 'active')
-            .maybeSingle();
+          if (productId) {
+            const active = await supabase
+              .from('products')
+              .select('*')
+              .eq('id', productId)
+              .eq('status', 'active')
+              .maybeSingle();
 
-          if (active.error) {
-            console.error('Error loading product:', active.error);
-          } else if (active.data) {
-            data = active.data as ProductType;
+            if (active.error) {
+              console.error('Error loading product:', active.error);
+            } else if (active.data) {
+              data = active.data as ProductType;
+            } else {
+              const fallback = await supabase.from('products').select('*').eq('id', productId).maybeSingle();
+              if (fallback.error) console.error('Error loading product (fallback):', fallback.error);
+              else data = (fallback.data as ProductType) ?? null;
+            }
           } else {
-            const fallback = await supabase.from('products').select('*').eq('id', productId).maybeSingle();
-            if (fallback.error) console.error('Error loading product (fallback):', fallback.error);
+            const fallback = await supabase
+              .from('products')
+              .select('*')
+              .eq('status', 'active')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (fallback.error) console.error('Error loading product:', fallback.error);
             else data = (fallback.data as ProductType) ?? null;
           }
-        } else {
-          const fallback = await supabase
-            .from('products')
-            .select('*')
-            .eq('status', 'active')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (fallback.error) console.error('Error loading product:', fallback.error);
-          else data = (fallback.data as ProductType) ?? null;
-        }
 
-        if (data) {
+          if (!data) return null;
+
           const contentLang = resolveContentLocale(locale);
           const useShared = Boolean((data as { use_shared_content?: boolean }).use_shared_content);
           const translationLang = useShared ? 'pt' : contentLang;
@@ -170,11 +173,20 @@ export function Product({ setScreen, productId }: ProductProps) {
               }
             : data;
           const row = localized as unknown as Record<string, unknown>;
-          setProduct(localized);
-          setPageLayout(parsePageLayoutConfig(row.page_layout_config));
-          setCustomCopy(
-            parseJsonField(t?.custom_copy || row.custom_copy, {})
-          );
+          return {
+            product: localized,
+            pageLayout: parsePageLayoutConfig(row.page_layout_config),
+            customCopy: parseJsonField(t?.custom_copy || row.custom_copy, {})
+          };
+        };
+
+        const cacheKey = `product-detail-${productId || 'latest'}-${locale}`;
+        const cachedData = await queryCache.get(cacheKey, fetcher, { revalidate });
+
+        if (cachedData) {
+          setProduct(cachedData.product);
+          setPageLayout(cachedData.pageLayout);
+          setCustomCopy(cachedData.customCopy);
         } else if (!silent) {
           setProduct(null);
         }
@@ -210,7 +222,9 @@ export function Product({ setScreen, productId }: ProductProps) {
 
     const pid = product.id;
     const bump = () => {
-      void loadProduct(true);
+      const cacheKey = `product-detail-${productId || 'latest'}-${locale}`;
+      queryCache.invalidate(cacheKey);
+      void loadProduct(true, true);
       setChildRefreshKey((k) => k + 1);
     };
 
@@ -256,7 +270,7 @@ export function Product({ setScreen, productId }: ProductProps) {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [product?.id, loadProduct]);
+  }, [product?.id, productId, locale, loadProduct]);
 
   // Intersection Observer para controlar visibilidade do sticky button
   useEffect(() => {
