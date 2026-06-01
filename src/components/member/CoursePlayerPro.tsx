@@ -714,7 +714,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
             {/* Informações da aula */}
             {currentLesson && (
-              <div className="bg-surface/30 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+              <div className="bg-[#121216]/95 backdrop-blur-xl border border-white/15 rounded-[2rem] p-8 sm:p-10 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-secondary/50 to-transparent opacity-30" />
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{currentLesson.title}</h2>
@@ -738,7 +738,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
           {showPlaylist && (
             <div className="lg:col-span-1 space-y-4">
               <div className="sticky top-6">
-                <div className="bg-surface/50 backdrop-blur-xl rounded-3xl border border-white/5 p-5 sm:p-6 shadow-2xl flex flex-col max-h-[85vh]">
+                <div className="bg-[#121216]/95 backdrop-blur-xl rounded-3xl border border-white/10 p-5 sm:p-6 shadow-2xl flex flex-col max-h-[85vh]">
                   
                   {/* Header Sidebar */}
                   <div className="flex items-center justify-between mb-6 flex-shrink-0">

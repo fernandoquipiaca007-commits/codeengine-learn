@@ -169,7 +169,7 @@ export function CourseDownloadModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-surface/80 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden animate-[scaleIn_0.3s_ease-out] flex flex-col max-h-[85vh]">
+      <div className="relative w-full max-w-2xl bg-[#121216]/98 backdrop-blur-2xl rounded-2xl p-6 border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.6)] overflow-hidden animate-[scaleIn_0.3s_ease-out] flex flex-col max-h-[85vh]">
         {/* Glow Accent */}
         <div className="absolute -top-12 -left-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -243,12 +243,12 @@ export function CourseDownloadModal({
               return (
                 <div
                   key={lesson.id}
-                  className={`flex items-center justify-between p-3 rounded-xl border border-white/5 transition-all duration-300 ${
+                  className={`flex items-center justify-between p-3 rounded-xl border border-white/10 transition-all duration-300 ${
                     status === 'downloading'
-                      ? 'bg-primary/5 border-primary/20'
+                      ? 'bg-primary/10 border-primary/30'
                       : isSelected
-                      ? 'bg-white/5'
-                      : 'opacity-60 bg-transparent'
+                      ? 'bg-white/10'
+                      : 'opacity-70 bg-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1 mr-4">

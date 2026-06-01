@@ -176,54 +176,55 @@
   
   /* Premium Overlay - Maximum contrast for dropdowns/modals */
   .overlay-premium {
-    background: linear-gradient(135deg, rgba(8, 8, 12, 0.96) 0%, rgba(5, 5, 10, 0.94) 100%);
+    background: linear-gradient(135deg, rgba(8, 8, 12, 0.98) 0%, rgba(4, 4, 8, 0.97) 100%);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(192, 193, 255, 0.15);
+    border: 1px solid rgba(192, 193, 255, 0.25);
     box-shadow: 
-      0 20px 60px -15px rgba(0, 0, 0, 0.9),
-      0 0 1px rgba(192, 193, 255, 0.3),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+      0 20px 60px -15px rgba(0, 0, 0, 0.95),
+      0 0 1px rgba(192, 193, 255, 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
   }
   
   /* Dark Overlay - Strong contrast for notifications */
   .overlay-dark {
-    background: linear-gradient(135deg, rgba(10, 10, 15, 0.95) 0%, rgba(8, 8, 12, 0.93) 100%);
+    background: linear-gradient(135deg, rgba(8, 8, 12, 0.98) 0%, rgba(6, 6, 10, 0.96) 100%);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(192, 193, 255, 0.12);
+    border: 1px solid rgba(192, 193, 255, 0.22);
     box-shadow: 
-      0 15px 45px -10px rgba(0, 0, 0, 0.85),
-      0 0 1px rgba(192, 193, 255, 0.25),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+      0 15px 45px -10px rgba(0, 0, 0, 0.90),
+      0 0 1px rgba(192, 193, 255, 0.35),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.10);
   }
   
   /* Elevated Overlay - Medium contrast for popovers */
   .overlay-elevated {
-    background: linear-gradient(135deg, rgba(15, 15, 20, 0.92) 0%, rgba(12, 12, 16, 0.90) 100%);
+    background: linear-gradient(135deg, rgba(16, 16, 22, 0.97) 0%, rgba(10, 10, 14, 0.95) 100%);
     backdrop-filter: blur(18px) saturate(150%);
     -webkit-backdrop-filter: blur(18px) saturate(150%);
-    border: 1px solid rgba(192, 193, 255, 0.10);
+    border: 1px solid rgba(192, 193, 255, 0.18);
     box-shadow: 
-      0 12px 35px -8px rgba(0, 0, 0, 0.80),
-      0 0 1px rgba(192, 193, 255, 0.2),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+      0 12px 35px -8px rgba(0, 0, 0, 0.85),
+      0 0 1px rgba(192, 193, 255, 0.28),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   }
   
-  /* Glass Panel - Original style (kept for compatibility) */
+  /* Glass Panel - Enhanced contrast and solid opacity backing for superb readability */
   .glass-panel {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, rgba(18, 18, 24, 0.96) 0%, rgba(10, 10, 14, 0.92) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
   }
   
   .glass-card {
-    background: rgba(20, 20, 22, 0.6);
+    background: rgba(18, 18, 24, 0.94);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.08);
     transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
     transform-style: preserve-3d;
   }
@@ -251,9 +252,9 @@
   }
 
   .secondary-btn {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     transition: all 0.3s ease;
   }
   

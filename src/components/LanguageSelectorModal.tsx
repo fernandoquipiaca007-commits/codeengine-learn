@@ -39,7 +39,7 @@ export function LanguageSelectorModal({
       />
 
       {/* Glassmorphic Panel */}
-      <div className="relative w-full max-w-md bg-surface/80 backdrop-blur-2xl rounded-2xl p-6 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden animate-[scaleIn_0.3s_ease-out]">
+      <div className="relative w-full max-w-md bg-[#121216]/98 backdrop-blur-2xl rounded-2xl p-6 border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.6)] overflow-hidden animate-[scaleIn_0.3s_ease-out]">
         {/* Glow Accent */}
         <div className="absolute -top-12 -left-12 w-32 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-secondary/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -73,7 +73,7 @@ export function LanguageSelectorModal({
             <button
               key={lang.code}
               onClick={() => onSelect(lang.code)}
-              className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group"
+              className="w-full flex items-center justify-between p-4 rounded-xl border border-white/15 bg-white/10 hover:border-primary/50 hover:bg-primary/10 hover:shadow-[0_0_15px_rgba(192,193,255,0.15)] transition-all duration-300 group"
             >
               <div className="flex items-center gap-4">
                 <span className="text-2xl" role="img" aria-label={lang.name}>

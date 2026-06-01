@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera, Globe, RefreshCw, Download } from 'lucide-react';
+import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera, Globe, RefreshCw, Download, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
@@ -29,6 +29,7 @@ export function Settings({ setScreen }: SettingsProps) {
   // PWA install states
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [showInstallGuideModal, setShowInstallGuideModal] = useState(false);
 
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -80,17 +81,21 @@ export function Settings({ setScreen }: SettingsProps) {
 
   async function handleInstallApp() {
     const prompt = installPrompt || (window as any).deferredPwaPrompt;
-    if (!prompt) return;
-    try {
-      await prompt.prompt();
-      const { outcome } = await prompt.userChoice;
-      if (outcome === 'accepted') {
-        (window as any).deferredPwaPrompt = null;
-        setInstallPrompt(null);
-        window.dispatchEvent(new CustomEvent('pwa-prompt-dismissed'));
+    if (prompt) {
+      try {
+        await prompt.prompt();
+        const { outcome } = await prompt.userChoice;
+        if (outcome === 'accepted') {
+          (window as any).deferredPwaPrompt = null;
+          setInstallPrompt(null);
+          window.dispatchEvent(new CustomEvent('pwa-prompt-dismissed'));
+        }
+      } catch (err) {
+        console.error('PWA install prompt error:', err);
+        setShowInstallGuideModal(true);
       }
-    } catch (err) {
-      console.error('PWA install prompt error:', err);
+    } else {
+      setShowInstallGuideModal(true);
     }
   }
 
@@ -112,7 +117,7 @@ export function Settings({ setScreen }: SettingsProps) {
       } else {
         setUpdateAvailable(false);
         if (manual) {
-          setMessage({ type: 'success', text: 'Você já possui a versão mais recente do aplicativo!' });
+          setMessage({ type: 'success', text: t('pages:settings.alreadyLatestVersion') });
           setTimeout(() => setMessage(null), 3000);
         }
       }
@@ -176,7 +181,7 @@ export function Settings({ setScreen }: SettingsProps) {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'A imagem deve ter no máximo 2MB.' });
+      setMessage({ type: 'error', text: t('pages:settings.avatarMaxSizeError') });
       return;
     }
 
@@ -209,7 +214,7 @@ export function Settings({ setScreen }: SettingsProps) {
             .single();
           
           if (createError || !newMember) {
-            throw new Error('Não foi possível inicializar os dados de perfil.');
+            throw new Error(t('pages:settings.avatarInitProfileError'));
           }
           activeMemberId = newMember.id;
           activeProfileData = newMember.profile_data || {};
@@ -218,15 +223,15 @@ export function Settings({ setScreen }: SettingsProps) {
       }
 
       if (!activeMemberId) {
-        throw new Error('Usuário não autenticado.');
+        throw new Error(t('pages:settings.userNotAuthenticated'));
       }
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${activeMemberId}-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file);
+          .from('avatars')
+          .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
@@ -255,11 +260,11 @@ export function Settings({ setScreen }: SettingsProps) {
         profile_data: updatedProfile,
       });
 
-      setMessage({ type: 'success', text: 'Foto de perfil atualizada com sucesso!' });
+      setMessage({ type: 'success', text: t('pages:settings.avatarSuccess') });
       setTimeout(() => setMessage(null), 3000);
     } catch (error: any) {
       console.error('Avatar upload error:', error);
-      setMessage({ type: 'error', text: error.message || 'Erro ao carregar imagem.' });
+      setMessage({ type: 'error', text: error.message || t('pages:settings.avatarError') });
     } finally {
       setUploadingAvatar(false);
     }
@@ -292,7 +297,7 @@ export function Settings({ setScreen }: SettingsProps) {
             .single();
           
           if (createError || !newMember) {
-            throw new Error('Não foi possível inicializar os dados de perfil.');
+            throw new Error(t('pages:settings.avatarInitProfileError'));
           }
           activeMember = newMember;
           setMemberData(newMember);
@@ -300,7 +305,7 @@ export function Settings({ setScreen }: SettingsProps) {
       }
 
       if (!activeMember) {
-        throw new Error('Usuário não autenticado.');
+        throw new Error(t('pages:settings.userNotAuthenticated'));
       }
 
       const { error } = await supabase
@@ -464,9 +469,9 @@ export function Settings({ setScreen }: SettingsProps) {
                 </label>
               </div>
               <div className="text-center sm:text-left space-y-1">
-                <h3 className="font-display text-base font-semibold text-white">Foto de Perfil</h3>
+                <h3 className="font-display text-base font-semibold text-white">{t('pages:settings.profilePicture')}</h3>
                 <p className="font-sans text-xs text-on-surface-variant max-w-[280px]">
-                  Formatos aceitos: JPG, PNG ou WEBP. Tamanho máximo de 2MB.
+                  {t('pages:settings.acceptedFormats')}
                 </p>
               </div>
             </div>
@@ -647,21 +652,21 @@ export function Settings({ setScreen }: SettingsProps) {
           <div className="flex items-center gap-3 mb-6">
             <RefreshCw className="w-6 h-6 text-primary" />
             <h2 className="font-display text-2xl font-bold text-white">
-              Versão do Aplicativo
+              {t('pages:settings.appVersionSection')}
             </h2>
           </div>
 
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-surface-container/30 border border-white/5">
               <div>
-                <p className="font-display text-sm font-semibold text-white">Versão Atual</p>
+                <p className="font-display text-sm font-semibold text-white">{t('pages:settings.currentVersion')}</p>
                 <p className="font-mono text-xs text-on-surface-variant mt-1">
                   v{BUILD_VERSION}
                 </p>
               </div>
               {updateAvailable && serverVersion && (
                 <div className="px-3 py-1 rounded bg-orange-500/10 border border-orange-500/25 text-orange-400 font-sans text-xs font-semibold">
-                  Nova versão disponível: v{serverVersion}
+                  {t('pages:settings.newVersionAvailable', { version: serverVersion })}
                 </div>
               )}
             </div>
@@ -674,7 +679,7 @@ export function Settings({ setScreen }: SettingsProps) {
                 className="px-6 py-3 rounded-full border border-white/10 text-on-surface font-display text-sm font-semibold hover:bg-white/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {checkingVersion && <RefreshCw className="w-4 h-4 animate-spin text-primary" />}
-                Verificar Atualizações
+                {t('pages:settings.checkUpdates')}
               </button>
 
               {updateAvailable && (
@@ -685,66 +690,120 @@ export function Settings({ setScreen }: SettingsProps) {
                   className="px-6 py-3 rounded-full bg-primary text-on-primary font-display text-sm font-semibold hover:shadow-[0_0_20px_rgba(192,193,255,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <RefreshCw className="w-4 h-4 text-on-primary animate-[spin_3s_linear_infinite]" />
-                  Atualizar Aplicativo
+                  {t('pages:settings.updateApp')}
                 </button>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-white/5 my-6" />
-
-            {/* PWA Installation Area */}
-            <div>
-              <h3 className="font-display text-base font-bold text-white mb-2 flex items-center gap-2">
-                <Download className="w-4 h-4 text-primary" />
-                Instalação do Aplicativo
-              </h3>
-              
-              {isStandalone ? (
-                <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-sans flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
-                  <div>
-                    <p className="font-bold">Aplicativo Instalado!</p>
-                    <p className="text-xs text-green-400/80">Você já está rodando a versão otimizada com suporte a uso offline e carregamento instantâneo.</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed">
-                    Instale a plataforma em seu dispositivo para ter uma experiência nativa em tela cheia, suporte offline aprimorado, inicialização instantânea e menor consumo de dados.
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {installPrompt ? (
-                      <button
-                        type="button"
-                        onClick={handleInstallApp}
-                        className="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-on-primary font-display text-sm font-semibold hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-[0.98]"
-                      >
-                        <Download className="w-4 h-4" />
-                        Instalar no Dispositivo
-                      </button>
-                    ) : (
-                      <div className="w-full">
-                        {/* If on iOS Safari */}
-                        {/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream ? (
-                          <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs sm:text-sm font-sans leading-relaxed">
-                            <span className="font-bold block mb-1">📲 Dica de Instalação no iOS/Safari:</span>
-                            Para instalar a plataforma no seu iPhone ou iPad: toque no botão de <span className="font-semibold text-white">Compartilhar</span> (ícone de quadrado com seta para cima) na barra do Safari e selecione <span className="font-semibold text-white">"Adicionar à Tela de Início"</span>.
-                          </div>
-                        ) : (
-                          <div className="p-4 rounded-xl bg-surface-container/50 border border-white/5 text-on-surface-variant text-xs sm:text-sm font-sans leading-relaxed">
-                            💡 O instalador automático não está ativo no momento. Caso queira instalar, clique nos <span className="font-semibold text-white">três pontos ou menu de opções</span> do seu navegador e selecione <span className="font-semibold text-white">"Instalar aplicativo"</span> ou <span className="font-semibold text-white">"Adicionar à tela de início"</span>.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
               )}
             </div>
           </div>
         </motion.section>
+
+        {/* Dedicated PWA Installation Section - Always visible at the bottom per user request */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="glass-panel rounded-2xl p-8 border border-white/10"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <Download className="w-6 h-6 text-primary" />
+            <h2 className="font-display text-2xl font-bold text-white">
+              {t('pages:settings.appInstallation')}
+            </h2>
+          </div>
+
+          <div className="space-y-6">
+            <p className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              {t('pages:settings.appInstallPromptDesc')}
+            </p>
+
+            {isStandalone && (
+              <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-sans flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                <div>
+                  <p className="font-bold">{t('pages:settings.appInstalledTitle')}</p>
+                  <p className="text-xs text-green-400/80">{t('pages:settings.appInstalledDesc')}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={handleInstallApp}
+                className="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-on-primary font-display text-sm font-semibold hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-[0.98]"
+              >
+                <Download className="w-4 h-4" />
+                {t('common:actions.installApp')}
+              </button>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Immersive Walkthrough/Installation Guide Modal Overlay */}
+        {showInstallGuideModal && (
+          <div className="fixed inset-0 z-[1000] overflow-y-auto bg-black/85 backdrop-blur-xl flex items-center justify-center p-4">
+            <div className="bg-[#121216] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-lg w-full relative shadow-2xl animate__animated animate__fadeIn">
+              <button
+                onClick={() => setShowInstallGuideModal(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <Download className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white">{t('pages:settings.installGuideTitle')}</h3>
+                <p className="font-sans text-xs text-on-surface-variant mt-1">{t('pages:settings.installGuideSubtitle')}</p>
+              </div>
+
+              <div className="space-y-4">
+                {/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream ? (
+                  <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-2">
+                    <p className="font-display font-bold text-primary text-sm flex items-center gap-2">
+                      {t('pages:settings.installIosTitle')}
+                    </p>
+                    <ol className="list-decimal list-inside text-xs sm:text-sm text-on-surface-variant space-y-1 leading-relaxed">
+                      <li dangerouslySetInnerHTML={{ __html: t('pages:settings.installIosStep1') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('pages:settings.installIosStep2') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('pages:settings.installIosStep3') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('pages:settings.installIosStep4') }} />
+                    </ol>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-4 rounded-xl bg-surface-container/50 border border-white/5 space-y-2">
+                      <p className="font-display font-bold text-white text-sm flex items-center gap-2">
+                        {t('pages:settings.installDesktopTitle')}
+                      </p>
+                      <p 
+                        className="text-xs sm:text-sm text-on-surface-variant leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: t('pages:settings.installDesktopDesc') }}
+                      />
+                    </div>
+                    <div className="p-4 rounded-xl bg-surface-container/50 border border-white/5 space-y-2">
+                      <p className="font-display font-bold text-white text-sm flex items-center gap-2">
+                        {t('pages:settings.installAndroidTitle')}
+                      </p>
+                      <ol className="list-decimal list-inside text-xs sm:text-sm text-on-surface-variant space-y-1 leading-relaxed">
+                        <li dangerouslySetInnerHTML={{ __html: t('pages:settings.installAndroidStep1') }} />
+                        <li dangerouslySetInnerHTML={{ __html: t('pages:settings.installAndroidStep2') }} />
+                      </ol>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => setShowInstallGuideModal(false)}
+                className="w-full mt-6 bg-primary text-on-primary py-3 rounded-xl font-display text-sm font-semibold uppercase tracking-wider hover:bg-primary/95 transition-colors"
+              >
+                {t('pages:settings.gotIt')}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
