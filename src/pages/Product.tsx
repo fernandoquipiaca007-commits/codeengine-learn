@@ -546,6 +546,8 @@ export function Product({ setScreen, productId }: ProductProps) {
                   <video
                     src={product.video_url}
                     controls
+                    preload="metadata"
+                    playsInline
                     className="w-full h-full object-cover"
                     poster={getProductCoverUrl(product)}
                   />

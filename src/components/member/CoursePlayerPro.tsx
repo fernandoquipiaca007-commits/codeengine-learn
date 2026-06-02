@@ -550,6 +550,8 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                       ref={videoRef}
                       key={`${currentLessonId || 'lesson'}-${mediaUrl}`}
                       src={mediaUrl}
+                      preload="metadata"
+                      playsInline
                       className={`w-full h-full ${mediaType === 'audio' ? 'hidden' : isFullscreen ? 'object-contain' : 'object-cover'}`}
                       onTimeUpdate={handleTimeUpdate}
                       onLoadedMetadata={handleLoadedMetadata}
