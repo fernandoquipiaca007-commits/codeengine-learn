@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface CustomSection {
   id: string;
@@ -15,9 +16,49 @@ interface ProductCustomSectionsProps {
   refreshKey?: number;
 }
 
+const DEFAULT_SECTIONS: Record<string, { title: string; content: string; section_type: string }[]> = {
+  pt: [
+    {
+      title: 'Conteúdo Ricamente Detalhado e Estruturado',
+      content: 'Este produto digital contém materiais completos desenvolvidos com o máximo rigor técnico, trazendo exemplos práticos do mundo real, ilustrações explicativas passo a passo e códigos-fonte prontos para uso. O conteúdo foi minuciosamente organizado para acelerar sua curva de aprendizado e fornecer um guia prático que você possa consultar no seu dia a dia profissional.',
+      section_type: 'text'
+    },
+    {
+      title: 'O que está incluído no pacote:',
+      content: 'Acesso completo ao e-book e/ou videoaulas em alta resolução.\nProjetos de exemplo e templates prontos para rodar.\nChecklists práticos de implementação rápida.\nAtualizações futuras gratuitas vitalícias.',
+      section_type: 'list'
+    }
+  ],
+  en: [
+    {
+      title: 'Richly Detailed and Structured Content',
+      content: 'This digital product contains complete materials developed with the highest technical rigor, featuring real-world practical examples, step-by-step explanatory illustrations, and ready-to-use source code. The content has been meticulously organized to accelerate your learning curve and provide a practical guide you can consult in your daily professional life.',
+      section_type: 'text'
+    },
+    {
+      title: 'What is included in the package:',
+      content: 'Full access to the high-resolution e-book and/or video classes.\nExample projects and ready-to-run templates.\nPractical checklists for quick implementation.\nLifetime free future updates.',
+      section_type: 'list'
+    }
+  ],
+  fr: [
+    {
+      title: 'Contenu Richement Détaillé et Structuré',
+      content: "Ce produit numérique contient des supports complets développés avec la plus grande rigueur technique, avec des exemples pratiques du monde réel, des illustrations explicatives étape par étape et des codes sources prêts à l'emploi. Le contenu a été méticuleusement organisé pour accélérer votre courbe d'apprentissage et vous fournir un guide pratique que vous pourrez consulter au quotidien dans votre vie professionnelle.",
+      section_type: 'text'
+    },
+    {
+      title: 'Ce qui est inclus dans le pack :',
+      content: "Accès complet à l'e-book et/ou aux cours vidéo en haute résolution.\nProjets d'exemple et modèles prêts à l'emploi.\nListes de contrôle pratiques pour une mise en œuvre rapide.\nMises à jour futures gratuites à vie.",
+      section_type: 'list'
+    }
+  ]
+};
+
 export function ProductCustomSections({ productId, refreshKey = 0 }: ProductCustomSectionsProps) {
   const [sections, setSections] = useState<CustomSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const { locale } = useLocale();
 
   useEffect(() => {
     void loadSections();
@@ -42,11 +83,22 @@ export function ProductCustomSections({ productId, refreshKey = 0 }: ProductCust
     }
   }
 
-  if (loading || sections.length === 0) return null;
+  if (loading) return null;
+
+  const activeLang = (locale === 'en' || locale === 'fr') ? locale : 'pt';
+  const defaults = DEFAULT_SECTIONS[activeLang];
+  const listToRender = sections.length > 0 ? sections : defaults.map((sec, idx) => ({
+    id: `default-section-${idx}`,
+    section_type: sec.section_type,
+    title: sec.title,
+    content: sec.content,
+    image_url: null,
+    style_config: null
+  }));
 
   return (
     <div className="mt-24 space-y-12">
-      {sections.map((section) => (
+      {listToRender.map((section) => (
         <section key={section.id} className="glass-panel rounded-2xl p-6 sm:p-8 md:p-10">
           {section.title && (
             <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-on-surface mb-4">

@@ -3,6 +3,7 @@ import * as LucideIcons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { safeText } from '../../lib/safe-display';
+import { useLocale } from '../../contexts/LocaleContext';
 
 function resolveIcon(name: string | null | undefined): LucideIcon {
   const key = safeText(name, 'Zap');
@@ -27,9 +28,76 @@ interface ProductBenefitsProps {
   subtitle?: string;
 }
 
+const DEFAULT_BENEFITS: Record<string, { title: string; subtitle: string; items: { icon: string; title: string; description: string }[] }> = {
+  pt: {
+    title: 'O que você vai dominar',
+    subtitle: 'Um arsenal completo projetado para gerar resultados rápidos e práticos.',
+    items: [
+      {
+        icon: 'Download',
+        title: 'Acesso Imediato',
+        description: 'Faça o download do conteúdo logo após a confirmação do pagamento e comece a aprender sem esperas.'
+      },
+      {
+        icon: 'ShieldCheck',
+        title: 'Garantia de Satisfação',
+        description: 'Sua compra está 100% segura com nossa política de reembolso de 7 dias. Risco zero para você.'
+      },
+      {
+        icon: 'Clock',
+        title: 'Acesso Vitalício',
+        description: 'Estude no seu próprio ritmo. O conteúdo é seu para sempre, incluindo todas as atualizações futuras gratuitas.'
+      }
+    ]
+  },
+  en: {
+    title: 'What you will receive',
+    subtitle: 'A complete package designed to deliver fast, actionable results.',
+    items: [
+      {
+        icon: 'Download',
+        title: 'Instant Access',
+        description: 'Download the content immediately after payment confirmation and start learning without waiting.'
+      },
+      {
+        icon: 'ShieldCheck',
+        title: 'Satisfaction Guarantee',
+        description: 'Your purchase is 100% secure with our 7-day refund policy. Zero risk for you.'
+      },
+      {
+        icon: 'Clock',
+        title: 'Lifetime Access',
+        description: 'Study at your own pace. The content is yours forever, including all future updates for free.'
+      }
+    ]
+  },
+  fr: {
+    title: 'Ce que vous allez recevoir',
+    subtitle: 'Un pack complet conçu pour fournir des résultats rapides et concrets.',
+    items: [
+      {
+        icon: 'Download',
+        title: 'Accès Immédiat',
+        description: 'Téléchargez le contenu immédiatement après la confirmation du paiement et commencez à apprendre sans attendre.'
+      },
+      {
+        icon: 'ShieldCheck',
+        title: 'Garantie de Satisfaction',
+        description: 'Votre achat est 100% sécurisé avec notre politique de remboursement de 7 jours. Risque zéro pour vous.'
+      },
+      {
+        icon: 'Clock',
+        title: 'Accès à Vie',
+        description: 'Étudiez à votre propre rythme. Le contenu vous appartient pour toujours, y compris toutes les mises à jour futures gratuites.'
+      }
+    ]
+  }
+};
+
 export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: ProductBenefitsProps) {
   const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const { locale } = useLocale();
 
   useEffect(() => {
     void loadBenefits();
@@ -57,21 +125,33 @@ export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: 
   }
 
   if (!loaded) return null;
-  if (benefits.length === 0) return null;
+
+  // Resolve language defaults
+  const activeLang = (locale === 'en' || locale === 'fr') ? locale : 'pt';
+  const defaults = DEFAULT_BENEFITS[activeLang];
+  const listToRender = benefits.length > 0 ? benefits : defaults.items.map((item, idx) => ({
+    id: `default-benefit-${idx}`,
+    icon: item.icon,
+    title: item.title,
+    description: item.description
+  }));
+
+  const sectionTitle = title?.trim() || (benefits.length > 0 ? 'O que você vai dominar' : defaults.title);
+  const sectionSubtitle = subtitle?.trim() || (benefits.length > 0 ? 'Um arsenal completo para elevar sua engenharia de software.' : defaults.subtitle);
 
   return (
     <section className="mt-24">
       <div className="text-center mb-16">
         <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-on-surface mb-4">
-          {title?.trim() || 'O que você vai dominar'}
+          {sectionTitle}
         </h2>
         <p className="font-sans text-lg text-on-surface-variant max-w-2xl mx-auto">
-          {subtitle?.trim() || 'Um arsenal completo para elevar sua engenharia de software.'}
+          {sectionSubtitle}
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {benefits.map((benefit) => {
+        {listToRender.map((benefit) => {
           const Icon = resolveIcon(benefit.icon);
           return (
             <div
