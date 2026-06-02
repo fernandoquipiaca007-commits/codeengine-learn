@@ -548,6 +548,9 @@ export function Product({ setScreen, productId }: ProductProps) {
                     controls
                     preload="metadata"
                     playsInline
+                    autoPlay
+                    muted
+                    loop
                     className="w-full h-full object-cover"
                     poster={getProductCoverUrl(product)}
                   />

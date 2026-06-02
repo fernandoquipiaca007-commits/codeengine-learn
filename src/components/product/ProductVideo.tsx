@@ -106,6 +106,9 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
                 controls
                 preload="metadata"
                 playsInline
+                autoPlay
+                muted
+                loop
                 className="w-full h-full"
                 poster={activeVideoData.thumbnail_url || undefined}
               />
