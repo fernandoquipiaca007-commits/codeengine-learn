@@ -172,7 +172,7 @@ export function Success({ setScreen }: SuccessProps) {
             </p>
 
             <p className="font-sans text-sm text-on-surface-variant">
-              {t('success.amountPaid', { amount: `$ ${sessionData?.amountPaid.toFixed(2)}` })}
+              {t('success.amountPaid', { amount: `$ ${sessionData?.amountPaid}` })}
             </p>
           </div>
 

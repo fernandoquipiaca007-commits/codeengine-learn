@@ -165,7 +165,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
       // Apply coupon
       setAppliedCoupon(appliedCode);
       onCouponApplied(discount, appliedCode);
-      showMessage('success', `Cupom aplicado! Desconto de $ ${discount.toFixed(2)}`);
+      showMessage('success', `Cupom aplicado! Desconto de $ ${discount}`);
     } catch (error) {
       console.error('Error validating coupon:', error);
       showMessage('error', 'Erro ao validar cupom');

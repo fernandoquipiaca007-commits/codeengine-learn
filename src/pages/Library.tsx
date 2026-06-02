@@ -396,7 +396,7 @@ export function Library({ setScreen, onProductClick }: {
                         {/* Price and CTA */}
                         <div className="flex flex-wrap items-center justify-between mt-auto w-full gap-3">
                           <span className="font-mono text-base sm:text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
-                            {product.is_free ? t('library.free') : `$ ${product.price.toFixed(2)}`}
+                            {product.is_free ? t('library.free') : `$ ${product.price}`}
                           </span>
                           {isOwned(product.id) ? (
                             <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">

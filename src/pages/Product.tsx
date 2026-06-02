@@ -428,16 +428,16 @@ export function Product({ setScreen, productId }: ProductProps) {
               {(campaignPrice || discount > 0) ? (
                 <div className="flex items-center gap-2 flex-wrap font-mono">
                   <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/50 line-through">
-                    {tDict.before} ${listPrice.toFixed(2)}
+                    {tDict.before} ${listPrice}
                   </span>
                   <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/30">|</span>
                   <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                    {tDict.now} ${getFinalPrice().toFixed(2)}
+                    {tDict.now} ${getFinalPrice()}
                   </span>
                 </div>
               ) : (
                 <span className="font-mono text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                  $ {getFinalPrice().toFixed(2)}
+                  $ {getFinalPrice()}
                 </span>
               )}
             </div>
@@ -509,7 +509,7 @@ export function Product({ setScreen, productId }: ProductProps) {
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
             <p className="font-sans text-xs text-on-surface-variant">Final price</p>
-            <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice().toFixed(2)}</p>
+            <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
           </div>
           <ProductActionButton
             productId={product.id}

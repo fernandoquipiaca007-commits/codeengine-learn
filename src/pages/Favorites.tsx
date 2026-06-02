@@ -228,7 +228,7 @@ export function Favorites({ setScreen }: FavoritesProps) {
                 {/* Footer */}
                 <div className="flex items-center justify-between">
                   <div className="font-display text-2xl font-bold text-primary">
-                    $ {favorite.product.price.toFixed(2)}
+                    $ {favorite.product.price}
                   </div>
                   
                   <button 
