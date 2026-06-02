@@ -36,12 +36,11 @@ export function UpdatePrompt() {
         // Check if running in installed PWA standalone mode
         const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
         if (!isStandalonePWA) {
-          console.log('[PWA] Site version mismatch detected. Silent auto-updating...');
+          console.log('[PWA] Site version mismatch detected. Triggering silent update check...');
           try {
             await updateServiceWorker(true);
-            window.location.reload();
-          } catch {
-            window.location.reload();
+          } catch (err) {
+            console.error('[PWA] Failed to silently check service worker update:', err);
           }
           return;
         }
