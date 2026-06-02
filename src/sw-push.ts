@@ -48,3 +48,11 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// Handle skipWaiting messages from the client to successfully activate the service worker update
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+

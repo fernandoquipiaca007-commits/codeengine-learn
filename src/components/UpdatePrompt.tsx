@@ -35,17 +35,13 @@ export function UpdatePrompt() {
 
         // Check if running in installed PWA standalone mode
         const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
-        if (!isStandalonePWA) {
-          console.log('[PWA] Site version mismatch detected. Triggering silent update check...');
-          try {
-            await updateServiceWorker(true);
-          } catch (err) {
-            console.error('[PWA] Failed to silently check service worker update:', err);
-          }
-          return;
+        if (isStandalonePWA) {
+          setShowUpdate(true);
+        } else {
+          // For standard browsers, background service worker will handle updates naturally.
+          // Never force reload or trigger updates programmatically on database mismatch to prevent loops!
+          console.log('[PWA] Site version mismatch detected (DB: %s, Local: %s). Background update check is handled by SW.', data.value, BUILD_VERSION);
         }
-
-        setShowUpdate(true);
       }
     } catch {
       /* table may not exist yet */
@@ -54,17 +50,27 @@ export function UpdatePrompt() {
 
   useEffect(() => {
     if (needRefresh) {
-      const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
-      if (!isStandalonePWA) {
-        console.log('[PWA] Silent auto-updating service worker on website...');
-        void handleUpdate();
-      } else {
-        setShowUpdate(true);
-      }
+      // For both standalone PWA and standard browsers, show a premium non-intrusive update banner.
+      // We NEVER silent auto-reload programmatically to prevent infinite reload loops and preserve user data/input.
+      setShowUpdate(true);
     }
   }, [needRefresh]);
 
   async function handleUpdate() {
+    const reloadKey = 'pwa_last_silent_reload';
+    const lastReload = sessionStorage.getItem(reloadKey);
+    const now = Date.now();
+    
+    // Safety guard: only allow one silent PWA reload every 10 seconds to absolutely prevent loops
+    if (lastReload && now - parseInt(lastReload, 10) < 10000) {
+      console.warn('[PWA] Prevented rapid infinite silent reload loop.');
+      setNeedRefresh(false);
+      setShowUpdate(false);
+      return;
+    }
+    
+    sessionStorage.setItem(reloadKey, now.toString());
+    
     try {
       await updateServiceWorker(true);
     } catch {}
