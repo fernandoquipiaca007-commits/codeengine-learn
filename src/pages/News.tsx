@@ -81,13 +81,14 @@ export function News({ setScreen }: NewsProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [showInstagramGraphic, setShowInstagramGraphic] = useState(false);
+  const [loadingContent, setLoadingContent] = useState(false);
 
   const loadFeaturedNews = useCallback(async (revalidate = true) => {
     try {
       const fetcher = async () => {
         let query = supabase
           .from('news')
-          .select('*')
+          .select('id, title, slug, excerpt, thumbnail_url, category, tags, author, published_at, views, created_at, likes_count')
           .eq('status', 'published')
           .lte('published_at', new Date().toISOString())
           .order('published_at', { ascending: false });
@@ -103,7 +104,7 @@ export function News({ setScreen }: NewsProps) {
           const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
           const { data: trans } = await supabase
             .from('news_translations')
-            .select('*')
+            .select('news_id, language, title, slug, excerpt')
             .in('news_id', newsIds)
             .in('language', langOrder);
 
@@ -123,7 +124,7 @@ export function News({ setScreen }: NewsProps) {
                 title: tr.title || article.title,
                 slug: tr.slug || article.slug,
                 excerpt: tr.excerpt || article.excerpt,
-                content: tr.content || article.content,
+                content: '', // Omitido na listagem
               };
             });
           }
@@ -161,7 +162,7 @@ export function News({ setScreen }: NewsProps) {
       const fetcher = async () => {
         let query = supabase
           .from('news')
-          .select('*')
+          .select('id, title, slug, excerpt, thumbnail_url, category, tags, author, published_at, views, created_at, likes_count')
           .eq('status', 'published')
           .lte('published_at', new Date().toISOString())
           .order('published_at', { ascending: sortBy === 'oldest' });
@@ -183,7 +184,7 @@ export function News({ setScreen }: NewsProps) {
           const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
           const { data: trans } = await supabase
             .from('news_translations')
-            .select('*')
+            .select('news_id, language, title, slug, excerpt')
             .in('news_id', newsIds)
             .in('language', langOrder);
 
@@ -203,7 +204,7 @@ export function News({ setScreen }: NewsProps) {
                 title: tr.title || article.title,
                 slug: tr.slug || article.slug,
                 excerpt: tr.excerpt || article.excerpt,
-                content: tr.content || article.content,
+                content: '', // Omitido na listagem
               };
             });
           }
@@ -638,6 +639,56 @@ export function News({ setScreen }: NewsProps) {
       }
     }
   }, [news, locale]);
+
+  useEffect(() => {
+    if (!selectedArticle) return;
+    if (selectedArticle.content && selectedArticle.content.trim() !== '') return;
+
+    let active = true;
+    async function fetchContent() {
+      setLoadingContent(true);
+      try {
+        const { data, error } = await supabase
+          .from('news')
+          .select('content')
+          .eq('id', selectedArticle.id)
+          .single();
+        
+        if (error) throw error;
+        let finalContent = data?.content || '';
+
+        if (locale !== 'pt') {
+          const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
+          const { data: trans } = await supabase
+            .from('news_translations')
+            .select('content')
+            .eq('news_id', selectedArticle.id)
+            .in('language', langOrder);
+          
+          if (trans && trans.length > 0) {
+            const tr = trans.find(t => t.language === locale) || trans[0];
+            finalContent = tr.content || finalContent;
+          }
+        }
+
+        if (active) {
+          setSelectedArticle(prev => prev ? { ...prev, content: finalContent } : null);
+        }
+      } catch (e) {
+        console.error('Error fetching article content:', e);
+      } finally {
+        if (active) {
+          setLoadingContent(false);
+        }
+      }
+    }
+
+    void fetchContent();
+
+    return () => {
+      active = false;
+    };
+  }, [selectedArticle?.id, locale]);
 
   function parseInlineFormatting(text: string) {
     if (!text) return '';
@@ -1081,7 +1132,14 @@ export function News({ setScreen }: NewsProps) {
 
               {/* Rich Content markdown renderer */}
               <div className="prose prose-invert max-w-none text-on-surface-variant/90 space-y-4">
-                {renderArticleContent(selectedArticle.content)}
+                {loadingContent ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3 text-on-surface-variant">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                    <span className="text-sm font-sans">Carregando conteúdo...</span>
+                  </div>
+                ) : (
+                  renderArticleContent(selectedArticle.content)
+                )}
               </div>
 
               {/* Sharing Interface Section */}

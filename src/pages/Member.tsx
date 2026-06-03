@@ -107,10 +107,19 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   async function loadMemberData() {
     const seq = ++loadSeqRef.current;
     setLoading(true);
+    let currentUser = user;
+    let currentSession = session;
+
     try {
-      if (!user) {
-        setScreen('auth');
-        return;
+      if (!currentUser) {
+        // Double check directly on Supabase to prevent PWA state sync lag redirection loops
+        const { data: activeSessionData } = await supabase.auth.getSession();
+        if (!activeSessionData?.session) {
+          setScreen('auth');
+          return;
+        }
+        currentUser = activeSessionData.session.user;
+        currentSession = activeSessionData.session;
       }
 
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -120,7 +129,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
         supabase
           .from('members')
           .select('*')
-          .eq('auth_id', user.id)
+          .eq('auth_id', currentUser.id)
           .maybeSingle() as any,
         7000
       )) as any;
@@ -132,7 +141,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
           supabase
             .from('members')
             .select('*')
-            .eq('auth_id', user.id)
+            .eq('auth_id', currentUser.id)
             .maybeSingle() as any,
           7000
         )) as any;
@@ -141,20 +150,20 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
       // If still not found, call backend to create the member record
       if (!member) {
-        console.warn('No member record found, calling ensure-member endpoint for:', user.id);
+        console.warn('No member record found, calling ensure-member endpoint for:', currentUser.id);
         try {
           const response = await fetchWithTimeout(`${BACKEND_URL}/api/auth/ensure-member`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+              ...(currentSession?.access_token ? { Authorization: `Bearer ${currentSession.access_token}` } : {}),
             },
           }, 6000);
           const data = await response.json();
           if (data.success && data.member) {
             member = {
               id: data.member.id,
-              email: data.member.email || user.email,
+              email: data.member.email || currentUser.email,
               profile_data: data.member.profile_data || {},
             };
           }
@@ -164,12 +173,12 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
       }
 
       if (!member || !member.id) {
-        console.warn('Could not resolve member record for auth user:', user.id);
+        console.warn('Could not resolve member record for auth user:', currentUser.id);
         // Show page with limited functionality — user IS authenticated
         setMemberData({
           id: '',
-          name: user.email?.split('@')[0] || 'Membro',
-          email: user.email || '',
+          name: currentUser.email?.split('@')[0] || 'Membro',
+          email: currentUser.email || '',
         });
         return;
       }
@@ -186,8 +195,14 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
       await loadStats(member.id);
     } catch (error) {
       console.error('Error loading member data:', error);
-      // Only redirect if no session
-      if (!user) {
+      // Fallback: If we have currentUser, set basic memberData to avoid lock-out
+      if (currentUser) {
+        setMemberData({
+          id: '',
+          name: currentUser.email?.split('@')[0] || 'Membro',
+          email: currentUser.email || '',
+        });
+      } else {
         setScreen('auth');
       }
     } finally {

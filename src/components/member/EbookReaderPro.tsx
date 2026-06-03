@@ -117,7 +117,10 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
     return (saved as ViewMode) || 'fit-width';
   });
   
-  const [renderQuality, setRenderQuality] = useState<RenderQuality>('auto');
+  const [renderQuality, setRenderQuality] = useState<RenderQuality>(() => {
+    const isMobile = window.innerWidth < 768;
+    return isMobile ? 'performance' : 'auto';
+  });
   const [pageSpacing, setPageSpacing] = useState<PageSpacing>('compact');
   
   const [showSettings, setShowSettings] = useState(false);
@@ -305,8 +308,10 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         if (currentVis !== currentPage) setCurrentPage(currentVis);
 
         const newVisible = new Set<number>();
-        const start = Math.max(1, currentVis - 2);
-        const end = Math.min(numPages, currentVis + 2);
+        const isMobile = window.innerWidth < 768;
+        const buffer = isMobile ? 1 : 2;
+        const start = Math.max(1, currentVis - buffer);
+        const end = Math.min(numPages, currentVis + buffer);
         for(let i = start; i <= end; i++) newVisible.add(i);
         
         setVisiblePages(prev => {
@@ -418,6 +423,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
   const toolbarBg = effectiveTheme === 'light' ? '#ffffff' : '#2d2d2d';
   const toolbarText = effectiveTheme === 'light' ? '#000000' : '#ffffff';
   const toolbarBorder = effectiveTheme === 'light' ? '#e0e0e0' : '#3f3f3f';
+  const pageBg = effectiveTheme === 'light' ? '#ffffff' : '#2d2d2d';
+  const pageTextColor = effectiveTheme === 'light' ? '#666666' : '#999999';
 
   return (
     <div className="fixed inset-0 flex flex-col z-[100] font-sans" style={{ backgroundColor: bgColor }}>
@@ -525,11 +532,12 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                     <div
                       key={`page_wrap_${pageNum}`}
                       data-page={pageNum}
-                      className="page-wrapper shadow-lg border-b border-white/5 bg-white flex items-center justify-center relative overflow-hidden"
+                      className="page-wrapper shadow-lg border-b border-white/5 flex items-center justify-center relative overflow-hidden"
                       style={{
                         width: `${wrapperWidth}px`,
                         height: `${wrapperHeight}px`,
                         marginBottom: `${pageGap}px`,
+                        backgroundColor: pageBg,
                       }}
                     >
                       {isVisible ? (
@@ -544,8 +552,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                             pageNumber={pageNum}
                             width={pageWidth}
                             scale={safeScale} 
-                            renderTextLayer={true}
-                            renderAnnotationLayer={true}
+                            renderTextLayer={renderQuality !== 'performance'}
+                            renderAnnotationLayer={renderQuality !== 'performance'}
                             devicePixelRatio={dpr}
                             onLoadSuccess={(page: any) => {
                               if (pageNum === 1) {
@@ -568,7 +576,10 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-400 font-bold opacity-30 text-2xl">
+                        <div 
+                          className="w-full h-full flex items-center justify-center font-bold opacity-30 text-xl sm:text-2xl"
+                          style={{ color: pageTextColor }}
+                        >
                           Página {pageNum}
                         </div>
                       )}

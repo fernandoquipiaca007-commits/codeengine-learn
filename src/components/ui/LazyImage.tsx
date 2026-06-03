@@ -38,6 +38,12 @@ export const LazyImage = memo(function LazyImage({
 
   const handleLoad = useCallback(() => setLoaded(true), []);
 
+  const handleRef = useCallback((node: HTMLImageElement | null) => {
+    if (node && node.complete) {
+      setLoaded(true);
+    }
+  }, []);
+
   const handleError = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       if (fallback && !errored) {
@@ -50,6 +56,7 @@ export const LazyImage = memo(function LazyImage({
 
   return (
     <img
+      ref={handleRef}
       src={src}
       alt={alt}
       className={`${className} transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
@@ -85,6 +92,12 @@ export const LazyImageWithSkeleton = memo(function LazyImageWithSkeleton({
 
   const handleLoad = useCallback(() => setLoaded(true), []);
 
+  const handleRef = useCallback((node: HTMLImageElement | null) => {
+    if (node && node.complete) {
+      setLoaded(true);
+    }
+  }, []);
+
   const handleError = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       if (props.fallback && !errored) {
@@ -105,6 +118,7 @@ export const LazyImageWithSkeleton = memo(function LazyImageWithSkeleton({
       )}
       <img
         {...props}
+        ref={handleRef}
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
           loaded ? 'opacity-100' : 'opacity-0'
         } ${className}`}
