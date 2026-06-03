@@ -23,5 +23,12 @@
   "thankYou": "Obrigado pela sua compra!",
   "orderNumber": "Número do pedido",
   "estimatedDelivery": "Entrega estimada",
-  "trackOrder": "Rastrear pedido"
+  "trackOrder": "Rastrear pedido",
+  "couponTitle": "Tem um cupom de desconto?",
+  "couponApplied": "Cupom Aplicado",
+  "couponPlaceholder": "Digite o código",
+  "apply": "Aplicar",
+  "validating": "Validando...",
+  "enterCouponCode": "Digite um código de cupom",
+  "validationError": "Erro ao validar cupom"
 }

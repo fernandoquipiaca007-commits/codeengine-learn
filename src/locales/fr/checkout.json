@@ -23,5 +23,12 @@
   "thankYou": "Merci pour votre achat!",
   "orderNumber": "Numéro de commande",
   "estimatedDelivery": "Livraison estimée",
-  "trackOrder": "Suivre la commande"
+  "trackOrder": "Suivre la commande",
+  "couponTitle": "Avez-vous un coupon de réduction ?",
+  "couponApplied": "Coupon Appliqué",
+  "couponPlaceholder": "Entrez le code",
+  "apply": "Appliquer",
+  "validating": "Validation...",
+  "enterCouponCode": "Entrez un code de coupon",
+  "validationError": "Erreur de validation du coupon"
 }

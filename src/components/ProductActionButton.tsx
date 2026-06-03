@@ -40,7 +40,7 @@ export function ProductActionButton({
   onNavigateToLibrary,
   onStartLearning,
 }: ProductActionButtonProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'checkout']);
   const { locale } = useLocale();
   const [showPaymentSelector, setShowPaymentSelector] = useState(false);
   const [showFastPayFlow, setShowFastPayFlow] = useState(false);
@@ -346,7 +346,7 @@ export function ProductActionButton({
           ) : (
             <>
               <Download className="w-6 h-6" />
-              <span>Baixar Gratuitamente</span>
+              <span>{t('actions.downloadFree') || 'Baixar Gratuitamente'}</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </>
           )}
@@ -382,11 +382,11 @@ export function ProductActionButton({
           {loading ? (
             <>
               <Loader2 className="w-6 h-6 animate-spin" />
-              <span>Processando...</span>
+              <span>{t('checkout:processing') || 'Processando...'}</span>
             </>
           ) : (
             <>
-              <span>Comprar Agora</span>
+              <span>{t('actions.buyNow') || 'Comprar Agora'}</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </>
           )}

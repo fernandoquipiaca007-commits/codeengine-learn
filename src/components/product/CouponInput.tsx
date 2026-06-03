@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Tag, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface CouponInputProps {
   productId: string;
@@ -9,6 +10,7 @@ interface CouponInputProps {
 }
 
 export function CouponInput({ productId, originalPrice, onCouponApplied }: CouponInputProps) {
+  const { t } = useTranslation('checkout');
   const [couponCode, setCouponCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -16,7 +18,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
 
   async function validateCoupon() {
     if (!couponCode.trim()) {
-      showMessage('error', 'Digite um código de cupom');
+      showMessage('error', t('enterCouponCode') || 'Digite um código de cupom');
       return;
     }
 
@@ -168,7 +170,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
       showMessage('success', `Cupom aplicado! Desconto de $ ${discount}`);
     } catch (error) {
       console.error('Error validating coupon:', error);
-      showMessage('error', 'Erro ao validar cupom');
+      showMessage('error', t('validationError') || 'Erro ao validar cupom');
     } finally {
       setLoading(false);
     }
@@ -191,7 +193,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
       <div className="flex items-center gap-2 mb-4">
         <Tag className="w-5 h-5 text-primary" />
         <h3 className="font-display text-lg font-semibold text-on-surface">
-          Tem um cupom de desconto?
+          {t('couponTitle') || 'Tem um cupom de desconto?'}
         </h3>
       </div>
 
@@ -202,7 +204,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               <Check className="w-5 h-5 text-green-500" />
               <div>
                 <p className="font-display text-sm font-semibold text-on-surface">
-                  Cupom Aplicado
+                  {t('couponApplied') || 'Cupom Aplicado'}
                 </p>
                 <code className="text-xs text-green-500 font-mono">{appliedCoupon}</code>
               </div>
@@ -224,7 +226,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               onKeyPress={(e) => e.key === 'Enter' && validateCoupon()}
-              placeholder="Digite o código"
+              placeholder={t('couponPlaceholder') || 'Digite o código'}
               disabled={loading}
               className="flex-1 px-4 py-3 bg-surface-container border border-outline/20 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface placeholder-on-surface-variant/50 font-mono uppercase"
             />
@@ -233,7 +235,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               disabled={loading || !couponCode.trim()}
               className="px-6 py-3 bg-primary text-on-primary rounded-xl font-display text-sm font-semibold tracking-widest uppercase hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Validando...' : 'Aplicar'}
+              {loading ? t('validating') || 'Validando...' : t('apply') || 'Aplicar'}
             </button>
           </div>
 
