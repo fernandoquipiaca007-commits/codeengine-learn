@@ -70,11 +70,16 @@
   },
   "home": {
     "heroTitle": "Écosystème premium de connaissances numériques",
+    "heroSubtitle": "Écosystème premium de connaissances numériques. Maîtrisez l'automatisation, l'IA et les systèmes à haute performance.",
+    "exploreVault": "Explorer le Coffre",
     "featured": "À la une",
+    "featuredTitle": "Produits à la Une",
+    "featuredSubtitle": "Accès premium à des outils qui accélèrent votre flux de travail et étendent votre capacité créative.",
     "categories": "Catégories",
     "welcome": "Bienvenue",
     "latestReleases": "Dernières Sorties",
-    "popularProducts": "Produits Populaires"
+    "popularProducts": "Produits Populaires",
+    "noFeatured": "Aucun produit en vedette actif. Configurez-les dans le panneau d'administration sous Produits en Vedette."
   },
   "product": {
     "alreadyOwned": "Produit déjà acquis",
