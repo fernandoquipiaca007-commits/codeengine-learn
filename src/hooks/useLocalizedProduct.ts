@@ -126,7 +126,7 @@ export function useLocalizedProduct(productId: string | null) {
 export async function fetchLocalizedProducts(lang: AppLocale, status = 'active') {
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path')
+    .select('id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, updated_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path')
     .eq('status', status)
     .order('created_at', { ascending: false });
 
