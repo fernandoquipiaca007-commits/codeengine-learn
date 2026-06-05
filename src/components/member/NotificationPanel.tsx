@@ -22,7 +22,7 @@ interface NotificationPanelProps {
 export function NotificationPanel({ memberId, onNavigate }: NotificationPanelProps) {
   console.log('NotificationPanel rendered with memberId:', memberId);
   
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
       setNotifications(data || []);
     } catch (err: any) {
       console.error('Error loading notifications:', err);
-      setError(err.message || 'Erro ao carregar notificações');
+      setError(err.message || t('notificationPanel.error'));
       setNotifications([]);
     } finally {
       setLoading(false);
@@ -185,7 +185,8 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
     if (diffHours < 24) return t('notificationPanel.time.hoursAgo', { count: diffHours });
     if (diffDays < 7) return t('notificationPanel.time.daysAgo', { count: diffDays });
 
-    return date.toLocaleDateString('pt-BR', {
+    const localeString = i18n.language === 'en' ? 'en-US' : i18n.language === 'fr' ? 'fr-FR' : 'pt-BR';
+    return date.toLocaleDateString(localeString, {
       day: '2-digit',
       month: 'short',
       year: 'numeric',

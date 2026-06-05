@@ -8,7 +8,8 @@ import { useFavorites } from '../hooks/useFavorites';
 import { FavoriteButton } from '../components/FavoriteButton';
 import { useTranslation } from 'react-i18next';
 import { LazyImage } from '../components/ui/LazyImage';
-
+import { useLocale } from '../contexts/LocaleContext';
+import { fetchLocalizedProducts } from '../hooks/useLocalizedProduct';
 
 interface ReleasesProps {
   setScreen: (screen: string) => void;
@@ -17,6 +18,7 @@ interface ReleasesProps {
 
 export function Releases({ setScreen, onProductClick }: ReleasesProps) {
   const { t } = useTranslation('pages');
+  const { locale } = useLocale();
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -39,19 +41,12 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
 
   useEffect(() => {
     loadRecentProducts();
-  }, []);
+  }, [locale]);
 
   async function loadRecentProducts() {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(12);
-
-      if (error) throw error;
-      setRecentProducts(data || []);
+      const localized = await fetchLocalizedProducts(locale, 'active');
+      setRecentProducts(localized.slice(0, 12) as Product[]);
     } catch (error) {
       console.error('Error loading recent products:', error);
     } finally {
@@ -61,7 +56,9 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('pt-BR', {
+    const activeLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
+    const dateLoc = activeLang === 'pt' ? 'pt-BR' : activeLang === 'fr' ? 'fr-FR' : 'en-US';
+    return new Intl.DateTimeFormat(dateLoc, {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
@@ -185,7 +182,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
               
               {/* Favorite Button */}
               {user && (
-                <div className="absolute top-4 left-4 z-10">
+                <div className="absolute top-4 left-4 z-10" onClick={(e) => e.stopPropagation()}>
                   <FavoriteButton
                     isFavorite={isFavorite(product.id)}
                     onToggle={() => toggleFavorite(product.id)}
@@ -279,8 +276,6 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
           </button>
         </motion.div>
       )}
-
-
     </div>
   );
 }

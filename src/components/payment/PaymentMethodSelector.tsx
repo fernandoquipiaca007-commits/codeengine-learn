@@ -4,6 +4,7 @@
  * Only shows FastPay if the product has a fastpay_link configured and FastPay is globally enabled.
  */
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, CreditCard, Smartphone, ChevronRight, Info } from 'lucide-react';
 
 interface PaymentMethodSelectorProps {
@@ -27,6 +28,7 @@ export function PaymentMethodSelector({
   onSelectFastPay,
   onClose,
 }: PaymentMethodSelectorProps) {
+  const { t } = useTranslation('checkout');
   const [fastpayEnabled, setFastpayEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasFastPayLink = !!product.fastpay_link;
@@ -76,7 +78,7 @@ export function PaymentMethodSelector({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-white/10">
           <h3 className="text-lg font-display font-bold text-on-surface">
-            Escolha o método de pagamento
+            {t('paymentMethodSelector.title')}
           </h3>
           <button
             onClick={onClose}
@@ -101,11 +103,11 @@ export function PaymentMethodSelector({
               <div className="font-display font-bold text-on-surface text-base">
                 Stripe
                 <span className="ml-1.5 text-xs font-normal text-on-surface-variant">
-                  (Internacional)
+                  ({t('paymentMethodSelector.international')})
                 </span>
               </div>
               <div className="text-sm text-on-surface-variant mt-0.5">
-                Cartão de crédito/débito • Aprovação instantânea
+                {t('paymentMethodSelector.stripeDesc')}
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-on-surface-variant group-hover:text-[#635bff] group-hover:translate-x-0.5 transition-all" />
@@ -124,14 +126,14 @@ export function PaymentMethodSelector({
               <div className="font-display font-bold text-on-surface text-base">
                 FastPay
                 <span className="ml-1.5 text-xs font-normal text-on-surface-variant">
-                  (Angola)
+                  ({t('paymentMethodSelector.angola')})
                 </span>
               </div>
               <div className="text-sm text-on-surface-variant mt-0.5">
                 <span className="font-sans font-bold text-orange-400">
                   {product.aoa_price ? `${product.aoa_price.toFixed(2)} AOA` : `${product.price.toFixed(2)} Kz`}
                 </span>
-                {" • Multicaixa Express, TPA, Transf. • Aprovação até 24h"}
+                {" • " + t('paymentMethodSelector.fastPayDesc')}
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-on-surface-variant group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
@@ -143,8 +145,11 @@ export function PaymentMethodSelector({
           <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
             <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Descontos e cupons são aplicáveis apenas a pagamentos via Stripe.
-              O FastPay utiliza o preço original do produto ({product.aoa_price ? `${product.aoa_price.toFixed(2)} AOA` : `${product.price.toFixed(2)} Kz`}).
+              {t('paymentMethodSelector.notice', {
+                price: product.aoa_price
+                  ? `${product.aoa_price.toFixed(2)} AOA`
+                  : `${product.price.toFixed(2)} Kz`
+              })}
             </p>
           </div>
         </div>

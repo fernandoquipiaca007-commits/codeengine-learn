@@ -4,6 +4,7 @@
  * Validates file type (JPG, PNG, PDF) and size (max 10MB) on client side.
  */
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload, FileImage, FileText, X, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -19,6 +20,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
 
 export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploaderProps) {
+  const { t } = useTranslation('checkout');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -32,14 +34,14 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
     if (!ALLOWED_TYPES.includes(f.type)) {
       const ext = f.name.split('.').pop()?.toLowerCase();
       if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
-        return 'Formato inválido. Permitido: JPG, PNG ou PDF';
+        return t('proofUploader.invalidFormat');
       }
     }
     if (f.size > MAX_SIZE) {
-      return `Arquivo muito grande (${(f.size / 1024 / 1024).toFixed(1)}MB). Máximo: 10MB`;
+      return t('proofUploader.fileTooLarge', { size: (f.size / 1024 / 1024).toFixed(1) });
     }
     return null;
-  }, []);
+  }, [t]);
 
   const handleFile = useCallback((f: File) => {
     const validationError = validateFile(f);
@@ -98,7 +100,7 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Sessão expirada. Faça login novamente.');
+      if (!session) throw new Error(t('proofUploader.sessionExpired'));
 
       const formData = new FormData();
       formData.append('proof', file);
@@ -119,14 +121,14 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Falha ao enviar comprovativo');
+        throw new Error(data.error || t('proofUploader.uploadFailed'));
       }
 
       setUploadProgress(100);
       setUploadSuccess(true);
       onUploadComplete(data.proof_url);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao enviar comprovativo';
+      const message = err instanceof Error ? err.message : t('proofUploader.uploadError');
       setError(message);
       onError?.(message);
     } finally {
@@ -145,10 +147,10 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
       <div className="flex flex-col items-center gap-3 p-6 rounded-xl bg-green-500/10 border border-green-500/20">
         <CheckCircle className="w-12 h-12 text-green-500" />
         <p className="font-display font-bold text-green-400 text-center">
-          Comprovativo enviado com sucesso!
+          {t('proofUploader.uploadSuccess')}
         </p>
         <p className="text-sm text-on-surface-variant text-center">
-          Aguarde a aprovação do administrador (até 24 horas).
+          {t('proofUploader.uploadSuccessDesc')}
         </p>
       </div>
     );
@@ -175,10 +177,10 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
           <Upload className={`w-10 h-10 ${isDragging ? 'text-primary' : 'text-on-surface-variant'}`} />
           <div className="text-center">
             <p className="font-display font-semibold text-on-surface text-sm">
-              {isDragging ? 'Solte o arquivo aqui' : 'Arraste o comprovativo ou clique para selecionar'}
+              {isDragging ? t('proofUploader.dragDropActive') : t('proofUploader.dragDropPlaceholder')}
             </p>
             <p className="text-xs text-on-surface-variant mt-1">
-              JPG, PNG ou PDF • Máximo 10MB
+              {t('proofUploader.fileLimitLabel')}
             </p>
           </div>
           <input
@@ -205,7 +207,7 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
             <p className="text-sm font-medium text-on-surface truncate">{file.name}</p>
             <p className="text-xs text-on-surface-variant">
               {(file.size / 1024 / 1024).toFixed(2)} MB •{' '}
-              {file.type === 'application/pdf' ? 'PDF' : 'Imagem'}
+              {file.type === 'application/pdf' ? t('proofUploader.pdfLabel') : t('proofUploader.imageLabel')}
             </p>
           </div>
           <button
@@ -222,7 +224,7 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <Loader2 className="w-5 h-5 text-primary animate-spin" />
-            <span className="text-sm text-on-surface">Enviando comprovativo...</span>
+            <span className="text-sm text-on-surface">{t('proofUploader.uploadingProgress')}</span>
           </div>
           <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
             <div
@@ -243,7 +245,7 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
               onClick={retry}
               className="flex items-center gap-1 mt-1 text-xs text-red-300 hover:text-red-200"
             >
-              <RefreshCw className="w-3 h-3" /> Tentar novamente
+              <RefreshCw className="w-3 h-3" /> {t('proofUploader.retry')}
             </button>
           </div>
         </div>
@@ -258,7 +260,7 @@ export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploa
                      hover:bg-primary/90 transition-all"
         >
           <Upload className="w-5 h-5" />
-          Enviar Comprovativo
+          {t('proofUploader.submitAction')}
         </button>
       )}
     </div>

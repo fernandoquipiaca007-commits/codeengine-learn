@@ -40,22 +40,48 @@ export function getStoragePath(storageUrl: string): string {
 export function getProductCoverUrl(product: {
   cover_url?: string | null;
   cover_storage_path?: string | null;
+  language?: string | null;
+  use_shared_content?: boolean | null;
+  updated_at?: string | null;
 }): string {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-  // Prefer the new storage_path column
-  const path = product.cover_storage_path || product.cover_url;
-  if (!path) return '';
+  // By default, prefer cover_storage_path (new) over cover_url (legacy)
+  let path = product.cover_storage_path || product.cover_url;
 
-  // Already a full URL — return as-is
-  if (path.startsWith('http')) return path;
-
-  // It's a relative path — build the public URL
-  if (supabaseUrl) {
-    return `${supabaseUrl}/storage/v1/object/public/product-covers/${path}`;
+  // If we have a language and it is not Portuguese (pt), and we are not sharing content,
+  // we must prefer the translated cover_url over the base cover_storage_path.
+  if (
+    product.language &&
+    product.language !== 'pt' &&
+    !product.use_shared_content &&
+    product.cover_url
+  ) {
+    path = product.cover_url;
   }
 
-  return path;
+  if (!path) return '';
+
+  let baseUrl = path;
+  // It's a relative path — build the public URL
+  if (!path.startsWith('http') && supabaseUrl) {
+    baseUrl = `${supabaseUrl}/storage/v1/object/public/product-covers/${path}`;
+  }
+
+  // Add cache buster if updated_at is present to bypass browser cache
+  if (product.updated_at) {
+    try {
+      const t = new Date(product.updated_at).getTime();
+      if (!isNaN(t)) {
+        const separator = baseUrl.includes('?') ? '&' : '?';
+        baseUrl = `${baseUrl}${separator}t=${t}`;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return baseUrl;
 }
 
 /**

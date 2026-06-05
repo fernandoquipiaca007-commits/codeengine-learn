@@ -1,4 +1,5 @@
 import { X, Globe, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { AppLocale } from '../lib/locale';
 
 interface LanguageSelectorModalProps {
@@ -14,10 +15,13 @@ export function LanguageSelectorModal({
   isOpen,
   onClose,
   onSelect,
-  title = 'Selecione o Idioma',
-  subtitle = 'Escolha sua tradução preferida antes de continuar',
+  title,
+  subtitle,
   availableLanguages,
 }: LanguageSelectorModalProps) {
+  const { t } = useTranslation('common');
+  const modalTitle = title || t('languageSelectorTitle');
+  const modalSubtitle = subtitle || t('languageSelectorSubtitle');
   if (!isOpen) return null;
 
   const allLanguages: { code: AppLocale; name: string; nativeName: string; flag: string }[] = [
@@ -52,10 +56,10 @@ export function LanguageSelectorModal({
             </div>
             <div>
               <h3 className="font-display text-lg font-bold text-white leading-tight">
-                {title}
+                {modalTitle}
               </h3>
               <p className="font-sans text-xs text-on-surface-variant mt-1">
-                {subtitle}
+                {modalSubtitle}
               </p>
             </div>
           </div>

@@ -3,6 +3,7 @@
  * Displays the member's FastPay orders with status badges, filtering, and action links.
  */
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Clock, CheckCircle, XCircle, Package, Filter,
   Loader2, AlertCircle, ExternalLink, Eye, RefreshCw,
@@ -29,6 +30,7 @@ interface FastPayOrderItem {
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export function OrderStatusTracker() {
+  const { t, i18n } = useTranslation('member');
   const [orders, setOrders] = useState<FastPayOrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,10 +59,10 @@ export function OrderStatusTracker() {
       if (data.success) {
         setOrders(data.orders || []);
       } else {
-        setError(data.error || 'Falha ao carregar pedidos');
+        setError(data.error || t('orderStatusTracker.loadError'));
       }
     } catch (err) {
-      setError('Erro de conexão');
+      setError(t('orderStatusTracker.connectionError'));
     } finally {
       setLoading(false);
     }
@@ -72,21 +74,21 @@ export function OrderStatusTracker() {
 
   const statusConfig = {
     pending: {
-      label: 'Pendente',
+      label: t('orderStatusTracker.status.pending'),
       icon: Clock,
       color: 'text-yellow-400',
       bg: 'bg-yellow-500/10',
       border: 'border-yellow-500/20',
     },
     completed: {
-      label: 'Aprovado',
+      label: t('orderStatusTracker.status.completed'),
       icon: CheckCircle,
       color: 'text-green-400',
       bg: 'bg-green-500/10',
       border: 'border-green-500/20',
     },
     failed: {
-      label: 'Rejeitado',
+      label: t('orderStatusTracker.status.failed'),
       icon: XCircle,
       color: 'text-red-400',
       bg: 'bg-red-500/10',
@@ -112,12 +114,12 @@ export function OrderStatusTracker() {
       <div className="flex items-center justify-between">
         <h3 className="font-display font-bold text-on-surface text-lg flex items-center gap-2">
           <Package className="w-5 h-5 text-orange-400" />
-          Pedidos FastPay
+          {t('orderStatusTracker.title')}
         </h3>
         <button
           onClick={fetchOrders}
           className="p-2 rounded-lg hover:bg-white/10 text-on-surface-variant transition-colors"
-          title="Atualizar"
+          title={t('orderStatusTracker.refresh')}
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -138,7 +140,7 @@ export function OrderStatusTracker() {
               }
             `}
           >
-            {s === 'all' ? 'Todos' : statusConfig[s as keyof typeof statusConfig].label}
+            {s === 'all' ? t('orderStatusTracker.all') : statusConfig[s as keyof typeof statusConfig].label}
           </button>
         ))}
       </div>
@@ -154,7 +156,9 @@ export function OrderStatusTracker() {
       {/* Orders list */}
       {orders.length === 0 ? (
         <p className="text-sm text-on-surface-variant text-center py-4">
-          Nenhum pedido {statusFilter !== 'all' ? `com status "${statusConfig[statusFilter as keyof typeof statusConfig]?.label}"` : ''} encontrado.
+          {statusFilter !== 'all' 
+            ? t('orderStatusTracker.noOrdersWithStatus', { status: statusConfig[statusFilter as keyof typeof statusConfig]?.label })
+            : t('orderStatusTracker.noOrders')}
         </p>
       ) : (
         <div className="space-y-3">
@@ -194,13 +198,13 @@ export function OrderStatusTracker() {
                     <div className="flex items-center gap-3 mt-1 text-xs text-on-surface-variant">
                       <span>{order.amount.toFixed(2)} Kz</span>
                       <span>•</span>
-                      <span>{date.toLocaleDateString('pt-BR')}</span>
+                      <span>{date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : i18n.language === 'fr' ? 'fr-FR' : 'pt-BR')}</span>
                       {order.proof_uploaded_at && (
                         <>
                           <span>•</span>
                           <span className="flex items-center gap-1">
                             <Eye className="w-3 h-3" />
-                            Comprovativo enviado
+                            {t('orderStatusTracker.proofSent')}
                           </span>
                         </>
                       )}
@@ -210,21 +214,21 @@ export function OrderStatusTracker() {
                     {order.status === 'pending' && (
                       <p className="mt-2 text-xs text-yellow-300/80">
                         <Clock className="w-3 h-3 inline mr-1" />
-                        Aguardando aprovação — até 24 horas
+                        {t('orderStatusTracker.pendingMessage')}
                       </p>
                     )}
 
                     {order.status === 'completed' && (
                       <p className="mt-2 text-xs text-green-300/80">
                         <CheckCircle className="w-3 h-3 inline mr-1" />
-                        Produto disponível na sua biblioteca
+                        {t('orderStatusTracker.completedMessage')}
                       </p>
                     )}
 
                     {order.status === 'failed' && order.rejection_reason && (
                       <p className="mt-2 text-xs text-red-300/80">
                         <XCircle className="w-3 h-3 inline mr-1" />
-                        Motivo: {order.rejection_reason}
+                        {t('orderStatusTracker.rejectionReason', { reason: order.rejection_reason })}
                       </p>
                     )}
                   </div>

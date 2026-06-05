@@ -369,7 +369,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
       <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mx-auto mb-4" />
-          <p className="font-sans text-lg text-on-surface-variant">Carregando área de membros...</p>
+          <p className="font-sans text-lg text-on-surface-variant">{t('member:loading')}</p>
         </div>
       </div>
     );
@@ -379,12 +379,12 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
     return (
       <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
-          <p className="font-sans text-base text-on-surface-variant">Nao foi possivel carregar os dados da conta.</p>
+          <p className="font-sans text-base text-on-surface-variant">{t('member:errorLoadingData')}</p>
           <button
             onClick={() => setScreen('auth')}
             className="px-4 py-2 rounded-full border border-white/15 hover:border-primary/50 text-on-surface-variant hover:text-primary transition-colors"
           >
-            Voltar ao login
+            {t('member:backToLogin')}
           </button>
         </div>
       </div>

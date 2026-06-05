@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Download, Film, CheckSquare, Square, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -24,6 +25,7 @@ export function CourseDownloadModal({
   productId,
   productTitle,
 }: CourseDownloadModalProps) {
+  const { t } = useTranslation('member');
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -54,7 +56,7 @@ export function CourseDownloadModal({
       setSelectedIds(new Set((data || []).map((l) => l.id)));
     } catch (err) {
       console.error('Error fetching lessons:', err);
-      setOverallError('Não foi possível carregar os episódios do curso.');
+      setOverallError(t('courseDownloadModal.errorLoading'));
     } finally {
       setLoading(false);
     }
@@ -91,7 +93,7 @@ export function CourseDownloadModal({
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) {
-      setOverallError('Faça login para baixar os episódios.');
+      setOverallError(t('courseDownloadModal.loginRequired'));
       return;
     }
 
@@ -111,7 +113,7 @@ export function CourseDownloadModal({
         });
 
         if (!response.ok) {
-          throw new Error('Falha no download');
+          throw new Error(t('courseDownloadModal.downloadFailed'));
         }
 
         const contentLength = response.headers.get('content-length');
@@ -119,7 +121,7 @@ export function CourseDownloadModal({
         let loaded = 0;
 
         const reader = response.body?.getReader();
-        if (!reader) throw new Error('Reader indisponível');
+        if (!reader) throw new Error(t('courseDownloadModal.readerUnavailable'));
 
         const chunks: Uint8Array[] = [];
         while (true) {
@@ -181,7 +183,7 @@ export function CourseDownloadModal({
             </div>
             <div>
               <h3 className="font-display text-lg font-bold text-white leading-tight">
-                Baixar Vídeos do Curso
+                {t('courseDownloadModal.title')}
               </h3>
               <p className="font-sans text-xs text-on-surface-variant mt-1 truncate max-w-[320px] sm:max-w-md">
                 {productTitle}
@@ -215,10 +217,10 @@ export function CourseDownloadModal({
               ) : (
                 <Square className="w-4 h-4" />
               )}
-              {selectedIds.size === lessons.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
+              {selectedIds.size === lessons.length ? t('courseDownloadModal.deselectAll') : t('courseDownloadModal.selectAll')}
             </button>
             <span className="font-sans text-xs text-on-surface-variant">
-              {selectedIds.size} de {lessons.length} selecionados
+              {t('courseDownloadModal.selectedCount', { selected: selectedIds.size, total: lessons.length })}
             </span>
           </div>
         )}
@@ -228,11 +230,11 @@ export function CourseDownloadModal({
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <p className="font-sans text-sm text-on-surface-variant">Carregando episódios...</p>
+              <p className="font-sans text-sm text-on-surface-variant">{t('courseDownloadModal.loadingEpisodes')}</p>
             </div>
           ) : lessons.length === 0 ? (
             <div className="text-center py-20 font-sans text-sm text-on-surface-variant">
-              Nenhum episódio de vídeo disponível para este curso.
+              {t('courseDownloadModal.noEpisodes')}
             </div>
           ) : (
             lessons.map((lesson) => {
@@ -268,20 +270,20 @@ export function CourseDownloadModal({
                         {lesson.display_order.toString().padStart(2, '0')}. {lesson.title}
                       </p>
                       <p className="font-sans text-xs text-on-surface-variant mt-0.5">
-                        Duração: {formatDuration(lesson.video_duration_seconds)}
+                        {t('courseDownloadModal.duration', { duration: formatDuration(lesson.video_duration_seconds) })}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 flex-shrink-0 min-w-[120px] justify-end">
                     {status === 'idle' && (
-                      <span className="font-sans text-xs text-on-surface-variant">Pronto</span>
+                      <span className="font-sans text-xs text-on-surface-variant">{t('courseDownloadModal.ready')}</span>
                     )}
 
                     {status === 'downloading' && (
                       <div className="w-full max-w-[100px] space-y-1">
                         <div className="flex items-center justify-between font-mono text-[10px] text-primary">
-                          <span>Baixando</span>
+                          <span>{t('courseDownloadModal.downloading')}</span>
                           <span>{progress}%</span>
                         </div>
                         <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
@@ -296,14 +298,14 @@ export function CourseDownloadModal({
                     {status === 'completed' && (
                       <div className="flex items-center gap-1 text-green-400">
                         <CheckCircle className="w-4 h-4" />
-                        <span className="font-sans text-xs">Concluído</span>
+                        <span className="font-sans text-xs">{t('courseDownloadModal.completed')}</span>
                       </div>
                     )}
 
                     {status === 'error' && (
                       <div className="flex items-center gap-1 text-red-400">
                         <AlertCircle className="w-4 h-4" />
-                        <span className="font-sans text-xs">Erro</span>
+                        <span className="font-sans text-xs">{t('courseDownloadModal.error')}</span>
                       </div>
                     )}
                   </div>
@@ -320,7 +322,7 @@ export function CourseDownloadModal({
               onClick={onClose}
               className="px-5 py-2.5 rounded-full font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-white transition-colors"
             >
-              Cancelar
+              {t('courseDownloadModal.cancel')}
             </button>
             <button
               onClick={startParallelDownloads}
@@ -328,7 +330,7 @@ export function CourseDownloadModal({
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-display text-xs font-semibold tracking-widest uppercase hover:shadow-[0_0_20px_rgba(192,193,255,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-4 h-4" />
-              Baixar Selecionados
+              {t('courseDownloadModal.downloadSelected')}
             </button>
           </div>
         )}

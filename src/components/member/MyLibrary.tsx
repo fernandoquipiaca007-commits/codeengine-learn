@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Play, BookOpen, Download, GraduationCap } from 'lucide-react';
 import { getMemberLibrary, LibraryItem } from '../../lib/learning-api';
 import { getProductCoverUrl } from '../../lib/storage-path';
+import { useLocale } from '../../contexts/LocaleContext';
+import { supabase } from '../../lib/supabase';
 
 interface MyLibraryProps {
   onOpenCourse: (productId: string, lessonId?: string) => void;
@@ -12,19 +14,51 @@ interface MyLibraryProps {
 
 export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryProps) {
   const { t } = useTranslation();
+  const { locale } = useLocale();
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'course' | 'ebook' | 'file'>('all');
 
   useEffect(() => {
     load();
-  }, []);
+  }, [locale]);
 
   async function load() {
     setLoading(true);
     try {
       const library = await getMemberLibrary();
-      setItems(library);
+
+      const productIds = library.map((item) => item.id).filter(Boolean);
+      let translations: any[] = [];
+      if (productIds.length > 0) {
+        const { data: trs } = await supabase
+          .from('products_translations')
+          .select('*')
+          .in('product_id', productIds)
+          .in('language', [locale, 'pt']);
+        translations = trs ?? [];
+      }
+
+      const localizedItems = library.map((item) => {
+        const tr = translations.find((t) => t.product_id === item.id && t.language === locale);
+        const fb = translations.find((t) => t.product_id === item.id && t.language === 'pt');
+        const useShared = Boolean((item as any).use_shared_content);
+
+        const title = useShared ? item.title : (tr?.title || fb?.title || item.title);
+        const cover_url = useShared ? item.cover_url : (tr?.cover_url || fb?.cover_url || item.cover_url);
+        const cover_storage_path = useShared ? item.cover_storage_path : (tr?.cover_url || fb?.cover_url || item.cover_storage_path);
+
+        return {
+          ...item,
+          title,
+          cover_url,
+          cover_storage_path,
+          language: useShared ? 'pt' : locale,
+          use_shared_content: useShared,
+        } as LibraryItem;
+      });
+
+      setItems(localizedItems);
     } catch (e) {
       console.error(e);
     } finally {

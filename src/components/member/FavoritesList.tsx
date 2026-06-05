@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Heart, ArrowRight, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { Product } from '../../types/store';
 import { useFavorites } from '../../hooks/useFavorites';
@@ -11,6 +12,7 @@ interface FavoritesListProps {
 }
 
 export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
+  const { t } = useTranslation('member');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -78,10 +80,10 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
       {/* Header */}
       <div>
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">
-          Meus Favoritos
+          {t('favoritesPanel.title')}
         </h2>
         <p className="font-sans text-base text-on-surface-variant">
-          {products.length} {products.length === 1 ? 'produto favoritado' : 'produtos favoritados'}
+          {t('favoritesPanel.favoritesCount', { count: products.length })}
         </p>
       </div>
 
@@ -94,16 +96,16 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
         >
           <Heart className="w-16 h-16 text-on-surface-variant mx-auto mb-4 opacity-50" />
           <h3 className="font-display text-2xl font-bold text-white mb-2">
-            Nenhum favorito ainda
+            {t('favoritesPanel.emptyTitle')}
           </h3>
           <p className="font-sans text-base text-on-surface-variant mb-6">
-            Adicione produtos aos favoritos para acessá-los rapidamente aqui.
+            {t('favoritesPanel.emptyDesc')}
           </p>
           <button
             onClick={() => onViewProduct('')}
             className="secondary-btn px-6 py-3 rounded-lg font-display text-sm font-semibold tracking-widest uppercase inline-flex items-center gap-2"
           >
-            Explorar Produtos
+            {t('favoritesPanel.exploreProducts')}
             <ArrowRight className="w-4 h-4" />
           </button>
         </motion.div>
@@ -122,7 +124,7 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
                 onClick={() => handleRemoveFavorite(product.id)}
                 disabled={removingId === product.id}
                 className="absolute top-6 right-6 z-10 w-8 h-8 rounded-full bg-surface/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-on-surface-variant hover:text-red-400 hover:border-red-400/50 transition-all opacity-0 group-hover:opacity-100"
-                title="Remover dos favoritos"
+                title={t('favoritesPanel.removeTooltip')}
               >
                 {removingId === product.id ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-red-400"></div>
@@ -147,7 +149,7 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
                 <div className="absolute top-3 left-3 bg-surface/80 backdrop-blur-md border border-white/20 rounded-full px-3 py-1 flex items-center gap-2">
                   <Heart className="w-3 h-3 text-red-400 fill-current" />
                   <span className="font-display text-[10px] font-semibold tracking-widest uppercase text-white">
-                    Favorito
+                    {t('favoritesPanel.favoriteBadge')}
                   </span>
                 </div>
               </div>
@@ -185,7 +187,7 @@ export function FavoritesList({ memberId, onViewProduct }: FavoritesListProps) {
                     onClick={() => onViewProduct(product.id)}
                     className="secondary-btn px-4 py-2 rounded-full font-display text-xs font-semibold tracking-widest uppercase flex items-center gap-2 hover:bg-white/10 transition-all"
                   >
-                    Ver Detalhes
+                    {t('favoritesPanel.viewDetails')}
                     <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>

@@ -66,7 +66,9 @@
     "password": "Changer le mot de passe",
     "preferences": "Préférences",
     "account": "Compte",
-    "security": "Sécurité"
+    "security": "Sécurité",
+    "languageSelectorTitle": "Sélectionnez la langue",
+    "languageSelectorSubtitle": "Choisissez votre langue préférée avant de continuer"
   },
   "home": {
     "heroTitle": "Écosystème premium de connaissances numériques",
@@ -92,7 +94,17 @@
     "reviews": "Avis",
     "related": "Produits Connexes",
     "addToCart": "Ajouter au Panier",
-    "outOfStock": "Rupture de Stock"
+    "outOfStock": "Rupture de Stock",
+    "startCourse": "Commencer le cours",
+    "readNow": "Lire maintenant",
+    "freeBadge": "Produit gratuit",
+    "lifetimeAccess": "Accès à vie",
+    "freeNoCard": "100% Gratuit • Aucune carte requise",
+    "securePaymentVia": "Paiement 100% sécurisé via",
+    "or": "ou",
+    "loading": "Chargement...",
+    "alreadyOwnedError": "Vous possédez déjà ce produit.",
+    "paymentUnavailable": "Serveur de paiement indisponible."
   },
   "search": {
     "title": "Rechercher",

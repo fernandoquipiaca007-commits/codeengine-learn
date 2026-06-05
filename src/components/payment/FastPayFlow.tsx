@@ -4,6 +4,7 @@
  * Steps: Instructions → Redirect → Upload → Waiting
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   X, ArrowRight, ArrowLeft, ExternalLink, CheckCircle,
   Clock, Smartphone, Upload, Shield, Loader2, AlertCircle,
@@ -28,6 +29,7 @@ type Step = 'instructions' | 'creating' | 'redirect' | 'upload' | 'waiting';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) {
+  const { t } = useTranslation('checkout');
   const [step, setStep] = useState<Step>('instructions');
   const [orderId, setOrderId] = useState<string | null>(null);
   const [fastpayLink, setFastpayLink] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setError('Sessão expirada. Faça login novamente.');
+        setError(t('fastPayFlow.sessionExpired'));
         setStep('instructions');
         return;
       }
@@ -65,7 +67,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
           setStep('redirect');
           return;
         }
-        throw new Error(data.error || 'Falha ao criar pedido');
+        throw new Error(data.error || t('fastPayFlow.createOrderError'));
       }
 
       setOrderId(data.order_id);
@@ -73,7 +75,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
       setOrderAmount(data.amount);
       setStep('redirect');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar pedido');
+      setError(err instanceof Error ? err.message : t('fastPayFlow.createOrderGenericError'));
       setStep('instructions');
     }
   };
@@ -99,11 +101,11 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
         <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-white/10 bg-surface rounded-t-2xl">
           <div>
             <h3 className="text-lg font-display font-bold text-on-surface">
-              {step === 'instructions' && 'Pagamento FastPay'}
-              {step === 'creating' && 'Criando pedido...'}
-              {step === 'redirect' && 'Efetuar pagamento'}
-              {step === 'upload' && 'Enviar comprovativo'}
-              {step === 'waiting' && 'Pedido registrado!'}
+              {step === 'instructions' && t('fastPayFlow.titleInstructions')}
+              {step === 'creating' && t('fastPayFlow.titleCreating')}
+              {step === 'redirect' && t('fastPayFlow.titleRedirect')}
+              {step === 'upload' && t('fastPayFlow.titleUpload')}
+              {step === 'waiting' && t('fastPayFlow.titleWaiting')}
             </h3>
             <p className="text-sm text-on-surface-variant mt-0.5 truncate">
               {product.title}
@@ -157,21 +159,21 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                 <div className="flex items-center gap-2 mb-2">
                   <Smartphone className="w-5 h-5 text-orange-400" />
                   <span className="font-display font-bold text-orange-300 text-sm">
-                    Como funciona o FastPay
+                    {t('fastPayFlow.howItWorks')}
                   </span>
                 </div>
                 <ol className="space-y-2 text-sm text-on-surface-variant list-decimal list-inside">
-                  <li>Você será redirecionado para o link de pagamento</li>
-                  <li>Efetue o pagamento via Multicaixa Express, TPA ou Transferência</li>
-                  <li>Faça upload do comprovativo de pagamento</li>
-                  <li>Aguarde a aprovação do administrador (até 24h)</li>
+                  <li>{t('fastPayFlow.step1')}</li>
+                  <li>{t('fastPayFlow.step2')}</li>
+                  <li>{t('fastPayFlow.step3')}</li>
+                  <li>{t('fastPayFlow.step4')}</li>
                 </ol>
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
                 <Shield className="w-5 h-5 text-primary flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-on-surface">Valor a pagar</p>
+                  <p className="text-sm font-medium text-on-surface">{t('fastPayFlow.amountToPay')}</p>
                   <p className="text-xl font-display font-bold text-primary">
                     {product.aoa_price ? `${product.aoa_price.toFixed(2)} AOA` : `${product.price.toFixed(2)} Kz`}
                   </p>
@@ -192,7 +194,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                            hover:from-orange-600 hover:to-yellow-600 transition-all shadow-lg
                            shadow-orange-500/20"
               >
-                Continuar para pagamento
+                {t('fastPayFlow.continueToPayment')}
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
@@ -202,7 +204,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
           {step === 'creating' && (
             <div className="flex flex-col items-center gap-4 py-8">
               <Loader2 className="w-10 h-10 text-primary animate-spin" />
-              <p className="text-on-surface-variant">Criando seu pedido...</p>
+              <p className="text-on-surface-variant">{t('fastPayFlow.creatingOrderMessage')}</p>
             </div>
           )}
 
@@ -210,8 +212,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
           {step === 'redirect' && (
             <div className="space-y-4">
               <p className="text-sm text-on-surface-variant">
-                Clique no botão abaixo para abrir a página de pagamento em uma nova aba.
-                Após efetuar o pagamento, volte aqui para enviar o comprovativo.
+                {t('fastPayFlow.redirectMessage')}
               </p>
 
               <button
@@ -222,13 +223,13 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                            shadow-orange-500/20"
               >
                 <ExternalLink className="w-5 h-5" />
-                Abrir página de pagamento
+                {t('fastPayFlow.openPaymentPage')}
               </button>
 
               {fastpayLink && (
                 <div className="text-center">
                   <p className="text-xs text-on-surface-variant mb-1">
-                    Caso o botão não funcione, copie o link:
+                    {t('fastPayFlow.copyLinkLabel')}
                   </p>
                   <code className="text-xs text-primary break-all bg-white/5 px-2 py-1 rounded">
                     {fastpayLink}
@@ -244,7 +245,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                              hover:bg-primary/10 transition-all"
                 >
                   <Upload className="w-5 h-5" />
-                  Já paguei — Enviar comprovativo
+                  {t('fastPayFlow.alreadyPaidAction')}
                 </button>
               </div>
             </div>
@@ -254,8 +255,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
           {step === 'upload' && orderId && (
             <div className="space-y-4">
               <p className="text-sm text-on-surface-variant">
-                Envie uma foto ou PDF do comprovativo de pagamento. Nosso administrador
-                irá verificar e aprovar em até 24 horas.
+                {t('fastPayFlow.uploadInstructions')}
               </p>
 
               <ProofUploader
@@ -268,7 +268,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                 className="flex items-center gap-1 text-sm text-on-surface-variant hover:text-on-surface transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Voltar ao pagamento
+                {t('fastPayFlow.backToPayment')}
               </button>
             </div>
           )}
@@ -281,7 +281,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                   <CheckCircle className="w-8 h-8 text-green-500" />
                 </div>
                 <h4 className="font-display font-bold text-on-surface text-lg text-center">
-                  Comprovativo recebido!
+                  {t('fastPayFlow.proofReceived')}
                 </h4>
               </div>
 
@@ -289,11 +289,10 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                 <Clock className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-display font-semibold text-blue-300 text-sm">
-                    Aprovação em até 24 horas
+                    {t('fastPayFlow.approvalTitle')}
                   </p>
                   <p className="text-xs text-on-surface-variant mt-1">
-                    Você receberá uma notificação quando o pagamento for aprovado.
-                    O produto ficará disponível na sua biblioteca automaticamente.
+                    {t('fastPayFlow.approvalDesc')}
                   </p>
                 </div>
               </div>
@@ -308,7 +307,7 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
                              bg-primary text-on-primary font-display font-bold
                              hover:bg-primary/90 transition-all"
                 >
-                  Entendido
+                  {t('fastPayFlow.understand')}
                 </button>
               </div>
             </div>

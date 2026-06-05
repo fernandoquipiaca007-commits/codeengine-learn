@@ -167,8 +167,10 @@ export function Product({ setScreen, productId }: ProductProps) {
                 title: t.title || data.title,
                 description: t.description || data.description,
                 cover_url: t.cover_url || data.cover_url,
+                cover_storage_path: t.cover_url || data.cover_storage_path,
                 preview_url: t.preview_url || data.preview_url,
                 storage_url: t.storage_url || data.storage_url,
+                file_storage_path: t.storage_url || data.file_storage_path,
                 cta_text: t.cta_text || data.cta_text,
               }
             : data;

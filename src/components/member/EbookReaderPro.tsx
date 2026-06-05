@@ -14,6 +14,8 @@ import {
   MoreVertical
 } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../lib/i18n';
 import { getEbookReadUrl, saveProgress, getProductProgress } from '../../lib/learning-api';
 import { useLocale } from '../../contexts/LocaleContext';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -44,13 +46,13 @@ class ReaderErrorBoundary extends React.Component<{children: React.ReactNode}, {
       return (
         <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#09090b] text-white">
           <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-2xl max-w-md text-center space-y-4">
-            <h3 className="text-xl font-bold text-red-400">Ocorreu um erro no motor de PDF</h3>
-            <p className="text-gray-400 text-sm">O visualizador encontrou um estado instável. Isto pode acontecer devido a picos de memória.</p>
+            <h3 className="text-xl font-bold text-red-400">{i18n.t('member:ebookReader.engineError')}</h3>
+            <p className="text-gray-400 text-sm">{i18n.t('member:ebookReader.engineErrorDesc')}</p>
             <button 
               onClick={() => window.location.reload()} 
               className="px-6 py-3 bg-[#0078d4] rounded-xl font-bold w-full hover:bg-[#106ebe] transition-colors"
             >
-              Recarregar Leitor
+              {i18n.t('member:ebookReader.reloadReader')}
             </button>
           </div>
         </div>
@@ -72,6 +74,7 @@ type RenderQuality = 'auto' | 'performance' | 'high-quality';
 type PageSpacing = 'compact' | 'normal';
 
 export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps) {
+  const { t } = useTranslation('member');
   const { locale } = useLocale();
   const effectiveLocale = lang || locale;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -222,7 +225,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
       const prefs = prog?.preferences;
       if (prefs && prefs.bookmarks) setBookmarks(prefs.bookmarks);
     } catch (e) {
-      setError('Erro ao carregar documento. Tente novamente.');
+      setError(t('ebookReader.loadError'));
     } finally {
       setLoading(false);
     }
@@ -273,68 +276,109 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [currentPage, numPages, productId]);
 
-  // ═══ Scroll Contínuo Virtualizado ═══
+  // Keep a ref of currentPage so that the IntersectionObserver doesn't have to re-subscribe
+  const currentPageRef = useRef(currentPage);
   useEffect(() => {
-    if (!scrollContainerRef.current || !numPages) return;
-    
-    let ticking = false;
-    const handleScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      
-      window.requestAnimationFrame(() => {
-        const container = scrollContainerRef.current;
-        if (!container) { ticking = false; return; }
-        
-        const pages = container.querySelectorAll('[data-page]');
-        if (pages.length === 0) { ticking = false; return; }
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
 
-        const containerRect = container.getBoundingClientRect();
-        const containerCenter = containerRect.height / 2;
-        let currentVis = currentPage;
-
-        pages.forEach((pageElement) => {
-          const rect = pageElement.getBoundingClientRect();
-          const pageNum = Number(pageElement.getAttribute('data-page'));
-          
-          const relTop = rect.top - containerRect.top;
-          const relBottom = rect.bottom - containerRect.top;
-          
-          if (relTop <= containerCenter && relBottom >= containerCenter) {
-            currentVis = pageNum;
-          }
-        });
-
-        if (currentVis !== currentPage) setCurrentPage(currentVis);
-
-        const newVisible = new Set<number>();
-        const isMobile = window.innerWidth < 768;
-        const buffer = isMobile ? 1 : 2;
-        const start = Math.max(1, currentVis - buffer);
-        const end = Math.min(numPages, currentVis + buffer);
-        for(let i = start; i <= end; i++) newVisible.add(i);
-        
-        setVisiblePages(prev => {
-          if (prev.size !== newVisible.size) return newVisible;
-          let changed = false;
-          for (const item of newVisible) if (!prev.has(item)) changed = true;
-          return changed ? newVisible : prev;
-        });
-        
-        ticking = false;
-      });
-    };
-
+  // ═══ Scroll Contínuo Virtualizado com IntersectionObserver ═══
+  useEffect(() => {
     const container = scrollContainerRef.current;
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    
-    const timer = setTimeout(() => handleScroll(), 100);
-    
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      clearTimeout(timer);
+    if (!container || !numPages) return;
+
+    const pageIntersectionMap = new Map<number, boolean>();
+
+    const observerOptions = {
+      root: container,
+      rootMargin: '10% 0px 10% 0px',
+      threshold: [0.01, 0.5, 0.99]
     };
-  }, [currentPage, numPages]);
+
+    const callback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        const pageNum = Number(entry.target.getAttribute('data-page'));
+        if (isNaN(pageNum)) return;
+        pageIntersectionMap.set(pageNum, entry.isIntersecting);
+      });
+
+      // Calculate which pages are visible
+      const newVisible = new Set<number>();
+      for (let i = 1; i <= numPages; i++) {
+        if (pageIntersectionMap.get(i)) {
+          newVisible.add(i);
+        }
+      }
+
+      // Preload buffer
+      const isMobile = window.innerWidth < 768;
+      const buffer = isMobile ? 1 : 2;
+      const expandedVisible = new Set<number>();
+      newVisible.forEach((pageNum) => {
+        const start = Math.max(1, pageNum - buffer);
+        const end = Math.min(numPages, pageNum + buffer);
+        for (let i = start; i <= end; i++) {
+          expandedVisible.add(i);
+        }
+      });
+
+      // Default fallback when initial load hasn't processed intersections yet
+      if (expandedVisible.size === 0) {
+        const curr = currentPageRef.current;
+        const start = Math.max(1, curr - buffer);
+        const end = Math.min(numPages, curr + buffer);
+        for (let i = start; i <= end; i++) {
+          expandedVisible.add(i);
+        }
+      }
+
+      setVisiblePages((prev) => {
+        if (prev.size !== expandedVisible.size) return expandedVisible;
+        let changed = false;
+        for (const item of expandedVisible) {
+          if (!prev.has(item)) {
+            changed = true;
+            break;
+          }
+        }
+        return changed ? expandedVisible : prev;
+      });
+
+      // Determine active page centered in scroll container
+      const containerRect = container.getBoundingClientRect();
+      const containerCenter = containerRect.top + containerRect.height / 2;
+      let closestPageNum = currentPageRef.current;
+      let minDistance = Infinity;
+
+      const pageElements = container.querySelectorAll('[data-page]');
+      pageElements.forEach((pageElement) => {
+        const pageNum = Number(pageElement.getAttribute('data-page'));
+        if (pageIntersectionMap.get(pageNum)) {
+          const rect = pageElement.getBoundingClientRect();
+          const elementCenter = rect.top + rect.height / 2;
+          const distance = Math.abs(elementCenter - containerCenter);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPageNum = pageNum;
+          }
+        }
+      });
+
+      if (closestPageNum !== currentPageRef.current && closestPageNum >= 1 && closestPageNum <= numPages) {
+        setCurrentPage(closestPageNum);
+      }
+    };
+
+    const observer = new IntersectionObserver(callback, observerOptions);
+
+    // Observe each page wrapper element
+    const pageWrappers = container.querySelectorAll('[data-page]');
+    pageWrappers.forEach((wrapper) => observer.observe(wrapper));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [numPages]);
 
   // ═══ Navegação ═══
   const goToPage = useCallback((pageNum: number) => {
@@ -388,8 +432,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
 
   const handleDocumentLoadError = useCallback((err: any) => {
     console.error("Erro ao carregar PDF:", err);
-    setError("O ficheiro PDF parece estar corrompido ou o link expirou.");
-  }, []);
+    setError(t('ebookReader.corruptedError'));
+  }, [t]);
 
   // ═══ Loading State ═══
   if (loading) {
@@ -397,7 +441,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
       <div className="fixed inset-0 bg-[#09090b] flex items-center justify-center z-50">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-[#0078d4] mx-auto" />
-          <p className="text-white text-sm font-medium">Carregando documento...</p>
+          <p className="text-white text-sm font-medium">{t('ebookReader.loadingDocument')}</p>
         </div>
       </div>
     );
@@ -410,7 +454,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         <div className="text-center space-y-4 max-w-sm w-full bg-white/5 p-6 rounded-xl border border-white/10">
           <p className="text-red-400 font-medium">{error}</p>
           <button onClick={load} className="w-full px-4 py-2.5 bg-[#0078d4] text-white rounded-lg font-semibold hover:bg-[#106ebe]">
-            Tentar novamente
+            {t('ebookReader.retry')}
           </button>
         </div>
       </div>
@@ -446,7 +490,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
       <div className="flex-shrink-0 border-b relative z-10" style={{ backgroundColor: toolbarBg, borderColor: toolbarBorder, minHeight: '52px' }}>
         <div className="h-full flex flex-wrap items-center justify-between px-2 sm:px-4 py-2 gap-2">
           <div className="flex items-center gap-1 sm:gap-2">
-            <button onClick={onBack} className="p-2 md:p-2.5 rounded-lg hover:bg-black/10 transition-colors" title="Voltar" style={{ color: toolbarText }}>
+            <button onClick={onBack} className="p-2 md:p-2.5 rounded-lg hover:bg-black/10 transition-colors" title={t('ebookReader.back')} style={{ color: toolbarText }}>
               <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             <div className="hidden sm:block w-px h-6 bg-black/20 mx-1" />
@@ -504,8 +548,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                 file={url}
                 onLoadSuccess={({ numPages: n }) => setNumPages(n)}
                 onLoadError={handleDocumentLoadError}
-                loading={<div className="p-20 text-white font-medium flex items-center gap-3"><div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"/>A carregar documento...</div>}
-                error={<div className="p-20 text-red-400 font-medium text-center bg-black/50 rounded-xl my-10">Falha ao abrir o ficheiro PDF. Verifique a sua conexão.</div>}
+                loading={<div className="p-20 text-white font-medium flex items-center gap-3"><div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"/>{t('ebookReader.loadingDocumentProgress')}</div>}
+                error={<div className="p-20 text-red-400 font-medium text-center bg-black/50 rounded-xl my-10">{t('ebookReader.connectionError')}</div>}
                 options={pdfOptions}
               >
                 {Array.from(new Array(numPages), (_, index) => {
@@ -570,7 +614,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                             loading={null}
                             error={
                               <div className="w-full h-full flex items-center justify-center text-red-500 font-bold bg-red-50">
-                                Erro
+                                {t('ebookReader.errorBadge')}
                               </div>
                             }
                           />
@@ -580,7 +624,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                           className="w-full h-full flex items-center justify-center font-bold opacity-30 text-xl sm:text-2xl"
                           style={{ color: pageTextColor }}
                         >
-                          Página {pageNum}
+                          {t('ebookReader.page', { page: pageNum })}
                         </div>
                       )}
                     </div>
@@ -597,7 +641,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center z-[200]" onClick={() => setShowSettings(false)}>
           <div className="rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:max-w-md mx-0 sm:mx-4 max-h-[85vh] overflow-hidden flex flex-col" style={{ backgroundColor: toolbarBg, border: `1px solid ${toolbarBorder}` }} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: toolbarBorder }}>
-              <h2 className="text-lg font-bold" style={{ color: toolbarText }}>Menu do Leitor</h2>
+              <h2 className="text-lg font-bold" style={{ color: toolbarText }}>{t('ebookReader.menuTitle')}</h2>
               <button onClick={() => setShowSettings(false)} className="p-2 rounded-full hover:bg-black/10 bg-black/5" style={{ color: toolbarText }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -605,42 +649,42 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
             <div className="flex-1 overflow-y-auto px-6 py-6 pb-12 sm:pb-6 space-y-8">
               {/* Ferramentas extras (mobile) */}
               <div className="block md:hidden">
-                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>Ferramentas Extras</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>{t('ebookReader.extraTools')}</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => setRotation((r) => (r + 90) % 360)} className="p-3 rounded-xl border flex flex-col items-center gap-2 hover:bg-black/5" style={{ borderColor: toolbarBorder, color: toolbarText }}><RotateCw className="w-5 h-5" /><span className="text-xs font-medium">Rodar</span></button>
-                  <button onClick={toggleBookmark} className={`p-3 rounded-xl border flex flex-col items-center gap-2 hover:bg-black/5 ${bookmarks.includes(currentPage) ? 'text-[#0078d4] border-[#0078d4]/30' : ''}`} style={{ borderColor: toolbarBorder, color: bookmarks.includes(currentPage) ? '#0078d4' : toolbarText }}><Bookmark className={`w-5 h-5 ${bookmarks.includes(currentPage) ? 'fill-current' : ''}`} /><span className="text-xs font-medium">Favorito</span></button>
+                  <button onClick={() => setRotation((r) => (r + 90) % 360)} className="p-3 rounded-xl border flex flex-col items-center gap-2 hover:bg-black/5" style={{ borderColor: toolbarBorder, color: toolbarText }}><RotateCw className="w-5 h-5" /><span className="text-xs font-medium">{t('ebookReader.rotate')}</span></button>
+                  <button onClick={toggleBookmark} className={`p-3 rounded-xl border flex flex-col items-center gap-2 hover:bg-black/5 ${bookmarks.includes(currentPage) ? 'text-[#0078d4] border-[#0078d4]/30' : ''}`} style={{ borderColor: toolbarBorder, color: bookmarks.includes(currentPage) ? '#0078d4' : toolbarText }}><Bookmark className={`w-5 h-5 ${bookmarks.includes(currentPage) ? 'fill-current' : ''}`} /><span className="text-xs font-medium">{t('ebookReader.bookmark')}</span></button>
                 </div>
               </div>
               {/* Aparência */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>Aparência</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>{t('ebookReader.appearance')}</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {(['light', 'dark', 'auto'] as Theme[]).map((t) => (
-                    <button key={t} onClick={() => setTheme(t)} className={`p-3 rounded-xl text-xs font-medium transition-all flex flex-col items-center gap-2 border ${theme === t ? 'bg-[#0078d4] text-white border-transparent' : 'hover:bg-black/5'}`} style={{ color: theme === t ? '#ffffff' : toolbarText, borderColor: theme === t ? 'transparent' : toolbarBorder }}>
-                      {t === 'light' && <Sun className="w-5 h-5" />}{t === 'dark' && <Moon className="w-5 h-5" />}{t === 'auto' && <Settings className="w-5 h-5" />}
-                      <span className="capitalize">{t === 'auto' ? 'Auto' : t === 'light' ? 'Claro' : 'Escuro'}</span>
+                  {(['light', 'dark', 'auto'] as Theme[]).map((themeItem) => (
+                    <button key={themeItem} onClick={() => setTheme(themeItem)} className={`p-3 rounded-xl text-xs font-medium transition-all flex flex-col items-center gap-2 border ${theme === themeItem ? 'bg-[#0078d4] text-white border-transparent' : 'hover:bg-black/5'}`} style={{ color: theme === themeItem ? '#ffffff' : toolbarText, borderColor: theme === themeItem ? 'transparent' : toolbarBorder }}>
+                      {themeItem === 'light' && <Sun className="w-5 h-5" />}{themeItem === 'dark' && <Moon className="w-5 h-5" />}{themeItem === 'auto' && <Settings className="w-5 h-5" />}
+                      <span className="capitalize">{themeItem === 'auto' ? t('ebookReader.auto') : themeItem === 'light' ? t('ebookReader.light') : t('ebookReader.dark')}</span>
                     </button>
                   ))}
                 </div>
               </div>
               {/* Modo de Ajuste */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>Modo de Ajuste</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>{t('ebookReader.adjustMode')}</label>
                 <div className="space-y-2">
                   {(['fit-width', 'fit-page', 'actual-size'] as ViewMode[]).map((mode) => (
                     <button key={mode} onClick={() => { setViewMode(mode); if(mode === 'fit-width') handleZoomChange(1.0); }} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all border ${viewMode === mode ? 'bg-[#0078d4] text-white border-transparent' : 'hover:bg-black/5'}`} style={{ color: viewMode === mode ? '#ffffff' : toolbarText, borderColor: viewMode === mode ? 'transparent' : toolbarBorder }}>
-                      {mode === 'fit-width' && 'Ajustar à largura'}{mode === 'fit-page' && 'Ajustar à página'}{mode === 'actual-size' && 'Tamanho real'}
+                      {mode === 'fit-width' && t('ebookReader.fitWidth')}{mode === 'fit-page' && t('ebookReader.fitPage')}{mode === 'actual-size' && t('ebookReader.actualSize')}
                     </button>
                   ))}
                 </div>
               </div>
               {/* Qualidade Visual */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>Qualidade Visual</label>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-3 opacity-60" style={{ color: toolbarText }}>{t('ebookReader.visualQuality')}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['performance', 'auto', 'high-quality'] as RenderQuality[]).map((quality) => (
                     <button key={quality} onClick={() => setRenderQuality(quality)} className={`p-3 rounded-xl text-xs text-center font-medium transition-all border ${renderQuality === quality ? 'bg-[#0078d4] text-white border-transparent' : 'hover:bg-black/5'}`} style={{ color: renderQuality === quality ? '#ffffff' : toolbarText, borderColor: renderQuality === quality ? 'transparent' : toolbarBorder }}>
-                      {quality === 'performance' && 'Rápida'}{quality === 'auto' && 'Padrão'}{quality === 'high-quality' && 'Máxima'}
+                      {quality === 'performance' && t('ebookReader.qualityPerformance')}{quality === 'auto' && t('ebookReader.qualityDefault')}{quality === 'high-quality' && t('ebookReader.qualityHigh')}
                     </button>
                   ))}
                 </div>

@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { downloadProduct } from '../../lib/download-file';
 import { useLocale } from '../../contexts/LocaleContext';
 import { useTranslation } from 'react-i18next';
-import { getProductCoverUrl, getProductFilePath } from '../../lib/storage-path';
+import { getProductCoverUrl } from '../../lib/storage-path';
 
 interface ProductDownload {
   id: string;
@@ -17,22 +17,79 @@ interface ProductDownload {
   purchase_date: string;
   last_download?: string;
   download_count: number;
+  language?: string | null;
+  use_shared_content?: boolean | null;
+  updated_at?: string | null;
 }
 
 interface DownloadListProps {
   memberId: string;
 }
 
+const LOCALIZED_TEXTS = {
+  pt: {
+    headerTitle: 'Meus Downloads',
+    headerSubtitle: (count: number) => `${count} ${count === 1 ? 'produto disponível' : 'produtos disponíveis'} para download`,
+    lifetimeAccess: 'Acesso vitalício:',
+    lifetimeDesc: 'Você pode baixar seus produtos quantas vezes quiser, sem limite de tempo.',
+    emptyTitle: 'Nenhum produto disponível',
+    emptyDesc: 'Você ainda não comprou nenhum produto. Explore nossa biblioteca!',
+    purchasedAt: 'Comprado em:',
+    downloads: 'Downloads:',
+    lastDownload: 'Último download:',
+    downloading: 'Baixando...',
+    downloadButton: 'Baixar Produto',
+    lessThanHour: 'Há menos de 1 hora',
+    hoursAgo: (h: number) => `Há ${h} ${h === 1 ? 'hora' : 'horas'}`,
+    daysAgo: (d: number) => `Há ${d} ${d === 1 ? 'dia' : 'dias'}`
+  },
+  en: {
+    headerTitle: 'My Downloads',
+    headerSubtitle: (count: number) => `${count} ${count === 1 ? 'product available' : 'products available'} for download`,
+    lifetimeAccess: 'Lifetime access:',
+    lifetimeDesc: 'You can download your products as many times as you want, with no time limit.',
+    emptyTitle: 'No products available',
+    emptyDesc: 'You have not purchased any products yet. Explore our library!',
+    purchasedAt: 'Purchased on:',
+    downloads: 'Downloads:',
+    lastDownload: 'Last download:',
+    downloading: 'Downloading...',
+    downloadButton: 'Download Product',
+    lessThanHour: 'Less than an hour ago',
+    hoursAgo: (h: number) => `${h} ${h === 1 ? 'hour' : 'hours'} ago`,
+    daysAgo: (d: number) => `${d} ${d === 1 ? 'day' : 'days'} ago`
+  },
+  fr: {
+    headerTitle: 'Mes Téléchargements',
+    headerSubtitle: (count: number) => `${count} ${count === 1 ? 'produit disponible' : 'produits disponibles'} au téléchargement`,
+    lifetimeAccess: 'Accès à vie :',
+    lifetimeDesc: 'Vous pouvez télécharger vos produits autant de fois que vous le souhaitez, sans limite de temps.',
+    emptyTitle: 'Aucun produit disponible',
+    emptyDesc: 'Vous n\'avez encore acheté aucun produit. Explorez notre bibliothèque !',
+    purchasedAt: 'Acheté le :',
+    downloads: 'Téléchargements :',
+    lastDownload: 'Dernier téléchargement :',
+    downloading: 'Téléchargement...',
+    downloadButton: 'Télécharger le produit',
+    lessThanHour: 'Il y a moins d\'une heure',
+    hoursAgo: (h: number) => `Il y a ${h} ${h === 1 ? 'heure' : 'heures'}`,
+    daysAgo: (d: number) => `Il y a ${d} ${d === 1 ? 'jour' : 'jours'}`
+  }
+};
+
 export function DownloadList({ memberId }: DownloadListProps) {
   const { locale } = useLocale();
   const { t } = useTranslation('member');
+  const activeLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
+  const texts = LOCALIZED_TEXTS[activeLang] || LOCALIZED_TEXTS.pt;
+
   const [products, setProducts] = useState<ProductDownload[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadPurchasedProducts();
-  }, [memberId]);
+  }, [memberId, locale]);
 
   async function loadPurchasedProducts() {
     setLoading(true);
@@ -49,7 +106,9 @@ export function DownloadList({ memberId }: DownloadListProps) {
             cover_url,
             cover_storage_path,
             storage_url,
-            file_storage_path
+            file_storage_path,
+            use_shared_content,
+            updated_at
           )
         `)
         .eq('member_id', memberId)
@@ -58,34 +117,62 @@ export function DownloadList({ memberId }: DownloadListProps) {
 
       if (purchasesError) throw purchasesError;
 
+      const filteredPurchases = (purchases || []).filter((purchase: any) => {
+        const prod = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
+        return prod?.id;
+      });
+
+      const productIds = filteredPurchases.map((purchase: any) => {
+        const prod = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
+        return prod.id;
+      });
+
+      let translations: any[] = [];
+      if (productIds.length > 0) {
+        const { data: trs } = await supabase
+          .from('products_translations')
+          .select('*')
+          .in('product_id', productIds)
+          .in('language', [locale, 'pt']);
+        translations = trs ?? [];
+      }
+
       // Get download stats for each product
       const productsWithStats = await Promise.all(
-        (purchases || [])
-          .filter((purchase: any) => {
-            const prod = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
-            return prod?.id;
-          })
-          .map(async (purchase: any) => {
-            const product = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
-            const { data: downloads } = await supabase
-              .from('downloads')
-              .select('download_timestamp')
-              .eq('member_id', memberId)
-              .eq('product_id', product.id)
-              .order('download_timestamp', { ascending: false });
+        filteredPurchases.map(async (purchase: any) => {
+          const product = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
+          const { data: downloads } = await supabase
+            .from('downloads')
+            .select('download_timestamp')
+            .eq('member_id', memberId)
+            .eq('product_id', product.id)
+            .order('download_timestamp', { ascending: false });
 
-            return {
-              id: product.id,
-              title: product.title,
-              cover_url: product.cover_url,
-              cover_storage_path: product.cover_storage_path,
-              storage_url: product.storage_url,
-              file_storage_path: product.file_storage_path,
-              purchase_date: purchase.purchase_date,
-              last_download: downloads?.[0]?.download_timestamp,
-              download_count: downloads?.length || 0,
-            };
-          })
+          const tr = translations.find((tr) => tr.product_id === product.id && tr.language === locale);
+          const fb = translations.find((tr) => tr.product_id === product.id && tr.language === 'pt');
+          const useShared = Boolean(product.use_shared_content);
+
+          const title = useShared ? product.title : (tr?.title || fb?.title || product.title);
+          const cover_url = useShared ? product.cover_url : (tr?.cover_url || fb?.cover_url || product.cover_url);
+          const cover_storage_path = useShared ? product.cover_storage_path : (tr?.cover_url || fb?.cover_url || product.cover_storage_path);
+          const storage_url = useShared ? product.storage_url : (tr?.storage_url || fb?.storage_url || product.storage_url);
+          const file_storage_path = useShared ? product.file_storage_path : (tr?.storage_url || fb?.storage_url || product.file_storage_path);
+
+          return {
+            id: product.id,
+            title,
+            cover_url,
+            cover_storage_path,
+            storage_url,
+            file_storage_path,
+            purchase_date: purchase.purchase_date,
+            last_download: downloads?.[0]?.download_timestamp,
+            download_count: downloads?.length || 0,
+            language: useShared ? 'pt' : locale,
+            use_shared_content: useShared,
+            updated_at: product.updated_at
+          };
+        })
       );
 
       setProducts(productsWithStats);
@@ -111,7 +198,8 @@ export function DownloadList({ memberId }: DownloadListProps) {
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
+    const dateLoc = activeLang === 'pt' ? 'pt-BR' : activeLang === 'fr' ? 'fr-FR' : 'en-US';
+    return date.toLocaleDateString(dateLoc, {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -126,11 +214,11 @@ export function DownloadList({ memberId }: DownloadListProps) {
     const diffMs = now.getTime() - downloadDate.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
-    if (diffHours < 1) return 'Há menos de 1 hora';
-    if (diffHours < 24) return `Há ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+    if (diffHours < 1) return texts.lessThanHour;
+    if (diffHours < 24) return texts.hoursAgo(diffHours);
     
     const diffDays = Math.floor(diffHours / 24);
-    return `Há ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
+    return texts.daysAgo(diffDays);
   }
 
   if (loading) {
@@ -146,10 +234,10 @@ export function DownloadList({ memberId }: DownloadListProps) {
       {/* Header */}
       <div>
         <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">
-          Meus Downloads
+          {texts.headerTitle}
         </h2>
         <p className="font-sans text-base text-on-surface-variant">
-          {products.length} {products.length === 1 ? 'produto disponível' : 'produtos disponíveis'} para download
+          {texts.headerSubtitle(products.length)}
         </p>
       </div>
 
@@ -163,7 +251,7 @@ export function DownloadList({ memberId }: DownloadListProps) {
           <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-sans text-sm text-on-surface">
-              <span className="font-semibold">Acesso vitalício:</span> Você pode baixar seus produtos quantas vezes quiser, sem limite de tempo.
+              <span className="font-semibold">{texts.lifetimeAccess}</span> {texts.lifetimeDesc}
             </p>
           </div>
         </div>
@@ -178,10 +266,10 @@ export function DownloadList({ memberId }: DownloadListProps) {
         >
           <Download className="w-16 h-16 text-on-surface-variant mx-auto mb-4 opacity-50" />
           <h3 className="font-display text-2xl font-bold text-white mb-2">
-            Nenhum produto disponível
+            {texts.emptyTitle}
           </h3>
           <p className="font-sans text-base text-on-surface-variant">
-            Você ainda não comprou nenhum produto. Explore nossa biblioteca!
+            {texts.emptyDesc}
           </p>
         </motion.div>
       ) : (
@@ -215,12 +303,12 @@ export function DownloadList({ memberId }: DownloadListProps) {
               {/* Stats */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-sans text-on-surface-variant">Comprado em:</span>
+                  <span className="font-sans text-on-surface-variant">{texts.purchasedAt}</span>
                   <span className="font-mono text-on-surface">{formatDate(product.purchase_date)}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-sans text-on-surface-variant">Downloads:</span>
+                  <span className="font-sans text-on-surface-variant">{texts.downloads}</span>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-400" />
                     <span className="font-mono text-on-surface">{product.download_count}x</span>
@@ -229,7 +317,7 @@ export function DownloadList({ memberId }: DownloadListProps) {
 
                 {product.last_download && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-sans text-on-surface-variant">Último download:</span>
+                    <span className="font-sans text-on-surface-variant">{texts.lastDownload}</span>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-on-surface-variant" />
                       <span className="font-sans text-on-surface-variant text-xs">
@@ -249,12 +337,12 @@ export function DownloadList({ memberId }: DownloadListProps) {
                 {downloadingId === product.id ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Baixando...
+                    {texts.downloading}
                   </>
                 ) : (
                   <>
                     <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-                    Baixar Produto
+                    {texts.downloadButton}
                   </>
                 )}
               </button>

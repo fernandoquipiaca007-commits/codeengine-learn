@@ -66,7 +66,9 @@
     "password": "Change password",
     "preferences": "Preferences",
     "account": "Account",
-    "security": "Security"
+    "security": "Security",
+    "languageSelectorTitle": "Select Language",
+    "languageSelectorSubtitle": "Choose your preferred language before continuing"
   },
   "home": {
     "heroTitle": "Premium Digital Knowledge Ecosystem",
@@ -92,7 +94,17 @@
     "reviews": "Reviews",
     "related": "Related Products",
     "addToCart": "Add to Cart",
-    "outOfStock": "Out of Stock"
+    "outOfStock": "Out of Stock",
+    "startCourse": "Start course",
+    "readNow": "Read now",
+    "freeBadge": "Free Product",
+    "lifetimeAccess": "Lifetime Access",
+    "freeNoCard": "100% Free • No Credit Card Required",
+    "securePaymentVia": "100% secure payment via",
+    "or": "or",
+    "loading": "Loading...",
+    "alreadyOwnedError": "You already own this product.",
+    "paymentUnavailable": "Payment server unavailable."
   },
   "search": {
     "title": "Search",

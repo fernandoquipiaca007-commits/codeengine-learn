@@ -21,7 +21,8 @@ export async function downloadProduct(
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error((err as { error?: string }).error || 'Download failed');
+      const errorMsg = (err as { error?: string }).error || `Download failed with status ${response.status}`;
+      throw new Error(errorMsg);
     }
 
     const blob = await response.blob();
@@ -39,7 +40,7 @@ export async function downloadProduct(
     document.body.removeChild(link);
     URL.revokeObjectURL(blobUrl);
   } catch (err) {
-    if ((err as Error).message === 'LOGIN_REQUIRED') throw err;
-    window.location.href = url;
+    console.error('Download fetch failure:', err);
+    throw err;
   }
 }

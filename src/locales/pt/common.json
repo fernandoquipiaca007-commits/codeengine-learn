@@ -66,7 +66,9 @@
     "password": "Alterar senha",
     "preferences": "Preferências",
     "account": "Conta",
-    "security": "Segurança"
+    "security": "Segurança",
+    "languageSelectorTitle": "Selecione o Idioma",
+    "languageSelectorSubtitle": "Escolha sua tradução preferida antes de continuar"
   },
   "home": {
     "heroTitle": "Ecossistema Premium de Conhecimento Digital",
@@ -92,7 +94,17 @@
     "reviews": "Avaliações",
     "related": "Produtos Relacionados",
     "addToCart": "Adicionar ao Carrinho",
-    "outOfStock": "Fora de Estoque"
+    "outOfStock": "Fora de Estoque",
+    "startCourse": "Começar curso",
+    "readNow": "Ler agora",
+    "freeBadge": "Produto Gratuito",
+    "lifetimeAccess": "Acesso Vitalício",
+    "freeNoCard": "100% Gratuito • Sem Cadastro de Cartão",
+    "securePaymentVia": "Pagamento 100% seguro via",
+    "or": "ou",
+    "loading": "Carregando...",
+    "alreadyOwnedError": "Você já possui este produto.",
+    "paymentUnavailable": "Servidor de pagamentos indisponível."
   },
   "search": {
     "title": "Buscar",

@@ -17,6 +17,7 @@ import {
   Link as LinkIcon,
   AlertTriangle
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getLessonStreamUrl, saveProgress, getProductProgress } from '../../lib/learning-api';
 
 interface CoursePlayerProProps {
@@ -41,6 +42,7 @@ interface ProgressRow {
 }
 
 export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePlayerProProps) {
+  const { t } = useTranslation('member');
   const videoRef = useRef<HTMLVideoElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,7 +156,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
     } catch (e) {
       if (requestId === mediaRequestRef.current) {
         console.error('Erro ao carregar mídia:', e);
-        setMediaError('Falha ao aceder ao conteúdo. Por favor, verifique a sua ligação e tente novamente.');
+        setMediaError(t('coursePlayer.accessError'));
       }
     } finally {
       if (requestId === mediaRequestRef.current) {
@@ -297,7 +299,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
   const handleVideoError = () => {
     console.error("Erro interno do Player de Vídeo", videoRef.current?.error);
-    setMediaError("Erro ao reproduzir o formato do vídeo ou stream quebrado. Tente novamente.");
+    setMediaError(t('coursePlayer.playbackError'));
     setIsPlaying(false);
   };
 
@@ -468,7 +470,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
       <div className="flex items-center justify-center py-20 bg-black min-h-screen">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary mx-auto" />
-          <p className="text-on-surface-variant">Carregando curso...</p>
+          <p className="text-on-surface-variant">{t('coursePlayer.loadingCourse')}</p>
         </div>
       </div>
     );
@@ -490,11 +492,11 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
         <button
           onClick={() => setShowPlaylist(!showPlaylist)}
           className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white flex items-center gap-2 border border-white/10 hover:border-white/20"
-          title={showPlaylist ? "Ocultar Playlist" : "Mostrar Playlist"}
+          title={showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
         >
           <List className="w-5 h-5" />
           <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wider">
-            {showPlaylist ? "Ocultar Playlist" : "Mostrar Playlist"}
+            {showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
           </span>
         </button>
       </div>
@@ -522,7 +524,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                       <div className="animate-spin rounded-full h-16 w-16 sm:h-20 sm:w-20 border-t-4 border-primary" />
                       <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
                     </div>
-                    <p className="mt-4 text-gray-400 font-medium">Carregando mídia...</p>
+                    <p className="mt-4 text-gray-400 font-medium">{t('coursePlayer.loadingMedia')}</p>
                   </div>
                 )}
 
@@ -532,13 +534,13 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                     <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4 border border-red-500/30">
                       <AlertTriangle className="w-8 h-8 text-red-500" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Ops, algo correu mal</h3>
+                    <h3 className="text-xl font-bold text-white mb-2">{t('coursePlayer.errorTitle')}</h3>
                     <p className="text-gray-400 mb-6 max-w-md">{mediaError}</p>
                     <button
                       onClick={() => currentLessonId && loadVideo(currentLessonId)}
                       className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-colors flex items-center gap-2 border border-white/10"
                     >
-                      Tentar Novamente
+                      {t('coursePlayer.retry')}
                     </button>
                   </div>
                 )}
@@ -658,7 +660,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                               {showSettings && (
                                 <div className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] rounded-xl border border-white/10 p-3 min-w-[180px] space-y-2 shadow-2xl backdrop-blur-xl">
                                   <div>
-                                    <p className="text-xs text-gray-400 font-medium mb-2 uppercase tracking-wider">Velocidade</p>
+                                    <p className="text-xs text-gray-400 font-medium mb-2 uppercase tracking-wider">{t('coursePlayer.speed')}</p>
                                     <div className="grid grid-cols-4 gap-1">
                                       {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
                                         <button
@@ -697,9 +699,9 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                     <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(59,130,246,0.3)] border border-primary/30">
                       <LinkIcon className="w-10 h-10 text-primary" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-3">Conteúdo Externo</h3>
+                    <h3 className="text-2xl font-bold text-white mb-3">{t('coursePlayer.externalContent')}</h3>
                     <p className="text-gray-400 mb-8 max-w-md">
-                      Esta aula é um material interativo noutra plataforma. Clique no botão abaixo para abrir numa nova aba.
+                      {t('coursePlayer.externalContentDesc')}
                     </p>
                     <a
                       href={mediaUrl}
@@ -707,7 +709,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                       rel="noopener noreferrer"
                       className="px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1"
                     >
-                      Abrir Material Externo
+                      {t('coursePlayer.openExternalContent')}
                     </a>
                   </div>
                 )}
@@ -722,7 +724,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                   <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{currentLesson.title}</h2>
                   <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-primary/80">
                     <Clock className="w-3 h-3" />
-                    {currentLesson.video_duration_seconds ? formatTime(currentLesson.video_duration_seconds) : 'Interativo'}
+                    {currentLesson.video_duration_seconds ? formatTime(currentLesson.video_duration_seconds) : t('coursePlayer.interactive')}
                   </div>
                 </div>
                 {currentLesson.description ? (
@@ -730,7 +732,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                     <p className="text-on-surface-variant leading-relaxed text-base sm:text-lg font-sans opacity-80">{currentLesson.description}</p>
                   </div>
                 ) : (
-                  <p className="text-on-surface-variant/40 italic font-sans">Nenhuma descrição detalhada para esta aula.</p>
+                  <p className="text-on-surface-variant/40 italic font-sans">{t('coursePlayer.noDescription')}</p>
                 )}
               </div>
             )}
@@ -744,9 +746,9 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                   
                   {/* Header Sidebar */}
                   <div className="flex items-center justify-between mb-6 flex-shrink-0">
-                    <h3 className="font-display text-lg font-bold text-white">Playlist</h3>
+                    <h3 className="font-display text-lg font-bold text-white">{t('coursePlayer.playlist')}</h3>
                     <span className="text-xs font-semibold text-gray-400 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                      {lessons.length} aulas
+                      {t('coursePlayer.lessonsCount', { count: lessons.length })}
                     </span>
                   </div>
 
@@ -754,7 +756,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                   <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 mb-6 flex-shrink-0 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
                     <div className="flex items-center justify-between mb-3 relative z-10">
-                      <span className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Progresso</span>
+                      <span className="text-sm font-semibold text-gray-300 uppercase tracking-wider">{t('coursePlayer.progress')}</span>
                       <span className="text-xl font-bold text-white">{Math.round(courseProgress)}%</span>
                     </div>
                     <div className="h-2 bg-black/40 rounded-full overflow-hidden relative z-10 border border-white/5">
@@ -764,7 +766,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                       />
                     </div>
                     <p className="text-xs text-gray-400 mt-3 font-medium relative z-10">
-                      {progress.filter((p) => p.status === 'completed').length} de {lessons.length} concluídas
+                      {t('coursePlayer.completedOf', { completed: progress.filter((p) => p.status === 'completed').length, total: lessons.length })}
                     </p>
                   </div>
 
@@ -830,7 +832,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                                 {lesson.video_duration_seconds ? (
                                   <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTime(lesson.video_duration_seconds)}</span>
                                 ) : (
-                                  <span>Aula Interativa</span>
+                                  <span>{t('coursePlayer.interactiveLesson')}</span>
                                 )}
                                 {status === 'in_progress' && progressPercent > 0 && (
                                   <>

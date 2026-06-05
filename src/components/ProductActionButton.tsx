@@ -99,7 +99,7 @@ export function ProductActionButton({
 
     try {
       if (!user) {
-        alert('Por favor, faça login para continuar com a compra.');
+        alert(t('errors.loginRequired'));
         return;
       }
 
@@ -140,7 +140,7 @@ export function ProductActionButton({
         // Handle 409 = already owns product
         if (response.status === 409 && errBody.alreadyOwned) {
           await refetch(); // Refresh ownership state
-          setError('Você já possui este produto.');
+          setError(t('product.alreadyOwnedError'));
           return;
         }
         throw new Error(errBody.error || `Erro do servidor (${response.status})`);
@@ -149,7 +149,7 @@ export function ProductActionButton({
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
+        throw new Error(data.error || t('checkout:errorDesc'));
       }
 
       // Redirect to Stripe Checkout
@@ -164,7 +164,7 @@ export function ProductActionButton({
         err instanceof TypeError ||
         (err instanceof Error && err.message.toLowerCase().includes('fetch'));
       const message = isNetwork
-        ? `Servidor de pagamentos indisponível.`
+        ? t('product.paymentUnavailable')
         : mapStoreError(err, 'payment');
       setError(message);
     } finally {
@@ -180,7 +180,7 @@ export function ProductActionButton({
 
     try {
       if (!user) {
-        setError('Faça login para obter este produto.');
+        setError(t('errors.loginRequired'));
         return;
       }
 
@@ -225,7 +225,7 @@ export function ProductActionButton({
       }
     } catch (err) {
       console.error('Free product error:', err);
-      setError(err instanceof Error ? err.message : 'Erro ao obter produto gratuito.');
+      setError(err instanceof Error ? err.message : t('errors.generic'));
     } finally {
       setLoading(false);
     }
@@ -259,7 +259,7 @@ export function ProductActionButton({
         `}
       >
         <Loader2 className="w-6 h-6 animate-spin" />
-        <span>Carregando...</span>
+        <span>{t('product.loading')}</span>
       </button>
     );
   }
@@ -300,9 +300,9 @@ export function ProductActionButton({
           )}
           <span>
             {isCourse
-              ? 'Começar curso'
+              ? t('product.startCourse')
               : isEbook
-                ? 'Ler agora'
+                ? t('product.readNow')
                 : downloading
                   ? t('actions.downloading')
                   : t('actions.downloadProduct')}
@@ -314,7 +314,7 @@ export function ProductActionButton({
 
         <div className="flex items-center justify-center md:justify-start gap-2 font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/60">
           <CheckCircle className="w-4 h-4" />
-          {accessType === 'free' ? 'Produto Gratuito' : 'Acesso Vitalício'}
+          {accessType === 'free' ? t('product.freeBadge') : t('product.lifetimeAccess')}
         </div>
       </div>
     );
@@ -341,7 +341,7 @@ export function ProductActionButton({
           {loading ? (
             <>
               <Loader2 className="w-6 h-6 animate-spin" />
-              <span>Processando...</span>
+              <span>{t('checkout:processing')}</span>
             </>
           ) : (
             <>
@@ -354,7 +354,7 @@ export function ProductActionButton({
         
         <div className="flex items-center justify-center md:justify-start gap-2 font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/60">
           <CheckCircle className="w-4 h-4" />
-          100% Gratuito • Sem Cadastro de Cartão
+          {t('product.freeNoCard')}
         </div>
 
         {error && (
@@ -382,11 +382,11 @@ export function ProductActionButton({
           {loading ? (
             <>
               <Loader2 className="w-6 h-6 animate-spin" />
-              <span>{t('checkout:processing') || 'Processando...'}</span>
+              <span>{t('checkout:processing')}</span>
             </>
           ) : (
             <>
-              <span>{t('actions.buyNow') || 'Comprar Agora'}</span>
+              <span>{t('actions.buyNow')}</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </>
           )}
@@ -394,13 +394,13 @@ export function ProductActionButton({
         
         <div className="flex items-center justify-center md:justify-start gap-2 font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/60">
           <Lock className="w-4 h-4" />
-          Pagamento 100% seguro via{' '}
+          {t('product.securePaymentVia')}{' '}
           <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#635bff] to-[#00d4ff]">
             Stripe
           </span>
           {fastpayLink && (
             <>
-              {' '}ou{' '}
+              {' '}{t('product.or')}{' '}
               <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
                 FastPay
               </span>

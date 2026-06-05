@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { ShoppingBag, Calendar, DollarSign, CheckCircle, Clock, XCircle, Download, Gift } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getProductCoverUrl } from '../../lib/storage-path';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface Purchase {
   id: string;
@@ -19,6 +20,9 @@ interface Purchase {
     cover_storage_path: string | null;
     is_free: boolean;
     category_id: string;
+    language?: string | null;
+    use_shared_content?: boolean | null;
+    updated_at?: string | null;
   };
 }
 
@@ -46,13 +50,14 @@ function getEffectiveStatus(purchase: Purchase): 'completed' | 'pending' | 'fail
 
 export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) {
   const { t } = useTranslation();
+  const { locale } = useLocale();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
 
   useEffect(() => {
     loadPurchases();
-  }, [memberId]);
+  }, [memberId, locale]);
 
   async function loadPurchases() {
     setLoading(true);
@@ -67,14 +72,61 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
             cover_url,
             cover_storage_path,
             is_free,
-            category_id
+            category_id,
+            use_shared_content,
+            updated_at
           )
         `)
         .eq('member_id', memberId)
         .order('purchase_date', { ascending: false });
 
       if (error) throw error;
-      setPurchases(data || []);
+
+      const items = data || [];
+      const productIds = items
+        .map((purchase: any) => {
+          const prod = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
+          return prod?.id;
+        })
+        .filter(Boolean);
+
+      let translations: any[] = [];
+      if (productIds.length > 0) {
+        const { data: trs } = await supabase
+          .from('products_translations')
+          .select('*')
+          .in('product_id', productIds)
+          .in('language', [locale, 'pt']);
+        translations = trs ?? [];
+      }
+
+      const mappedPurchases = items.map((purchase: any) => {
+        const product = Array.isArray(purchase.products) ? purchase.products[0] : purchase.products;
+        if (!product) return purchase;
+
+        const tr = translations.find((t) => t.product_id === product.id && t.language === locale);
+        const fb = translations.find((t) => t.product_id === product.id && t.language === 'pt');
+        const useShared = Boolean(product.use_shared_content);
+
+        const title = useShared ? product.title : (tr?.title || fb?.title || product.title);
+        const cover_url = useShared ? product.cover_url : (tr?.cover_url || fb?.cover_url || product.cover_url);
+        const cover_storage_path = useShared ? product.cover_storage_path : (tr?.cover_url || fb?.cover_url || product.cover_storage_path);
+
+        return {
+          ...purchase,
+          products: {
+            ...product,
+            title,
+            cover_url,
+            cover_storage_path,
+            language: useShared ? 'pt' : locale,
+            use_shared_content: useShared,
+            updated_at: product.updated_at
+          }
+        };
+      });
+
+      setPurchases(mappedPurchases);
     } catch (error) {
       console.error('Error loading purchases:', error);
     } finally {
@@ -117,14 +169,33 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
     }
   }
 
+  // Fallback labels in case i18next translations are not complete
+  function getStatusLabelFallback(status: string) {
+    const label = getStatusLabel(status);
+    if (label && label !== `purchases.status.${status}`) return label;
+    const activeLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
+    const dict = {
+      pt: { completed: 'Concluído', pending: 'Pendente', failed: 'Falhou', refunded: 'Reembolsado' },
+      en: { completed: 'Completed', pending: 'Pending', failed: 'Failed', refunded: 'Refunded' },
+      fr: { completed: 'Terminé', pending: 'En attente', failed: 'Échoué', refunded: 'Remboursé' }
+    }[activeLang] || { completed: 'Concluído', pending: 'Pendente', failed: 'Falhou', refunded: 'Reembolsado' };
+    return (dict as any)[status] || status;
+  }
+
   function formatPrice(amount: number, isFree?: boolean) {
-    if (isFree || amount === 0) return t('purchases.status.free');
+    const baseLabel = t('purchases.status.free');
+    const freeLabel = (baseLabel && baseLabel !== 'purchases.status.free')
+      ? baseLabel
+      : (locale === 'fr' ? 'Gratuit' : locale === 'pt' ? 'Grátis' : 'Free');
+    if (isFree || amount === 0) return freeLabel;
     return `$ ${amount}`;
   }
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
+    const activeLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
+    const dateLoc = activeLang === 'pt' ? 'pt-BR' : activeLang === 'fr' ? 'fr-FR' : 'en-US';
+    return date.toLocaleDateString(dateLoc, {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
@@ -139,16 +210,68 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
     );
   }
 
+  // Fallbacks for layout labels
+  const activeLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
+  const labelDict = {
+    pt: {
+      title: 'Histórico de Compras',
+      count: (count: number) => `${count} ${count === 1 ? 'transação' : 'transações'} no total`,
+      filterAll: 'Todas',
+      emptyTitle: 'Nenhuma compra encontrada',
+      emptyAll: 'Você ainda não realizou nenhuma compra no site.',
+      emptyFiltered: (status: string) => `Nenhuma compra com o status "${status}" encontrada.`,
+      downloadAction: 'Baixar'
+    },
+    en: {
+      title: 'Purchase History',
+      count: (count: number) => `${count} ${count === 1 ? 'transaction' : 'transactions'} total`,
+      filterAll: 'All',
+      emptyTitle: 'No purchases found',
+      emptyAll: 'You have not made any purchases on the site yet.',
+      emptyFiltered: (status: string) => `No purchases with status "${status}" found.`,
+      downloadAction: 'Download'
+    },
+    fr: {
+      title: 'Historique des Achats',
+      count: (count: number) => `${count} ${count === 1 ? 'transaction' : 'transactions'} au total`,
+      filterAll: 'Toutes',
+      emptyTitle: 'Aucun achat trouvé',
+      emptyAll: 'Vous n\'avez encore effectué aucun achat sur le site.',
+      emptyFiltered: (status: string) => `Aucun achat avec le statut "${status}" trouvé.`,
+      downloadAction: 'Télécharger'
+    }
+  }[activeLang] || {
+    title: 'Histórico de Compras',
+    count: (count: number) => `${count} ${count === 1 ? 'transação' : 'transações'} no total`,
+    filterAll: 'Todas',
+    emptyTitle: 'Nenhuma compra encontrada',
+    emptyAll: 'Você ainda não realizou nenhuma compra no site.',
+    emptyFiltered: (status: string) => `Nenhuma compra com o status "${status}" encontrada.`,
+    downloadAction: 'Baixar'
+  };
+
+  const pageTitle = (t('purchases.title') && t('purchases.title') !== 'purchases.title') ? t('purchases.title') : labelDict.title;
+  const purchasesCountText = (t('purchases.count', { count: filteredPurchases.length }) && t('purchases.count') !== 'purchases.count')
+    ? t('purchases.count', { count: filteredPurchases.length })
+    : labelDict.count(filteredPurchases.length);
+  const filterAllText = (t('purchases.filters.all') && t('purchases.filters.all') !== 'purchases.filters.all') ? t('purchases.filters.all') : labelDict.filterAll;
+  const emptyTitleText = (t('purchases.empty.title') && t('purchases.empty.title') !== 'purchases.empty.title') ? t('purchases.empty.title') : labelDict.emptyTitle;
+  const emptyAllText = (t('purchases.empty.all') && t('purchases.empty.all') !== 'purchases.empty.all') ? t('purchases.empty.all') : labelDict.emptyAll;
+  const emptyFilteredText = (t('purchases.empty.filtered') && t('purchases.empty.filtered') !== 'purchases.empty.filtered')
+    ? t('purchases.empty.filtered', { status: getStatusLabelFallback(filter) })
+    : labelDict.emptyFiltered(getStatusLabelFallback(filter));
+  const downloadActionText = (t('purchases.actions.download') && t('purchases.actions.download') !== 'purchases.actions.download') ? t('purchases.actions.download') : labelDict.downloadAction;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">
-            {t('purchases.title')}
+            {pageTitle}
           </h2>
           <p className="font-sans text-base text-on-surface-variant">
-            {t('purchases.count', { count: filteredPurchases.length })}
+            {purchasesCountText}
           </p>
         </div>
 
@@ -164,7 +287,7 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                   : 'glass-panel border border-white/10 text-on-surface-variant hover:border-primary/30'
               }`}
             >
-              {status === 'all' ? t('purchases.filters.all') : getStatusLabel(status)}
+              {status === 'all' ? filterAllText : getStatusLabelFallback(status)}
             </button>
           ))}
         </div>
@@ -177,12 +300,10 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
         >
           <ShoppingBag className="w-16 h-16 text-on-surface-variant mx-auto mb-4 opacity-50" />
           <h3 className="font-display text-2xl font-bold text-white mb-2">
-            {t('purchases.empty.title')}
+            {emptyTitleText}
           </h3>
           <p className="font-sans text-base text-on-surface-variant">
-            {filter === 'all'
-              ? t('purchases.empty.all')
-              : t('purchases.empty.filtered', { status: getStatusLabel(filter) })}
+            {filter === 'all' ? emptyAllText : emptyFilteredText}
           </p>
         </div>
       ) : (
@@ -239,7 +360,7 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                     <div className="flex items-center gap-2">
                       {getStatusIcon(effectiveStatus)}
                       <span className="font-display text-xs font-semibold tracking-widest uppercase">
-                        {getStatusLabel(effectiveStatus)}
+                        {getStatusLabelFallback(effectiveStatus)}
                       </span>
                     </div>
                   </div>
@@ -252,7 +373,7 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                     className="secondary-btn w-full sm:w-auto px-5 py-3 rounded-lg font-display text-xs font-semibold tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-white/10 transition-all touch-target"
                   >
                     <Download className="w-4 h-4" />
-                    {t('purchases.actions.download')}
+                    {downloadActionText}
                   </button>
                 )}
               </div>

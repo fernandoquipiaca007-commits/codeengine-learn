@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, User, ArrowRight, AlertCircle, Globe, Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 interface AuthProps {
@@ -11,6 +12,7 @@ interface AuthProps {
 type AuthMode = 'login' | 'signup' | 'reset';
 
 export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
+  const { t } = useTranslation('auth');
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -63,9 +65,9 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
         // Check if email confirmation is required
         if (data.user && !data.user.email_confirmed_at) {
-          setSuccess('Conta criada com sucesso! Você já pode fazer login.');
+          setSuccess(t('signUpSuccess'));
         } else {
-          setSuccess('Conta criada com sucesso! Você já pode fazer login.');
+          setSuccess(t('signUpSuccess'));
         }
         
         // Auto-switch to login mode after 2 seconds
@@ -83,7 +85,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         if (signInError) throw signInError;
 
         if (data.user) {
-          setSuccess('Login realizado com sucesso!');
+          setSuccess(t('signInSuccess'));
           setTimeout(() => {
             // Check for pending referral product redirect
             const pendingProduct = sessionStorage.getItem('pendingProductId');
@@ -108,17 +110,17 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
           const result = await response.json();
           if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Falha ao enviar o código de redefinição.');
+            throw new Error(result.error || t('resetLinkError'));
           }
 
           setCodeSent(true);
-          setSuccess('Código de verificação enviado! Verifique a sua caixa de entrada.');
+          setSuccess(t('resetCodeSent'));
         } else {
           if (newPassword !== confirmPassword) {
-            throw new Error('As senhas não coincidem.');
+            throw new Error(t('passwordsDoNotMatch'));
           }
           if (newPassword.length < 6) {
-            throw new Error('A senha deve ter no mínimo 6 caracteres.');
+            throw new Error(t('passwordLengthError'));
           }
 
           const response = await fetch(`${backendUrl}/api/auth/reset-password`, {
@@ -133,10 +135,10 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
           const result = await response.json();
           if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Código de verificação inválido ou expirado.');
+            throw new Error(result.error || t('resetInvalidCode'));
           }
 
-          setSuccess('Senha redefinida com sucesso! Redirecionando...');
+          setSuccess(t('resetSuccess'));
           setTimeout(async () => {
             try {
               const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -155,7 +157,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
       }
     } catch (err) {
       console.error('Auth error:', err);
-      setError(err instanceof Error ? err.message : 'Ocorreu um erro. Tente novamente.');
+      setError(err instanceof Error ? err.message : t('genericError'));
     } finally {
       setLoading(false);
     }
@@ -179,14 +181,14 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="font-display text-4xl font-bold text-white mb-2">
-                {mode === 'login' && 'Bem-vindo de volta à CodeEngine 1'}
-                {mode === 'signup' && 'Junte-se à CodeEngine 1'}
-                {mode === 'reset' && 'Recuperar Senha'}
+                {mode === 'login' && t('welcomeTitleLogin')}
+                {mode === 'signup' && t('welcomeTitleSignup')}
+                {mode === 'reset' && t('resetPasswordTitle')}
               </h1>
               <p className="font-sans text-base text-on-surface-variant">
-                {mode === 'login' && 'Entre para acessar seu ecossistema de conhecimento'}
-                {mode === 'signup' && 'Torne-se membro da comunidade premium'}
-                {mode === 'reset' && 'Enviaremos um link de recuperação'}
+                {mode === 'login' && t('welcomeSubtitleLogin')}
+                {mode === 'signup' && t('welcomeSubtitleSignup')}
+                {mode === 'reset' && t('resetPasswordSubtitle')}
               </p>
             </div>
 
@@ -219,7 +221,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
               {mode === 'signup' && (
                 <div>
                   <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                    Nome Completo
+                    {t('fullName')}
                   </label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -229,7 +231,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                       onChange={(e) => setName(e.target.value)}
                       required
                       className="w-full pl-12 pr-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/50 transition-colors font-sans"
-                      placeholder="Digite seu nome completo"
+                      placeholder={t('countryPlaceholder')}
                       disabled={loading}
                     />
                   </div>
@@ -240,7 +242,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
               {mode === 'signup' && (
                 <div>
                   <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                    País
+                    {t('countryLabel')}
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -251,12 +253,12 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                       className="w-full pl-12 pr-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary/50 transition-colors font-sans appearance-none select-premium text-left"
                       disabled={loading}
                     >
-                      <option value="AO" className="bg-surface-high text-white">Angola</option>
-                      <option value="PT" className="bg-surface-high text-white">Portugal</option>
-                      <option value="BR" className="bg-surface-high text-white">Brasil</option>
-                      <option value="FR" className="bg-surface-high text-white">França</option>
-                      <option value="US" className="bg-surface-high text-white">Estados Unidos</option>
-                      <option value="OTHER" className="bg-surface-high text-white">Outro</option>
+                      <option value="AO" className="bg-surface-high text-white">{t('countries.AO')}</option>
+                      <option value="PT" className="bg-surface-high text-white">{t('countries.PT')}</option>
+                      <option value="BR" className="bg-surface-high text-white">{t('countries.BR')}</option>
+                      <option value="FR" className="bg-surface-high text-white">{t('countries.FR')}</option>
+                      <option value="US" className="bg-surface-high text-white">{t('countries.US')}</option>
+                      <option value="OTHER" className="bg-surface-high text-white">{t('countries.OTHER')}</option>
                     </select>
                   </div>
                 </div>
@@ -265,7 +267,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
               {/* Email */}
               <div>
                 <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                  Email
+                  {t('email')}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -275,7 +277,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className="w-full pl-12 pr-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/50 transition-colors font-sans"
-                    placeholder="seu@email.com"
+                    placeholder={t('emailPlaceholder')}
                     disabled={loading || (mode === 'reset' && codeSent)}
                   />
                 </div>
@@ -287,7 +289,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                   {/* Verification Code */}
                   <div>
                     <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                      Código de Verificação (6 dígitos)
+                      {t('resetCodeLabel')}
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -298,7 +300,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                         onChange={(e) => setVerificationCode(e.target.value)}
                         required
                         className="w-full pl-12 pr-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white placeholder-on-surface-variant/50 focus:outline-none focus:border-primary/50 transition-colors font-sans font-mono tracking-[0.2em]"
-                        placeholder="123456"
+                        placeholder={t('resetCodePlaceholder')}
                         disabled={loading}
                       />
                     </div>
@@ -307,7 +309,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                   {/* New Password */}
                   <div>
                     <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                      Nova Senha
+                      {t('newPasswordLabel')}
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -334,7 +336,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                   {/* Confirm Password */}
                   <div>
                     <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                      Confirmar Nova Senha
+                      {t('confirmNewPasswordLabel')}
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -364,7 +366,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
               {mode !== 'reset' && (
                 <div>
                   <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                    Senha
+                    {t('password')}
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -388,7 +390,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                   </div>
                   {mode === 'signup' && (
                     <p className="mt-2 font-sans text-xs text-on-surface-variant/60">
-                      Mínimo de 6 caracteres
+                      {t('minCharactersRequirement')}
                     </p>
                   )}
                 </div>
@@ -404,9 +406,9 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-on-primary"></div>
                 ) : (
                   <>
-                    {mode === 'login' && 'Entrar'}
-                    {mode === 'signup' && 'Criar Conta'}
-                    {mode === 'reset' && (codeSent ? 'Redefinir Senha' : 'Enviar Código')}
+                    {mode === 'login' && t('signIn')}
+                    {mode === 'signup' && t('signUp')}
+                    {mode === 'reset' && (codeSent ? t('resetPasswordAction') : t('sendCodeAction'))}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -421,15 +423,15 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                     onClick={() => setMode('reset')}
                     className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors"
                   >
-                    Esqueceu sua senha?
+                    {t('forgotPassword')}
                   </button>
                   <div className="font-sans text-sm text-on-surface-variant">
-                    Não tem uma conta?{' '}
+                    {t('dontHaveAccount')}{' '}
                     <button
                       onClick={() => setMode('signup')}
                       className="text-primary hover:text-primary/80 font-semibold transition-colors"
                     >
-                      Criar conta
+                      {t('createAccount')}
                     </button>
                   </div>
                 </>
@@ -437,12 +439,12 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
               {mode === 'signup' && (
                 <div className="font-sans text-sm text-on-surface-variant">
-                  Já tem uma conta?{' '}
+                  {t('alreadyHaveAccount')}{' '}
                   <button
                     onClick={() => setMode('login')}
                     className="text-primary hover:text-primary/80 font-semibold transition-colors"
                   >
-                    Entrar
+                    {t('signIn')}
                   </button>
                 </div>
               )}
@@ -460,7 +462,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                   }}
                   className="font-sans text-sm text-on-surface-variant hover:text-primary transition-colors"
                 >
-                  Voltar para login
+                  {t('backToLogin')}
                 </button>
               )}
             </div>
@@ -471,7 +473,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                 onClick={() => setScreen('home')}
                 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors"
               >
-                ← Voltar para Home
+                ← {t('backToHomeAction')}
               </button>
             </div>
           </div>
