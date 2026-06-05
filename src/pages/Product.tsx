@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight, Star, Lock, Play, Download, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Product as ProductType } from '../types/store';
@@ -70,6 +71,7 @@ function ProductCouponSection({ productId, originalPrice, onCouponApplied }: Pro
 }
 
 export function Product({ setScreen, productId }: ProductProps) {
+  const { t } = useTranslation('pages');
   const { locale, isLoading: localeLoading } = useLocale();
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
@@ -321,7 +323,7 @@ export function Product({ setScreen, productId }: ProductProps) {
   const showCustomSections = isSectionEnabled(layout, 'features') || isSectionEnabled(layout, 'comparison');
   const showFaq = isSectionEnabled(layout, 'faq');
   const showHeroSocialProof = isSectionEnabled(layout, 'hero');
-  const ctaLabel = safeText(layout.cta_text || product?.cta_text, 'Comprar Agora');
+  const ctaLabel = safeText(layout.cta_text || product?.cta_text, t('common:actions.buyNow'));
 
   if (loading) {
     return (
@@ -335,9 +337,9 @@ export function Product({ setScreen, productId }: ProductProps) {
     return (
       <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen">
         <div className="glass-panel rounded-2xl p-12 text-center">
-          <h2 className="font-display text-3xl font-bold text-white mb-4">Produto não encontrado</h2>
+          <h2 className="font-display text-3xl font-bold text-white mb-4">{t('product.productNotFound')}</h2>
           <p className="font-sans text-lg text-on-surface-variant mb-8">
-            O produto que você está procurando não existe ou não está mais disponível.
+            {t('product.productNotFoundDesc')}
           </p>
           {setScreen && (
             <button
@@ -345,7 +347,7 @@ export function Product({ setScreen, productId }: ProductProps) {
               className="secondary-btn px-6 py-3 rounded-full font-display text-sm font-semibold tracking-widest uppercase inline-flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Voltar para Biblioteca
+              {t('product.backToLibrary')}
             </button>
           )}
         </div>
@@ -366,7 +368,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="font-display text-xs font-semibold tracking-widest uppercase">Voltar</span>
+          <span className="font-display text-xs font-semibold tracking-widest uppercase">{t('product.back')}</span>
         </button>
       )}
 
@@ -377,7 +379,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel w-fit border border-primary/30">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
             <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
-              Produto Premium
+              {t('product.premiumBadge')}
             </span>
           </div>
           
@@ -403,7 +405,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                 onClick={() => setDescriptionExpanded((prev) => !prev)}
                 className="mt-2 text-xs font-display tracking-wider uppercase text-primary hover:text-secondary transition-colors"
               >
-                {descriptionExpanded ? 'Mostrar menos' : 'Ler descrição completa'}
+                {descriptionExpanded ? t('product.showLess') : t('product.readFullDescription')}
               </button>
             )}
           </div>
@@ -510,7 +512,7 @@ export function Product({ setScreen, productId }: ProductProps) {
       }`}>
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
-            <p className="font-sans text-xs text-on-surface-variant">Final price</p>
+            <p className="font-sans text-xs text-on-surface-variant">{t('product.finalPrice')}</p>
             <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
           </div>
           <ProductActionButton
@@ -534,10 +536,10 @@ export function Product({ setScreen, productId }: ProductProps) {
         <section className="mt-16 sm:mt-24">
           <div className="text-center mb-16">
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-4">
-              Prévia do Conteúdo
+              {t('product.contentPreview')}
             </h2>
             <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant max-w-2xl mx-auto">
-              Veja uma amostra do que você vai receber
+              {t('product.sampleDesc')}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -561,7 +563,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                   </div>
                 </div>
                 <h3 className="font-display text-xl font-semibold text-white mt-4">
-                  Vídeo Promocional
+                  {t('product.promoVideo')}
                 </h3>
               </div>
             )}
@@ -573,7 +575,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                   <Download className="w-16 h-16 text-primary" />
                 </div>
                 <h3 className="font-display text-xl font-semibold text-white mt-4 mb-2">
-                  Preview Gratuito
+                  {t('product.freePreview')}
                 </h3>
                 <a
                   href={product.preview_url}
@@ -581,7 +583,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                   rel="noopener noreferrer"
                   className="secondary-btn px-5 py-2.5 rounded-full font-display text-xs font-semibold tracking-widest uppercase flex items-center gap-2 w-fit"
                 >
-                  Baixar Preview
+                  {t('product.downloadPreview')}
                   <Download className="w-4 h-4" />
                 </a>
               </div>

@@ -74,8 +74,8 @@ type RenderQuality = 'auto' | 'performance' | 'high-quality';
 type PageSpacing = 'compact' | 'normal';
 
 export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps) {
-  const { t } = useTranslation('member');
   const { locale } = useLocale();
+  const { t } = useTranslation('member', { lng: locale });
   const effectiveLocale = lang || locale;
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);

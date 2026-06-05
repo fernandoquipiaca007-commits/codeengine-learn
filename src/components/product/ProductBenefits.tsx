@@ -94,6 +94,21 @@ const DEFAULT_BENEFITS: Record<string, { title: string; subtitle: string; items:
   }
 };
 
+const TRANSLATIONS = {
+  pt: {
+    title: 'O que você vai dominar',
+    subtitle: 'Um arsenal completo para elevar sua engenharia de software.',
+  },
+  en: {
+    title: 'What you will master',
+    subtitle: 'A complete arsenal to elevate your software engineering.',
+  },
+  fr: {
+    title: 'Ce que vous allez maîtriser',
+    subtitle: 'Un arsenal complet pour élever votre ingénierie logicielle.',
+  }
+};
+
 export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: ProductBenefitsProps) {
   const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -129,6 +144,7 @@ export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: 
   // Resolve language defaults
   const activeLang = (locale === 'en' || locale === 'fr') ? locale : 'pt';
   const defaults = DEFAULT_BENEFITS[activeLang];
+  const tDict = TRANSLATIONS[activeLang];
   const listToRender = benefits.length > 0 ? benefits : defaults.items.map((item, idx) => ({
     id: `default-benefit-${idx}`,
     icon: item.icon,
@@ -136,8 +152,8 @@ export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: 
     description: item.description
   }));
 
-  const sectionTitle = title?.trim() || (benefits.length > 0 ? 'O que você vai dominar' : defaults.title);
-  const sectionSubtitle = subtitle?.trim() || (benefits.length > 0 ? 'Um arsenal completo para elevar sua engenharia de software.' : defaults.subtitle);
+  const sectionTitle = title?.trim() || (benefits.length > 0 ? tDict.title : defaults.title);
+  const sectionSubtitle = subtitle?.trim() || (benefits.length > 0 ? tDict.subtitle : defaults.subtitle);
 
   return (
     <section className="mt-24">

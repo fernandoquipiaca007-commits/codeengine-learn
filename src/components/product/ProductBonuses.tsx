@@ -3,22 +3,47 @@ import { Gift, Book, Users, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
+import { useLocale } from '../../contexts/LocaleContext';
 
 const TRANSLATIONS = {
   pt: {
     value: 'Valor:',
     before: 'Antes:',
-    free: 'Hoje: Grátis'
+    free: 'Hoje: Grátis',
+    limitedOffer: 'Oferta por Tempo Limitado',
+    endsIn: 'Termina em:',
+    hours: 'Horas',
+    mins: 'Mins',
+    segs: 'Segs',
+    freeWord: 'Grátis',
+    title: 'Bônus Exclusivos',
+    subtitle: 'Complementos premium incluídos gratuitamente nesta oferta.'
   },
   en: {
     value: 'Value:',
     before: 'Before:',
-    free: 'Today: Free'
+    free: 'Today: Free',
+    limitedOffer: 'Limited Time Offer',
+    endsIn: 'Ends in:',
+    hours: 'Hours',
+    mins: 'Mins',
+    segs: 'Secs',
+    freeWord: 'Free',
+    title: 'Exclusive Bonuses',
+    subtitle: 'Premium add-ons included for free in this offer.'
   },
   fr: {
     value: 'Valeur:',
     before: 'Avant:',
-    free: "Aujourd'hui: Gratuit"
+    free: "Aujourd'hui: Gratuit",
+    limitedOffer: 'Offre Limitée dans le Temps',
+    endsIn: 'Se termine le:',
+    hours: 'Heures',
+    mins: 'Min',
+    segs: 'Sec',
+    freeWord: 'Gratuit',
+    title: 'Bonus Exclusifs',
+    subtitle: 'Compléments premium inclus gratuitement dans cette offre.'
   }
 };
 
@@ -52,8 +77,8 @@ export function ProductBonuses({
   productOriginalPrice,
   productFinalPrice,
 }: ProductBonusesProps) {
-  const { i18n } = useTranslation();
-  const currentLang = ((i18n.language || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
+  const { locale } = useLocale();
+  const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
   const todayPrefix = tDict.free.split(':')[0] || 'Hoje';
   const [bonuses, setBonuses] = useState<Bonus[]>([]);
@@ -169,14 +194,14 @@ export function ProductBonuses({
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel w-fit border border-secondary/30 mb-6">
           <Gift className="w-4 h-4 text-secondary" />
           <span className="font-display text-xs font-semibold tracking-widest uppercase text-secondary">
-            Oferta por Tempo Limitado
+            {tDict.limitedOffer}
           </span>
         </div>
         <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-on-surface mb-4">
-          {title?.trim() || 'Bônus Exclusivos'}
+          {title?.trim() || tDict.title}
         </h2>
         <p className="font-sans text-lg text-on-surface-variant max-w-2xl mx-auto">
-          {subtitle?.trim() || 'Complementos premium incluídos gratuitamente nesta oferta.'}
+          {subtitle?.trim() || tDict.subtitle}
         </p>
 
         {/* Real-time Countdown Timer */}
@@ -184,28 +209,28 @@ export function ProductBonuses({
           <div className="flex justify-center gap-3 sm:gap-4 mt-8 mb-4 max-w-lg mx-auto bg-white/5 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-secondary/20 shadow-[0_0_30px_rgba(236,72,153,0.1)]">
             <div className="flex items-center gap-2 text-secondary font-display text-xs font-bold uppercase tracking-wider self-center mr-2 sm:mr-4">
               <Clock className="w-5 h-5 text-secondary animate-pulse" />
-              <span>Termina em:</span>
+              <span>{tDict.endsIn}</span>
             </div>
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex flex-col items-center">
                 <div className="bg-[#1a1a1a] px-3 py-2 sm:px-4 sm:py-3 rounded-xl border border-white/10 text-xl sm:text-2xl font-bold font-mono text-secondary min-w-[50px] sm:min-w-[60px] text-center shadow-[0_0_15px_rgba(236,72,153,0.1)]">
                   {String(timeLeft.hours).padStart(2, '0')}
                 </div>
-                <span className="text-[10px] text-on-surface-variant mt-1 font-semibold uppercase tracking-wider">Horas</span>
+                <span className="text-[10px] text-on-surface-variant mt-1 font-semibold uppercase tracking-wider">{tDict.hours}</span>
               </div>
               <div className="text-xl sm:text-2xl font-bold text-secondary -mt-5">:</div>
               <div className="flex flex-col items-center">
                 <div className="bg-[#1a1a1a] px-3 py-2 sm:px-4 sm:py-3 rounded-xl border border-white/10 text-xl sm:text-2xl font-bold font-mono text-secondary min-w-[50px] sm:min-w-[60px] text-center shadow-[0_0_15px_rgba(236,72,153,0.1)]">
                   {String(timeLeft.minutes).padStart(2, '0')}
                 </div>
-                <span className="text-[10px] text-on-surface-variant mt-1 font-semibold uppercase tracking-wider">Mins</span>
+                <span className="text-[10px] text-on-surface-variant mt-1 font-semibold uppercase tracking-wider">{tDict.mins}</span>
               </div>
               <div className="text-xl sm:text-2xl font-bold text-secondary -mt-5">:</div>
               <div className="flex flex-col items-center">
                 <div className="bg-[#1a1a1a] px-3 py-2 sm:px-4 sm:py-3 rounded-xl border border-white/10 text-xl sm:text-2xl font-bold font-mono text-secondary min-w-[50px] sm:min-w-[60px] text-center shadow-[0_0_15px_rgba(236,72,153,0.1)]">
                   {String(timeLeft.seconds).padStart(2, '0')}
                 </div>
-                <span className="text-[10px] text-on-surface-variant mt-1 font-semibold uppercase tracking-wider">Segs</span>
+                <span className="text-[10px] text-on-surface-variant mt-1 font-semibold uppercase tracking-wider">{tDict.segs}</span>
               </div>
             </div>
           </div>
@@ -247,7 +272,7 @@ export function ProductBonuses({
                         {tDict.before} <span className="line-through">${productOriginalPrice.toFixed(2)}</span>
                       </span>
                       <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                        {todayPrefix}: {productFinalPrice === 0 ? (currentLang === 'pt' ? 'Grátis' : currentLang === 'fr' ? 'Gratuit' : 'Free') : `$${productFinalPrice.toFixed(2)}`}
+                        {todayPrefix}: {productFinalPrice === 0 ? tDict.freeWord : `$${productFinalPrice.toFixed(2)}`}
                       </span>
                     </>
                   ) : (
@@ -258,7 +283,7 @@ export function ProductBonuses({
                             {tDict.before} <span className="line-through">${productOriginalPrice.toFixed(2)}</span>
                           </span>
                           <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                            {todayPrefix}: {productFinalPrice !== undefined ? (productFinalPrice === 0 ? (currentLang === 'pt' ? 'Grátis' : currentLang === 'fr' ? 'Gratuit' : 'Free') : `$${productFinalPrice.toFixed(2)}`) : `$${productOriginalPrice.toFixed(2)}`}
+                            {todayPrefix}: {productFinalPrice !== undefined ? (productFinalPrice === 0 ? tDict.freeWord : `$${productFinalPrice.toFixed(2)}`) : `$${productOriginalPrice.toFixed(2)}`}
                           </span>
                         </>
                       ) : (
@@ -267,7 +292,7 @@ export function ProductBonuses({
                             {tDict.before} <span className="line-through">${Number(bonus.original_value ?? 0).toFixed(2)}</span>
                           </span>
                           <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                            {todayPrefix}: {currentLang === 'pt' ? 'Grátis' : currentLang === 'fr' ? 'Gratuit' : 'Free'}
+                            {todayPrefix}: {tDict.freeWord}
                           </span>
                         </>
                       )}

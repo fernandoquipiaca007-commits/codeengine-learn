@@ -7,6 +7,7 @@ import { NotificationDropdown } from './NotificationDropdown';
 import { PointsBadge } from './referral/PointsBadge';
 import { setAppBadgeCount } from '../lib/app-badge';
 import { useAuthSession } from '../hooks/useAuthSession';
+import { LanguageSelector } from './LanguageSelector';
 
 interface NavBarProps {
   currentScreen: string;
@@ -289,6 +290,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
       
       {/* Right Side Actions - Intelligent Progressive Collapse */}
       <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 lg:gap-3.5 xl:gap-4 flex-shrink-0 min-w-0">
+        <LanguageSelector variant="dropdown" className="hidden lg:block flex-shrink-0" />
         {/* Search Button - Always visible */}
         <button 
           onClick={onSearchClick}
@@ -540,6 +542,15 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                   )}
                 </button>
               ))}
+            </div>
+
+            {/* Language Selector inside mobile menu */}
+            <div className="my-2 border-t border-white/10" />
+            <div className="px-4 py-2 flex items-center justify-between">
+              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+                {t('settings.language')}
+              </span>
+              <LanguageSelector variant="dropdown" />
             </div>
             
             {/* User Actions - Only show if NOT logged in */}

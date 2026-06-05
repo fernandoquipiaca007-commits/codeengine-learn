@@ -446,5 +446,23 @@
     "continue": "Continuer",
     "inProgress": "En Cours",
     "viewFullLibrary": "Voir la Bibliothèque Complète"
+  },
+  "product": {
+    "premiumBadge": "Produit Premium",
+    "showLess": "Montrer moins",
+    "readFullDescription": "Lire la description complète",
+    "productNotFound": "Produit non trouvé",
+    "productNotFoundDesc": "Le produit que vous recherchez n'existe pas ou n'est plus disponible.",
+    "backToLibrary": "Retour à la Bibliothèque",
+    "back": "Retour",
+    "finalPrice": "Prix final",
+    "contentPreview": "Aperçu du Contenu",
+    "sampleDesc": "Voir un échantillon de ce que vous allez recevoir",
+    "promoVideo": "Vidéo Promotionnelle",
+    "freePreview": "Aperçu Gratuit",
+    "downloadPreview": "Télécharger l'aperçu",
+    "seeInAction": "Voir en Action",
+    "learnMoreVideos": "En savoir plus sur le produit grâce à nos vidéos",
+    "videoUnavailable": "Vidéo non disponible"
   }
 }

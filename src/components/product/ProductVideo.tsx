@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useTranslation } from 'react-i18next';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface Video {
   id: string;
@@ -17,6 +19,8 @@ interface ProductVideoProps {
 }
 
 export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
+  const { locale } = useLocale();
+  const { t } = useTranslation('pages', { lng: locale });
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
@@ -89,10 +93,10 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
     <section className="mt-24">
       <div className="text-center mb-16">
         <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-on-surface mb-4">
-          Veja em Ação
+          {t('product.seeInAction')}
         </h2>
         <p className="font-sans text-lg text-on-surface-variant max-w-2xl mx-auto">
-          Conheça mais sobre o produto através dos nossos vídeos
+          {t('product.learnMoreVideos')}
         </p>
       </div>
 
@@ -121,7 +125,7 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-sm">
-                Vídeo indisponível
+                {t('product.videoUnavailable')}
               </div>
             )}
           </div>

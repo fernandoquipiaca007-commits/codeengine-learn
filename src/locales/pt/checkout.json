@@ -31,6 +31,13 @@
   "validating": "Validando...",
   "enterCouponCode": "Digite um código de cupom",
   "validationError": "Erro ao validar cupom",
+  "couponExpired": "Este cupom expirou",
+  "couponLimitReached": "Este cupom atingiu o limite de usos",
+  "couponNotValidForProduct": "Este cupom não é válido para este produto",
+  "couponInvalidOrExpired": "Cupom inválido ou expirado",
+  "couponAlreadyUsed": "Este cupom já foi utilizado.",
+  "couponNotActive": "Este cupom não está mais ativo.",
+  "couponSuccessMsg": "Cupom aplicado! Desconto de ${{discount}}",
   "fastPayFlow": {
     "sessionExpired": "Sessão expirada. Faça login novamente.",
     "createOrderError": "Falha ao criar pedido",

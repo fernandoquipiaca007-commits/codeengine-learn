@@ -116,14 +116,14 @@ export function useFeaturedProducts() {
         product_id: row.product_id,
         order_position: row.order_position,
         title: row.custom_title?.trim() || title,
-        subtitle: row.custom_subtitle?.trim() || (tags[0] ?? (locale === 'pt' ? 'PRODUTO' : 'PRODUCT')),
+        subtitle: row.custom_subtitle?.trim() || (tags[0] ?? (locale === 'pt' ? 'PRODUTO' : locale === 'fr' ? 'PRODUIT' : 'PRODUCT')),
         description:
           row.custom_description?.trim() ||
           description?.slice(0, 120) ||
           '',
         cover_url: resolvedCover,
         cta: row.custom_cta?.trim() || defaultCta,
-        tag: tags[0]?.toUpperCase() ?? (locale === 'pt' ? 'PRODUTO' : 'PRODUCT'),
+        tag: tags[0]?.toUpperCase() ?? (locale === 'pt' ? 'PRODUTO' : locale === 'fr' ? 'PRODUIT' : 'PRODUCT'),
       };
     });
   }, [locale]);

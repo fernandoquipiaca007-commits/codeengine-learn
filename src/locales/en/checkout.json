@@ -31,6 +31,13 @@
   "validating": "Validating...",
   "enterCouponCode": "Enter a coupon code",
   "validationError": "Error validating coupon",
+  "couponExpired": "This coupon has expired",
+  "couponLimitReached": "This coupon has reached its usage limit",
+  "couponNotValidForProduct": "This coupon is not valid for this product",
+  "couponInvalidOrExpired": "Invalid or expired coupon",
+  "couponAlreadyUsed": "This coupon has already been used",
+  "couponNotActive": "This coupon is no longer active",
+  "couponSuccessMsg": "Coupon applied! Discount of ${{discount}}",
   "fastPayFlow": {
     "sessionExpired": "Session expired. Please sign in again.",
     "createOrderError": "Failed to create order",

@@ -111,6 +111,21 @@ const DEFAULT_FAQS: Record<string, { title: string; subtitle: string; items: { q
   }
 };
 
+const TRANSLATIONS = {
+  pt: {
+    title: 'Perguntas Frequentes',
+    subtitle: 'Tire suas dúvidas sobre o produto',
+  },
+  en: {
+    title: 'Frequently Asked Questions',
+    subtitle: 'Get answers to your questions about the product',
+  },
+  fr: {
+    title: 'Questions Fréquentes',
+    subtitle: 'Obtenez des réponses à vos questions sur le produit',
+  }
+};
+
 export function ProductFAQ({ productId, refreshKey = 0, title }: ProductFAQProps) {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -150,6 +165,7 @@ export function ProductFAQ({ productId, refreshKey = 0, title }: ProductFAQProps
 
   const activeLang = (locale === 'en' || locale === 'fr') ? locale : 'pt';
   const defaults = DEFAULT_FAQS[activeLang];
+  const tDict = TRANSLATIONS[activeLang];
   const listToRender = faqs.length > 0 ? faqs : defaults.items.map((item, idx) => ({
     id: `default-faq-${idx}`,
     question: item.question,
@@ -158,8 +174,8 @@ export function ProductFAQ({ productId, refreshKey = 0, title }: ProductFAQProps
     is_expanded_by_default: item.is_expanded_by_default
   }));
 
-  const sectionTitle = title?.trim() || (faqs.length > 0 ? 'Perguntas Frequentes' : defaults.title);
-  const sectionSubtitle = faqs.length > 0 ? 'Tire suas dúvidas sobre o produto' : defaults.subtitle;
+  const sectionTitle = title?.trim() || (faqs.length > 0 ? tDict.title : defaults.title);
+  const sectionSubtitle = faqs.length > 0 ? tDict.subtitle : defaults.subtitle;
 
   return (
     <section className="mt-24">
