@@ -38,6 +38,7 @@
   "couponAlreadyUsed": "Este cupom já foi utilizado.",
   "couponNotActive": "Este cupom não está mais ativo.",
   "couponSuccessMsg": "Cupom aplicado! Desconto de ${{discount}}",
+  "removeCoupon": "Remover cupom",
   "fastPayFlow": {
     "sessionExpired": "Sessão expirada. Faça login novamente.",
     "createOrderError": "Falha ao criar pedido",

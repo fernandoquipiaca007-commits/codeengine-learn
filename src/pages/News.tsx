@@ -930,19 +930,17 @@ export function News({ setScreen }: NewsProps) {
       {/* 2.5 Sort Filter Bar */}
       <div className="flex justify-between items-center mb-8">
         <span className="font-sans text-xs text-on-surface-variant font-medium">
-          {locale === 'pt' ? `${normalArticles.length} notícias encontradas` : locale === 'fr' ? `${normalArticles.length} articles trouvés` : `${normalArticles.length} articles found`}
+          {t('news.articlesFound', { count: normalArticles.length })}
         </span>
         <div className="flex items-center gap-2">
           <span className="font-display text-[10px] font-bold tracking-wider uppercase text-on-surface-variant">
-            {locale === 'pt' ? 'Ordenar por:' : locale === 'fr' ? 'Trier par:' : 'Sort by:'}
+            {t('news.sortBy')}
           </span>
           <button
             onClick={() => setSortBy(sortBy === 'newest' ? 'oldest' : 'newest')}
             className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full font-display text-[10px] font-bold tracking-wider uppercase text-white transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            {sortBy === 'newest'
-              ? (locale === 'pt' ? 'Mais Recentes' : locale === 'fr' ? 'Plus Récents' : 'Most Recent')
-              : (locale === 'pt' ? 'Mais Antigas' : locale === 'fr' ? 'Plus Anciens' : 'Oldest')}
+            {sortBy === 'newest' ? t('news.mostRecent') : t('news.oldest')}
           </button>
         </div>
       </div>
@@ -1071,7 +1069,7 @@ export function News({ setScreen }: NewsProps) {
                 disabled={loadingMore}
                 className="px-8 py-3.5 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/50 text-white rounded-full font-display text-xs font-bold tracking-widest uppercase flex items-center gap-2.5 transition-all shadow-lg hover:scale-105 cursor-pointer relative z-10 disabled:opacity-50"
               >
-                <span>{loadingMore ? (locale === 'pt' ? 'Carregando...' : 'Loading...') : `+ ${locale === 'pt' ? 'Ver Notícias Anteriores' : locale === 'fr' ? 'Voir les Articles Précédents' : 'Load Previous News'}`}</span>
+                <span>{loadingMore ? t('news.loadingMore') : `+ ${t('news.loadPreviousNews')}`}</span>
               </button>
             </div>
           )}
@@ -1116,7 +1114,7 @@ export function News({ setScreen }: NewsProps) {
                 </span>
                 {selectedArticle.author && (
                   <span className="text-xs text-on-surface-variant/60 font-medium">
-                    · Por {selectedArticle.author}
+                    · {t('news.byAuthor', { author: selectedArticle.author })}
                   </span>
                 )}
               </div>
@@ -1135,7 +1133,7 @@ export function News({ setScreen }: NewsProps) {
                 {loadingContent ? (
                   <div className="flex flex-col items-center justify-center py-12 gap-3 text-on-surface-variant">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                    <span className="text-sm font-sans">Carregando conteúdo...</span>
+                    <span className="text-sm font-sans">{t('news.loadingContent')}</span>
                   </div>
                 ) : (
                   renderArticleContent(selectedArticle.content)
@@ -1147,7 +1145,7 @@ export function News({ setScreen }: NewsProps) {
                 <div className="mt-8 p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4 animate__animated animate__fadeIn">
                   <h3 className="font-display text-sm font-bold text-white mb-2 flex items-center gap-2">
                     <Share2 className="w-5 h-5 text-primary" />
-                    Compartilhar esta notícia
+                    {t('news.shareThisNews')}
                   </h3>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1181,7 +1179,7 @@ export function News({ setScreen }: NewsProps) {
                       className="px-4 py-3 bg-primary/10 border border-primary/30 hover:bg-primary/20 text-primary rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all text-xs font-semibold uppercase tracking-wider"
                     >
                       <Share2 className="w-4 h-4" />
-                      Mais Opções
+                      {t('news.moreOptions')}
                     </button>
                   </div>
 
@@ -1191,7 +1189,7 @@ export function News({ setScreen }: NewsProps) {
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-all"
                     >
                       {copiedLink ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                      {copiedLink ? 'Link Copiado!' : 'Copiar Link da Notícia'}
+                      {copiedLink ? t('news.linkCopied') : t('news.copyNewsLink')}
                     </button>
                     
                     <button
@@ -1199,7 +1197,7 @@ export function News({ setScreen }: NewsProps) {
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-medium text-white transition-all"
                     >
                       {copiedCaption ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                      {copiedCaption ? 'Legenda Copiada!' : 'Copiar Legenda Pronta'}
+                      {copiedCaption ? t('news.captionCopied') : t('news.copyReadyCaption')}
                     </button>
                   </div>
                 </div>
@@ -1230,7 +1228,7 @@ export function News({ setScreen }: NewsProps) {
                   }`}
                 >
                   <Share2 className="w-4.5 h-4.5" />
-                  Compartilhar
+                  {t('news.share')}
                 </button>
               </div>
 
@@ -1301,7 +1299,7 @@ export function News({ setScreen }: NewsProps) {
               {/* Sticker Area Placeholder */}
               <div className="z-10 w-full flex flex-col items-center gap-2 mb-6">
                 <div className="px-5 py-3 bg-primary rounded-full text-on-primary font-display text-[8px] font-extrabold tracking-[0.15em] uppercase shadow-[0_0_20px_rgba(192,193,255,0.4)] animate-pulse border border-white/20 select-none">
-                  [ ADICIONE O LINK STICKER AQUI ]
+                  {t('news.addLinkStickerHere')}
                 </div>
               </div>
 
@@ -1315,7 +1313,7 @@ export function News({ setScreen }: NewsProps) {
 
             <div className="text-center space-y-3 max-w-sm mt-2">
               <p className="font-sans text-[11px] text-on-surface-variant leading-relaxed">
-                💡 <strong>Instruções do Stories:</strong> Tire um print desta tela, abra seu Instagram Stories, insira o print e posicione a figurinha de link exatamente sobre a área marcada.
+                💡 <strong>{t('news.storiesInstructionsPrefix')}</strong> {t('news.storiesInstructions')}
               </p>
               <div className="flex gap-2 justify-center">
                 <button
@@ -1323,7 +1321,7 @@ export function News({ setScreen }: NewsProps) {
                   className="px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-all"
                 >
                   {copiedLink ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copiedLink ? 'Link Copiado!' : 'Copiar Link do Sticker'}
+                  {copiedLink ? t('news.linkCopied') : t('news.copyStickerLink')}
                 </button>
               </div>
             </div>

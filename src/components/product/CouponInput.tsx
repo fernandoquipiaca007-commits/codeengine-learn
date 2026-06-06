@@ -18,7 +18,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
 
   async function validateCoupon() {
     if (!couponCode.trim()) {
-      showMessage('error', t('enterCouponCode') || 'Digite um código de cupom');
+      showMessage('error', t('enterCouponCode'));
       return;
     }
 
@@ -170,7 +170,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
       showMessage('success', t('couponSuccessMsg', { discount }));
     } catch (error) {
       console.error('Error validating coupon:', error);
-      showMessage('error', t('validationError') || 'Erro ao validar cupom');
+      showMessage('error', t('validationError'));
     } finally {
       setLoading(false);
     }
@@ -193,7 +193,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
       <div className="flex items-center gap-2 mb-4">
         <Tag className="w-5 h-5 text-primary" />
         <h3 className="font-display text-lg font-semibold text-on-surface">
-          {t('couponTitle') || 'Tem um cupom de desconto?'}
+          {t('couponTitle')}
         </h3>
       </div>
 
@@ -204,7 +204,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               <Check className="w-5 h-5 text-green-500" />
               <div>
                 <p className="font-display text-sm font-semibold text-on-surface">
-                  {t('couponApplied') || 'Cupom Aplicado'}
+                  {t('couponApplied')}
                 </p>
                 <code className="text-xs text-green-500 font-mono">{appliedCoupon}</code>
               </div>
@@ -212,7 +212,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
             <button
               onClick={removeCoupon}
               className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
-              title="Remover cupom"
+              title={t('removeCoupon')}
             >
               <X className="w-4 h-4 text-red-500" />
             </button>
@@ -226,7 +226,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               onKeyPress={(e) => e.key === 'Enter' && validateCoupon()}
-              placeholder={t('couponPlaceholder') || 'Digite o código'}
+              placeholder={t('couponPlaceholder')}
               disabled={loading}
               className="flex-1 px-4 py-3 bg-surface-container border border-outline/20 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface placeholder-on-surface-variant/50 font-mono uppercase"
             />
@@ -235,7 +235,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               disabled={loading || !couponCode.trim()}
               className="px-6 py-3 bg-primary text-on-primary rounded-xl font-display text-sm font-semibold tracking-widest uppercase hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? t('validating') || 'Validando...' : t('apply') || 'Aplicar'}
+              {loading ? t('validating') : t('apply')}
             </button>
           </div>
 

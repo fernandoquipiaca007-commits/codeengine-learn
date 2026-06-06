@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -8,6 +9,7 @@ interface ResetPasswordProps {
 }
 
 export function ResetPassword({ setScreen }: ResetPasswordProps) {
+  const { t } = useTranslation('auth');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,12 +22,12 @@ export function ResetPassword({ setScreen }: ResetPasswordProps) {
     setSuccess('');
 
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem.');
+      setError(t('passwordsDoNotMatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
+      setError(t('passwordLengthError'));
       return;
     }
 
@@ -38,13 +40,13 @@ export function ResetPassword({ setScreen }: ResetPasswordProps) {
 
       if (updateError) throw updateError;
 
-      setSuccess('Senha redefinida com sucesso! Você será redirecionado para o login.');
+      setSuccess(t('resetSuccess'));
       setTimeout(() => {
         setScreen('auth');
       }, 2500);
     } catch (err) {
       console.error('Reset password error:', err);
-      setError(err instanceof Error ? err.message : 'Ocorreu um erro ao redefinir a senha.');
+      setError(err instanceof Error ? err.message : t('genericError'));
     } finally {
       setLoading(false);
     }
@@ -66,10 +68,10 @@ export function ResetPassword({ setScreen }: ResetPasswordProps) {
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="font-display text-4xl font-bold text-white mb-2">
-                Nova Senha
+                {t('newPasswordTitle')}
               </h1>
               <p className="font-sans text-base text-on-surface-variant">
-                Defina sua nova credencial de acesso seguro
+                {t('newPasswordSubtitle')}
               </p>
             </div>
 
@@ -101,7 +103,7 @@ export function ResetPassword({ setScreen }: ResetPasswordProps) {
               {/* Password */}
               <div>
                 <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                  Nova Senha
+                  {t('newPasswordLabel')}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -121,7 +123,7 @@ export function ResetPassword({ setScreen }: ResetPasswordProps) {
               {/* Confirm Password */}
               <div>
                 <label className="block font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-2">
-                  Confirmar Nova Senha
+                  {t('confirmNewPasswordLabel')}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
@@ -148,7 +150,7 @@ export function ResetPassword({ setScreen }: ResetPasswordProps) {
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-on-primary"></div>
                 ) : (
                   <>
-                    Definir Nova Senha
+                    {t('setNewPassword')}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -161,7 +163,7 @@ export function ResetPassword({ setScreen }: ResetPasswordProps) {
                 onClick={() => setScreen('auth')}
                 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors"
               >
-                ← Voltar para Login
+                {t('backToLoginArrow')}
               </button>
             </div>
           </div>
