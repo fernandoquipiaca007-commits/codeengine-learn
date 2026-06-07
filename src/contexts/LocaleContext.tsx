@@ -36,7 +36,17 @@ function mapCountryToLocale(code: string): AppLocale {
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const { i18n } = useTranslation();
-  const [locale, setLocaleState] = useState<AppLocale>('pt');
+  const [locale, setLocaleState] = useState<AppLocale>(() => {
+    const active = i18n.language?.slice(0, 2);
+    if (active === 'pt' || active === 'en' || active === 'fr') {
+      return active as AppLocale;
+    }
+    const stored = localStorage.getItem('app_locale');
+    if (stored === 'pt' || stored === 'en' || stored === 'fr') {
+      return stored as AppLocale;
+    }
+    return 'pt';
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const detectLocale = useCallback(async (): Promise<AppLocale> => {
