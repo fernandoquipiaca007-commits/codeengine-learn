@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLocale } from '../contexts/LocaleContext';
 import { AppLocale } from '../lib/locale';
@@ -39,6 +39,11 @@ export function useLocalizedProduct(productId: string | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const activeProductRef = useRef({ productId, locale });
+  useEffect(() => {
+    activeProductRef.current = { productId, locale };
+  }, [productId, locale]);
+
   useEffect(() => {
     if (!productId) {
       setProduct(null);
@@ -57,6 +62,10 @@ export function useLocalizedProduct(productId: string | null) {
         p_product_id: id,
         p_lang: lang,
       });
+
+      if (activeProductRef.current.productId !== id || activeProductRef.current.locale !== lang) {
+        return;
+      }
 
       if (rpcError) {
         console.warn('[useLocalizedProduct] RPC get_product_localized failed. Error:', rpcError, '. Falling back to client query.');
@@ -79,6 +88,10 @@ export function useLocalizedProduct(productId: string | null) {
           .select('*')
           .eq('id', id)
           .single();
+
+        if (activeProductRef.current.productId !== id || activeProductRef.current.locale !== lang) {
+          return;
+        }
 
         if (!base) throw new Error('Product not found');
 
@@ -126,10 +139,14 @@ export function useLocalizedProduct(productId: string | null) {
         setProduct(data as LocalizedProduct);
       }
     } catch (err) {
-      console.error('[useLocalizedProduct] Error in loadProduct:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load product');
+      if (activeProductRef.current.productId === id && activeProductRef.current.locale === lang) {
+        console.error('[useLocalizedProduct] Error in loadProduct:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load product');
+      }
     } finally {
-      setLoading(false);
+      if (activeProductRef.current.productId === id && activeProductRef.current.locale === lang) {
+        setLoading(false);
+      }
     }
   }
 

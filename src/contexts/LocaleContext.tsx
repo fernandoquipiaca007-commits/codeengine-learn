@@ -8,6 +8,7 @@ import {
   setStoredLocale,
   getBrowserLocale,
   normalizeLocale,
+  LOCALE_STORAGE_KEY,
 } from '../lib/locale';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -41,7 +42,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     if (active === 'pt' || active === 'en' || active === 'fr') {
       return active as AppLocale;
     }
-    const stored = localStorage.getItem('app_locale');
+    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
     if (stored === 'pt' || stored === 'en' || stored === 'fr') {
       return stored as AppLocale;
     }

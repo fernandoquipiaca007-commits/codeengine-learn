@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { getProductCoverUrl } from '../lib/storage-path';
 import { queryCache } from '../lib/queryCache';
@@ -150,14 +150,23 @@ export function useFeaturedProducts() {
     });
   }, [locale]);
 
+  const activeLocaleRef = useRef(locale);
+  useEffect(() => {
+    activeLocaleRef.current = locale;
+  }, [locale]);
+
   const load = useCallback(async (revalidate = true) => {
     try {
       const cachedData = await queryCache.get(`featured-products-${locale}`, fetcher, { revalidate });
-      setItems(cachedData);
+      if (activeLocaleRef.current === locale) {
+        setItems(cachedData);
+      }
     } catch (err) {
       console.error('[featured] load error:', err);
     } finally {
-      setLoading(false);
+      if (activeLocaleRef.current === locale) {
+        setLoading(false);
+      }
     }
   }, [fetcher, locale]);
 
@@ -166,8 +175,10 @@ export function useFeaturedProducts() {
 
     // Subscribe to Cache changes for reactive updates
     const unsubscribeCache = queryCache.subscribe(`featured-products-${locale}`, (data) => {
-      setItems(data);
-      setLoading(false);
+      if (activeLocaleRef.current === locale) {
+        setItems(data);
+        setLoading(false);
+      }
     });
 
     // Realtime postgres changes subscription (Supabase)
