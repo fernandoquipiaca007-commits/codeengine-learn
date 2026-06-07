@@ -111,6 +111,7 @@ export function useLocalizedProduct(productId: string | null) {
           status: base.status,
           video_url: base.video_url,
           category_name: t?.category_name || null,
+          updated_at: t?.cover_url ? t.updated_at : base.updated_at,
         };
         console.log('[useLocalizedProduct] Client-resolved product:', {
           locale: lang,
@@ -174,6 +175,7 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
       file_storage_path: shared ? p.file_storage_path : (t?.storage_url || fb?.storage_url || p.file_storage_path),
       category_name: t?.category_name || fb?.category_name || null,
       language: lang,
+      updated_at: (!shared && t?.cover_url) ? t.updated_at : p.updated_at,
     };
 
     console.log(`[fetchLocalizedProducts] mapped product ${p.id}:`, {

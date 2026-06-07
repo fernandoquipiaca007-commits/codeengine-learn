@@ -186,6 +186,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                 file_storage_path: t.storage_url || data.file_storage_path,
                 cta_text: t.cta_text || data.cta_text,
                 language: translationLang,
+                updated_at: t.cover_url ? t.updated_at : data.updated_at,
               }
             : {
                 ...data,
