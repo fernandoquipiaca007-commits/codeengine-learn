@@ -81,6 +81,14 @@ export function getProductCoverUrl(product: {
     }
   }
 
+  console.log('[getProductCoverUrl] input product:', {
+    cover_url: product.cover_url,
+    cover_storage_path: product.cover_storage_path,
+    language: product.language,
+    use_shared_content: product.use_shared_content,
+    updated_at: product.updated_at
+  }, '-> final URL:', baseUrl);
+
   return baseUrl;
 }
 

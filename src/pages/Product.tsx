@@ -108,6 +108,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   const loadProduct = useCallback(
     async (silent = false, revalidate = true) => {
+      console.log('[ProductPage] loadProduct starting execution:', { productId, locale, silent, revalidate });
       if (!silent) setLoading(true);
       try {
         const fetcher = async () => {
@@ -122,12 +123,12 @@ export function Product({ setScreen, productId }: ProductProps) {
               .maybeSingle();
 
             if (active.error) {
-              console.error('Error loading product:', active.error);
+              console.error('[ProductPage] Error loading active product:', active.error);
             } else if (active.data) {
               data = active.data as ProductType;
             } else {
               const fallback = await supabase.from('products').select('*').eq('id', productId).maybeSingle();
-              if (fallback.error) console.error('Error loading product (fallback):', fallback.error);
+              if (fallback.error) console.error('[ProductPage] Error loading product (fallback):', fallback.error);
               else data = (fallback.data as ProductType) ?? null;
             }
           } else {
@@ -138,10 +139,11 @@ export function Product({ setScreen, productId }: ProductProps) {
               .order('created_at', { ascending: false })
               .limit(1)
               .maybeSingle();
-            if (fallback.error) console.error('Error loading product:', fallback.error);
+            if (fallback.error) console.error('[ProductPage] Error loading latest product:', fallback.error);
             else data = (fallback.data as ProductType) ?? null;
           }
 
+          console.log('[ProductPage] base product loaded from DB:', data);
           if (!data) return null;
 
           const contentLang = resolveContentLocale(locale);
@@ -163,6 +165,15 @@ export function Product({ setScreen, productId }: ProductProps) {
                 .maybeSingle()
             : { data: null };
           const t = tr || trFb;
+
+          console.log('[ProductPage] resolved translations:', {
+            contentLang,
+            translationLang,
+            useShared,
+            translation_record: tr,
+            fallback_record: trFb
+          });
+
           const localized = t
             ? {
                 ...data,
@@ -176,6 +187,15 @@ export function Product({ setScreen, productId }: ProductProps) {
                 cta_text: t.cta_text || data.cta_text,
               }
             : data;
+
+          console.log('[ProductPage] localized product mapped properties:', {
+            id: localized.id,
+            title: localized.title,
+            cover_url: localized.cover_url,
+            cover_storage_path: localized.cover_storage_path,
+            cta_text: localized.cta_text
+          });
+
           const row = localized as unknown as Record<string, unknown>;
           return {
             product: localized,
@@ -188,14 +208,16 @@ export function Product({ setScreen, productId }: ProductProps) {
         const cachedData = await queryCache.get(cacheKey, fetcher, { revalidate });
 
         if (cachedData) {
+          console.log('[ProductPage] applying product from cache or fetch:', cachedData.product.id);
           setProduct(cachedData.product);
           setPageLayout(cachedData.pageLayout);
           setCustomCopy(cachedData.customCopy);
         } else if (!silent) {
+          console.log('[ProductPage] no product found, setting to null');
           setProduct(null);
         }
       } catch (error) {
-        console.error('Error loading product:', error);
+        console.error('[ProductPage] Error in loadProduct hook callback:', error);
         if (!silent) setProduct(null);
       } finally {
         if (!silent) setLoading(false);

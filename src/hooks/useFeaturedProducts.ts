@@ -51,6 +51,7 @@ export function useFeaturedProducts() {
       .order('order_position', { ascending: true })
       .limit(3);
 
+    console.log('[useFeaturedProducts] fetcher started. active locale:', locale);
     if (error) throw error;
 
     const filteredRows = (data ?? []).filter((row: any) => {
@@ -71,10 +72,18 @@ export function useFeaturedProducts() {
         .in('product_id', ids)
         .in('language', [locale, 'pt']);
       translations = trs ?? [];
+      console.log('[useFeaturedProducts] translations loaded:', translations);
     }
 
     return filteredRows.map((row: any) => {
       const product = Array.isArray(row.products) ? row.products[0] : row.products;
+      console.log('[useFeaturedProducts] mapping row:', {
+        row_id: row.id,
+        product_id: row.product_id,
+        custom_title: row.custom_title,
+        custom_cover: row.custom_cover,
+        custom_description: row.custom_description
+      });
       if (!product) {
         return {
           id: row.id,
@@ -99,6 +108,16 @@ export function useFeaturedProducts() {
       const cover_url = useShared ? product.cover_url : (t?.cover_url || fb?.cover_url || product.cover_url);
       const cover_storage_path = useShared ? product.cover_storage_path : (t?.cover_url || fb?.cover_url || product.cover_storage_path);
 
+      console.log('[useFeaturedProducts] translation lookup results:', {
+        product_id: product.id,
+        useShared,
+        locale_translation: t,
+        fallback_translation: fb,
+        resolved_title: title,
+        resolved_cover_url: cover_url,
+        resolved_cover_storage_path: cover_storage_path
+      });
+
       const tags = product.tags ?? [];
       const resolvedCover = row.custom_cover?.trim() ||
         getProductCoverUrl({
@@ -111,7 +130,7 @@ export function useFeaturedProducts() {
 
       const defaultCta = locale === 'pt' ? 'Ver produto' : locale === 'fr' ? 'Voir le produit' : 'View product';
 
-      return {
+      const finalItem = {
         id: row.id,
         product_id: row.product_id,
         order_position: row.order_position,
@@ -125,6 +144,9 @@ export function useFeaturedProducts() {
         cta: row.custom_cta?.trim() || defaultCta,
         tag: tags[0]?.toUpperCase() ?? (locale === 'pt' ? 'PRODUTO' : locale === 'fr' ? 'PRODUIT' : 'PRODUCT'),
       };
+
+      console.log('[useFeaturedProducts] final mapped item:', finalItem);
+      return finalItem;
     });
   }, [locale]);
 

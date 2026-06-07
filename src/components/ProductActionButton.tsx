@@ -59,6 +59,18 @@ export function ProductActionButton({
   const refetch = purchaseCtx?.refetch ?? (async () => {});
 
   useEffect(() => {
+    console.log('[ProductActionButton] state/translation diagnostic:', {
+      productId,
+      activeLocale: locale,
+      ownsProduct,
+      t_readNow: t('product.readNow'),
+      t_downloadProduct: t('actions.downloadProduct'),
+      t_buyNow: t('actions.buyNow'),
+      i18nLanguage: locale // locale context language
+    });
+  }, [productId, locale, ownsProduct, t]);
+
+  useEffect(() => {
     const onFocus = () => void refetch();
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
