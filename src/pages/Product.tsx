@@ -185,8 +185,12 @@ export function Product({ setScreen, productId }: ProductProps) {
                 storage_url: t.storage_url || data.storage_url,
                 file_storage_path: t.storage_url || data.file_storage_path,
                 cta_text: t.cta_text || data.cta_text,
+                language: translationLang,
               }
-            : data;
+            : {
+                ...data,
+                language: 'pt',
+              };
 
           console.log('[ProductPage] localized product mapped properties:', {
             id: localized.id,

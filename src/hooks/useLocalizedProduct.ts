@@ -173,6 +173,7 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
       preview_url: shared ? p.preview_url : (t?.preview_url || fb?.preview_url),
       file_storage_path: shared ? p.file_storage_path : (t?.storage_url || fb?.storage_url || p.file_storage_path),
       category_name: t?.category_name || fb?.category_name || null,
+      language: lang,
     };
 
     console.log(`[fetchLocalizedProducts] mapped product ${p.id}:`, {
