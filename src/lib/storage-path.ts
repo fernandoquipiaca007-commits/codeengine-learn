@@ -44,10 +44,10 @@ export function getProductCoverUrl(product: {
   use_shared_content?: boolean | null;
   updated_at?: string | null;
 }): string {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ffdqqiunkzhtgbgaojay.supabase.co';
 
   // By default, prefer cover_storage_path (new) over cover_url (legacy)
-  let path = product.cover_storage_path || product.cover_url;
+  let path = (product.cover_storage_path || product.cover_url || '').trim();
 
   // If we have a language and it is not Portuguese (pt), and we are not sharing content,
   // we must prefer the translated cover_url over the base cover_storage_path.
@@ -57,7 +57,7 @@ export function getProductCoverUrl(product: {
     !product.use_shared_content &&
     product.cover_url
   ) {
-    path = product.cover_url;
+    path = product.cover_url.trim();
   }
 
   if (!path) return '';
@@ -65,7 +65,9 @@ export function getProductCoverUrl(product: {
   let baseUrl = path;
   // It's a relative path — build the public URL
   if (!path.startsWith('http') && supabaseUrl) {
-    baseUrl = `${supabaseUrl}/storage/v1/object/public/product-covers/${path}`;
+    const cleanPath = path.replace(/^\//, '');
+    const cleanBaseUrl = supabaseUrl.replace(/\/$/, '');
+    baseUrl = `${cleanBaseUrl}/storage/v1/object/public/product-covers/${cleanPath}`;
   }
 
   // Add cache buster if updated_at is present to bypass browser cache

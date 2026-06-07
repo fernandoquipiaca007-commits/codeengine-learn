@@ -36,6 +36,14 @@ export const LazyImage = memo(function LazyImage({
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
 
+  // Reset states when src changes to allow loading a new image
+  const [prevSrc, setPrevSrc] = useState(src);
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    setLoaded(false);
+    setErrored(false);
+  }
+
   const handleLoad = useCallback(() => setLoaded(true), []);
 
   const handleRef = useCallback((node: HTMLImageElement | null) => {
@@ -87,8 +95,17 @@ export const LazyImageWithSkeleton = memo(function LazyImageWithSkeleton({
   className = '',
   ...props
 }: LazyImageWithSkeletonProps) {
+  const { src } = props;
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
+
+  // Reset states when src changes to allow loading a new image
+  const [prevSrc, setPrevSrc] = useState(src);
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    setLoaded(false);
+    setErrored(false);
+  }
 
   const handleLoad = useCallback(() => setLoaded(true), []);
 

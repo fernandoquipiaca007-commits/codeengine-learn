@@ -23,6 +23,7 @@ import { ReferralShareCard } from '../components/referral/ReferralShareCard';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { useOwnedProducts } from '../hooks/useOwnedProducts';
 import { queryCache } from '../lib/queryCache';
+import { LazyImage } from '../components/ui/LazyImage';
 
 
 interface ProductProps {
@@ -230,6 +231,22 @@ export function Product({ setScreen, productId }: ProductProps) {
     },
     [productId, locale]
   );
+
+  useEffect(() => {
+    if (localeLoading) return;
+    const cacheKey = `product-detail-${productId || 'latest'}-${locale}`;
+    const unsubscribeCache = queryCache.subscribe(cacheKey, (data) => {
+      if (data) {
+        console.log('[ProductPage] queryCache subscription update:', data.product.id);
+        setProduct(data.product);
+        setPageLayout(data.pageLayout);
+        setCustomCopy(data.customCopy);
+      }
+    });
+    return () => {
+      unsubscribeCache();
+    };
+  }, [productId, locale, localeLoading]);
 
   useEffect(() => {
     if (localeLoading) return;
@@ -519,13 +536,11 @@ export function Product({ setScreen, productId }: ProductProps) {
         <div className="perspective-container relative w-full aspect-square flex items-center justify-center">
           <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
           <div className="relative z-10 w-full max-w-full sm:max-w-[500px] mockup-rotate">
-            <img 
+            <LazyImage
               src={getProductCoverUrl(product)}
               alt={product.title}
               className="w-full h-auto rounded-xl shadow-[20px_20px_60px_rgba(0,0,0,0.8),_0_0_40px_rgba(192,193,255,0.2)] border border-white/10"
-              onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/500x500?text=Product+Image';
-              }}
+              fallback={`https://placehold.co/600x600/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
             />
           </div>
         </div>
