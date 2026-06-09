@@ -7,21 +7,16 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function run() {
   const { data, error } = await supabase
-    .from('products_translations')
-    .select('*');
+    .from('products')
+    .select('id, title, cover_url, cover_storage_path, status, use_shared_content');
 
   if (error) {
     console.error(error);
     return;
   }
 
-  console.log('ALL PRODUCTS TRANSLATIONS:');
-  for (const t of data) {
-    console.log(`- Product ID: ${t.product_id}, Language: ${t.language}`);
-    console.log(`  Title: ${t.title}`);
-    console.log(`  Description (first 100 chars): ${t.description?.substring(0, 100)}...`);
-    console.log(`  Cover URL: ${t.cover_url}`);
-  }
+  console.log('ALL PRODUCTS:');
+  console.log(JSON.stringify(data, null, 2));
 }
 
 run();

@@ -10,27 +10,32 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const artifactDir = 'C:\\Users\\Dell\\.gemini\\antigravity-ide\\brain\\23def309-e9c8-4522-a936-2a55e8d881b3';
 
 async function downloadToArtifacts(storagePath, destName) {
-  const { data, error } = await supabase.storage
-    .from('product-covers')
-    .download(storagePath);
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      const { data, error } = await supabase.storage
+        .from('product-covers')
+        .download(storagePath);
 
-  if (error) {
-    console.error(`Error downloading ${storagePath}:`, error);
-    return;
+      if (error) throw error;
+
+      const destPath = path.join(artifactDir, destName);
+      const buffer = Buffer.from(await data.arrayBuffer());
+      fs.writeFileSync(destPath, buffer);
+      console.log(`Saved ${storagePath} to ${destPath}`);
+      return;
+    } catch (err) {
+      console.error(`Error downloading ${storagePath} (retries left: ${retries - 1}):`, err.message || err);
+      retries--;
+      if (retries > 0) await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
   }
-
-  const destPath = path.join(artifactDir, destName);
-  const buffer = Buffer.from(await data.arrayBuffer());
-  fs.writeFileSync(destPath, buffer);
-  console.log(`Saved ${storagePath} to ${destPath}`);
 }
 
 async function run() {
-  const pt = '680b90e6-f0d0-4e85-aa0d-e7b93e16a789/1780845272615_pt.png';
   const en = '680b90e6-f0d0-4e85-aa0d-e7b93e16a789/en/en.png';
   const fr = '680b90e6-f0d0-4e85-aa0d-e7b93e16a789/fr/fr.png';
 
-  await downloadToArtifacts(pt, 'pt_cover.png');
   await downloadToArtifacts(en, 'en_cover.png');
   await downloadToArtifacts(fr, 'fr_cover.png');
 }
