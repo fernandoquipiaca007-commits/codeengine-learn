@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, CreditCard, Smartphone, ChevronRight, Info } from 'lucide-react';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface PaymentMethodSelectorProps {
   product: {
@@ -28,7 +29,8 @@ export function PaymentMethodSelector({
   onSelectFastPay,
   onClose,
 }: PaymentMethodSelectorProps) {
-  const { t } = useTranslation('checkout');
+  const { locale } = useLocale();
+  const { t } = useTranslation('checkout', { lng: locale });
   const [fastpayEnabled, setFastpayEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasFastPayLink = !!product.fastpay_link;

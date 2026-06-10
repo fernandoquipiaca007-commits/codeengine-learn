@@ -8,6 +8,7 @@ import { Copy, Check, Share2, MessageCircle, Mail, Link2 } from 'lucide-react';
 import { useReferral } from '../../hooks/useReferral';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface ReferralShareCardProps {
   productId?: string;
@@ -15,7 +16,8 @@ interface ReferralShareCardProps {
 }
 
 export function ReferralShareCard({ productId, compact = false }: ReferralShareCardProps) {
-  const { t } = useTranslation('member');
+  const { locale } = useLocale();
+  const { t } = useTranslation('member', { lng: locale });
   const { createLink, getGlobalLink, getShareUrl, myLinks, fetchMyLinks } = useReferral();
   const [link, setLink] = useState<any>(null);
   const [shareUrl, setShareUrl] = useState('');

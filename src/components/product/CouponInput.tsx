@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Tag, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface CouponInputProps {
   productId: string;
@@ -10,7 +11,8 @@ interface CouponInputProps {
 }
 
 export function CouponInput({ productId, originalPrice, onCouponApplied }: CouponInputProps) {
-  const { t } = useTranslation('checkout');
+  const { locale } = useLocale();
+  const { t } = useTranslation('checkout', { lng: locale });
   const [couponCode, setCouponCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

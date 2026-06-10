@@ -8,6 +8,7 @@ import { Gift, TrendingDown, Sparkles, Share2 } from 'lucide-react';
 import { useReferral } from '../../hooks/useReferral';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface ReferralProgressProps {
   productId: string;
@@ -16,7 +17,8 @@ interface ReferralProgressProps {
 }
 
 export function ReferralProgress({ productId, originalPrice, onDiscountChange }: ReferralProgressProps) {
-  const { t } = useTranslation('common');
+  const { locale } = useLocale();
+  const { t } = useTranslation('common', { lng: locale });
   const { getProgress } = useReferral();
   const [progress, setProgress] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);

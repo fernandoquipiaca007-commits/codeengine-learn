@@ -3,6 +3,7 @@ import { Lock, Play, Clock, Headphones, Link as LinkIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useProductPurchaseOptional } from '../../contexts/ProductPurchaseContext';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface Lesson {
   id: string;
@@ -28,7 +29,8 @@ interface CourseCurriculumProps {
 }
 
 export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculumProps) {
-  const { t } = useTranslation('pages');
+  const { locale } = useLocale();
+  const { t } = useTranslation('pages', { lng: locale });
   const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const purchase = useProductPurchaseOptional();

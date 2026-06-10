@@ -7,6 +7,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload, FileImage, FileText, X, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface ProofUploaderProps {
   orderId: string;
@@ -20,7 +21,8 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
 
 export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploaderProps) {
-  const { t } = useTranslation('checkout');
+  const { locale } = useLocale();
+  const { t } = useTranslation('checkout', { lng: locale });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);

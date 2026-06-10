@@ -42,8 +42,8 @@ export function ProductActionButton({
   onStartLearning,
   ctaText,
 }: ProductActionButtonProps) {
-  const { t } = useTranslation(['common', 'checkout']);
   const { locale } = useLocale();
+  const { t } = useTranslation(['common', 'checkout'], { lng: locale });
   const [showPaymentSelector, setShowPaymentSelector] = useState(false);
   const [showFastPayFlow, setShowFastPayFlow] = useState(false);
   const [loading, setLoading] = useState(false);

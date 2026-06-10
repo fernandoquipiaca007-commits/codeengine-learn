@@ -72,8 +72,8 @@ function ProductCouponSection({ productId, originalPrice, onCouponApplied }: Pro
 }
 
 export function Product({ setScreen, productId }: ProductProps) {
-  const { t } = useTranslation('pages');
   const { locale, isLoading: localeLoading } = useLocale();
+  const { t } = useTranslation('pages', { lng: locale });
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
   const [product, setProduct] = useState<ProductType | null>(null);
@@ -358,6 +358,62 @@ export function Product({ setScreen, productId }: ProductProps) {
     return Math.max(0, basePrice - discount - referralDiscount);
   }
 
+  function translateDbText(text?: string | null): string {
+    if (!text) return '';
+    if (locale === 'pt') return text;
+
+    const translations: Record<string, { en: string; fr: string }> = {
+      "O que você vai dominar": {
+        en: "What you will master",
+        fr: "Ce que vous allez maîtriser"
+      },
+      "Um arsenal completo para elevar sua engenharia de software.": {
+        en: "A complete arsenal to elevate your software engineering.",
+        fr: "Un arsenal complet pour élever votre ingénierie logicielle."
+      },
+      "Bônus Exclusivos": {
+        en: "Exclusive Bonuses",
+        fr: "Bonus Exclusifs"
+      },
+      "Complementos premium incluídos gratuitamente nesta oferta.": {
+        en: "Premium add-ons included for free in this offer.",
+        fr: "Compléments premium inclus gratuitement dans cette offre."
+      },
+      "Perguntas Frequentes": {
+        en: "Frequently Asked Questions",
+        fr: "Questions Fréquentes"
+      },
+      "Comprar Agora": {
+        en: "Buy Now",
+        fr: "Acheter Maintenant"
+      },
+      "Pagamento 100% seguro": {
+        en: "100% secure payment",
+        fr: "Paiement 100% sécurisé"
+      },
+      "Quero Começar Agora": {
+        en: "Get Instant Access",
+        fr: "Obtenir un Accès Immédiat"
+      },
+      "Ler agora": {
+        en: "Read Now",
+        fr: "Lire maintenant"
+      },
+      "Ler Agora": {
+        en: "Read Now",
+        fr: "Lire maintenant"
+      }
+    };
+
+    const trimmed = text.trim();
+    const match = translations[trimmed];
+    if (match) {
+      return match[locale as 'en' | 'fr'] || text;
+    }
+
+    return text;
+  }
+
   const description = safeText(product?.description);
   const listPrice = safePrice(product?.price);
   const layout = pageLayout ?? parsePageLayoutConfig(null);
@@ -367,7 +423,7 @@ export function Product({ setScreen, productId }: ProductProps) {
   const showCustomSections = isSectionEnabled(layout, 'features') || isSectionEnabled(layout, 'comparison');
   const showFaq = isSectionEnabled(layout, 'faq');
   const showHeroSocialProof = isSectionEnabled(layout, 'hero');
-  const ctaLabel = safeText(product?.cta_text || layout.cta_text, t('common:actions.buyNow'));
+  const ctaLabel = product?.cta_text ? safeText(product.cta_text) : (translateDbText(layout.cta_text) || t('common:actions.buyNow'));
 
   if (loading) {
     return (
@@ -649,8 +705,8 @@ export function Product({ setScreen, productId }: ProductProps) {
         <ProductBenefits
           productId={product.id}
           refreshKey={childRefreshKey}
-          title={safeText(customCopy?.benefits_title)}
-          subtitle={safeText(customCopy?.benefits_subtitle)}
+          title={translateDbText(customCopy?.benefits_title)}
+          subtitle={translateDbText(customCopy?.benefits_subtitle)}
         />
       )}
 
@@ -658,8 +714,8 @@ export function Product({ setScreen, productId }: ProductProps) {
         <ProductBonuses
           productId={product.id}
           refreshKey={childRefreshKey}
-          title={safeText(customCopy?.bonuses_title)}
-          subtitle={safeText(customCopy?.bonuses_subtitle)}
+          title={translateDbText(customCopy?.bonuses_title)}
+          subtitle={translateDbText(customCopy?.bonuses_subtitle)}
           productOriginalPrice={listPrice}
           productFinalPrice={getFinalPrice()}
         />
@@ -673,7 +729,7 @@ export function Product({ setScreen, productId }: ProductProps) {
         <ProductFAQ
           productId={product.id}
           refreshKey={childRefreshKey}
-          title={safeText(customCopy?.faq_title)}
+          title={translateDbText(customCopy?.faq_title)}
         />
       )}
     </div>
