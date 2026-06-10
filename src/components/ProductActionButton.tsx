@@ -22,6 +22,7 @@ interface ProductActionButtonProps {
   variant?: 'primary' | 'mobile';
   onNavigateToLibrary?: () => void;
   onStartLearning?: (productId: string, type: 'course' | 'ebook') => void;
+  ctaText?: string;
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -39,6 +40,7 @@ export function ProductActionButton({
   aoaPrice,
   onNavigateToLibrary,
   onStartLearning,
+  ctaText,
 }: ProductActionButtonProps) {
   const { t } = useTranslation(['common', 'checkout']);
   const { locale } = useLocale();
@@ -358,7 +360,7 @@ export function ProductActionButton({
           ) : (
             <>
               <Download className="w-6 h-6" />
-              <span>{t('actions.downloadFree') || 'Baixar Gratuitamente'}</span>
+              <span>{ctaText || t('actions.downloadFree') || 'Baixar Gratuitamente'}</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </>
           )}
@@ -398,7 +400,7 @@ export function ProductActionButton({
             </>
           ) : (
             <>
-              <span>{t('actions.buyNow')}</span>
+              <span>{ctaText || t('actions.buyNow')}</span>
               <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </>
           )}

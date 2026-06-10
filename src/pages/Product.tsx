@@ -367,7 +367,7 @@ export function Product({ setScreen, productId }: ProductProps) {
   const showCustomSections = isSectionEnabled(layout, 'features') || isSectionEnabled(layout, 'comparison');
   const showFaq = isSectionEnabled(layout, 'faq');
   const showHeroSocialProof = isSectionEnabled(layout, 'hero');
-  const ctaLabel = safeText(layout.cta_text || product?.cta_text, t('common:actions.buyNow'));
+  const ctaLabel = safeText(product?.cta_text || layout.cta_text, t('common:actions.buyNow'));
 
   if (loading) {
     return (
@@ -508,6 +508,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                 fastpayLink={(product as any).fastpay_link}
                 aoaPrice={(product as any).aoa_price}
                 couponCode={appliedCoupon}
+                ctaText={ctaLabel}
                 onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
                 onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
               />
@@ -567,6 +568,7 @@ export function Product({ setScreen, productId }: ProductProps) {
             aoaPrice={(product as any).aoa_price}
             couponCode={appliedCoupon}
             variant="mobile"
+            ctaText={ctaLabel}
             onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
             onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
           />

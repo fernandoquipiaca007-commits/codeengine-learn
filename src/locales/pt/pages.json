@@ -510,6 +510,10 @@
     "downloadPreview": "Baixar Preview",
     "seeInAction": "Veja em Ação",
     "learnMoreVideos": "Conheça mais sobre o produto através dos nossos vídeos",
-    "videoUnavailable": "Vídeo indisponível"
+    "videoUnavailable": "Vídeo indisponível",
+    "courseContent": "Conteúdo do Curso",
+    "lessons": "aulas",
+    "afterPurchase": "Após compra",
+    "lessonsTitle": "Aulas"
   }
 }

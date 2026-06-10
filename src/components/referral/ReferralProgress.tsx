@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Gift, TrendingDown, Sparkles, Share2 } from 'lucide-react';
 import { useReferral } from '../../hooks/useReferral';
 import { supabase } from '../../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface ReferralProgressProps {
   productId: string;
@@ -15,6 +16,7 @@ interface ReferralProgressProps {
 }
 
 export function ReferralProgress({ productId, originalPrice, onDiscountChange }: ReferralProgressProps) {
+  const { t } = useTranslation('common');
   const { getProgress } = useReferral();
   const [progress, setProgress] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -120,13 +122,13 @@ export function ReferralProgress({ productId, originalPrice, onDiscountChange }:
             <Share2 className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <p className="font-display text-sm font-semibold text-on-surface">Share & Save</p>
-            <p className="text-xs text-on-surface-variant">Share your link to reduce the price</p>
+            <p className="font-display text-sm font-semibold text-on-surface">{t('product.shareAndSave')}</p>
+            <p className="text-xs text-on-surface-variant">{t('product.shareToReduce')}</p>
           </div>
         </div>
         {progress.isFree && (
           <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 font-display text-xs font-bold uppercase tracking-wider animate-pulse">
-            FREE!
+            {t('product.freeWord')}!
           </span>
         )}
       </div>
@@ -158,7 +160,7 @@ export function ReferralProgress({ productId, originalPrice, onDiscountChange }:
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-1 text-on-surface-variant">
           <TrendingDown className="w-3 h-3" />
-          <span>{progress.conversions}/{progress.goal} conversions</span>
+          <span>{progress.conversions}/{progress.goal} {t('product.conversions')}</span>
         </div>
         <span className="font-mono font-semibold text-primary">{pct}%</span>
       </div>
@@ -173,7 +175,7 @@ export function ReferralProgress({ productId, originalPrice, onDiscountChange }:
             </span>
           )}
           <span className={`font-mono text-lg font-bold ${progress.isFree ? 'text-green-400' : 'text-primary'}`}>
-            {progress.isFree ? 'FREE' : `$${currentPrice.toFixed(2)}`}
+            {progress.isFree ? t('product.freeWord') : `$${currentPrice.toFixed(2)}`}
           </span>
         </div>
         {progress.discount > 0 && !progress.isFree && (

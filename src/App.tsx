@@ -6,6 +6,7 @@ import { SearchModal } from './components/SearchModal';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { PushPermissionPrompt } from './components/PushPermissionPrompt';
+import { useLocale } from './contexts/LocaleContext';
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────
 // Background3D uses Three.js (~500KB) — load async so it doesn't block paint
@@ -122,6 +123,7 @@ const PageContent = memo(function PageContent({
 
 // ─── App root ─────────────────────────────────────────────────────────────────
 export default function App() {
+  const { locale } = useLocale();
   const [currentScreen, setScreen] = useState('home');
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [memberSection, setMemberSection] = useState<string>('inicio');
@@ -287,8 +289,8 @@ export default function App() {
           <motion.div
             key={
               currentScreen === 'product'
-                ? `product-${currentProductId ?? 'default'}`
-                : currentScreen
+                ? `product-${currentProductId ?? 'default'}-${locale}`
+                : `${currentScreen}-${locale}`
             }
             initial="initial"
             animate="in"

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Lock, Play, Clock, Headphones, Link as LinkIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useProductPurchaseOptional } from '../../contexts/ProductPurchaseContext';
+import { useTranslation } from 'react-i18next';
 
 interface Lesson {
   id: string;
@@ -27,6 +28,7 @@ interface CourseCurriculumProps {
 }
 
 export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculumProps) {
+  const { t } = useTranslation('pages');
   const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const purchase = useProductPurchaseOptional();
@@ -97,7 +99,7 @@ export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculu
               {Math.floor(lesson.video_duration_seconds / 60)}min
             </span>
           ) : null}
-          {!canWatch && <span className="block text-xs text-on-surface-variant mt-1">Após compra</span>}
+          {!canWatch && <span className="block text-xs text-on-surface-variant mt-1">{t('product.afterPurchase')}</span>}
           {lesson.is_preview && !ownsProduct && (
             <span className="block text-xs text-primary mt-1">Preview</span>
           )}
@@ -111,9 +113,9 @@ export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculu
   return (
     <section className="glass-panel rounded-2xl p-6 sm:p-8 border border-white/10">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h2 className="font-display text-2xl font-bold text-white">Conteúdo do curso</h2>
+        <h2 className="font-display text-2xl font-bold text-white">{t('product.courseContent')}</h2>
         <span className="font-sans text-sm text-on-surface-variant">
-          {lessons.length} aulas
+          {lessons.length} {t('product.lessons')}
           {totalSeconds > 0 && ` · ${hours > 0 ? `${hours}h ` : ''}${mins}min`}
         </span>
       </div>
@@ -128,7 +130,7 @@ export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculu
         {lessons.filter((l) => !l.module_id).length > 0 && (
           <div className="space-y-2">
             {modules.length > 0 && (
-              <h3 className="font-display text-lg font-semibold text-on-surface-variant mb-3">Aulas</h3>
+              <h3 className="font-display text-lg font-semibold text-on-surface-variant mb-3">{t('product.lessonsTitle')}</h3>
             )}
             {lessons.filter((l) => !l.module_id).map(renderLesson)}
           </div>

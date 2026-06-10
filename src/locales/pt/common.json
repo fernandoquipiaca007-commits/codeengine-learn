@@ -104,7 +104,11 @@
     "or": "ou",
     "loading": "Carregando...",
     "alreadyOwnedError": "Você já possui este produto.",
-    "paymentUnavailable": "Servidor de pagamentos indisponível."
+    "paymentUnavailable": "Servidor de pagamentos indisponível.",
+    "shareAndSave": "Compartilhe & Economize",
+    "shareToReduce": "Compartilhe seu link para reduzir o preço deste produto",
+    "freeWord": "GRÁTIS",
+    "conversions": "conversões"
   },
   "search": {
     "title": "Buscar",

@@ -481,6 +481,10 @@
     "downloadPreview": "Télécharger l'aperçu",
     "seeInAction": "Voir en Action",
     "learnMoreVideos": "En savoir plus sur le produit grâce à nos vidéos",
-    "videoUnavailable": "Vidéo non disponible"
+    "videoUnavailable": "Vidéo non disponible",
+    "courseContent": "Contenu du Cours",
+    "lessons": "leçons",
+    "afterPurchase": "Après l'achat",
+    "lessonsTitle": "Leçons"
   }
 }

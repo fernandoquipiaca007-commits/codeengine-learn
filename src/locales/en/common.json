@@ -104,7 +104,11 @@
     "or": "or",
     "loading": "Loading...",
     "alreadyOwnedError": "You already own this product.",
-    "paymentUnavailable": "Payment server unavailable."
+    "paymentUnavailable": "Payment server unavailable.",
+    "shareAndSave": "Share & Save",
+    "shareToReduce": "Share your link to reduce the price of this product",
+    "freeWord": "FREE",
+    "conversions": "conversions"
   },
   "search": {
     "title": "Search",

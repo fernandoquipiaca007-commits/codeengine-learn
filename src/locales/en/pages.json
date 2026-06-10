@@ -506,6 +506,10 @@
     "downloadPreview": "Download Preview",
     "seeInAction": "See in Action",
     "learnMoreVideos": "Learn more about the product through our videos",
-    "videoUnavailable": "Video unavailable"
+    "videoUnavailable": "Video unavailable",
+    "courseContent": "Course Content",
+    "lessons": "lessons",
+    "afterPurchase": "After purchase",
+    "lessonsTitle": "Lessons"
   }
 }

@@ -220,7 +220,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={couponCode}
@@ -228,12 +228,12 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               onKeyPress={(e) => e.key === 'Enter' && validateCoupon()}
               placeholder={t('couponPlaceholder')}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-surface-container border border-outline/20 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface placeholder-on-surface-variant/50 font-mono uppercase"
+              className="flex-1 px-4 py-3 bg-surface-container border border-outline/20 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface placeholder-on-surface-variant/50 font-mono uppercase w-full"
             />
             <button
               onClick={validateCoupon}
               disabled={loading || !couponCode.trim()}
-              className="px-6 py-3 bg-primary text-on-primary rounded-xl font-display text-sm font-semibold tracking-widest uppercase hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl font-display text-sm font-semibold tracking-widest uppercase hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-center"
             >
               {loading ? t('validating') : t('apply')}
             </button>
