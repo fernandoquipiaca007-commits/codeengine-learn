@@ -180,7 +180,7 @@ export function Library({ setScreen, onProductClick }: {
   }
 
   return (
-    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
       {/* Header Section */}
       <header className="mb-12 sm:mb-16 md:mb-24 flex flex-col items-start max-w-full">
         <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">

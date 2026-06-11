@@ -745,7 +745,7 @@ export function News({ setScreen }: NewsProps) {
 
 
   return (
-    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen">
+    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       
       {/* Header */}
       <header className="mb-12 md:mb-16 flex flex-col items-start max-w-3xl">

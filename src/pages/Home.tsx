@@ -184,7 +184,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   };
 
   return (
-    <div className="pt-28 pb-24 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+    <div className="pt-28 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
       <header className="relative flex flex-col items-center justify-center text-center overflow-hidden mb-24 sm:mb-28">
         <div className="max-w-3xl z-10 space-y-6">
           <motion.h1 

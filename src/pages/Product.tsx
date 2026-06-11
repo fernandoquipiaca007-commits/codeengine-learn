@@ -542,7 +542,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   if (loading) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen flex items-center justify-center">
+      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
@@ -550,7 +550,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   if (!product) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen">
+      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
         <div className="glass-panel rounded-2xl p-12 text-center">
           <h2 className="font-display text-3xl font-bold text-white mb-4">{t('product.productNotFound')}</h2>
           <p className="font-sans text-lg text-on-surface-variant mb-8">
@@ -572,7 +572,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   return (
     <ProductPurchaseProvider productId={product.id}>
-    <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+    <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
       {/* Campaign Banner */}
       <CampaignBanner productId={product.id} onSpecialPrice={setCampaignPrice} />
       

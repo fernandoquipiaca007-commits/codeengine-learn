@@ -78,7 +78,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
   };
 
   return (
-    <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen">
+    <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       {/* Hero Section */}
       <header className="mb-24 flex flex-col items-start max-w-4xl">
         <motion.div
