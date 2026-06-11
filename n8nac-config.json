@@ -1,0 +1,24 @@
+{
+  "version": 4,
+  "activeEnvironmentId": "vps-2",
+  "environmentTargets": [
+    {
+      "id": "vps",
+      "name": "VPS",
+      "kind": "external-instance",
+      "url": "https://n8n-ep3w.srv1739567.hstgr.cloud"
+    }
+  ],
+  "environments": [
+    {
+      "id": "vps-2",
+      "name": "VPS",
+      "syncSlug": "vps",
+      "environmentTargetId": "vps",
+      "projectId": "personal",
+      "projectName": "Personal",
+      "workflowsPath": "workflows/VPS",
+      "folderSync": false
+    }
+  ]
+}
