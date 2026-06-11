@@ -13,7 +13,11 @@ export function mapStoreError(error: unknown, context: StoreErrorContext = 'gene
   if (lower.includes('fetch') || lower.includes('network')) {
     return 'Problema de conexão com a internet. Verifique sua rede e tente novamente.';
   }
-  if (lower.includes('jwt') || lower.includes('session') || lower.includes('auth')) {
+  if (
+    (lower.includes('jwt') || lower.includes('session') || lower.includes('auth')) &&
+    !lower.includes('checkout') &&
+    !lower.includes('stripe')
+  ) {
     return 'Sua sessão expirou. Entre novamente.';
   }
   if (lower.includes('stripe') || lower.includes('payment') || lower.includes('checkout')) {
