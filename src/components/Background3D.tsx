@@ -38,8 +38,9 @@ function Stars(props: any) {
   );
 }
 
-export function Background3D() {
+export function Background3D({ isImmersive = false }: { isImmersive?: boolean }) {
   const [isLowPowerMode, setIsLowPowerMode] = useState(false);
+  const [isTabVisible, setIsTabVisible] = useState(true);
 
   useEffect(() => {
     const mediaReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -53,14 +54,26 @@ export function Background3D() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsTabVisible(document.visibilityState === 'visible');
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  const shouldRenderCanvas = !isLowPowerMode && !isImmersive && isTabVisible;
+
   return (
     <div className="fixed inset-0 z-[-10] bg-background pointer-events-none">
       {/* Ambient background lighting */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[150px] opacity-50"></div>
       
-      {!isLowPowerMode && (
-        <Canvas camera={{ position: [0, 0, 1] }}>
+      {shouldRenderCanvas && (
+        <Canvas camera={{ position: [0, 0, 1] }} dpr={[1, 1.5]}>
           <Stars />
         </Canvas>
       )}

@@ -37,14 +37,19 @@ export function getStoragePath(storageUrl: string): string {
  * Prefers cover_storage_path (new) over cover_url (legacy).
  * For storage paths, generates the full public URL.
  */
-export function getProductCoverUrl(product: {
-  cover_url?: string | null;
-  cover_storage_path?: string | null;
-  language?: string | null;
-  use_shared_content?: boolean | null;
-  updated_at?: string | null;
-}): string {
+export function getProductCoverUrl(
+  product: {
+    cover_url?: string | null;
+    cover_storage_path?: string | null;
+    language?: string | null;
+    use_shared_content?: boolean | null;
+    updated_at?: string | null;
+  },
+  activeLocale?: string
+): string {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ffdqqiunkzhtgbgaojay.supabase.co';
+
+  const currentLang = activeLocale || product.language || 'pt';
 
   // By default, prefer cover_storage_path (new) over cover_url (legacy)
   let path = (product.cover_storage_path || product.cover_url || '').trim();
@@ -52,8 +57,8 @@ export function getProductCoverUrl(product: {
   // If we have a language and it is not Portuguese (pt), and we are not sharing content,
   // we must prefer the translated cover_url over the base cover_storage_path.
   if (
-    product.language &&
-    product.language !== 'pt' &&
+    currentLang &&
+    currentLang !== 'pt' &&
     !product.use_shared_content &&
     product.cover_url
   ) {

@@ -11,7 +11,6 @@ export function UpdatePrompt() {
   const { t } = useTranslation();
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [showUpdate, setShowUpdate] = useState(false);
-
   const [dismissed, setDismissed] = useState(false);
 
   const {
@@ -72,12 +71,23 @@ export function UpdatePrompt() {
     sessionStorage.setItem(reloadKey, now.toString());
     
     try {
+      // updateServiceWorker(true) posts a SKIP_WAITING message to the service worker.
+      // When the service worker skips waiting, it claims control, triggering the controllerchange event.
       await updateServiceWorker(true);
-    } catch {}
+
+      // Fallback reload in case the controllerchange event does not fire (e.g. browser compatibility)
+      setTimeout(() => {
+        console.log('[PWA] Controller change fallback timeout triggered. Reloading page...');
+        window.location.reload();
+      }, 2500);
+    } catch (err) {
+      console.error('[PWA] Error activating update service worker:', err);
+      window.location.reload();
+    }
+
     setNeedRefresh(false);
     setShowUpdate(false);
     setDismissed(true);
-    window.location.reload();
   }
 
   if (dismissed || (!showUpdate && !needRefresh)) return null;

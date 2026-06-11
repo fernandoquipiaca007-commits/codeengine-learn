@@ -50,6 +50,21 @@ const TRANSLATIONS = {
   }
 };
 
+const SECTION_TITLES = {
+  pt: {
+    title: 'Adquira o seu exemplar',
+    subtitle: 'Escolha o melhor método de pagamento e comece a ler/assistir agora mesmo.'
+  },
+  en: {
+    title: 'Get Your Copy',
+    subtitle: 'Choose the best payment method and start reading/watching right away.'
+  },
+  fr: {
+    title: 'Obtenez votre exemplaire',
+    subtitle: 'Choisissez le meilleur mode de paiement et commencez à lire/regarder dès maintenant.'
+  }
+};
+
 interface ProductCouponSectionProps {
   productId: string;
   originalPrice: number;
@@ -73,7 +88,7 @@ function ProductCouponSection({ productId, originalPrice, onCouponApplied }: Pro
 
 export function Product({ setScreen, productId }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
-  const { t } = useTranslation('pages', { lng: locale });
+  const { t } = useTranslation(['pages', 'common'], { lng: locale });
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
   const [product, setProduct] = useState<ProductType | null>(null);
@@ -82,14 +97,17 @@ export function Product({ setScreen, productId }: ProductProps) {
   const [discount, setDiscount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [campaignPrice, setCampaignPrice] = useState<number | null>(null);
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [pageLayout, setPageLayout] = useState<PageLayoutConfig | null>(null);
-  const [showStickyButton, setShowStickyButton] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [isHeroVisible, setIsHeroVisible] = useState(true);
+  const [isCtaVisible, setIsCtaVisible] = useState(false);
+  const showStickyButton = !isHeroVisible && !isCtaVisible;
   const [childRefreshKey, setChildRefreshKey] = useState(0);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const prevLocaleRef = useRef(locale);
   const mainCtaRef = useRef<HTMLDivElement>(null);
+  const promoVideoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuthSession();
   const { isOwned } = useOwnedProducts(user?.id);
 
@@ -253,7 +271,6 @@ export function Product({ setScreen, productId }: ProductProps) {
     setCampaignPrice(null);
     setDiscount(0);
     setAppliedCoupon('');
-    setDescriptionExpanded(false);
     prevLocaleRef.current = locale;
     void loadProduct(false);
   }, [productId, localeLoading, loadProduct]);
@@ -272,6 +289,15 @@ export function Product({ setScreen, productId }: ProductProps) {
     const bump = () => {
       const cacheKey = `product-detail-${productId || 'latest'}-${locale}`;
       queryCache.invalidate(cacheKey);
+      queryCache.invalidate(`product-campaigns-${pid}`);
+      queryCache.invalidate(`course-curriculum-${pid}`);
+      queryCache.invalidate(`product-benefits-${pid}`);
+      queryCache.invalidate(`product-bonuses-campaign-${pid}`);
+      queryCache.invalidate(`product-bonuses-${pid}`);
+      queryCache.invalidate(`product-custom-sections-${pid}`);
+      queryCache.invalidate(`product-faqs-${pid}`);
+      queryCache.invalidate(`product-videos-${pid}`);
+      queryCache.invalidate(`localized-product-${pid}-${locale}`);
       void loadProduct(true, true);
       setChildRefreshKey((k) => k + 1);
     };
@@ -320,7 +346,31 @@ export function Product({ setScreen, productId }: ProductProps) {
     };
   }, [product?.id, productId, locale, loadProduct]);
 
-  // Intersection Observer para controlar visibilidade do sticky button
+  // Intersection Observer para controlar a visibilidade da seção Hero
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsHeroVisible(entry.isIntersecting);
+        });
+      },
+      {
+        threshold: 0,
+        rootMargin: '-50px 0px -50px 0px'
+      }
+    );
+
+    observer.observe(hero);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // Intersection Observer para controlar a visibilidade da seção CTA inferior
   useEffect(() => {
     const mainCta = mainCtaRef.current;
     if (!mainCta) return;
@@ -328,15 +378,11 @@ export function Product({ setScreen, productId }: ProductProps) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Se o botão principal está visível, esconde o sticky
-          // Se o botão principal não está visível, mostra o sticky
-          setShowStickyButton(!entry.isIntersecting);
+          setIsCtaVisible(entry.isIntersecting);
         });
       },
       {
-        // Threshold 0 significa que detecta assim que qualquer parte entra/sai
         threshold: 0,
-        // rootMargin negativo cria uma margem de segurança
         rootMargin: '-50px 0px -50px 0px'
       }
     );
@@ -347,6 +393,32 @@ export function Product({ setScreen, productId }: ProductProps) {
       observer.disconnect();
     };
   }, []);
+
+  // Intersection Observer para play/pause automático do vídeo promocional
+  useEffect(() => {
+    const video = promoVideoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.play().catch((err) => {
+              console.log('[PromoVideo] Autoplay blocked or failed:', err);
+            });
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(video);
+    return () => {
+      observer.disconnect();
+    };
+  }, [product?.video_url]);
 
   function handleCouponApplied(discountAmount: number, couponCode: string) {
     setDiscount(discountAmount);
@@ -415,6 +487,49 @@ export function Product({ setScreen, productId }: ProductProps) {
   }
 
   const description = safeText(product?.description);
+  
+  const renderPersuasiveDescription = (descText: string) => {
+    if (!descText) return null;
+
+    // Split into paragraphs by double newlines or single newlines that separate distinct blocks
+    const blocks = descText.split(/\n\n+/).filter(Boolean);
+
+    return (
+      <div className="flex flex-col gap-6 text-on-surface-variant leading-relaxed">
+        {blocks.map((block, i) => {
+          // Check if this block is a list of bullet points
+          const lines = block.split('\n').filter(Boolean);
+          const isBulletList = lines.every(line => line.trim().startsWith('•') || line.trim().startsWith('-'));
+
+          if (isBulletList) {
+            return (
+              <ul key={i} className="flex flex-col gap-3 my-2 pl-2">
+                {lines.map((line, j) => {
+                  const content = line.replace(/^[•-]\s*/, '');
+                  return (
+                    <li key={j} className="flex items-start gap-3 text-sm sm:text-base">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mt-0.5 border border-primary/20">
+                        <Star className="w-3 h-3 text-primary animate-pulse" />
+                      </span>
+                      <span className="font-sans text-on-surface-variant font-medium">{content}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            );
+          }
+
+          // Otherwise render as a normal paragraph
+          return (
+            <p key={i} className="font-sans text-sm sm:text-base md:text-lg font-normal whitespace-pre-line text-on-surface-variant/90 leading-relaxed">
+              {block}
+            </p>
+          );
+        })}
+      </div>
+    );
+  };
+
   const listPrice = safePrice(product?.price);
   const layout = pageLayout ?? parsePageLayoutConfig(null);
   const showVideos = isSectionEnabled(layout, 'video');
@@ -473,7 +588,7 @@ export function Product({ setScreen, productId }: ProductProps) {
       )}
 
       {/* Hero Section */}
-      <section className="grid gap-10 md:grid-cols-2 md:gap-16 items-center mb-24 relative">
+      <section ref={heroRef} className="grid gap-10 md:grid-cols-2 md:gap-16 items-center mb-24 relative">
         {/* Content Left */}
         <div className="flex flex-col gap-8 relative z-10 min-w-0 w-full">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel w-fit border border-primary/30">
@@ -495,20 +610,26 @@ export function Product({ setScreen, productId }: ProductProps) {
             </span>
           </h1>
           
-          <div className="max-w-lg">
-            <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant break-words">
-              {descriptionExpanded ? description : `${description.slice(0, 170)}${description.length > 170 ? '...' : ''}`}
-            </p>
-            {description.length > 170 && (
-              <button
-                type="button"
-                onClick={() => setDescriptionExpanded((prev) => !prev)}
-                className="mt-2 text-xs font-display tracking-wider uppercase text-primary hover:text-secondary transition-colors"
-              >
-                {descriptionExpanded ? t('product.showLess') : t('product.readFullDescription')}
-              </button>
-            )}
+          <div className="max-w-xl">
+            {renderPersuasiveDescription(description)}
           </div>
+
+          {/* Promo Video */}
+          {product.video_url && (
+            <div className="mt-6 w-full max-w-lg aspect-video bg-surface-highest rounded-2xl overflow-hidden relative group border border-white/10 shadow-lg">
+              <video
+                ref={promoVideoRef}
+                src={product.video_url}
+                controls
+                preload="metadata"
+                playsInline
+                muted
+                loop
+                className="w-full h-full object-cover"
+                poster={getProductCoverUrl(product, locale)}
+              />
+            </div>
+          )}
           
           {/* Tags */}
           {Array.isArray(product.tags) && product.tags.length > 0 && (
@@ -523,70 +644,6 @@ export function Product({ setScreen, productId }: ProductProps) {
               ))}
             </div>
           )}
-          
-
-          
-          {/* Conversion */}
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="flex items-baseline gap-2 sm:gap-4 mb-2 flex-wrap">
-              {(campaignPrice || discount > 0) ? (
-                <div className="flex items-center gap-2 flex-wrap font-mono">
-                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/50 line-through">
-                    {tDict.before} ${listPrice}
-                  </span>
-                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/30">|</span>
-                  <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                    {tDict.now} ${getFinalPrice()}
-                  </span>
-                </div>
-              ) : (
-                <span className="font-mono text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                  $ {getFinalPrice()}
-                </span>
-              )}
-            </div>
-            
-            {/* Coupon Input */}
-            <ProductCouponSection
-              productId={product.id}
-              originalPrice={campaignPrice ?? listPrice}
-              onCouponApplied={handleCouponApplied}
-            />
-            
-            {/* Checkout Button */}
-            <div ref={mainCtaRef}>
-              <ProductActionButton
-                productId={product.id}
-                price={getFinalPrice()}
-                isFree={product.is_free || false}
-                productType={product.product_type || 'file'}
-                productTitle={product.title}
-                fastpayLink={(product as any).fastpay_link}
-                aoaPrice={(product as any).aoa_price}
-                couponCode={appliedCoupon}
-                ctaText={ctaLabel}
-                onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
-                onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
-              />
-            </div>
-
-            {/* Sistema de Partilha & Desconto Progressivo */}
-            {product && !product.is_free && listPrice > 0 && (
-              <div className="space-y-4 pt-6 border-t border-white/10 mt-6">
-                <div className={isLoggedIn && !isOwned(product.id) ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "w-full"}>
-                  {!isOwned(product.id) && (
-                    <ReferralProgress
-                      productId={product.id}
-                      originalPrice={listPrice}
-                      onDiscountChange={(discount) => setReferralDiscount(discount)}
-                    />
-                  )}
-                  <ReferralShareCard productId={product.id} compact={isLoggedIn && !isOwned(product.id)} />
-                </div>
-              </div>
-            )}
-
-          </div>
         </div>
         
         {/* Image Right */}
@@ -594,7 +651,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
           <div className="relative z-10 w-full max-w-full sm:max-w-[500px] mockup-rotate">
             <LazyImage
-              src={getProductCoverUrl(product)}
+              src={getProductCoverUrl(product, locale)}
               alt={product.title}
               className="w-full h-auto rounded-xl shadow-[20px_20px_60px_rgba(0,0,0,0.8),_0_0_40px_rgba(192,193,255,0.2)] border border-white/10"
               fallback={`https://placehold.co/600x600/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
@@ -632,7 +689,7 @@ export function Product({ setScreen, productId }: ProductProps) {
       </div>
 
       {/* Preview Section */}
-      {(product.preview_url || product.video_url) && (
+      {product.preview_url && (
         <section className="mt-16 sm:mt-24">
           <div className="text-center mb-16">
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-4">
@@ -642,52 +699,25 @@ export function Product({ setScreen, productId }: ProductProps) {
               {t('product.sampleDesc')}
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Video Preview */}
-            {product.video_url && (
-              <div className="glass-panel p-4 sm:p-6 rounded-2xl">
-                <div className="aspect-video bg-surface-highest rounded-xl overflow-hidden relative group cursor-pointer">
-                  <video
-                    src={product.video_url}
-                    controls
-                    preload="metadata"
-                    playsInline
-                    autoPlay
-                    muted
-                    loop
-                    className="w-full h-full object-cover"
-                    poster={getProductCoverUrl(product)}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Play className="w-16 h-16 text-primary" />
-                  </div>
-                </div>
-                <h3 className="font-display text-xl font-semibold text-white mt-4">
-                  {t('product.promoVideo')}
-                </h3>
-              </div>
-            )}
-
+          <div className="max-w-2xl mx-auto">
             {/* File Preview */}
-            {product.preview_url && (
-              <div className="glass-panel p-4 sm:p-6 rounded-2xl">
-                <div className="aspect-video bg-surface-highest rounded-xl overflow-hidden flex items-center justify-center">
-                  <Download className="w-16 h-16 text-primary" />
-                </div>
-                <h3 className="font-display text-xl font-semibold text-white mt-4 mb-2">
-                  {t('product.freePreview')}
-                </h3>
-                <a
-                  href={product.preview_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="secondary-btn px-5 py-2.5 rounded-full font-display text-xs font-semibold tracking-widest uppercase flex items-center gap-2 w-fit"
-                >
-                  {t('product.downloadPreview')}
-                  <Download className="w-4 h-4" />
-                </a>
+            <div className="glass-panel p-6 rounded-2xl flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Download className="w-8 h-8 text-primary" />
               </div>
-            )}
+              <h3 className="font-display text-xl font-semibold text-white mb-2">
+                {t('product.freePreview')}
+              </h3>
+              <a
+                href={product.preview_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="secondary-btn px-5 py-2.5 rounded-full font-display text-xs font-semibold tracking-widest uppercase flex items-center gap-2 w-fit mt-2"
+              >
+                {t('product.downloadPreview')}
+                <Download className="w-4 h-4" />
+              </a>
+            </div>
           </div>
         </section>
       )}
@@ -732,6 +762,81 @@ export function Product({ setScreen, productId }: ProductProps) {
           title={translateDbText(customCopy?.faq_title)}
         />
       )}
+
+      {/* Seção de Compra - Realocada para o Final */}
+      <section className="mt-24 pt-16 border-t border-white/10 max-w-3xl mx-auto w-full relative">
+        <div className="absolute inset-0 bg-primary/5 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
+        <div className="glass-panel rounded-3xl p-8 sm:p-12 border border-white/10 relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-8">
+          <div className="text-center">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
+              {SECTION_TITLES[currentLang]?.title || SECTION_TITLES.pt.title}
+            </h2>
+            <p className="font-sans text-base text-on-surface-variant max-w-lg mx-auto">
+              {SECTION_TITLES[currentLang]?.subtitle || SECTION_TITLES.pt.subtitle}
+            </p>
+          </div>
+          
+          <div className="flex flex-col gap-6">
+            <div className="flex justify-center items-baseline gap-2 sm:gap-4 mb-2 flex-wrap">
+              {(campaignPrice || discount > 0) ? (
+                <div className="flex items-center justify-center gap-3 flex-wrap font-mono">
+                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/50 line-through">
+                    {tDict.before} ${listPrice}
+                  </span>
+                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/30">|</span>
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                    {tDict.now} ${getFinalPrice()}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                  $ {getFinalPrice()}
+                </span>
+              )}
+            </div>
+            
+            {/* Coupon Input */}
+            <ProductCouponSection
+              productId={product.id}
+              originalPrice={campaignPrice ?? listPrice}
+              onCouponApplied={handleCouponApplied}
+            />
+            
+            {/* Checkout Button */}
+            <div ref={mainCtaRef} className="w-full">
+              <ProductActionButton
+                productId={product.id}
+                price={getFinalPrice()}
+                isFree={product.is_free || false}
+                productType={product.product_type || 'file'}
+                productTitle={product.title}
+                fastpayLink={(product as any).fastpay_link}
+                aoaPrice={(product as any).aoa_price}
+                couponCode={appliedCoupon}
+                ctaText={ctaLabel}
+                onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
+                onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
+              />
+            </div>
+
+            {/* Sistema de Partilha & Desconto Progressivo */}
+            {product && !product.is_free && listPrice > 0 && (
+              <div className="space-y-4 pt-6 border-t border-white/10 mt-6 w-full">
+                <div className={isLoggedIn && !isOwned(product.id) ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "w-full"}>
+                  {!isOwned(product.id) && (
+                    <ReferralProgress
+                      productId={product.id}
+                      originalPrice={listPrice}
+                      onDiscountChange={(discount) => setReferralDiscount(discount)}
+                    />
+                  )}
+                  <ReferralShareCard productId={product.id} compact={isLoggedIn && !isOwned(product.id)} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
     </ProductPurchaseProvider>
   );

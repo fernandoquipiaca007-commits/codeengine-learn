@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, Play, Clock, Headphones, Link as LinkIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { queryCache } from '../../lib/queryCache';
 import { useProductPurchaseOptional } from '../../contexts/ProductPurchaseContext';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../contexts/LocaleContext';
@@ -30,7 +31,7 @@ interface CourseCurriculumProps {
 
 export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculumProps) {
   const { locale } = useLocale();
-  const { t } = useTranslation('pages', { lng: locale });
+  const { t } = useTranslation('pages');
   const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const purchase = useProductPurchaseOptional();
@@ -42,19 +43,28 @@ export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculu
 
   async function load() {
     try {
-      const [mRes, lRes] = await Promise.all([
-        supabase.from('course_modules').select('*').eq('product_id', productId).order('display_order'),
-        supabase
-          .from('course_lessons')
-          .select('*')
-          .eq('product_id', productId)
-          .eq('is_active', true)
-          .order('display_order'),
-      ]);
-      if (mRes.error) console.error('Error loading modules:', mRes.error);
-      if (lRes.error) console.error('Error loading lessons:', lRes.error);
-      setModules(mRes.data || []);
-      setLessons(lRes.data || []);
+      const fetcher = async () => {
+        const [mRes, lRes] = await Promise.all([
+          supabase.from('course_modules').select('*').eq('product_id', productId).order('display_order'),
+          supabase
+            .from('course_lessons')
+            .select('*')
+            .eq('product_id', productId)
+            .eq('is_active', true)
+            .order('display_order'),
+        ]);
+        if (mRes.error) throw mRes.error;
+        if (lRes.error) throw lRes.error;
+        return {
+          modules: mRes.data || [],
+          lessons: lRes.data || [],
+        };
+      };
+
+      const cacheKey = `course-curriculum-${productId}`;
+      const cachedData = await queryCache.get(cacheKey, fetcher);
+      setModules(cachedData.modules);
+      setLessons(cachedData.lessons);
     } catch (err) {
       console.error('Error loading curriculum:', err);
       setModules([]);

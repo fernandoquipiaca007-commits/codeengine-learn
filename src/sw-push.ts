@@ -81,3 +81,9 @@ self.addEventListener('message', (event) => {
   }
 });
 
+// Claim clients immediately when the service worker becomes active
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+

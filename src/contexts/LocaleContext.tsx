@@ -116,6 +116,21 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     });
   }, [detectLocale, i18n]);
 
+  useEffect(() => {
+    const handleLanguageChanged = (lng: string) => {
+      const normalized = lng.slice(0, 2) as AppLocale;
+      if (SUPPORTED_LOCALES.includes(normalized) && normalized !== locale) {
+        setLocaleState(normalized);
+        setStoredLocale(normalized);
+      }
+    };
+    i18n.on('languageChanged', handleLanguageChanged);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, [i18n, locale]);
+
+
   const setLocale = useCallback(
     async (newLocale: AppLocale) => {
       if (!SUPPORTED_LOCALES.includes(newLocale)) return;

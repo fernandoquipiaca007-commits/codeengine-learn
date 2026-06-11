@@ -130,14 +130,35 @@ export function Settings({ setScreen }: SettingsProps) {
 
   async function handleAppUpdate() {
     setSaving(true);
+    const reloadKey = 'pwa_last_silent_reload';
+    const lastReload = sessionStorage.getItem(reloadKey);
+    const now = Date.now();
+
+    if (lastReload && now - parseInt(lastReload, 10) < 10000) {
+      console.warn('[PWA] Prevented rapid infinite reload loop in Settings.');
+      setNeedRefresh(false);
+      setUpdateAvailable(false);
+      setSaving(false);
+      return;
+    }
+
+    sessionStorage.setItem(reloadKey, now.toString());
+
     try {
       await updateServiceWorker(true);
       setNeedRefresh(false);
-      window.location.reload();
-    } catch {
+      
+      // Fallback reload in case the controllerchange event does not fire (e.g. browser compatibility)
+      setTimeout(() => {
+        console.log('[PWA] Settings update fallback reload...');
+        window.location.reload();
+      }, 2500);
+    } catch (err) {
+      console.error('[PWA] Error activating update service worker from Settings:', err);
       window.location.reload();
     }
   }
+
 
   async function loadUserData() {
     try {
