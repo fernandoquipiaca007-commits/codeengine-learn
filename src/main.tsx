@@ -16,11 +16,15 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
+class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; isChunkError: boolean }> {
+  state = { hasError: false, isChunkError: false };
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: any) {
+    const isChunkError = 
+      /failed to fetch dynamically imported module/i.test(error?.message || '') ||
+      /chunk load failed/i.test(error?.message || '') ||
+      /error loading dynamically imported module/i.test(error?.message || '');
+    return { hasError: true, isChunkError };
   }
 
   componentDidCatch(error: any) {
@@ -38,6 +42,17 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: b
 
   render() {
     if (this.state.hasError) {
+      if (this.state.isChunkError) {
+        return (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-[#0d0d0e] px-6 text-center text-on-surface">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#6366f1]"></div>
+              <p className="font-sans text-sm text-on-surface-variant">Carregando nova versão...</p>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#0d0d0e] px-6 text-center text-on-surface">
           <div className="glass-panel max-w-md p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl">

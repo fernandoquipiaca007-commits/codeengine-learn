@@ -8,9 +8,9 @@ interface LanguageSelectorProps {
 }
 
 const LANGUAGES = [
-  { code: 'pt' as AppLocale, name: 'Português', flag: '🇧🇷' },
-  { code: 'en' as AppLocale, name: 'English', flag: '🇺🇸' },
-  { code: 'fr' as AppLocale, name: 'Français', flag: '🇫🇷' },
+  { code: 'pt' as AppLocale, name: 'PT', flag: '🇧🇷' },
+  { code: 'en' as AppLocale, name: 'EN', flag: '🇺🇸' },
+  { code: 'fr' as AppLocale, name: 'FR', flag: '🇫🇷' },
 ];
 
 export function LanguageSelector({ variant = 'dropdown', className = '' }: LanguageSelectorProps) {
@@ -18,14 +18,14 @@ export function LanguageSelector({ variant = 'dropdown', className = '' }: Langu
 
   if (variant === 'buttons') {
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
+      <div className={`flex items-center gap-1.5 ${className}`}>
         {LANGUAGES.map((lang) => (
           <button
             key={lang.code}
             onClick={() => setLocale(lang.code)}
             disabled={isLoading}
             className={`
-              px-3 py-2 rounded-lg font-sans text-sm font-medium transition-all
+              px-2.5 py-1.5 rounded-lg font-sans text-xs font-medium transition-all
               ${locale === lang.code
                 ? 'bg-primary text-on-primary shadow-[0_0_15px_rgba(192,193,255,0.3)]'
                 : 'bg-surface-container text-on-surface hover:bg-surface-container-high'
@@ -33,7 +33,7 @@ export function LanguageSelector({ variant = 'dropdown', className = '' }: Langu
               ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
           >
-            <span className="mr-2">{lang.flag}</span>
+            <span className="mr-1.5">{lang.flag}</span>
             {lang.name}
           </button>
         ))}
@@ -43,16 +43,16 @@ export function LanguageSelector({ variant = 'dropdown', className = '' }: Langu
 
   return (
     <div className={`relative ${className}`}>
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container border border-white/10">
-        <Globe className="w-4 h-4 text-on-surface-variant" />
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-container border border-white/10">
+        <Globe className="w-3.5 h-3.5 text-on-surface-variant" />
         <select
           value={locale}
           onChange={(e) => setLocale(e.target.value as AppLocale)}
           disabled={isLoading}
-          className="bg-transparent text-on-surface font-sans text-sm font-medium focus:outline-none cursor-pointer"
+          className="bg-transparent text-on-surface font-sans text-xs font-semibold focus:outline-none cursor-pointer pr-1"
         >
           {LANGUAGES.map((lang) => (
-            <option key={lang.code} value={lang.code} className="bg-surface text-on-surface">
+            <option key={lang.code} value={lang.code} className="bg-surface text-on-surface text-sm">
               {lang.flag} {lang.name}
             </option>
           ))}

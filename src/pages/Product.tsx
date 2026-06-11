@@ -495,7 +495,7 @@ export function Product({ setScreen, productId }: ProductProps) {
     const blocks = descText.split(/\n\n+/).filter(Boolean);
 
     return (
-      <div className="flex flex-col gap-6 text-on-surface-variant leading-relaxed">
+      <div className="flex flex-col gap-4 text-on-surface-variant leading-relaxed">
         {blocks.map((block, i) => {
           // Check if this block is a list of bullet points
           const lines = block.split('\n').filter(Boolean);
@@ -503,13 +503,13 @@ export function Product({ setScreen, productId }: ProductProps) {
 
           if (isBulletList) {
             return (
-              <ul key={i} className="flex flex-col gap-3 my-2 pl-2">
+              <ul key={i} className="flex flex-col gap-2 my-1.5 pl-2">
                 {lines.map((line, j) => {
                   const content = line.replace(/^[•-]\s*/, '');
                   return (
-                    <li key={j} className="flex items-start gap-3 text-sm sm:text-base">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center mt-0.5 border border-primary/20">
-                        <Star className="w-3 h-3 text-primary animate-pulse" />
+                    <li key={j} className="flex items-start gap-2 text-xs sm:text-sm">
+                      <span className="flex-shrink-0 w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center mt-0.5 border border-primary/20">
+                        <Star className="w-2.5 h-2.5 text-primary animate-pulse" />
                       </span>
                       <span className="font-sans text-on-surface-variant font-medium">{content}</span>
                     </li>
@@ -521,7 +521,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
           // Otherwise render as a normal paragraph
           return (
-            <p key={i} className="font-sans text-sm sm:text-base md:text-lg font-normal whitespace-pre-line text-on-surface-variant/90 leading-relaxed">
+            <p key={i} className="font-sans text-sm sm:text-base font-normal whitespace-pre-line text-on-surface-variant/90 leading-relaxed">
               {block}
             </p>
           );
@@ -572,7 +572,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   return (
     <ProductPurchaseProvider productId={product.id}>
-    <div className="pt-28 pb-40 md:pb-24 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+    <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
       {/* Campaign Banner */}
       <CampaignBanner productId={product.id} onSpecialPrice={setCampaignPrice} />
       
@@ -580,7 +580,7 @@ export function Product({ setScreen, productId }: ProductProps) {
       {setScreen && (
         <button
           onClick={() => setScreen('library')}
-          className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
+          className="mb-5 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="font-display text-xs font-semibold tracking-widest uppercase">{t('product.back')}</span>
@@ -588,17 +588,17 @@ export function Product({ setScreen, productId }: ProductProps) {
       )}
 
       {/* Hero Section */}
-      <section ref={heroRef} className="grid gap-10 md:grid-cols-2 md:gap-16 items-center mb-24 relative">
+      <section ref={heroRef} className="grid gap-8 md:grid-cols-[1.15fr_0.85fr] md:gap-12 items-center mb-16 relative">
         {/* Content Left */}
-        <div className="flex flex-col gap-8 relative z-10 min-w-0 w-full">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel w-fit border border-primary/30">
+        <div className="flex flex-col gap-5 relative z-10 min-w-0 w-full">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel w-fit border border-primary/30">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
             <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
               {t('product.premiumBadge')}
             </span>
           </div>
           
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-on-surface break-words">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-4xl leading-[1.15] tracking-[-0.04em] font-extrabold text-on-surface break-words">
             {hasCopy(customCopy?.hero_headline)
               ? safeText(customCopy.hero_headline)
               : (product.title || 'Produto').split(' ').slice(0, 2).join(' ')}{' '}
@@ -616,7 +616,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
           {/* Promo Video */}
           {product.video_url && (
-            <div className="mt-6 w-full max-w-lg aspect-video bg-surface-highest rounded-2xl overflow-hidden relative group border border-white/10 shadow-lg">
+            <div className="mt-4 w-full max-w-lg aspect-video bg-surface-highest rounded-2xl overflow-hidden relative group border border-white/10 shadow-lg">
               <video
                 ref={promoVideoRef}
                 src={product.video_url}
@@ -647,9 +647,9 @@ export function Product({ setScreen, productId }: ProductProps) {
         </div>
         
         {/* Image Right */}
-        <div className="perspective-container relative w-full aspect-square flex items-center justify-center">
-          <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
-          <div className="relative z-10 w-full max-w-full sm:max-w-[500px] mockup-rotate">
+        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px]">
+          <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
+          <div className="relative z-10 w-full max-w-full sm:max-w-[350px] mockup-rotate">
             <LazyImage
               src={getProductCoverUrl(product, locale)}
               alt={product.title}

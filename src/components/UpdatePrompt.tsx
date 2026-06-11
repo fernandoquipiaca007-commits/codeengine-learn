@@ -49,9 +49,15 @@ export function UpdatePrompt() {
 
   useEffect(() => {
     if (needRefresh) {
-      // For both standalone PWA and standard browsers, show a premium non-intrusive update banner.
-      // We NEVER silent auto-reload programmatically to prevent infinite reload loops and preserve user data/input.
-      setShowUpdate(true);
+      // Check if running in installed PWA standalone mode
+      const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+      if (isStandalonePWA) {
+        setShowUpdate(true);
+      } else {
+        // For standard browsers, silently auto-update!
+        console.log('[PWA] Standard browser detected, auto-updating in background...');
+        void handleUpdate();
+      }
     }
   }, [needRefresh]);
 
