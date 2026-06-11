@@ -76,6 +76,7 @@ export interface LibraryItem {
   id: string;
   title: string;
   cover_url: string;
+  cover_storage_path?: string;
   product_type: 'file' | 'course' | 'ebook';
   is_free?: boolean;
   percentComplete: number;

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { queryCache } from '../../lib/queryCache';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../contexts/LocaleContext';
 
@@ -24,36 +25,68 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     loadVideos();
   }, [productId, refreshKey]);
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            video.play().catch((err) => {
+              console.log('[ProductVideo] Autoplay blocked or failed:', err);
+            });
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(video);
+    return () => {
+      observer.disconnect();
+    };
+  }, [activeVideo, loading]);
+
   async function loadVideos() {
     try {
-      let { data, error } = await supabase
-        .from('product_videos')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-      if (error) {
-        const fallback = await supabase
+      const fetcher = async () => {
+        let { data, error } = await supabase
           .from('product_videos')
           .select('*')
           .eq('product_id', productId)
+          .eq('is_active', true)
           .order('display_order', { ascending: true });
-        data = fallback.data;
-        error = fallback.error;
-      }
 
-      if (error) throw error;
-      setVideos(data || []);
+        if (error) {
+          const fallback = await supabase
+            .from('product_videos')
+            .select('*')
+            .eq('product_id', productId)
+            .order('display_order', { ascending: true });
+          data = fallback.data;
+          error = fallback.error;
+        }
+
+        if (error) throw error;
+        return data || [];
+      };
+
+      const cacheKey = `product-videos-${productId}`;
+      const cachedData = await queryCache.get(cacheKey, fetcher);
+      setVideos(cachedData);
       
       // Auto-play first video
-      if (data && data.length > 0) {
-        setActiveVideo(data[0].id);
+      if (cachedData && cachedData.length > 0) {
+        setActiveVideo(cachedData[0].id);
       }
     } catch (error) {
       console.error('Error loading videos:', error);
@@ -106,11 +139,11 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
           <div className="aspect-video bg-surface-highest relative">
             {activeVideoData.video_type === 'upload' ? (
               <video
+                ref={videoRef}
                 src={activeVideoData.video_url}
                 controls
                 preload="metadata"
                 playsInline
-                autoPlay
                 muted
                 loop
                 className="w-full h-full"

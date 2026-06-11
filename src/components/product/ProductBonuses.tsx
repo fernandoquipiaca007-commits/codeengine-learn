@@ -3,6 +3,7 @@ import { Gift, Book, Users, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
+import { queryCache } from '../../lib/queryCache';
 import { useLocale } from '../../contexts/LocaleContext';
 
 const TRANSLATIONS = {
@@ -107,16 +108,24 @@ export function ProductBonuses({
 
   async function loadActiveCampaign() {
     try {
-      const { data, error } = await supabase
-        .from('product_campaigns')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const fetcher = async () => {
+        const { data, error } = await supabase
+          .from('product_campaigns')
+          .select('*')
+          .eq('product_id', productId)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (!error && data) {
+        if (error) throw error;
+        return data || null;
+      };
+
+      const cacheKey = `product-bonuses-campaign-${productId}`;
+      const data = await queryCache.get(cacheKey, fetcher);
+
+      if (data) {
         const endDate = (data.end_date as string) || (data.valid_until as string) || (data.countdown_end_date as string) || '';
         const showCountdown = Boolean(data.show_countdown ?? data.countdown_enabled);
         if (endDate && showCountdown) {
@@ -161,18 +170,21 @@ export function ProductBonuses({
 
   async function loadBonuses() {
     try {
-      const { data, error } = await supabase
-        .from('product_bonuses')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+      const fetcher = async () => {
+        const { data, error } = await supabase
+          .from('product_bonuses')
+          .select('*')
+          .eq('product_id', productId)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
 
-      if (!error && data && data.length > 0) {
-        setBonuses(data);
-      } else {
-        setBonuses([]);
-      }
+        if (error) throw error;
+        return data || [];
+      };
+
+      const cacheKey = `product-bonuses-${productId}`;
+      const cachedData = await queryCache.get(cacheKey, fetcher);
+      setBonuses(cachedData);
     } catch (error) {
       console.error('Error loading bonuses:', error);
       setBonuses([]);

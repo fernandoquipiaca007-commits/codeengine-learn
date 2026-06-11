@@ -30,7 +30,7 @@ export function PaymentMethodSelector({
   onClose,
 }: PaymentMethodSelectorProps) {
   const { locale } = useLocale();
-  const { t } = useTranslation('checkout', { lng: locale });
+  const { t } = useTranslation('checkout');
   const [fastpayEnabled, setFastpayEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasFastPayLink = !!product.fastpay_link;

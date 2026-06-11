@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { queryCache } from '../lib/queryCache';
 
 export interface PurchaseStatus {
   ownsProduct: boolean;
@@ -75,65 +76,70 @@ export function usePurchaseStatus(productId: string | undefined, authUserId: str
           setStatus((prev) => ({ ...prev, loading: true, error: null }));
         }
 
-        // 1. Check member_grants first (manual/gifted lifetime access)
-        const now = new Date().toISOString();
-        const { data: grant, error: grantError } = await supabase
-          .from('member_grants')
-          .select('id, expires_at, created_at')
-          .eq('member_id', memberId)
-          .eq('product_id', productId)
-          .or(`expires_at.is.null,expires_at.gt.${now}`)
-          .limit(1)
-          .maybeSingle();
+        const fetcher = async () => {
+          // 1. Check member_grants first (manual/gifted lifetime access)
+          const now = new Date().toISOString();
+          const { data: grant, error: grantError } = await supabase
+            .from('member_grants')
+            .select('id, expires_at, created_at')
+            .eq('member_id', memberId)
+            .eq('product_id', productId)
+            .or(`expires_at.is.null,expires_at.gt.${now}`)
+            .limit(1)
+            .maybeSingle();
 
-        if (grantError) {
-          console.warn('Error querying member_grants, proceeding to purchases:', grantError);
-        }
+          if (grantError) {
+            console.warn('Error querying member_grants, proceeding to purchases:', grantError);
+          }
 
-        if (grant) {
-          setStatus({
-            ownsProduct: true,
-            purchaseId: grant.id,
-            accessType: 'gift',
-            purchaseDate: grant.created_at,
-            loading: false,
-            error: null,
-          });
-          return;
-        }
+          if (grant) {
+            return {
+              ownsProduct: true,
+              purchaseId: grant.id,
+              accessType: 'gift' as const,
+              purchaseDate: grant.created_at,
+              loading: false,
+              error: null,
+            };
+          }
 
-        // 2. Check purchases
-        const { data, error } = await supabase
-          .from('purchases')
-          .select('id, access_type, purchase_date, product_id')
-          .eq('member_id', memberId)
-          .eq('product_id', productId)
-          .in('payment_status', ['completed', 'pending'])
-          .order('purchase_date', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          // 2. Check purchases
+          const { data, error } = await supabase
+            .from('purchases')
+            .select('id, access_type, purchase_date, product_id')
+            .eq('member_id', memberId)
+            .eq('product_id', productId)
+            .in('payment_status', ['completed', 'pending'])
+            .order('purchase_date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-        if (error) throw error;
+          if (error) throw error;
 
-        if (data && data.product_id === productId) {
-          setStatus({
-            ownsProduct: true,
-            purchaseId: data.id,
-            accessType: (data.access_type as 'paid' | 'free' | 'gift') || 'paid',
-            purchaseDate: data.purchase_date,
-            loading: false,
-            error: null,
-          });
-        } else {
-          setStatus({
-            ownsProduct: false,
-            purchaseId: null,
-            accessType: null,
-            purchaseDate: null,
-            loading: false,
-            error: null,
-          });
-        }
+          if (data && data.product_id === productId) {
+            return {
+              ownsProduct: true,
+              purchaseId: data.id,
+              accessType: (data.access_type as 'paid' | 'free' | 'gift') || 'paid',
+              purchaseDate: data.purchase_date,
+              loading: false,
+              error: null,
+            };
+          } else {
+            return {
+              ownsProduct: false,
+              purchaseId: null,
+              accessType: null,
+              purchaseDate: null,
+              loading: false,
+              error: null,
+            };
+          }
+        };
+
+        const cacheKey = `purchase-status-${productId}-${memberId}`;
+        const cachedRes = await queryCache.get(cacheKey, fetcher, { revalidate: true });
+        setStatus(cachedRes);
       } catch (error) {
         console.error('Error checking purchase status:', error);
         setStatus({
@@ -179,6 +185,8 @@ export function usePurchaseStatus(productId: string | undefined, authUserId: str
 
           if (debounceTimer) clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
+            const cacheKey = `purchase-status-${productId}-${memberId}`;
+            queryCache.invalidate(cacheKey);
             void checkPurchaseStatus({ silent: true });
           }, 300);
         }
@@ -203,6 +211,8 @@ export function usePurchaseStatus(productId: string | undefined, authUserId: str
 
           if (debounceTimer) clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
+            const cacheKey = `purchase-status-${productId}-${memberId}`;
+            queryCache.invalidate(cacheKey);
             void checkPurchaseStatus({ silent: true });
           }, 300);
         }
@@ -216,7 +226,11 @@ export function usePurchaseStatus(productId: string | undefined, authUserId: str
     };
   }, [memberId, productId, checkPurchaseStatus]);
 
-  const refetch = useCallback(() => checkPurchaseStatus({ silent: true }), [checkPurchaseStatus]);
+  const refetch = useCallback(() => {
+    const cacheKey = `purchase-status-${productId}-${memberId}`;
+    queryCache.invalidate(cacheKey);
+    return checkPurchaseStatus({ silent: true });
+  }, [productId, memberId, checkPurchaseStatus]);
 
   return { ...status, refetch };
 }

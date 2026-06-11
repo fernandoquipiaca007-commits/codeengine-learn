@@ -8,6 +8,9 @@ import { PointsBadge } from './referral/PointsBadge';
 import { setAppBadgeCount } from '../lib/app-badge';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { LanguageSelector } from './LanguageSelector';
+import { useLocale } from '../contexts/LocaleContext';
+import { usePoints } from '../hooks/usePoints';
+import { prefetchLibrary } from '../lib/prefetch';
 
 interface NavBarProps {
   currentScreen: string;
@@ -18,11 +21,20 @@ interface NavBarProps {
 export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps) {
   const { t } = useTranslation('common');
   const { user } = useAuthSession();
+  const { locale } = useLocale();
+  const { balance } = usePoints();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  const memberLevel = balance?.level ?? 'starter';
+  const isLoggedIn = !!user;
+
+  const handleLibraryHover = () => {
+    prefetchLibrary(locale, memberLevel, isLoggedIn);
+  };
 
   useEffect(() => {
     if (!user?.id) {
@@ -229,6 +241,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         
         <button 
           onClick={() => setScreen('library')}
+          onMouseEnter={handleLibraryHover}
           className={cn(
             "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
             currentScreen === 'library' 
@@ -395,6 +408,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                         setScreen('member', 'biblioteca');
                         setShowProfileMenu(false);
                       }}
+                      onMouseEnter={handleLibraryHover}
                       className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
                     >
                       <Heart className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
@@ -528,6 +542,11 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                   onClick={() => {
                     setScreen(item.screen);
                     setShowMobileMenu(false);
+                  }}
+                  onMouseEnter={() => {
+                    if (item.screen === 'library') {
+                      handleLibraryHover();
+                    }
                   }}
                   className={cn(
                     "w-full text-left rounded-xl px-4 py-3 font-sans text-sm font-semibold transition-all flex items-center justify-between",

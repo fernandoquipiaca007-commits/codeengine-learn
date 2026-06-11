@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { queryCache } from '../../lib/queryCache';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocale } from '../../contexts/LocaleContext';
 
@@ -138,20 +139,23 @@ export function ProductFAQ({ productId, refreshKey = 0, title }: ProductFAQProps
 
   async function loadFAQs() {
     try {
-      const { data, error } = await supabase
-        .from('product_faqs')
-        .select('*')
-        .eq('product_id', productId)
-        .order('display_order', { ascending: true });
+      const fetcher = async () => {
+        const { data, error } = await supabase
+          .from('product_faqs')
+          .select('*')
+          .eq('product_id', productId)
+          .order('display_order', { ascending: true });
 
-      if (!error && data && data.length > 0) {
-        setFaqs(data);
-        const defaultExpanded = data.find((f) => f.is_expanded_by_default);
-        setExpandedId(defaultExpanded?.id ?? data[0]?.id ?? null);
-      } else {
-        setFaqs([]);
-        setExpandedId('default-faq-0');
-      }
+        if (error) throw error;
+        return data || [];
+      };
+
+      const cacheKey = `product-faqs-${productId}`;
+      const cachedData = await queryCache.get(cacheKey, fetcher);
+
+      setFaqs(cachedData);
+      const defaultExpanded = cachedData.find((f: FAQ) => f.is_expanded_by_default);
+      setExpandedId(defaultExpanded?.id ?? cachedData[0]?.id ?? null);
     } catch (error) {
       console.error('Error loading FAQs:', error);
       setFaqs([]);

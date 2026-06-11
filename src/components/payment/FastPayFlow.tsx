@@ -31,7 +31,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) {
   const { locale } = useLocale();
-  const { t } = useTranslation('checkout', { lng: locale });
+  const { t } = useTranslation('checkout');
   const [step, setStep] = useState<Step>('instructions');
   const [orderId, setOrderId] = useState<string | null>(null);
   const [fastpayLink, setFastpayLink] = useState<string | null>(null);

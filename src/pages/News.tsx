@@ -15,7 +15,7 @@ interface NewsArticle {
   title: string;
   slug: string;
   excerpt: string;
-  content: string;
+  content?: string;
   thumbnail_url: string | null;
   category: string;
   tags: string[];
@@ -661,7 +661,7 @@ export function News({ setScreen }: NewsProps) {
           const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
           const { data: trans } = await supabase
             .from('news_translations')
-            .select('content')
+            .select('content, language')
             .eq('news_id', selectedArticle.id)
             .in('language', langOrder);
           

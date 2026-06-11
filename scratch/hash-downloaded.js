@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 
-const artifactDir = 'C:\\Users\\Dell\\.gemini\\antigravity-ide\\brain\\23def309-e9c8-4522-a936-2a55e8d881b3';
+const artifactDir = 'C:\\Users\\Dell\\.gemini\\antigravity\\brain\\c6af12eb-4de3-4f5b-a357-a8222694ea23';
 
 function getMd5(filePath) {
   try {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { queryCache } from '../../lib/queryCache';
 import { useLocale } from '../../contexts/LocaleContext';
 
 interface CustomSection {
@@ -66,15 +67,21 @@ export function ProductCustomSections({ productId, refreshKey = 0 }: ProductCust
 
   async function loadSections() {
     try {
-      const { data, error } = await supabase
-        .from('product_custom_sections')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+      const fetcher = async () => {
+        const { data, error } = await supabase
+          .from('product_custom_sections')
+          .select('*')
+          .eq('product_id', productId)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      setSections(data ?? []);
+        if (error) throw error;
+        return data || [];
+      };
+
+      const cacheKey = `product-custom-sections-${productId}`;
+      const cachedData = await queryCache.get(cacheKey, fetcher);
+      setSections(cachedData);
     } catch (err) {
       console.error('Error loading custom sections:', err);
       setSections([]);

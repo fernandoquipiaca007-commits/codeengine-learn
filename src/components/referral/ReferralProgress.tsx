@@ -18,7 +18,7 @@ interface ReferralProgressProps {
 
 export function ReferralProgress({ productId, originalPrice, onDiscountChange }: ReferralProgressProps) {
   const { locale } = useLocale();
-  const { t } = useTranslation('common', { lng: locale });
+  const { t } = useTranslation('common');
   const { getProgress } = useReferral();
   const [progress, setProgress] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);

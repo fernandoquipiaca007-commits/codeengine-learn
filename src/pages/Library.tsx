@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { LazyImage } from '../components/ui/LazyImage';
 import { queryCache } from '../lib/queryCache';
+import { prefetchProduct } from '../lib/prefetch';
 
 interface Subcategory {
   id: string;
@@ -105,17 +106,20 @@ export function Library({ setScreen, onProductClick }: {
         return;
       }
       try {
-        const { data, error } = await supabase
-          .from('subcategories')
-          .select('*')
-          .eq('category_id', selectedCategory)
-          .order('display_order', { ascending: true });
-        
-        if (!error && data) {
-          setSubcategories(data);
-        } else {
-          setSubcategories([]);
-        }
+        const fetcher = async () => {
+          const { data, error } = await supabase
+            .from('subcategories')
+            .select('*')
+            .eq('category_id', selectedCategory)
+            .order('display_order', { ascending: true });
+          
+          if (error) throw error;
+          return data || [];
+        };
+
+        const cacheKey = `subcategories-${selectedCategory}`;
+        const cachedData = await queryCache.get(cacheKey, fetcher);
+        setSubcategories(cachedData);
       } catch (err) {
         console.error('Error fetching subcategories:', err);
         setSubcategories([]);
@@ -320,6 +324,7 @@ export function Library({ setScreen, onProductClick }: {
                     <article
                       key={product.id}
                       onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                      onMouseEnter={() => prefetchProduct(product.id, locale)}
                       className="glass-card glass-card-hover rounded-2xl p-2 relative group flex flex-col cursor-pointer"
                     >
                       <div className="absolute w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>

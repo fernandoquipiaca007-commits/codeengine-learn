@@ -75,7 +75,7 @@ type PageSpacing = 'compact' | 'normal';
 
 export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps) {
   const { locale } = useLocale();
-  const { t } = useTranslation('member', { lng: locale });
+  const { t } = useTranslation('member');
   const effectiveLocale = lang || locale;
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);

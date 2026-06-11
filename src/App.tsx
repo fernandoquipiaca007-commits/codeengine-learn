@@ -261,7 +261,7 @@ export default function App() {
           <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[150px] opacity-50" />
         </div>
       }>
-        <Background3D />
+        <Background3D isImmersive={isImmersive} />
       </Suspense>
       {!isImmersive && (
         <NavBar

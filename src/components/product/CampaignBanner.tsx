@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { queryCache } from '../../lib/queryCache';
 
 interface Campaign {
   id: string;
@@ -58,18 +59,24 @@ export function CampaignBanner({ productId, onSpecialPrice }: CampaignBannerProp
 
   const loadActiveCampaign = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('product_campaigns')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      const fetcher = async () => {
+        const { data, error } = await supabase
+          .from('product_campaigns')
+          .select('*')
+          .eq('product_id', productId)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(5);
 
-      if (error) throw error;
+        if (error) throw error;
+        return data || [];
+      };
+
+      const cacheKey = `product-campaigns-${productId}`;
+      const data = await queryCache.get(cacheKey, fetcher);
 
       const active = (data ?? [])
-        .map((row) => normalizeCampaign(row as Record<string, unknown>))
+        .map((row: any) => normalizeCampaign(row as Record<string, unknown>))
         .find((c): c is Campaign => c !== null && Boolean(c.banner_text));
 
       setCampaign(active ?? null);

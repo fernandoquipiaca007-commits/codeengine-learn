@@ -22,7 +22,7 @@ const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
 
 export function ProofUploader({ orderId, onUploadComplete, onError }: ProofUploaderProps) {
   const { locale } = useLocale();
-  const { t } = useTranslation('checkout', { lng: locale });
+  const { t } = useTranslation('checkout');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);

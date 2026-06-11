@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { LazyImage } from '../components/ui/LazyImage';
 import { supabase } from '../lib/supabase';
 import { useLocale } from '../contexts/LocaleContext';
+import { queryCache } from '../lib/queryCache';
+import { prefetchProduct } from '../lib/prefetch';
 
 const CARD_ICONS = [Book, Settings, Cpu];
 const CARD_ACCENTS = ['text-primary', 'text-secondary', 'text-tertiary'];
@@ -33,49 +35,55 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     // Carregar últimas 3 notícias
     async function loadLatestNews() {
       try {
-        let query = supabase
-          .from('news')
-          .select('*')
-          .eq('status', 'published')
-          .lte('published_at', new Date().toISOString())
-          .order('published_at', { ascending: false })
-          .limit(3);
-
-        const { data, error } = await query;
-        if (error) throw error;
-        
-        let fetched = data || [];
-
-        // Traduzir se necessário
-        if (locale !== 'pt' && fetched.length > 0) {
-          const ids = fetched.map(n => n.id);
-          const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
-          const { data: trans } = await supabase
-            .from('news_translations')
+        const fetcher = async () => {
+          let query = supabase
+            .from('news')
             .select('*')
-            .in('news_id', ids)
-            .in('language', langOrder);
+            .eq('status', 'published')
+            .lte('published_at', new Date().toISOString())
+            .order('published_at', { ascending: false })
+            .limit(3);
 
-          if (trans && trans.length > 0) {
-            const transMap = new Map<string, any>();
-            for (const t of trans) {
-              const existing = transMap.get(t.news_id);
-              if (!existing || t.language === locale) {
-                transMap.set(t.news_id, t);
+          const { data, error } = await query;
+          if (error) throw error;
+          
+          let fetched = data || [];
+
+          // Traduzir se necessário
+          if (locale !== 'pt' && fetched.length > 0) {
+            const ids = fetched.map(n => n.id);
+            const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
+            const { data: trans } = await supabase
+              .from('news_translations')
+              .select('*')
+              .in('news_id', ids)
+              .in('language', langOrder);
+
+            if (trans && trans.length > 0) {
+              const transMap = new Map<string, any>();
+              for (const t of trans) {
+                const existing = transMap.get(t.news_id);
+                if (!existing || t.language === locale) {
+                  transMap.set(t.news_id, t);
+                }
               }
+              fetched = fetched.map(art => {
+                const tr = transMap.get(art.id);
+                if (!tr) return art;
+                return {
+                  ...art,
+                  title: tr.title || art.title,
+                  excerpt: tr.excerpt || art.excerpt,
+                };
+              });
             }
-            fetched = fetched.map(art => {
-              const tr = transMap.get(art.id);
-              if (!tr) return art;
-              return {
-                ...art,
-                title: tr.title || art.title,
-                excerpt: tr.excerpt || art.excerpt,
-              };
-            });
           }
-        }
-        setLatestNews(fetched);
+          return fetched;
+        };
+
+        const cacheKey = `latest-news-${locale}`;
+        const cachedNews = await queryCache.get(cacheKey, fetcher);
+        setLatestNews(cachedNews);
       } catch (e) {
         console.error('Error loading latest news on Home:', e);
       }
@@ -253,6 +261,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                 <motion.div
                   key={item.id}
                   onClick={() => onProductClick?.(item.product_id)}
+                  onMouseEnter={() => prefetchProduct(item.product_id, locale)}
                   whileTap={{ scale: 0.95, rotateY: 0, rotateX: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   className={`glass-card rounded-xl p-1 mockup-rotate group cursor-pointer ${offsetClass}`}

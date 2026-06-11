@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import * as LucideIcons from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { queryCache } from '../../lib/queryCache';
 import { safeText } from '../../lib/safe-display';
 import { useLocale } from '../../contexts/LocaleContext';
 
@@ -82,7 +83,7 @@ const DEFAULT_BENEFITS: Record<string, { title: string; subtitle: string; items:
       },
       {
         icon: 'ShieldCheck',
-        title: 'Garantie de Satisfaction',
+        title: 'Garantie de Satisfação',
         description: 'Votre achat est 100% sécurisé avec notre politique de remboursement de 7 jours. Risque zéro pour vous.'
       },
       {
@@ -120,17 +121,20 @@ export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: 
 
   async function loadBenefits() {
     try {
-      const { data, error } = await supabase
-        .from('product_benefits')
-        .select('*')
-        .eq('product_id', productId)
-        .order('display_order', { ascending: true });
+      const fetcher = async () => {
+        const { data, error } = await supabase
+          .from('product_benefits')
+          .select('*')
+          .eq('product_id', productId)
+          .order('display_order', { ascending: true });
 
-      if (!error && data && data.length > 0) {
-        setBenefits(data);
-      } else {
-        setBenefits([]);
-      }
+        if (error) throw error;
+        return data || [];
+      };
+
+      const cacheKey = `product-benefits-${productId}`;
+      const cachedData = await queryCache.get(cacheKey, fetcher);
+      setBenefits(cachedData);
     } catch (err) {
       console.error('Error loading benefits:', err);
       setBenefits([]);

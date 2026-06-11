@@ -17,7 +17,7 @@ interface ReferralShareCardProps {
 
 export function ReferralShareCard({ productId, compact = false }: ReferralShareCardProps) {
   const { locale } = useLocale();
-  const { t } = useTranslation('member', { lng: locale });
+  const { t } = useTranslation('member');
   const { createLink, getGlobalLink, getShareUrl, myLinks, fetchMyLinks } = useReferral();
   const [link, setLink] = useState<any>(null);
   const [shareUrl, setShareUrl] = useState('');
