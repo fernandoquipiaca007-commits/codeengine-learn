@@ -204,7 +204,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-2.5 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-2.5 lg:mt-3 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1080px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-2.5 lg:mt-3 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1080px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
       <div className="nav-beam"></div>
       
       {/* Logo - Brand Icon and Name */}
@@ -226,7 +226,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
       </div>
       
       {/* Desktop Navigation - Hidden on tablet and below */}
-      <div className="hidden xl:flex items-center space-x-4 2xl:space-x-6 flex-shrink min-w-0">
+      <div className="hidden xl:flex items-center gap-3 2xl:gap-5 flex-shrink min-w-0">
         <button 
           onClick={() => setScreen('home')}
           className={cn(
@@ -302,7 +302,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
       </div>
       
       {/* Right Side Actions - Intelligent Progressive Collapse */}
-      <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 lg:gap-3.5 xl:gap-4 flex-shrink-0 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 flex-shrink-0 min-w-0">
         <LanguageSelector variant="dropdown" className="hidden lg:block flex-shrink-0" />
         {/* Search Button - Always visible */}
         <button 
@@ -476,13 +476,13 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           <>
             <button 
               onClick={() => setScreen('auth')}
-              className="hidden lg:block font-display text-xs xl:text-sm font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
+              className="hidden lg:block font-display text-[10px] xl:text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
             >
               {t('nav.signIn')}
             </button>
             <button 
               onClick={() => setScreen('signup')}
-              className="font-display text-xs sm:text-sm font-semibold tracking-widest uppercase px-3 sm:px-4 md:px-5 xl:px-6 py-2 sm:py-2.5 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex-shrink-0 whitespace-nowrap"
+              className="font-display text-[10px] xl:text-xs font-semibold tracking-widest uppercase px-3.5 py-2 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex-shrink-0 whitespace-nowrap"
             >
               <span className="hidden lg:inline">{t('nav.becomeMember')}</span>
               <span className="lg:hidden">{t('nav.signIn')}</span>

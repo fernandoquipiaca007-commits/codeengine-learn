@@ -53,7 +53,7 @@ export function LanguageSelector({ variant = 'dropdown', className = '' }: Langu
         >
           {LANGUAGES.map((lang) => (
             <option key={lang.code} value={lang.code} className="bg-surface text-on-surface text-sm">
-              {lang.flag} {lang.name}
+              {lang.name}
             </option>
           ))}
         </select>
