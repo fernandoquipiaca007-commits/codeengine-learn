@@ -267,12 +267,12 @@ export function ProductActionButton({
       <button
         disabled
         className={`
-          bg-surface-highest text-on-surface-variant font-display text-lg 
-          px-8 py-5 rounded-xl w-full flex justify-center items-center gap-3
+          bg-surface-highest text-on-surface-variant font-display text-sm sm:text-base 
+          px-5 py-3 rounded-lg w-full flex justify-center items-center gap-2.5
           ${className || ''}
         `}
       >
-        <Loader2 className="w-6 h-6 animate-spin" />
+        <Loader2 className="w-5 h-5 animate-spin" />
         <span>{t('product.loading')}</span>
       </button>
     );
@@ -297,10 +297,10 @@ export function ProductActionButton({
           }}
           disabled={downloading && !isCourse && !isEbook}
           className={`
-            bg-green-600 text-white font-display text-lg sm:text-xl md:text-2xl 
-            font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-xl 
+            bg-green-600 text-white font-display text-sm sm:text-base md:text-lg 
+            font-bold px-5 sm:px-6 py-3 sm:py-3.5 rounded-lg 
             hover:bg-green-700 transition-all duration-300 
-            w-full md:w-auto text-center flex justify-center items-center gap-3 
+            w-full md:w-auto text-center flex justify-center items-center gap-2.5 
             shadow-[0_0_20px_rgba(34,197,94,0.3)] 
             hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] 
             group disabled:opacity-50
@@ -308,9 +308,9 @@ export function ProductActionButton({
           `}
         >
           {downloading && !isCourse && !isEbook ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
+            <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            <CheckCircle className="w-6 h-6" />
+            <CheckCircle className="w-5 h-5" />
           )}
           <span>
             {isCourse
@@ -322,7 +322,7 @@ export function ProductActionButton({
                   : t('actions.downloadProduct')}
           </span>
           {!isCourse && !isEbook && (
-            <Download className="w-6 h-6 group-hover:translate-y-0.5 transition-transform" />
+            <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
           )}
         </button>
 
@@ -342,10 +342,10 @@ export function ProductActionButton({
           onClick={handleFreeProduct}
           disabled={loading}
           className={`
-            bg-primary text-on-primary font-display text-lg sm:text-xl md:text-2xl 
-            font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-xl 
+            bg-primary text-on-primary font-display text-sm sm:text-base md:text-lg 
+            font-bold px-5 sm:px-6 py-3 sm:py-3.5 rounded-lg 
             hover:bg-primary/90 transition-all duration-300 
-            w-full md:w-auto text-center flex justify-center items-center gap-3 
+            w-full md:w-auto text-center flex justify-center items-center gap-2.5 
             shadow-[0_0_20px_rgba(192,193,255,0.3)] 
             hover:shadow-[0_0_30px_rgba(192,193,255,0.5)] 
             group disabled:opacity-50 disabled:cursor-not-allowed
@@ -354,14 +354,14 @@ export function ProductActionButton({
         >
           {loading ? (
             <>
-              <Loader2 className="w-6 h-6 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
               <span>{t('checkout:processing')}</span>
             </>
           ) : (
             <>
-              <Download className="w-6 h-6" />
+              <Download className="w-5 h-5" />
               <span>{ctaText || t('actions.downloadFree') || 'Baixar Gratuitamente'}</span>
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </>
           )}
         </button>

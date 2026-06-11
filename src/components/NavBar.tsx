@@ -204,7 +204,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-2.5 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-2.5 lg:mt-3 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1280px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-2.5 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-2.5 lg:mt-3 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1080px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
       <div className="nav-beam"></div>
       
       {/* Logo - Brand Icon and Name */}

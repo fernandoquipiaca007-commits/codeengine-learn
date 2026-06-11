@@ -191,21 +191,21 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
   }
 
   return (
-    <div className="glass-panel rounded-2xl p-6 border border-white/10">
-      <div className="flex items-center gap-2 mb-4">
-        <Tag className="w-5 h-5 text-primary" />
-        <h3 className="font-display text-lg font-semibold text-on-surface">
+    <div className="w-full">
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <Tag className="w-4 h-4 text-primary" />
+        <h3 className="font-display text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
           {t('couponTitle')}
         </h3>
       </div>
 
       {appliedCoupon ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-            <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-500" />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div className="flex items-center gap-2.5">
+              <Check className="w-4 h-4 text-green-500" />
               <div>
-                <p className="font-display text-sm font-semibold text-on-surface">
+                <p className="font-display text-xs font-semibold text-on-surface">
                   {t('couponApplied')}
                 </p>
                 <code className="text-xs text-green-500 font-mono">{appliedCoupon}</code>
@@ -213,7 +213,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
             </div>
             <button
               onClick={removeCoupon}
-              className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors"
               title={t('removeCoupon')}
             >
               <X className="w-4 h-4 text-red-500" />
@@ -221,7 +221,7 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
@@ -230,12 +230,12 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
               onKeyPress={(e) => e.key === 'Enter' && validateCoupon()}
               placeholder={t('couponPlaceholder')}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-surface-container border border-outline/20 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-on-surface placeholder-on-surface-variant/50 font-mono uppercase w-full"
+              className="flex-1 px-3.5 py-2 bg-surface-container border border-outline/15 rounded-lg focus:ring-1.5 focus:ring-primary focus:border-transparent text-sm text-on-surface placeholder-on-surface-variant/50 font-mono uppercase w-full"
             />
             <button
               onClick={validateCoupon}
               disabled={loading || !couponCode.trim()}
-              className="w-full sm:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl font-display text-sm font-semibold tracking-widest uppercase hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-center"
+              className="w-full sm:w-auto px-4 py-2 bg-primary text-on-primary rounded-lg font-display text-xs font-semibold tracking-wider uppercase hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-center"
             >
               {loading ? t('validating') : t('apply')}
             </button>
@@ -243,13 +243,13 @@ export function CouponInput({ productId, originalPrice, onCouponApplied }: Coupo
 
           {message && (
             <div
-              className={`p-3 rounded-xl border ${
+              className={`p-2.5 rounded-lg border ${
                 message.type === 'success'
                   ? 'bg-green-500/10 border-green-500/30 text-green-500'
                   : 'bg-red-500/10 border-red-500/30 text-red-500'
               }`}
             >
-              <p className="font-sans text-sm">{message.text}</p>
+              <p className="font-sans text-xs">{message.text}</p>
             </div>
           )}
         </div>

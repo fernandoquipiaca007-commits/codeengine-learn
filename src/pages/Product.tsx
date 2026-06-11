@@ -764,32 +764,32 @@ export function Product({ setScreen, productId }: ProductProps) {
       )}
 
       {/* Seção de Compra - Realocada para o Final */}
-      <section className="mt-24 pt-16 border-t border-white/10 max-w-3xl mx-auto w-full relative">
-        <div className="absolute inset-0 bg-primary/5 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
-        <div className="glass-panel rounded-3xl p-8 sm:p-12 border border-white/10 relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-8">
+      <section className="mt-16 pt-12 border-t border-white/10 max-w-2xl mx-auto w-full relative">
+        <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full mix-blend-screen pointer-events-none"></div>
+        <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-white/10 relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-5">
           <div className="text-center">
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2">
               {SECTION_TITLES[currentLang]?.title || SECTION_TITLES.pt.title}
             </h2>
-            <p className="font-sans text-base text-on-surface-variant max-w-lg mx-auto">
+            <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">
               {SECTION_TITLES[currentLang]?.subtitle || SECTION_TITLES.pt.subtitle}
             </p>
           </div>
           
-          <div className="flex flex-col gap-6">
-            <div className="flex justify-center items-baseline gap-2 sm:gap-4 mb-2 flex-wrap">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
               {(campaignPrice || discount > 0) ? (
-                <div className="flex items-center justify-center gap-3 flex-wrap font-mono">
-                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/50 line-through">
+                <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
+                  <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/50 line-through">
                     {tDict.before} ${listPrice}
                   </span>
-                  <span className="text-lg sm:text-xl md:text-2xl font-semibold text-on-surface-variant/30">|</span>
-                  <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                  <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/30">|</span>
+                  <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
                     {tDict.now} ${getFinalPrice()}
                   </span>
                 </div>
               ) : (
-                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
                   $ {getFinalPrice()}
                 </span>
               )}
