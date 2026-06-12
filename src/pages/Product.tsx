@@ -2,6 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Star, Lock, Play, Download, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 import { Product as ProductType } from '../types/store';
 import { ProductFAQ } from '../components/product/ProductFAQ';
 import { ProductBonuses } from '../components/product/ProductBonuses';
@@ -108,6 +112,7 @@ export function Product({ setScreen, productId }: ProductProps) {
   const prevLocaleRef = useRef(locale);
   const mainCtaRef = useRef<HTMLDivElement>(null);
   const promoVideoRef = useRef<HTMLVideoElement>(null);
+  const coverRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthSession();
   const { isOwned } = useOwnedProducts(user?.id);
 
@@ -420,6 +425,106 @@ export function Product({ setScreen, productId }: ProductProps) {
     };
   }, [product?.video_url]);
 
+  // GSAP animations for 3D Ebook cover and ScrollTrigger scroll effects
+  useEffect(() => {
+    if (loading || !product) return;
+
+    // 1. Intro Animation: 3D Entrance for Ebook Cover
+    const introTween = gsap.fromTo(coverRef.current,
+      {
+        opacity: 0,
+        y: 40,
+        rotationY: -45,
+        rotationX: 15,
+        scale: 0.9
+      },
+      {
+        opacity: 1,
+        y: 0,
+        rotationY: -15, // Sleek initial angle
+        rotationX: 10,
+        scale: 1,
+        duration: 1.4,
+        ease: 'power3.out'
+      }
+    );
+
+    // 2. Scroll-Linked Animation (ScrollTrigger)
+    const ctx = gsap.context(() => {
+      // The book cover floats down and rotates dynamically as you scroll!
+      gsap.to(coverRef.current, {
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom+=600 top',
+          scrub: 1.2, // Smooth follow scrub
+          invalidateOnRefresh: true,
+        },
+        y: 280, // Moves down alongside scroll content
+        rotationY: 15, // Rotates to expose other side
+        rotationX: 0,
+        scale: 0.85,
+        ease: 'none'
+      });
+
+      // Staggered reveal for benefits cards
+      gsap.fromTo('.benefit-card', 
+        { opacity: 0, y: 50 },
+        {
+          scrollTrigger: {
+            trigger: '.benefit-card',
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+          opacity: 1,
+          y: 0,
+          stagger: 0.15,
+          duration: 0.8,
+          ease: 'power2.out'
+        }
+      );
+
+      // Staggered reveal for bonus cards
+      gsap.fromTo('.bonus-card', 
+        { opacity: 0, y: 40 },
+        {
+          scrollTrigger: {
+            trigger: '.bonus-card',
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+          opacity: 1,
+          y: 0,
+          stagger: 0.15,
+          duration: 0.8,
+          ease: 'power2.out'
+        }
+      );
+
+      // Smooth reveal for FAQ items
+      gsap.fromTo('.faq-item', 
+        { opacity: 0, y: 30 },
+        {
+          scrollTrigger: {
+            trigger: '.faq-item',
+            start: 'top 90%',
+            toggleActions: 'play none none none',
+          },
+          opacity: 1,
+          y: 0,
+          stagger: 0.1,
+          duration: 0.6,
+          ease: 'power1.out'
+        }
+      );
+    });
+
+    return () => {
+      introTween.kill();
+      ctx.revert();
+    };
+  }, [loading, product]);
+
   function handleCouponApplied(discountAmount: number, couponCode: string) {
     setDiscount(discountAmount);
     setAppliedCoupon(couponCode);
@@ -647,9 +752,9 @@ export function Product({ setScreen, productId }: ProductProps) {
         </div>
         
         {/* Image Right */}
-        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px]">
+        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px]" style={{ perspective: '1200px' }}>
           <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
-          <div className="relative z-10 w-full max-w-full sm:max-w-[350px] mockup-rotate">
+          <div ref={coverRef} className="relative z-10 w-full max-w-full sm:max-w-[350px] will-change-transform">
             <LazyImage
               src={getProductCoverUrl(product, locale)}
               alt={product.title}

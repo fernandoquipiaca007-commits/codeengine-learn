@@ -176,7 +176,7 @@ export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: 
           return (
             <div
               key={benefit.id}
-              className="glass-panel p-8 rounded-2xl border border-white/10 hover:border-primary/30 transition-all text-center"
+              className="glass-panel p-8 rounded-2xl border border-white/10 hover:border-primary/30 transition-all text-center benefit-card"
             >
               <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
                 <Icon className="w-8 h-8" />

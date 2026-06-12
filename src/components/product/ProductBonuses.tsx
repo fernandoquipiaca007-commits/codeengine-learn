@@ -262,7 +262,7 @@ export function ProductBonuses({
           return (
             <div
               key={bonus.id}
-              className={`glass-panel p-8 rounded-2xl border ${color.border} hover:border-opacity-100 transition-all flex gap-6 items-start group`}
+              className={`glass-panel p-8 rounded-2xl border ${color.border} hover:border-opacity-100 transition-all flex gap-6 items-start group bonus-card`}
             >
               <motion.div
                 className={`w-16 h-16 rounded-xl bg-gradient-to-br ${color.bg} to-transparent flex items-center justify-center border ${color.border} ${color.text} shrink-0 group-hover:scale-110 transition-transform`}

@@ -203,7 +203,7 @@ export function ProductFAQ({ productId, refreshKey = 0, title }: ProductFAQProps
             key={faq.id}
             className={`glass-panel rounded-2xl border ${
               faq.is_highlighted ? 'border-primary/30' : 'border-white/10'
-            }`}
+            } faq-item`}
           >
             <button
               onClick={() => setExpandedId(expandedId === faq.id ? null : faq.id)}

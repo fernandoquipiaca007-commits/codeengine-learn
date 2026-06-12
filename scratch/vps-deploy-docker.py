@@ -101,6 +101,7 @@ def deploy():
             print("[Warning] .env.backend file not found locally!")
             
         remote_env_path = os.path.join(REMOTE_APP_DIR, '.env')
+        run_ssh_cmd(ssh, f"rm -rf {remote_env_path}")
         encoded_env = base64.b64encode(env_content.encode('utf-8')).decode('utf-8')
         run_ssh_cmd(ssh, f"echo {encoded_env} | base64 -d > {remote_env_path}")
         print(".env configuration written successfully!")
