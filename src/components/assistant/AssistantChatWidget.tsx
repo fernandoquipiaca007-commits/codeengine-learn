@@ -114,7 +114,7 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
       setMessages(prev => [...prev, {
         id: `err-${Date.now()}`,
         sender: 'assistant',
-        content: 'Desculpe, tive um problema de conexão com a VPS e não consegui processar sua resposta. Por favor, tente enviar novamente em alguns segundos.',
+        content: 'Desculpe, tive um problema de conexão com o servidor e não consegui processar sua resposta. Por favor, tente enviar novamente em alguns segundos.',
         created_at: new Date().toISOString()
       }]);
     } finally {
@@ -145,7 +145,7 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-[24px] right-[24px] z-50 flex flex-col items-end max-w-[calc(100vw-48px)]">
       {/* Chat window */}
       <AnimatePresence>
         {isOpen && (
@@ -154,7 +154,7 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="w-[90vw] sm:w-[380px] h-[550px] bg-surface/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.65),_0_0_40px_rgba(192,193,255,0.05)] flex flex-col mb-4 overflow-hidden"
+            className="w-[calc(100vw-48px)] sm:w-[380px] h-[550px] bg-surface/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.65),_0_0_40px_rgba(192,193,255,0.05)] flex flex-col mb-[16px] overflow-hidden"
           >
             {/* Header */}
             <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-primary/10 via-secondary/5 to-transparent relative">
@@ -263,7 +263,7 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
                   </div>
                   <div className="rounded-2xl rounded-tl-none px-4 py-3 bg-white/5 border border-white/10 text-on-surface-variant/70 flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                    <span className="font-sans text-xs">Consultando VPS...</span>
+                    <span className="font-sans text-xs">Processando...</span>
                   </div>
                 </div>
               )}

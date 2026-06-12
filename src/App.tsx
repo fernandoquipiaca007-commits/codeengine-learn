@@ -146,17 +146,45 @@ export default function App() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-        const response = await fetch(`${backendUrl}/api/assistant/onboarding-status`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
+        
+        let completed = false;
+        try {
+          const response = await fetch(`${backendUrl}/api/assistant/onboarding-status`, {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              completed = result.completed;
+            }
+          } else {
+            throw new Error(`API returned status ${response.status}`);
           }
-        });
-        const result = await response.json();
-        if (result.success && !result.completed) {
-          setShowOnboarding(true);
-        } else {
-          setShowOnboarding(false);
+        } catch (apiErr) {
+          console.warn('API onboarding check failed, trying direct Supabase query:', apiErr);
+          // Fallback to direct Supabase query
+          const { data: member } = await supabase
+            .from('members')
+            .select('id')
+            .eq('auth_id', user.id)
+            .maybeSingle();
+            
+          if (member) {
+            const { data: onboarding } = await supabase
+              .from('assistant_onboarding_responses')
+              .select('id')
+              .eq('member_id', member.id)
+              .maybeSingle();
+            completed = !!onboarding;
+          } else {
+            // If member doesn't exist yet, assume they are new (completed = false)
+            completed = false;
+          }
         }
+
+        setShowOnboarding(!completed);
       } catch (err) {
         console.error('Error checking onboarding status:', err);
       }

@@ -41,54 +41,125 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
       if (!session) return;
 
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-      const response = await fetch(`${backendUrl}/api/assistant/onboarding`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          referralSource,
-          wantsToLearn,
-          goal,
-          difficulty
-        })
-      });
+      let onboardingSaved = false;
+      let conversationIdVal: string | null = null;
+      let retrievedWelcomeMessage = '';
 
-      const result = await response.json();
-      if (result.success) {
-        // Wait 3.5 seconds to let n8n process the initial welcome message
-        setTimeout(async () => {
-          try {
-            const histResponse = await fetch(`${backendUrl}/api/assistant/history`, {
-              headers: {
-                'Authorization': `Bearer ${session.access_token}`
-              }
-            });
-            const histResult = await histResponse.json();
-            if (histResult.success && histResult.messages && histResult.messages.length > 0) {
-              const assistantWelcome = histResult.messages.find((m: any) => m.sender === 'assistant');
-              if (assistantWelcome) {
-                setWelcomeMessage(assistantWelcome.content);
-              }
-            }
-          } catch (e) {
-            console.error('Error fetching welcome message:', e);
-          } finally {
-            // Fallback welcome message if n8n was slow
-            if (!welcomeMessage) {
-              setWelcomeMessage(`Olá, ${userName}! Analisei suas respostas e vi que o seu objetivo principal é "${goal}" e que sua maior dificuldade hoje é "${difficulty}". Como seu assistente de IA, estou aqui para estruturar sua jornada de estudos na plataforma, recomendando os e-books e cursos exatos que vão te ajudar a acelerar. Vamos juntos dominar esse conhecimento!`);
-            }
-            setStep('welcome');
-            setLoading(false);
+      try {
+        const response = await fetch(`${backendUrl}/api/assistant/onboarding`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            referralSource,
+            wantsToLearn,
+            goal,
+            difficulty
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            onboardingSaved = true;
+            conversationIdVal = result.conversationId;
           }
-        }, 3500);
-      } else {
-        throw new Error(result.error || 'Failed to save onboarding');
+        }
+      } catch (apiErr) {
+        console.warn('API onboarding save failed, falling back to direct Supabase storage:', apiErr);
       }
+
+      // Fallback: save directly to Supabase if API call failed
+      if (!onboardingSaved) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('id')
+          .eq('auth_id', session.user.id)
+          .maybeSingle();
+
+        if (member) {
+          // Check if onboarding already exists
+          const { data: existingOnboarding } = await supabase
+            .from('assistant_onboarding_responses')
+            .select('id')
+            .eq('member_id', member.id)
+            .maybeSingle();
+
+          if (!existingOnboarding) {
+            const { error: insertErr } = await supabase
+              .from('assistant_onboarding_responses')
+              .insert({
+                member_id: member.id,
+                referral_source: referralSource,
+                wants_to_learn: wantsToLearn,
+                goal,
+                difficulty
+              });
+            if (insertErr) console.error('Error saving onboarding directly:', insertErr);
+          }
+
+          // Create conversation if not exists
+          const { data: existingConv } = await supabase
+            .from('assistant_conversations')
+            .select('id')
+            .eq('member_id', member.id)
+            .eq('status', 'active')
+            .maybeSingle();
+
+          if (!existingConv) {
+            const { data: newConv, error: convErr } = await supabase
+              .from('assistant_conversations')
+              .insert({
+                member_id: member.id,
+                status: 'active'
+              })
+              .select('id')
+              .maybeSingle();
+
+            if (convErr) {
+              console.error('Error creating conversation directly:', convErr);
+            } else if (newConv) {
+              conversationIdVal = newConv.id;
+            }
+          } else {
+            conversationIdVal = existingConv.id;
+          }
+        }
+      }
+
+      // Wait 3.5 seconds to let n8n process the initial welcome message (if we hit the API)
+      setTimeout(async () => {
+        try {
+          if (conversationIdVal) {
+            const { data: msgs, error: msgsErr } = await supabase
+              .from('assistant_messages')
+              .select('content')
+              .eq('conversation_id', conversationIdVal)
+              .eq('sender', 'assistant')
+              .order('created_at', { ascending: false });
+
+            if (!msgsErr && msgs && msgs.length > 0) {
+              retrievedWelcomeMessage = msgs[0].content;
+              setWelcomeMessage(retrievedWelcomeMessage);
+            }
+          }
+        } catch (e) {
+          console.error('Error fetching welcome message:', e);
+        } finally {
+          // Fallback welcome message if n8n was slow or offline
+          if (!retrievedWelcomeMessage && !welcomeMessage) {
+            setWelcomeMessage(`Olá, ${userName}! Analisei suas respostas e vi que o seu objetivo principal é "${goal}" e que sua maior dificuldade hoje é "${difficulty}". Como seu assistente de IA, estou aqui para estruturar sua jornada de estudos na plataforma, recomendando os e-books e cursos exatos que vão te ajudar a acelerar. Vamos juntos dominar esse conhecimento!`);
+          }
+          setStep('welcome');
+          setLoading(false);
+        }
+      }, 3500);
+
     } catch (err) {
       console.error('Onboarding save error:', err);
-      // Fallback in case of endpoint failure
+      // Fallback welcome message in case of absolute failure
       setWelcomeMessage(`Olá, ${userName}! Estou configurando seu assistente de IA pessoal. Vamos começar a explorar a plataforma e encontrar os melhores conteúdos juntos!`);
       setStep('welcome');
       setLoading(false);
@@ -255,7 +326,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                     Estruturando Seu Assistente...
                   </h3>
                   <p className="font-sans text-xs text-on-surface-variant/80 max-w-xs leading-relaxed">
-                    Sincronizando suas preferências com o cérebro do assistente na VPS e gerando sua mensagem de introdução personalizada.
+                    Sincronizando suas preferências com o assistente e gerando sua mensagem de introdução personalizada.
                   </p>
                 </div>
               </div>
@@ -288,6 +359,19 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                         {welcomeMessage}
                       </p>
                     </div>
+                  </div>
+                </div>
+
+                {/* Assistant Suggestion Tip */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3 mt-1 shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0 text-primary">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-display text-xs font-bold text-white uppercase tracking-wider mb-1">Dica de Utilização</h4>
+                    <p className="font-sans text-[11px] text-on-surface-variant/80 leading-relaxed">
+                      O seu consultor de IA foi configurado. Você pode continuar esta conversa e pedir recomendações personalizadas a qualquer momento clicando no ícone do chat no canto inferior direito da tela.
+                    </p>
                   </div>
                 </div>
               </div>

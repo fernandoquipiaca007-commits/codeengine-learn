@@ -110,7 +110,7 @@ export function ReadingMentorPanel({ productId, productTitle }: ReadingMentorPan
       setMessages(prev => [...prev, {
         id: `err-${Date.now()}`,
         sender: 'assistant',
-        content: 'Desculpe, tive um problema de comunicação com o assistente na VPS. Por favor, tente novamente.',
+        content: 'Desculpe, tive um problema de comunicação com o assistente. Por favor, tente novamente.',
         created_at: new Date().toISOString()
       }]);
     } finally {
