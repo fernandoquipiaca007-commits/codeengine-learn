@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Star, Lock, Play, Download, ArrowLeft } from 'lucide-react';
+import { ArrowRight, Star, Lock, Play, Download, ArrowLeft, Languages, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -69,6 +69,36 @@ const SECTION_TITLES = {
   }
 };
 
+const ALERT_TRANSLATIONS = {
+  pt: {
+    availableIn: "Este documento está disponível em:",
+    languages: {
+      pt: "Português 🇵🇹",
+      en: "Inglês 🇬🇧",
+      fr: "Francês 🇫🇷"
+    },
+    observationTitle: "Aviso importante"
+  },
+  en: {
+    availableIn: "This document is available in:",
+    languages: {
+      pt: "Portuguese 🇵🇹",
+      en: "English 🇬🇧",
+      fr: "French 🇫🇷"
+    },
+    observationTitle: "Important Notice"
+  },
+  fr: {
+    availableIn: "Ce document est disponible en :",
+    languages: {
+      pt: "Portugais 🇵🇹",
+      en: "Anglais 🇬🇧",
+      fr: "Français 🇫🇷"
+    },
+    observationTitle: "Avis important"
+  }
+};
+
 interface ProductCouponSectionProps {
   productId: string;
   originalPrice: number;
@@ -109,6 +139,7 @@ export function Product({ setScreen, productId }: ProductProps) {
   const [childRefreshKey, setChildRefreshKey] = useState(0);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const prevLocaleRef = useRef(locale);
   const mainCtaRef = useRef<HTMLDivElement>(null);
   const promoVideoRef = useRef<HTMLVideoElement>(null);
@@ -225,11 +256,36 @@ export function Product({ setScreen, productId }: ProductProps) {
             cta_text: localized.cta_text
           });
 
+          const { data: allTranslations } = await supabase
+            .from('products_translations')
+            .select('language, storage_url')
+            .eq('product_id', data.id);
+
+          const availLangs = new Set<string>();
+          if (data.storage_url || data.file_storage_path) {
+            availLangs.add('pt');
+          }
+          if (allTranslations) {
+            allTranslations.forEach(trItem => {
+              if (trItem.storage_url && trItem.storage_url.trim() !== '') {
+                availLangs.add(trItem.language);
+              }
+            });
+          }
+
+          const trCustomCopy = parseJsonField(t?.custom_copy, {});
+          const baseCustomCopy = parseJsonField((data as any).custom_copy, {});
+          const mergedCustomCopy = {
+            ...baseCustomCopy,
+            ...trCustomCopy
+          };
+
           const row = localized as unknown as Record<string, unknown>;
           return {
             product: localized,
             pageLayout: parsePageLayoutConfig(row.page_layout_config),
-            customCopy: parseJsonField(t?.custom_copy || row.custom_copy, {})
+            customCopy: mergedCustomCopy,
+            availableLanguages: Array.from(availLangs)
           };
         };
 
@@ -241,6 +297,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           setProduct(cachedData.product);
           setPageLayout(cachedData.pageLayout);
           setCustomCopy(cachedData.customCopy);
+          setAvailableLanguages(cachedData.availableLanguages || []);
         } else if (!silent) {
           console.log('[ProductPage] no product found, setting to null');
           setProduct(null);
@@ -914,6 +971,43 @@ export function Product({ setScreen, productId }: ProductProps) {
               onCouponApplied={handleCouponApplied}
             />
             
+            {/* Translation & Observation Alert */}
+            {(availableLanguages.length > 0 || (customCopy?.purchase_note && customCopy.purchase_note.trim() !== '')) && (
+              <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex flex-col gap-3 text-left">
+                {/* Languages list */}
+                {availableLanguages.length > 0 && (
+                  <div className="flex items-start gap-2.5">
+                    <Languages className="w-5.5 h-5.5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-xs font-semibold text-white/50 block uppercase tracking-wider mb-0.5">
+                        {ALERT_TRANSLATIONS[currentLang]?.availableIn || ALERT_TRANSLATIONS.pt.availableIn}
+                      </span>
+                      <span className="text-sm font-medium text-white/90">
+                        {availableLanguages
+                          .map(lang => (ALERT_TRANSLATIONS[currentLang]?.languages as any)?.[lang] || lang)
+                          .join(', ')}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Observation / Note */}
+                {customCopy?.purchase_note && customCopy.purchase_note.trim() !== '' && (
+                  <div className={`flex items-start gap-2.5 ${availableLanguages.length > 0 ? 'pt-2.5 border-t border-white/5' : ''}`}>
+                    <AlertTriangle className="w-5.5 h-5.5 text-amber-400 flex-shrink-0 mt-0.5 animate-pulse" />
+                    <div>
+                      <span className="text-xs font-semibold text-amber-400 block uppercase tracking-wider mb-0.5">
+                        {ALERT_TRANSLATIONS[currentLang]?.observationTitle || ALERT_TRANSLATIONS.pt.observationTitle}
+                      </span>
+                      <p className="text-sm font-normal text-amber-200/90 leading-relaxed">
+                        {customCopy.purchase_note}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Checkout Button */}
             <div ref={mainCtaRef} className="w-full">
               <ProductActionButton
