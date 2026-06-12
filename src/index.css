@@ -600,3 +600,22 @@
       animation: none;
     }
   }
+
+  /* Campaign Banner layout overrides to prevent overlaps */
+  html.has-campaign-banner nav.fixed {
+    margin-top: calc(48px + 0.5rem) !important;
+  }
+  @media (min-width: 640px) {
+    html.has-campaign-banner nav.fixed {
+      margin-top: calc(48px + 0.75rem) !important;
+    }
+  }
+  @media (min-width: 1024px) {
+    html.has-campaign-banner nav.fixed {
+      margin-top: calc(48px + 1.25rem) !important;
+    }
+  }
+
+  html.has-campaign-banner .page-wrapper {
+    padding-top: calc(48px + 6rem) !important;
+  }

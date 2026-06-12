@@ -91,6 +91,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
   
   const [containerWidth, setContainerWidth] = useState(1200);
   const [aspectRatio, setAspectRatio] = useState(1.4142); 
+  const [pageRatios, setPageRatios] = useState<Record<number, number>>({});
   const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set([1, 2, 3]));
 
   const [theme, setTheme] = useState<Theme>(() => {
@@ -546,7 +547,21 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
             <div className="flex flex-col items-center py-0 sm:py-4 w-full" style={{ gap: '0px' }}>
               <Document
                 file={url}
-                onLoadSuccess={({ numPages: n }) => setNumPages(n)}
+                onLoadSuccess={(pdf) => {
+                  setNumPages(pdf.numPages);
+                  // Load first page's aspect ratio asynchronously right away
+                  pdf.getPage(1).then((page: any) => {
+                    const w = page.originalWidth || page.width || (page.getViewport ? page.getViewport({ scale: 1 }).width : 800);
+                    const h = page.originalHeight || page.height || (page.getViewport ? page.getViewport({ scale: 1 }).height : 1131);
+                    const ratio = h / w;
+                    if (!isNaN(ratio) && ratio > 0 && isFinite(ratio)) {
+                      setAspectRatio(ratio);
+                      setPageRatios(prev => ({ ...prev, 1: ratio }));
+                    }
+                  }).catch((err) => {
+                    console.error("Error fetching page 1 aspect ratio on document load:", err);
+                  });
+                }}
                 onLoadError={handleDocumentLoadError}
                 loading={<div className="p-20 text-white font-medium flex items-center gap-3"><div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"/>{t('ebookReader.loadingDocumentProgress')}</div>}
                 error={<div className="p-20 text-red-400 font-medium text-center bg-black/50 rounded-xl my-10">{t('ebookReader.connectionError')}</div>}
@@ -556,7 +571,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                   const pageNum = index + 1;
                   const isVisible = visiblePages.has(pageNum);
                   
-                  const safeRatio = isNaN(aspectRatio) || aspectRatio <= 0 || !isFinite(aspectRatio) ? 1.4142 : aspectRatio;
+                  const currentRatio = pageRatios[pageNum] || aspectRatio;
+                  const safeRatio = isNaN(currentRatio) || currentRatio <= 0 || !isFinite(currentRatio) ? 1.4142 : currentRatio;
                   const wrapperWidth = pageWidth * visualZoom;
                   const wrapperHeight = pageWidth * visualZoom * safeRatio;
                   
@@ -600,15 +616,21 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
                             renderAnnotationLayer={renderQuality !== 'performance'}
                             devicePixelRatio={dpr}
                             onLoadSuccess={(page: any) => {
-                              if (pageNum === 1) {
-                                try {
-                                  const w = page.originalWidth || page.width || (page.getViewport ? page.getViewport({ scale: 1 }).width : 800);
-                                  const h = page.originalHeight || page.height || (page.getViewport ? page.getViewport({ scale: 1 }).height : 1131);
-                                  const ratio = h / w;
-                                  if (!isNaN(ratio) && ratio > 0 && isFinite(ratio)) setAspectRatio(ratio);
-                                } catch (e) {
-                                  console.error("Error setting aspect ratio", e);
+                              try {
+                                const w = page.originalWidth || page.width || (page.getViewport ? page.getViewport({ scale: 1 }).width : 800);
+                                const h = page.originalHeight || page.height || (page.getViewport ? page.getViewport({ scale: 1 }).height : 1131);
+                                const ratio = h / w;
+                                if (!isNaN(ratio) && ratio > 0 && isFinite(ratio)) {
+                                  setPageRatios(prev => {
+                                    if (prev[pageNum] === ratio) return prev;
+                                    return { ...prev, [pageNum]: ratio };
+                                  });
+                                  if (pageNum === 1) {
+                                    setAspectRatio(ratio);
+                                  }
                                 }
+                              } catch (e) {
+                                console.error("Error setting aspect ratio for page " + pageNum, e);
                               }
                             }}
                             loading={null}

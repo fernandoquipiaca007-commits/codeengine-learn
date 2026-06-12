@@ -377,10 +377,10 @@ export function Library({ setScreen, onProductClick }: {
 
                       {/* Product Info */}
                       <div className="px-4 pb-6 flex-grow flex flex-col z-10 relative">
-                        <h2 className="font-display text-2xl font-semibold text-white mb-2 group-hover:text-primary group-active:text-primary transition-colors break-words">
+                        <h2 className="font-display text-lg sm:text-xl font-bold text-white mb-2 line-clamp-2 min-h-[2.75rem] group-hover:text-primary group-active:text-primary transition-colors break-words">
                           {product.title}
                         </h2>
-                        <p className="font-sans text-base text-on-surface-variant/80 line-clamp-2 mb-6 flex-grow break-words">
+                        <p className="font-sans text-sm sm:text-base text-on-surface-variant/80 line-clamp-2 mb-4 flex-grow break-words">
                           {product.description}
                         </p>
 

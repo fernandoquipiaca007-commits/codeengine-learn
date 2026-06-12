@@ -103,50 +103,93 @@ export function ProductCustomSections({ productId, refreshKey = 0 }: ProductCust
     style_config: null
   }));
 
+  const renderSectionContent = (section: CustomSection) => {
+    if (section.section_type === 'testimonial') {
+      return (
+        <blockquote className="border-l-4 border-primary pl-6 my-2">
+          <p className="font-sans text-base sm:text-lg text-on-surface-variant italic whitespace-pre-line leading-relaxed">
+            {section.content ?? ''}
+          </p>
+        </blockquote>
+      );
+    }
+    if (section.section_type === 'warning') {
+      return (
+        <p className="font-sans text-sm sm:text-base text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 whitespace-pre-line leading-relaxed">
+          {section.content ?? ''}
+        </p>
+      );
+    }
+    if (section.section_type === 'list') {
+      return (
+        <ul className="space-y-3 my-2">
+          {String(section.content ?? '').split('\n').filter(Boolean).map((line, i) => (
+            <li key={i} className="font-sans text-sm sm:text-base text-on-surface-variant flex gap-2.5 items-start leading-relaxed">
+              <span className="text-primary font-bold mt-0.5">•</span>
+              <span>{line.replace(/^[-*]\s*/, '')}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return (
+      <p className="font-sans text-sm sm:text-base text-on-surface-variant/90 whitespace-pre-line leading-relaxed">
+        {section.content ?? ''}
+      </p>
+    );
+  };
+
   return (
-    <div className="mt-24 space-y-12">
-      {listToRender.map((section) => (
-        <section key={section.id} className="glass-panel rounded-2xl p-6 sm:p-8 md:p-10">
-          {section.title && (
-            <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-on-surface mb-4">
-              {section.title}
-            </h2>
-          )}
+    <div className="mt-24 space-y-16">
+      {listToRender.map((section, index) => {
+        const hasImage = section.section_type === 'image' && section.image_url;
+        const isEven = index % 2 === 0;
 
-          {section.section_type === 'image' && section.image_url && (
-            <img
-              src={section.image_url}
-              alt={section.title || 'Seção do produto'}
-              className="w-full rounded-xl mb-6 object-cover max-h-[480px]"
-            />
-          )}
+        return (
+          <section 
+            key={section.id} 
+            className="glass-panel rounded-2xl p-6 sm:p-8 md:p-12 relative overflow-hidden transition-all duration-300 hover:border-primary/20 border border-white/5"
+          >
+            {/* Background glowing gradient card effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] via-transparent to-primary/[0.01] pointer-events-none" />
+            
+            {hasImage ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center relative z-10">
+                {/* Text Block */}
+                <div className={`flex flex-col gap-4 min-w-0 w-full ${isEven ? 'md:order-1' : 'md:order-2'}`}>
+                  {section.title && (
+                    <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80 leading-tight">
+                      {section.title}
+                    </h2>
+                  )}
+                  {renderSectionContent(section)}
+                </div>
 
-          {section.section_type === 'testimonial' ? (
-            <blockquote className="border-l-4 border-primary pl-6">
-              <p className="font-sans text-base sm:text-lg text-on-surface-variant italic whitespace-pre-line">
-                {section.content ?? ''}
-              </p>
-            </blockquote>
-          ) : section.section_type === 'warning' ? (
-            <p className="font-sans text-sm sm:text-base text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 whitespace-pre-line">
-              {section.content ?? ''}
-            </p>
-          ) : section.section_type === 'list' ? (
-            <ul className="space-y-2">
-              {String(section.content ?? '').split('\n').filter(Boolean).map((line, i) => (
-                <li key={i} className="font-sans text-sm sm:text-base text-on-surface-variant flex gap-2">
-                  <span className="text-primary">•</span>
-                  <span>{line.replace(/^[-*]\s*/, '')}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="font-sans text-sm sm:text-base text-on-surface-variant whitespace-pre-line">
-              {section.content ?? ''}
-            </p>
-          )}
-        </section>
-      ))}
+                {/* Image Block */}
+                <div className={`w-full overflow-hidden rounded-xl border border-white/10 shadow-2xl relative group ${isEven ? 'md:order-2' : 'md:order-1'}`}>
+                  <img
+                    src={section.image_url!}
+                    alt={section.title || 'Imagem da seção'}
+                    className="w-full h-auto object-cover max-h-[350px] md:max-h-[400px] hover:scale-[1.02] transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent pointer-events-none" />
+                </div>
+              </div>
+            ) : (
+              // Text-only layout (centered and refined)
+              <div className="max-w-3xl mx-auto flex flex-col gap-4 relative z-10">
+                {section.title && (
+                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-white/80 leading-tight">
+                    {section.title}
+                  </h2>
+                )}
+                {renderSectionContent(section)}
+              </div>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }

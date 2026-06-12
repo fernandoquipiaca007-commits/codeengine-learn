@@ -703,16 +703,23 @@ export function Product({ setScreen, productId }: ProductProps) {
             </span>
           </div>
           
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-4xl leading-[1.15] tracking-[-0.04em] font-extrabold text-on-surface break-words">
-            {hasCopy(customCopy?.hero_headline)
-              ? safeText(customCopy.hero_headline)
-              : (product.title || 'Produto').split(' ').slice(0, 2).join(' ')}{' '}
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary break-words">
-              {hasCopy(customCopy?.hero_subheadline)
-                ? safeText(customCopy.hero_subheadline)
-                : (product.title || '').split(' ').slice(2).join(' ')}
-            </span>
+          <h1 className={`${
+            (product.title || '').length > 45 
+              ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[36px]' 
+              : 'text-3xl sm:text-4xl md:text-[44px]'
+          } font-display leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/70 break-words`}>
+            {hasCopy(customCopy?.hero_headline) ? (
+              <>
+                {safeText(customCopy.hero_headline)}{' '}
+                {hasCopy(customCopy?.hero_subheadline) && (
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                    {safeText(customCopy.hero_subheadline)}
+                  </span>
+                )}
+              </>
+            ) : (
+              product.title || 'Produto'
+            )}
           </h1>
           
           <div className="max-w-xl">
@@ -726,7 +733,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                 ref={promoVideoRef}
                 src={product.video_url}
                 controls
-                preload="metadata"
+                preload="none"
                 playsInline
                 muted
                 loop

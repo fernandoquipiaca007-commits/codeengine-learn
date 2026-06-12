@@ -99,6 +99,17 @@ export function CampaignBanner({ productId, onSpecialPrice }: CampaignBannerProp
   }, [loadActiveCampaign, productId]);
 
   useEffect(() => {
+    if (campaign?.banner_text) {
+      document.documentElement.classList.add('has-campaign-banner');
+    } else {
+      document.documentElement.classList.remove('has-campaign-banner');
+    }
+    return () => {
+      document.documentElement.classList.remove('has-campaign-banner');
+    };
+  }, [campaign]);
+
+  useEffect(() => {
     if (!campaign?.show_countdown || !campaign.end_date) return;
 
     const interval = setInterval(() => {
