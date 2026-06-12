@@ -104,11 +104,15 @@ export function NotificationDropdown({ userId, onNavigate, onClose }: Notificati
     'contact', 'favorites', 'news', 'settings', 'privacy', 'terms', 'licensing', 'support',
   ]);
 
-  function resolveLink(linkUrl: string): { screen: string; productId?: string } | null {
+  function resolveLink(linkUrl: string): { screen: string; productId?: string; newsId?: string } | null {
     try {
       if (linkUrl.includes('/product/')) {
         const productId = linkUrl.split('/product/')[1]?.split(/[?#/]/)[0];
         if (productId) return { screen: 'product', productId };
+      }
+      if (linkUrl.includes('/news/')) {
+        const newsId = linkUrl.split('/news/')[1]?.split(/[?#/]/)[0];
+        if (newsId) return { screen: 'news', newsId };
       }
       const path = linkUrl.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '').split('?')[0];
       const screen = path.split('/').filter(Boolean)[0] || path;
@@ -128,6 +132,11 @@ export function NotificationDropdown({ userId, onNavigate, onClose }: Notificati
       if (resolved?.screen === 'product' && resolved.productId) {
         sessionStorage.setItem('pendingProductId', resolved.productId);
         onNavigate('product');
+        return;
+      }
+      if (resolved?.screen === 'news' && resolved.newsId) {
+        sessionStorage.setItem('pendingNewsId', resolved.newsId);
+        onNavigate('news');
         return;
       }
       if (resolved?.screen) {

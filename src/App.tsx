@@ -168,6 +168,30 @@ export default function App() {
     const screen = params.get('screen');
     const pathname = window.location.pathname;
     const hash = window.location.hash;
+    // Handle /product/XYZ direct link (e.g. from web push)
+    if (pathname.startsWith('/product/')) {
+      const productId = pathname.split('/product/')[1]?.split(/[?#/]/)[0];
+      if (productId) {
+        navigateToProduct(productId);
+        window.history.replaceState({}, '', '/');
+        return;
+      }
+    }
+
+    // Handle /news/ABC direct link (e.g. from web push)
+    if (pathname.startsWith('/news/')) {
+      const newsId = pathname.split('/news/')[1]?.split(/[?#/]/)[0];
+      if (newsId) {
+        sessionStorage.setItem('pendingNewsId', newsId);
+        setScreen('news');
+        window.history.replaceState({}, '', '/');
+        return;
+      }
+    } else if (pathname === '/news' || pathname === '/news/') {
+      setScreen('news');
+      window.history.replaceState({}, '', '/');
+      return;
+    }
 
     // Detect recovery sessions or reset password routes
     if (

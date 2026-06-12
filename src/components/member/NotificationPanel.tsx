@@ -155,11 +155,26 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
 
     try {
       const url = new URL(notification.link_url, window.location.origin);
-      const productId = url.searchParams.get('productId') || url.searchParams.get('id');
-      const screen = url.searchParams.get('screen') || url.pathname.replace(/^\//, '') || 'library';
+      let productId = url.searchParams.get('productId') || url.searchParams.get('id');
+      let newsId = url.searchParams.get('newsId');
+      let screen = url.searchParams.get('screen');
+
+      // Check pathnames
+      if (url.pathname.includes('/product/')) {
+        productId = url.pathname.split('/product/')[1]?.split(/[?#/]/)[0];
+        screen = 'product';
+      } else if (url.pathname.includes('/news/')) {
+        newsId = url.pathname.split('/news/')[1]?.split(/[?#/]/)[0];
+        screen = 'news';
+      } else if (!screen) {
+        screen = url.pathname.replace(/^\//, '') || 'library';
+      }
 
       if (productId) {
         onNavigate('product', productId);
+      } else if (newsId) {
+        sessionStorage.setItem('pendingNewsId', newsId);
+        onNavigate('news');
       } else {
         onNavigate(screen);
       }
