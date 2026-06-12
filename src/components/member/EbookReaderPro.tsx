@@ -11,7 +11,8 @@ import {
   Moon,
   Sun,
   Settings,
-  MoreVertical
+  MoreVertical,
+  Bot
 } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +21,7 @@ import { getEbookReadUrl, saveProgress, getProductProgress } from '../../lib/lea
 import { useLocale } from '../../contexts/LocaleContext';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { ReadingMentorPanel } from '../assistant/ReadingMentorPanel';
 
 // ═══ ESTABILIDADE: Worker local Vite (sem CDN externo) ═══
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -88,6 +90,8 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showMentor, setShowMentor] = useState(false);
+  const [title, setTitle] = useState('');
   
   const [containerWidth, setContainerWidth] = useState(1200);
   const [aspectRatio, setAspectRatio] = useState(1.4142); 
@@ -189,6 +193,9 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         getProductProgress(productId).catch(() => null),
       ]);
       setUrl(ebook.url);
+      if (prog?.product?.title) {
+        setTitle(prog.product.title);
+      }
 
       // Restore position from localStorage (priority) or server
       const localData = localStorage.getItem(`ebook_progress_${productId}`);
@@ -528,6 +535,14 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
               <button className="p-2.5 rounded-lg hover:bg-black/10" style={{ color: toolbarText }}><Search className="w-5 h-5" /></button>
             </div>
             <div className="hidden sm:block w-px h-6 bg-black/20 mx-1" />
+            <button 
+              onClick={() => setShowMentor(!showMentor)} 
+              className="p-2 sm:p-2.5 rounded-lg hover:bg-black/10 ml-1 transition-colors" 
+              style={{ color: showMentor ? '#0078d4' : toolbarText }}
+              title="Mentor de Leitura (IA)"
+            >
+              <Bot className="w-5 h-5" />
+            </button>
             <button onClick={() => setShowSettings(!showSettings)} className="p-2 sm:p-2.5 rounded-lg hover:bg-black/10 ml-1" style={{ color: toolbarText }}>
               <span className="hidden sm:inline-block"><Settings className="w-5 h-5" /></span>
               <span className="inline-block sm:hidden"><MoreVertical className="w-5 h-5" /></span>
@@ -536,127 +551,135 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
         </div>
       </div>
 
-      {/* ═══ Área do PDF com ErrorBoundary + Virtualização ═══ */}
-      <ReaderErrorBoundary>
-        <div 
-          ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto overflow-x-auto relative"
-          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
-        >
-          {url && (
-            <div className="flex flex-col items-center py-0 sm:py-4 w-full" style={{ gap: '0px' }}>
-              <Document
-                file={url}
-                onLoadSuccess={(pdf) => {
-                  setNumPages(pdf.numPages);
-                  // Load first page's aspect ratio asynchronously right away
-                  pdf.getPage(1).then((page: any) => {
-                    const w = page.originalWidth || page.width || (page.getViewport ? page.getViewport({ scale: 1 }).width : 800);
-                    const h = page.originalHeight || page.height || (page.getViewport ? page.getViewport({ scale: 1 }).height : 1131);
-                    const ratio = h / w;
-                    if (!isNaN(ratio) && ratio > 0 && isFinite(ratio)) {
-                      setAspectRatio(ratio);
-                      setPageRatios(prev => ({ ...prev, 1: ratio }));
+      {/* ═══ Área Principal com PDF e Mentor de Leitura ═══ */}
+      <div className="flex-1 flex overflow-hidden relative">
+        <ReaderErrorBoundary>
+          <div 
+            ref={scrollContainerRef}
+            className="flex-1 overflow-y-auto overflow-x-auto relative"
+            style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+          >
+            {url && (
+              <div className="flex flex-col items-center py-0 sm:py-4 w-full" style={{ gap: '0px' }}>
+                <Document
+                  file={url}
+                  onLoadSuccess={(pdf) => {
+                    setNumPages(pdf.numPages);
+                    // Load first page's aspect ratio asynchronously right away
+                    pdf.getPage(1).then((page: any) => {
+                      const w = page.originalWidth || page.width || (page.getViewport ? page.getViewport({ scale: 1 }).width : 800);
+                      const h = page.originalHeight || page.height || (page.getViewport ? page.getViewport({ scale: 1 }).height : 1131);
+                      const ratio = h / w;
+                      if (!isNaN(ratio) && ratio > 0 && isFinite(ratio)) {
+                        setAspectRatio(ratio);
+                        setPageRatios(prev => ({ ...prev, 1: ratio }));
+                      }
+                    }).catch((err) => {
+                      console.error("Error fetching page 1 aspect ratio on document load:", err);
+                    });
+                  }}
+                  onLoadError={handleDocumentLoadError}
+                  loading={<div className="p-20 text-white font-medium flex items-center gap-3"><div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"/>{t('ebookReader.loadingDocumentProgress')}</div>}
+                  error={<div className="p-20 text-red-400 font-medium text-center bg-black/50 rounded-xl my-10">{t('ebookReader.connectionError')}</div>}
+                  options={pdfOptions}
+                >
+                  {Array.from(new Array(numPages), (_, index) => {
+                    const pageNum = index + 1;
+                    const isVisible = visiblePages.has(pageNum);
+                    
+                    const currentRatio = pageRatios[pageNum] || aspectRatio;
+                    const safeRatio = isNaN(currentRatio) || currentRatio <= 0 || !isFinite(currentRatio) ? 1.4142 : currentRatio;
+                    const wrapperWidth = pageWidth * visualZoom;
+                    const wrapperHeight = pageWidth * visualZoom * safeRatio;
+                    
+                    const MAX_CANVAS_WIDTH = 1500;
+                    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    
+                    let safeScale = staticRenderScale;
+                    const physicalPixels = pageWidth * staticRenderScale * dpr;
+                    
+                    if (physicalPixels > MAX_CANVAS_WIDTH) {
+                      safeScale = MAX_CANVAS_WIDTH / (pageWidth * dpr);
                     }
-                  }).catch((err) => {
-                    console.error("Error fetching page 1 aspect ratio on document load:", err);
-                  });
-                }}
-                onLoadError={handleDocumentLoadError}
-                loading={<div className="p-20 text-white font-medium flex items-center gap-3"><div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"/>{t('ebookReader.loadingDocumentProgress')}</div>}
-                error={<div className="p-20 text-red-400 font-medium text-center bg-black/50 rounded-xl my-10">{t('ebookReader.connectionError')}</div>}
-                options={pdfOptions}
-              >
-                {Array.from(new Array(numPages), (_, index) => {
-                  const pageNum = index + 1;
-                  const isVisible = visiblePages.has(pageNum);
-                  
-                  const currentRatio = pageRatios[pageNum] || aspectRatio;
-                  const safeRatio = isNaN(currentRatio) || currentRatio <= 0 || !isFinite(currentRatio) ? 1.4142 : currentRatio;
-                  const wrapperWidth = pageWidth * visualZoom;
-                  const wrapperHeight = pageWidth * visualZoom * safeRatio;
-                  
-                  const MAX_CANVAS_WIDTH = 1500;
-                  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                  
-                  let safeScale = staticRenderScale;
-                  const physicalPixels = pageWidth * staticRenderScale * dpr;
-                  
-                  if (physicalPixels > MAX_CANVAS_WIDTH) {
-                    safeScale = MAX_CANVAS_WIDTH / (pageWidth * dpr);
-                  }
-                  
-                  const transformScale = visualZoom / safeScale;
+                    
+                    const transformScale = visualZoom / safeScale;
 
-                  return (
-                    <div
-                      key={`page_wrap_${pageNum}`}
-                      data-page={pageNum}
-                      className="page-wrapper shadow-lg border-b border-white/5 flex items-center justify-center relative overflow-hidden"
-                      style={{
-                        width: `${wrapperWidth}px`,
-                        height: `${wrapperHeight}px`,
-                        marginBottom: `${pageGap}px`,
-                        backgroundColor: pageBg,
-                      }}
-                    >
-                      {isVisible ? (
-                        <div 
-                          className="page-scaler flex items-center justify-center"
-                          style={{
-                            transform: `scale(${transformScale}) rotate(${rotation}deg)`,
-                            transformOrigin: 'center center',
-                          }}
-                        >
-                          <Page
-                            pageNumber={pageNum}
-                            width={pageWidth}
-                            scale={safeScale} 
-                            renderTextLayer={renderQuality !== 'performance'}
-                            renderAnnotationLayer={renderQuality !== 'performance'}
-                            devicePixelRatio={dpr}
-                            onLoadSuccess={(page: any) => {
-                              try {
-                                const w = page.originalWidth || page.width || (page.getViewport ? page.getViewport({ scale: 1 }).width : 800);
-                                const h = page.originalHeight || page.height || (page.getViewport ? page.getViewport({ scale: 1 }).height : 1131);
-                                const ratio = h / w;
-                                if (!isNaN(ratio) && ratio > 0 && isFinite(ratio)) {
-                                  setPageRatios(prev => {
-                                    if (prev[pageNum] === ratio) return prev;
-                                    return { ...prev, [pageNum]: ratio };
-                                  });
-                                  if (pageNum === 1) {
-                                    setAspectRatio(ratio);
-                                  }
-                                }
-                              } catch (e) {
-                                console.error("Error setting aspect ratio for page " + pageNum, e);
-                              }
+                    return (
+                      <div
+                        key={`page_wrap_${pageNum}`}
+                        data-page={pageNum}
+                        className="page-wrapper shadow-lg border-b border-white/5 flex items-center justify-center relative overflow-hidden"
+                        style={{
+                          width: `${wrapperWidth}px`,
+                          height: `${wrapperHeight}px`,
+                          marginBottom: `${pageGap}px`,
+                          backgroundColor: pageBg,
+                        }}
+                      >
+                        {isVisible ? (
+                          <div 
+                            className="page-scaler flex items-center justify-center"
+                            style={{
+                              transform: `scale(${transformScale}) rotate(${rotation}deg)`,
+                              transformOrigin: 'center center',
                             }}
-                            loading={null}
-                            error={
-                              <div className="w-full h-full flex items-center justify-center text-red-500 font-bold bg-red-50">
-                                {t('ebookReader.errorBadge')}
-                              </div>
-                            }
-                          />
-                        </div>
-                      ) : (
-                        <div 
-                          className="w-full h-full flex items-center justify-center font-bold opacity-30 text-xl sm:text-2xl"
-                          style={{ color: pageTextColor }}
-                        >
-                          {t('ebookReader.page', { page: pageNum })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </Document>
-            </div>
-          )}
-        </div>
-      </ReaderErrorBoundary>
+                          >
+                            <Page
+                              pageNumber={pageNum}
+                              width={pageWidth}
+                              scale={safeScale} 
+                              renderTextLayer={renderQuality !== 'performance'}
+                              renderAnnotationLayer={renderQuality !== 'performance'}
+                              devicePixelRatio={dpr}
+                              onLoadSuccess={(page: any) => {
+                                try {
+                                  const w = page.originalWidth || page.width || (page.getViewport ? page.getViewport({ scale: 1 }).width : 800);
+                                  const h = page.originalHeight || page.height || (page.getViewport ? page.getViewport({ scale: 1 }).height : 1131);
+                                  const ratio = h / w;
+                                  if (!isNaN(ratio) && ratio > 0 && isFinite(ratio)) {
+                                    setPageRatios(prev => {
+                                      if (prev[pageNum] === ratio) return prev;
+                                      return { ...prev, [pageNum]: ratio };
+                                    });
+                                    if (pageNum === 1) {
+                                      setAspectRatio(ratio);
+                                    }
+                                  }
+                                } catch (e) {
+                                  console.error("Error setting aspect ratio for page " + pageNum, e);
+                                }
+                              }}
+                              loading={null}
+                              error={
+                                <div className="w-full h-full flex items-center justify-center text-red-500 font-bold bg-red-50">
+                                  {t('ebookReader.errorBadge')}
+                                </div>
+                              }
+                            />
+                          </div>
+                        ) : (
+                          <div 
+                            className="w-full h-full flex items-center justify-center font-bold opacity-30 text-xl sm:text-2xl"
+                            style={{ color: pageTextColor }}
+                          >
+                            {t('ebookReader.page', { page: pageNum })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </Document>
+              </div>
+            )}
+          </div>
+        </ReaderErrorBoundary>
+
+        {showMentor && (
+          <div className="w-80 md:w-96 flex-shrink-0 h-full border-l border-white/10 hidden md:block">
+            <ReadingMentorPanel productId={productId} productTitle={title || 'Ebook'} />
+          </div>
+        )}
+      </div>
 
       {/* ═══ Painel de Configurações (Bottom Sheet mobile / Modal desktop) ═══ */}
       {showSettings && (

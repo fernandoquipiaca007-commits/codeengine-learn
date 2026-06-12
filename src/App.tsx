@@ -7,6 +7,10 @@ import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { PushPermissionPrompt } from './components/PushPermissionPrompt';
 import { useLocale } from './contexts/LocaleContext';
+import { useAuthSession } from './hooks/useAuthSession';
+import { supabase } from './lib/supabase';
+import { OnboardingModal } from './components/assistant/OnboardingModal';
+import { AssistantChatWidget } from './components/assistant/AssistantChatWidget';
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────
 // Background3D uses Three.js (~500KB) — load async so it doesn't block paint
@@ -124,11 +128,44 @@ const PageContent = memo(function PageContent({
 // ─── App root ─────────────────────────────────────────────────────────────────
 export default function App() {
   const { locale } = useLocale();
+  const { user, loading: authLoading } = useAuthSession();
   const [currentScreen, setScreen] = useState('home');
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [memberSection, setMemberSection] = useState<string>('inicio');
   const [showSearch, setShowSearch] = useState(false);
   const [isImmersive, setIsImmersive] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    async function checkOnboarding() {
+      if (!user) {
+        setShowOnboarding(false);
+        return;
+      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const response = await fetch(`${backendUrl}/api/assistant/onboarding-status`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+        const result = await response.json();
+        if (result.success && !result.completed) {
+          setShowOnboarding(true);
+        } else {
+          setShowOnboarding(false);
+        }
+      } catch (err) {
+        console.error('Error checking onboarding status:', err);
+      }
+    }
+
+    if (!authLoading) {
+      void checkOnboarding();
+    }
+  }, [user, authLoading]);
 
   const navigateToProduct = (productId: string) => {
     setCurrentProductId(productId);
@@ -339,6 +376,14 @@ export default function App() {
       <PwaInstallBanner />
       <UpdatePrompt />
       <PushPermissionPrompt />
+
+      {showOnboarding && (
+        <OnboardingModal onComplete={() => setShowOnboarding(false)} />
+      )}
+
+      {user && !isImmersive && !showOnboarding && (
+        <AssistantChatWidget onNavigateToProduct={navigateToProduct} />
+      )}
     </div>
   );
 }

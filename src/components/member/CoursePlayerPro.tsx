@@ -15,10 +15,12 @@ import {
   SkipBack,
   List,
   Link as LinkIcon,
-  AlertTriangle
+  AlertTriangle,
+  Bot
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getLessonStreamUrl, saveProgress, getProductProgress } from '../../lib/learning-api';
+import { ReadingMentorPanel } from '../assistant/ReadingMentorPanel';
 
 interface CoursePlayerProProps {
   productId: string;
@@ -78,6 +80,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   const [showControls, setShowControls] = useState(true);
   const [showPlaylist, setShowPlaylist] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showMentor, setShowMentor] = useState(false);
 
   const flushProgress = useCallback(() => {
     const v = videoRef.current;
@@ -489,21 +492,39 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
           </div>
           <span className="font-display font-bold text-base tracking-tight text-on-surface">CodeEngine <span className="text-primary/60">1</span></span>
         </button>
-        <button
-          onClick={() => setShowPlaylist(!showPlaylist)}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white flex items-center gap-2 border border-white/10 hover:border-white/20"
-          title={showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
-        >
-          <List className="w-5 h-5" />
-          <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wider">
-            {showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
-          </span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowMentor(!showMentor)}
+            className={`p-2 rounded-lg transition-colors flex items-center gap-2 border hover:border-white/20 ${
+              showMentor 
+                ? 'bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(59,130,246,0.15)] font-bold' 
+                : 'bg-white/5 hover:bg-white/10 border-white/10 font-semibold'
+            }`}
+            title="Mentor de IA"
+          >
+            <Bot className="w-5 h-5" />
+            <span className="hidden sm:inline text-xs uppercase tracking-wider">
+              Mentor de IA
+            </span>
+          </button>
+
+          <button
+            onClick={() => setShowPlaylist(!showPlaylist)}
+            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white flex items-center gap-2 border border-white/10 hover:border-white/20 font-semibold"
+            title={showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
+          >
+            <List className="w-5 h-5" />
+            <span className="hidden sm:inline text-xs uppercase tracking-wider">
+              {showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Container principal (max-w 1400px) */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex gap-6 items-start relative">
+        <div className="flex-1 min-w-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Coluna do Player - 2/3 */}
           <div className={`${showPlaylist ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6 transition-all duration-300`}>
             {/* Player Premium Container */}
@@ -857,7 +878,14 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
               </div>
             </div>
           )}
+          </div>
         </div>
+
+        {showMentor && (
+          <div className="w-80 md:w-96 flex-shrink-0 border-l border-white/10 h-[80vh] sticky top-6 hidden lg:block rounded-3xl overflow-hidden bg-[#121216]/95 shadow-2xl">
+            <ReadingMentorPanel productId={productId} productTitle={product?.title || 'Curso'} />
+          </div>
+        )}
       </div>
     </div>
   );
