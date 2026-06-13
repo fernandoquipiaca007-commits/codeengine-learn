@@ -23,6 +23,7 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [hasUnread, setHasUnread] = useState(false);
+  const [productContext, setProductContext] = useState<string | null>(null);
   
   // Syllabus generation flow
   const [syllabusMode, setSyllabusMode] = useState<'idle' | 'step1' | 'step2' | 'step3' | 'generating' | 'done'>('idle');
@@ -34,11 +35,93 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  // Programmatic product details inquiry
+  async function triggerProductInquiry(productId: string, productTitle: string) {
+    setIsOpen(true);
+    setLoading(true);
+    setProductContext(productId);
+
+    const userText = `Gostaria de obter detalhes sobre o produto "${productTitle}".`;
+
+    // Append user message locally
+    const tempUserMsg: Message = {
+      id: `temp-user-${Date.now()}`,
+      sender: 'user',
+      content: userText,
+      created_at: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, tempUserMsg]);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const response = await fetch(`${backendUrl}/api/assistant/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          message: userText,
+          conversationId: conversationId || undefined,
+          productContext: productId
+        })
+      });
+
+      const result = await response.json();
+      if (result.success && result.reply) {
+        setMessages(prev => [...prev, {
+          id: result.reply.id || `ai-${Date.now()}`,
+          sender: 'assistant',
+          content: result.reply.content,
+          metadata: result.reply.metadata,
+          created_at: result.reply.created_at
+        }]);
+        if (!conversationId) setConversationId(result.conversationId);
+      } else {
+        throw new Error(result.error || 'Failed to send message');
+      }
+    } catch (err) {
+      console.error('Error sending product inquiry message:', err);
+      setMessages(prev => [...prev, {
+        id: `err-${Date.now()}`,
+        sender: 'assistant',
+        content: 'Desculpe, tive um problema ao buscar as informações do produto com o assistente. Por favor, tente perguntar novamente.',
+        created_at: new Date().toISOString()
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Listen for the custom event to open the chat and ask about a product
+  useEffect(() => {
+    const handleOpenChat = (e: Event) => {
+      const customEvt = e as CustomEvent<{ productId: string; productTitle: string }>;
+      const { productId, productTitle } = customEvt.detail || {};
+      if (productId && productTitle) {
+        void triggerProductInquiry(productId, productTitle);
+      } else {
+        setIsOpen(true);
+      }
+    };
+
+    window.addEventListener('open-assistant-chat', handleOpenChat);
+    return () => {
+      window.removeEventListener('open-assistant-chat', handleOpenChat);
+    };
+  }, [conversationId]);
+
   // Load chat history and initiate proactive greetings on mount (only when open)
   useEffect(() => {
     if (isOpen) {
       void loadAndInitiate();
       setHasUnread(false);
+    } else {
+      // Reset product context when chat is closed
+      setProductContext(null);
     }
   }, [isOpen]);
 
@@ -115,7 +198,8 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
         },
         body: JSON.stringify({
           message: userText,
-          conversationId: conversationId || undefined
+          conversationId: conversationId || undefined,
+          productContext: productContext || undefined
         })
       });
 

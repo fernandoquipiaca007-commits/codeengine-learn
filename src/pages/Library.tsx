@@ -403,22 +403,38 @@ export function Library({ setScreen, onProductClick }: {
                           <span className="font-mono text-base sm:text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
                             {product.is_free ? t('library.free') : `$ ${product.price}`}
                           </span>
-                          {isOwned(product.id) ? (
-                            <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              {tCommon('product.alreadyOwned')}
-                            </div>
-                          ) : product.is_free ? (
-                            <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1 transition-all">
-                              Acesso Livre
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </div>
-                          ) : (
-                            <button className="secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 group-active:bg-white/10 group-active:border-primary/50 text-white transition-all shrink-0">
-                              {product.cta_text || 'Comprar'}{' '}
-                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-active:translate-x-0.5 transition-transform" />
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.dispatchEvent(new CustomEvent('open-assistant-chat', {
+                                  detail: { productId: product.id, productTitle: product.title }
+                                }));
+                              }}
+                              className="px-3 py-2 rounded-full border border-primary/30 hover:border-primary/60 bg-primary/5 hover:bg-primary/15 text-primary transition-all flex items-center gap-1 font-display text-[10px] font-bold tracking-wider uppercase shrink-0"
+                              title="Perguntar ao Assistente de IA"
+                            >
+                              <Bot className="w-3.5 h-3.5" />
+                              <span>Perguntar</span>
                             </button>
-                          )}
+                            {isOwned(product.id) ? (
+                              <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all shrink-0">
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                {tCommon('product.alreadyOwned')}
+                              </div>
+                            ) : product.is_free ? (
+                              <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1 transition-all shrink-0">
+                                Acesso Livre
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </div>
+                            ) : (
+                              <button className="secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 group-active:bg-white/10 group-active:border-primary/50 text-white transition-all shrink-0">
+                                {product.cta_text || 'Comprar'}{' '}
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-active:translate-x-0.5 transition-transform" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </article>

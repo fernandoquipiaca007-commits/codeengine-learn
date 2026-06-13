@@ -2,7 +2,7 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 
 // <workflow-map>
 // Workflow : Platform AI Assistant
-// Nodes   : 6  |  Connections: 5
+// Nodes   : 7  |  Connections: 5
 //
 // NODE INDEX
 // ──────────────────────────────────────────────────────────────────
@@ -10,7 +10,8 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 // Webhook                            webhook
 // GetContext                         httpRequest
 // CodeContext                        code
-// OllamaChat                         httpRequest
+// NvidiaChatModel                    lmChatNvidia               [creds] [ai_languageModel]
+// AiAgent                            agent                      [AI]
 // SaveResponse                       httpRequest
 // RespondToWebhook                   respondToWebhook
 //
@@ -19,9 +20,12 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 // Webhook
 //    → GetContext
 //      → CodeContext
-//        → OllamaChat
+//        → AiAgent
 //          → SaveResponse
 //            → RespondToWebhook
+//
+// AI CONNECTIONS
+// AiAgent.uses({ ai_languageModel: NvidiaChatModel })
 // </workflow-map>
 
 // =====================================================================
@@ -50,6 +54,7 @@ export class PlatformAiAssistantWorkflow {
     })
     Webhook = {
         path: 'assistant-message',
+        httpMethod: 'POST',
         responseMode: 'responseNode',
         options: {},
     };
@@ -81,10 +86,10 @@ export class PlatformAiAssistantWorkflow {
         sendBody: true,
         contentType: 'json',
         specifyBody: 'json',
-        jsonBody: `{
-  "p_member_id": "{{ $json.member_id }}",
-  "p_conversation_id": "{{ $json.conversation_id }}",
-  "p_product_id": "{{ $json.product_context || null }}"
+        jsonBody: `={
+  "p_member_id": {{ $json.body?.member_id ? '"' + $json.body.member_id + '"' : ($json.member_id ? '"' + $json.member_id + '"' : 'null') }},
+  "p_conversation_id": {{ $json.body?.conversation_id ? '"' + $json.body.conversation_id + '"' : ($json.conversation_id ? '"' + $json.conversation_id + '"' : 'null') }},
+  "p_product_id": {{ $json.body?.product_context ? '"' + $json.body.product_context + '"' : ($json.product_context ? '"' + $json.product_context + '"' : 'null') }}
 }`,
         options: {},
     };
@@ -99,10 +104,12 @@ export class PlatformAiAssistantWorkflow {
     CodeContext = {
         jsCode: `
 const input = $input.item;
-const event = input.json.event;
-const memberName = input.json.member_name || 'Membro';
-const conversationId = input.json.conversation_id;
-const messageContent = input.json.message || '';
+const webhookNode = $('Webhook').first().json;
+const webhookBody = webhookNode.body || webhookNode;
+const event = webhookBody.event || '';
+const memberName = webhookBody.member_name || 'Membro';
+const conversationId = webhookBody.conversation_id || '';
+const messageContent = webhookBody.message || '';
 
 // Acessa o resultado do nó anterior 'Get Context'
 const contextNode = $('Get Context').first();
@@ -113,7 +120,7 @@ const history = context.history || [];
 const productBought = context.product_bought || false;
 const productMetadata = context.product_metadata || {};
 
-let systemPrompt = \`Você é o CodeEngine Assistant, um consultor e mentor digital de Inteligência Artificial, programação, tráfego pago e automações na plataforma CodeEngine 1.
+let systemPrompt = \`Você é o CodeEngine Assistant, um consultor e mentor digital de Inteligência Artificial, programação, tráfego pago e automações na plataforma CodeEngine.
 Seu objetivo é ajudar o usuário, \${memberName}, a alcançar seus objetivos e superar seus desafios.
 Tom de voz: Empático, profissional, consultivo, natural, amigável. Chame o usuário pelo nome.
 
@@ -137,7 +144,7 @@ if (productContext) {
   if (productBought) {
     systemPrompt += \`\\nMENTORIA DE LEITURA (Produto Adquirido):
 O usuário possui acesso completo a este produto (ID: \${productContext}).
-Você deve atuar como um mentor digital lado a lado, ajudando-o a fixar o aprendizado, explicando conceitos complexos, resumindo tópicos e auxiliando na aplicação prática do conteúdo.
+Você deve ajudar o usuário a fixar o aprendizado, explicando conceitos complexos, resumindo tópicos e auxiliando na aplicação prática do conteúdo.
 Estrutura do conteúdo / Tópicos principais: \${productMetadata.structure_outline || 'Não disponível'}
 O que ele vai aprender: \${productMetadata.key_takeaways || 'Não disponível'}
 \`;
@@ -149,7 +156,15 @@ Você deve explicar os benefícios e o que ele aprenderá nesse produto de forma
 - Público-alvo: \${productMetadata.target_audience || 'Não disponível'}
 - O que ele aprenderá: \${productMetadata.key_takeaways || 'Não disponível'}
 - Tópicos abordados: \${productMetadata.structure_outline || 'Não disponível'}
-Esclareça dúvidas gerais do usuário. Mas para ter acesso ao material completo, recomende de forma natural e amigável que ele adquira o material.
+
+IMPORTANTE (Estrutura de Resposta Obrigatória):
+Como o usuário está perguntando sobre o produto, você DEVE estruturar sua resposta EXATAMENTE com os seguintes tópicos em negrito:
+- **Dor**: Explique quais problemas o produto resolve.
+- **Objetivo**: O que o produto visa alcançar.
+- **Benefícios**: Os principais benefícios e diferenciais do produto.
+- **Perfil Ideal**: Quem mais se beneficiaria deste conteúdo.
+- **Próximos Passos**: Como começar ou adquirir o produto (recomende que ele adquira o material e utilize o comando [RECOMMEND: <ID_DO_PRODUTO> | <AÇÃO>] para que ele possa comprar).
+- Sugira também combos inteligentes/especializações personalizadas se o usuário quiser combinar este produto com outros tópicos relacionados para acelerar seus estudos.
 \`;
   }
 } else {
@@ -159,70 +174,66 @@ O usuário está navegando pela plataforma geral. Ajude-o a encontrar o melhor c
 }
 
 systemPrompt += \`\\n\\nDIRETRIZES DE RECOMENDAÇÃO DE CONTEÚDO:
-Quando recomendar um e-book ou curso, sugira o conteúdo de forma consultiva e natural. 
+Quando recomendar um e-book ou curso, sugira o conteúdo de forma consultiva e natural.
 Sempre que você julgar muito relevante recomendar um produto específico da plataforma na conversa, você deve inserir uma linha de comando no final da sua resposta no formato exato:
 [RECOMMEND: <ID_DO_PRODUTO> | <AÇÃO>]
 Onde <AÇÃO> pode ser 'Começar Agora', 'Quero Aprender', 'Ver Conteúdo' ou 'Acessar Material'. Exemplo: [RECOMMEND: 9f5a7d3c-62b1 | Quero Aprender]. Isso fará com que o sistema renderize um botão de ação de forma automatizada no chat para o usuário.
 Mantenha a resposta com excelente formatação em Markdown (parágrafos limpos, tópicos, etc.).\`;
 
-// Mapear histórico para o formato da OpenAI
-const messages = [];
-messages.push({ role: 'system', content: systemPrompt });
-
-// Histórico do banco (do mais recente ao mais antigo) -> inverter para ordem cronológica
+// Formatando o histórico de conversas para o prompt do sistema
+let conversationHistoryText = "";
 const chatHistory = [...history].reverse();
 for (const msg of chatHistory) {
-  messages.push({
-    role: msg.sender === 'user' ? 'user' : 'assistant',
-    content: msg.content
-  });
+  const senderLabel = msg.sender === 'user' ? 'Usuário' : 'Assistente';
+  conversationHistoryText += \`\\n\${senderLabel}: \${msg.content}\`;
 }
 
-// Mensagem atual do usuário ou trigger de onboarding
-if (event === 'onboarding_completed') {
-  messages.push({
-    role: 'user',
-    content: \`Olá! Acabei de me cadastrar na plataforma CodeEngine Learn. Meu objetivo é \${onboarding.goal || 'aprender'} e minha maior dificuldade atual é \${onboarding.difficulty || 'por onde começar'}. Por favor, crie uma mensagem de boas-vindas calorosa se apresentando, me chamando pelo meu nome (\${memberName}) e me mostrando como você pode me ajudar de forma personalizada.\`
-  });
-} else {
-  messages.push({
-    role: 'user',
-    content: messageContent
-  });
+if (conversationHistoryText) {
+  systemPrompt += \`\\n\\nHISTÓRICO DE CONVERSAS ANTERIORES (Use como contexto):\\n\${conversationHistoryText}\`;
 }
+
+const userMessage = event === 'onboarding_completed'
+  ? \`Olá! Acabei de me cadastrar na plataforma CodeEngine Learn. Meu objetivo é \${onboarding.goal || 'aprender'} e minha maior dificuldade atual é \${onboarding.difficulty || 'por onde começar'}. Por favor, crie uma mensagem de boas-vindas calorosa se apresentando, me chamando pelo meu nome (\${memberName}) e me mostrando como você pode me ajudar de forma personalizada.\`
+  : messageContent;
 
 return {
   json: {
     event,
     member_id: input.json.member_id,
     conversation_id: conversationId,
-    messages
+    systemPrompt,
+    userMessage
   }
 };
 `,
     };
 
     @node({
-        id: 'ollama-assistant-chat-completion',
-        name: 'Ollama Chat',
-        type: 'n8n-nodes-base.httpRequest',
-        version: 4.4,
-        position: [760, 200],
+        id: 'nvidia-nemotron-chat-model',
+        name: 'NVIDIA Chat Model',
+        type: '@n8n/n8n-nodes-langchain.lmChatNvidia',
+        version: 1,
+        position: [760, 320],
+        credentials: { nvidiaApi: { id: 'RkZuZ2qX37TLpqfd', name: 'NVIDIA Nemotron account' } },
     })
-    OllamaChat = {
-        url: '={{ $env.OLLAMA_URL || "http://ollama:11434" }}/api/chat',
-        method: 'POST',
-        sendHeaders: false,
-        sendBody: true,
-        contentType: 'json',
-        specifyBody: 'json',
-        jsonBody: `={
-  "model": "{{ $env.OLLAMA_MODEL || 'qwen2.5:3b' }}",
-  "messages": {{ JSON.stringify($json.messages) }},
-  "stream": false,
-  "keep_alive": -1
-}`,
+    NvidiaChatModel = {
+        model: 'nvidia/llama-3.3-nemotron-super-49b-v1',
         options: {},
+    };
+
+    @node({
+        id: 'ai-agent-assistant',
+        name: 'AI Agent',
+        type: '@n8n/n8n-nodes-langchain.agent',
+        version: 1.7,
+        position: [760, 150],
+    })
+    AiAgent = {
+        text: '={{ $json.userMessage }}',
+        options: {
+            systemMessage: '={{ $json.systemPrompt }}',
+        },
+        promptType: 'define',
     };
 
     @node({
@@ -252,12 +263,12 @@ return {
         sendBody: true,
         contentType: 'json',
         specifyBody: 'json',
-        jsonBody: `{
+        jsonBody: `={
   "conversation_id": "{{ $('Code Context').item.json.conversation_id }}",
   "sender": "assistant",
-  "content": "{{ $json.message.content }}",
+  "content": "{{ $json.output }}",
   "metadata": {
-    "raw_ollama": {{ JSON.stringify($json) }}
+    "raw_agent": {{ JSON.stringify($json) }}
   }
 }`,
         options: {},
@@ -272,9 +283,9 @@ return {
     })
     RespondToWebhook = {
         respondWith: 'json',
-        responseBody: `{
+        responseBody: `={
   "success": true,
-  "reply": "{{ $('Ollama Chat').item.json.message.content }}",
+  "reply": "{{ $('AI Agent').item.json.output }}",
   "metadata": {}
 }`,
         options: [],
@@ -288,8 +299,12 @@ return {
     defineRouting() {
         this.Webhook.out(0).to(this.GetContext.in(0));
         this.GetContext.out(0).to(this.CodeContext.in(0));
-        this.CodeContext.out(0).to(this.OllamaChat.in(0));
-        this.OllamaChat.out(0).to(this.SaveResponse.in(0));
+        this.CodeContext.out(0).to(this.AiAgent.in(0));
+        this.AiAgent.out(0).to(this.SaveResponse.in(0));
         this.SaveResponse.out(0).to(this.RespondToWebhook.in(0));
+
+        this.AiAgent.uses({
+            ai_languageModel: this.NvidiaChatModel.output,
+        });
     }
 }
