@@ -219,7 +219,8 @@ return {
         jsonBody: `={
   "model": "{{ $env.OLLAMA_MODEL || 'qwen2.5:3b' }}",
   "messages": {{ JSON.stringify($json.messages) }},
-  "stream": false
+  "stream": false,
+  "keep_alive": -1
 }`,
         options: {},
     };
