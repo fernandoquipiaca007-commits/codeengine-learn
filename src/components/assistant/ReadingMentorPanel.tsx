@@ -14,9 +14,10 @@ interface Message {
 interface ReadingMentorPanelProps {
   productId: string;
   productTitle: string;
+  agentType?: 'ebook_mentor' | 'course_mentor';
 }
 
-export function ReadingMentorPanel({ productId, productTitle }: ReadingMentorPanelProps) {
+export function ReadingMentorPanel({ productId, productTitle, agentType }: ReadingMentorPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,7 +42,7 @@ export function ReadingMentorPanel({ productId, productTitle }: ReadingMentorPan
       if (!session) return;
 
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-      const response = await fetch(`${backendUrl}/api/assistant/history`, {
+      const response = await fetch(`${backendUrl}/api/assistant/history?productId=${productId}`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
@@ -88,7 +89,8 @@ export function ReadingMentorPanel({ productId, productTitle }: ReadingMentorPan
         body: JSON.stringify({
           message: userText,
           conversationId: conversationId || undefined,
-          productContext: productId // Pass active book/course ID as context
+          productContext: productId, // Pass active book/course ID as context
+          agentType: agentType || 'ebook_mentor'
         })
       });
 

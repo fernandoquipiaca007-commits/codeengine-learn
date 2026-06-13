@@ -883,7 +883,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
         {showMentor && (
           <div className="w-80 md:w-96 flex-shrink-0 border-l border-white/10 h-[80vh] sticky top-6 hidden lg:block rounded-3xl overflow-hidden bg-[#121216]/95 shadow-2xl">
-            <ReadingMentorPanel productId={productId} productTitle={product?.title || 'Curso'} />
+            <ReadingMentorPanel productId={productId} productTitle={product?.title || 'Curso'} agentType="course_mentor" />
           </div>
         )}
       </div>

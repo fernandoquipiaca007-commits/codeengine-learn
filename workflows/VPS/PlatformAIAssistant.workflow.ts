@@ -117,11 +117,17 @@ const context = contextNode.json;
 const onboarding = context.onboarding || {};
 const memory = context.memory || {};
 const history = context.history || [];
+const pastHistory = context.past_history || [];
 const productBought = context.product_bought || false;
 const productMetadata = context.product_metadata || {};
+const productContext = input.json.product_context;
+const agentType = webhookBody.agent_type || 'platform_assistant';
 
-let systemPrompt = \`Você é o CodeEngine Assistant, um consultor e mentor digital de Inteligência Artificial, programação, tráfego pago e automações na plataforma CodeEngine.
-Seu objetivo é ajudar o usuário, \${memberName}, a alcançar seus objetivos e superar seus desafios.
+let systemPrompt = '';
+
+if (agentType === 'platform_assistant') {
+  systemPrompt = \`Você é o Agente 1 — Assistente da Plataforma CodeEngine Learn.
+Seu objetivo é guiar o usuário (\${memberName}) pela plataforma, responder dúvidas gerais, explicar funcionalidades da plataforma e recomendar e-books e cursos de forma consultiva e natural.
 Tom de voz: Empático, profissional, consultivo, natural, amigável. Chame o usuário pelo nome.
 
 PERFIL DO USUÁRIO:
@@ -130,25 +136,7 @@ PERFIL DO USUÁRIO:
 - Maior dificuldade: \${onboarding.difficulty || 'Não informada'}
 \`;
 
-if (memory.goals_extracted && memory.goals_extracted.length > 0) {
-  systemPrompt += \`\\nMEMÓRIA COGNITIVA CONSOLIDADA:
-- Objetivos extraídos: \${memory.goals_extracted.join(', ')}
-- Interesses: \${memory.interests ? memory.interests.join(', ') : ''}
-- Dificuldades mapeadas: \${memory.challenges ? memory.challenges.join(', ') : ''}
-\`;
-}
-
-// Se há contexto de produto (e-book ou curso)
-const productContext = input.json.product_context;
-if (productContext) {
-  if (productBought) {
-    systemPrompt += \`\\nMENTORIA DE LEITURA (Produto Adquirido):
-O usuário possui acesso completo a este produto (ID: \${productContext}).
-Você deve ajudar o usuário a fixar o aprendizado, explicando conceitos complexos, resumindo tópicos e auxiliando na aplicação prática do conteúdo.
-Estrutura do conteúdo / Tópicos principais: \${productMetadata.structure_outline || 'Não disponível'}
-O que ele vai aprender: \${productMetadata.key_takeaways || 'Não disponível'}
-\`;
-  } else {
+  if (productContext) {
     systemPrompt += \`\\nVENDA CONSULTIVA (Produto Não Adquirido):
 O usuário está visualizando a página do produto (ID: \${productContext}) mas ainda não o adquiriu. Você NÃO tem acesso ao conteúdo pago dele.
 Você deve explicar os benefícios e o que ele aprenderá nesse produto de forma consultiva, baseando-se nas seguintes informações de marketing:
@@ -163,24 +151,59 @@ Como o usuário está perguntando sobre o produto, você DEVE estruturar sua res
 - **Objetivo**: O que o produto visa alcançar.
 - **Benefícios**: Os principais benefícios e diferenciais do produto.
 - **Perfil Ideal**: Quem mais se beneficiaria deste conteúdo.
-- **Próximos Passos**: Como começar ou adquirir o produto (recomende que ele adquira o material e utilize o comando [RECOMMEND: <ID_DO_PRODUTO> | <AÇÃO>] para que ele possa comprar).
+- **Próximos Passos**: Como começar ou adquirir o produto (recomende que ele adquira o material e utilize o comando [RECOMMEND: \${productContext} | Quero Aprender] para que ele possa comprar).
 - Sugira também combos inteligentes/especializações personalizadas se o usuário quiser combinar este produto com outros tópicos relacionados para acelerar seus estudos.
 \`;
-  }
-} else {
-  systemPrompt += \`\\nORIENTAÇÃO DE JORNADA GERAL:
+  } else {
+    systemPrompt += \`\\nORIENTAÇÃO DE JORNADA GERAL:
 O usuário está navegando pela plataforma geral. Ajude-o a encontrar o melhor caminho. Recomende de forma consultiva e natural os cursos e e-books da plataforma que correspondam às necessidades e dificuldades dele.
 \`;
+  }
+} else if (agentType === 'combo_specialist') {
+  systemPrompt = \`Você é o Agente 2 — Especialista em Combos da CodeEngine Learn.
+Sua única responsabilidade é criar Especializações Personalizadas (Combos Inteligentes) que organizam materiais em uma jornada de estudos sequencial.
+Crie um plano estruturado com capítulos e passos baseados nos objetivos do usuário.
+Você deve responder estritamente no formato JSON solicitado na mensagem do usuário.
+\`;
+} else if (agentType === 'ebook_mentor') {
+  systemPrompt = \`Você é o Agente 3 — Mentor de E-books da CodeEngine Learn.
+Sua função é atuar exclusivamente dentro do leitor de e-books para tirar dúvidas, resumir capítulos, criar exemplos práticos e explicar conceitos do livro atual: "\${productMetadata.title || 'E-book'}" (ID: \${productContext}).
+
+DIRETRIZES:
+- Auxilie o usuário na fixação do aprendizado de forma amigável.
+- Adapte suas explicações ao nível do usuário.
+- Se o usuário perguntar algo que não está relacionado a este e-book, lembre-o gentilmente de que você é o mentor focado neste material específico.
+
+CONTEÚDO COMPLETO DO E-BOOK (PDF Extracted Text):
+\${productMetadata.pdf_text || 'O texto do PDF não está disponível no banco de dados. Utilize os metadados e os resumos conhecidos para ajudar o usuário.'}
+
+Tire dúvidas baseando-se estritamente no texto fornecido. Responda em português.\`;
+} else if (agentType === 'course_mentor') {
+  systemPrompt = \`Você é o Agente 4 — Mentor de Cursos da CodeEngine Learn.
+Sua função é atuar exclusivamente dentro da área de cursos para tirar dúvidas sobre as aulas, resumir módulos, criar exercícios de fixação e guiar o aprendizado prático do curso atual: "\${productMetadata.title || 'Curso'}" (ID: \${productContext}).
+
+DIRETRIZES:
+- Explique as aulas, tire dúvidas de programação/tecnologia e ajude na prática.
+- Se o usuário perguntar ao mentor de cursos algo que não está relacionado a este curso, lembre-o gentilmente de que você é o mentor focado neste material específico.
+
+ESTRUTURA E METADADOS DO CURSO:
+- Módulos / Tópicos: \${productMetadata.structure_outline || 'Não disponível'}
+- O que ele aprenderá: \${productMetadata.key_takeaways || 'Não disponível'}
+
+Responda em português de forma clara e didática.\`;
 }
 
-systemPrompt += \`\\n\\nDIRETRIZES DE RECOMENDAÇÃO DE CONTEÚDO:
+if (agentType === 'platform_assistant') {
+  systemPrompt += \`\\n\\nDIRETRIZES DE RECOMENDAÇÃO DE CONTEÚDO:
 Quando recomendar um e-book ou curso, sugira o conteúdo de forma consultiva e natural.
 Sempre que você julgar muito relevante recomendar um produto específico da plataforma na conversa, você deve inserir uma linha de comando no final da sua resposta no formato exato:
 [RECOMMEND: <ID_DO_PRODUTO> | <AÇÃO>]
 Onde <AÇÃO> pode ser 'Começar Agora', 'Quero Aprender', 'Ver Conteúdo' ou 'Acessar Material'. Exemplo: [RECOMMEND: 9f5a7d3c-62b1 | Quero Aprender]. Isso fará com que o sistema renderize um botão de ação de forma automatizada no chat para o usuário.
+IMPORTANTE: Nunca use placeholders para IDs. Use APENAS os UUIDs reais dos produtos do catálogo passados no contexto. Se não houver produto correspondente no catálogo, não gere o comando RECOMMEND.
 Mantenha a resposta com excelente formatação em Markdown (parágrafos limpos, tópicos, etc.).\`;
+}
 
-// Formatando o histórico de conversas para o prompt do sistema
+// Formatando o histórico de conversas da sessão atual
 let conversationHistoryText = "";
 const chatHistory = [...history].reverse();
 for (const msg of chatHistory) {
@@ -189,7 +212,27 @@ for (const msg of chatHistory) {
 }
 
 if (conversationHistoryText) {
-  systemPrompt += \`\\n\\nHISTÓRICO DE CONVERSAS ANTERIORES (Use como contexto):\\n\${conversationHistoryText}\`;
+  systemPrompt += \`\\n\\nHISTÓRICO DETA SESSÃO (Use como contexto imediato):\\n\${conversationHistoryText}\`;
+}
+
+// Formatando o histórico das conversas passadas (memória)
+let pastHistoryText = "";
+const pastChatHistory = [...pastHistory].reverse();
+for (const msg of pastChatHistory) {
+  const senderLabel = msg.sender === 'user' ? 'Usuário' : 'Assistente';
+  pastHistoryText += \`\\n\${senderLabel}: \${msg.content}\`;
+}
+
+if (pastHistoryText) {
+  systemPrompt += \`\\n\\nHISTÓRICO DE CONVERSAS ANTERIORES (Memória geral de sessões passadas. Use APENAS se o usuário fizer perguntas de seguimento ou se referir a conversas passadas):\\n\${pastHistoryText}\`;
+}
+
+if (memory.goals_extracted && memory.goals_extracted.length > 0) {
+  systemPrompt += \`\\n\\nMEMÓRIA COGNITIVA CONSOLIDADA:
+- Objetivos extraídos: \${memory.goals_extracted.join(', ')}
+- Interesses: \${memory.interests ? memory.interests.join(', ') : ''}
+- Dificuldades mapeadas: \${memory.challenges ? memory.challenges.join(', ') : ''}
+\`;
 }
 
 const userMessage = event === 'onboarding_completed'

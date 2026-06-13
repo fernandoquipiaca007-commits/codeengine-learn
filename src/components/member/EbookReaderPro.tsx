@@ -676,7 +676,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
 
         {showMentor && (
           <div className="w-80 md:w-96 flex-shrink-0 h-full border-l border-white/10 hidden md:block">
-            <ReadingMentorPanel productId={productId} productTitle={title || 'Ebook'} />
+            <ReadingMentorPanel productId={productId} productTitle={title || 'Ebook'} agentType="ebook_mentor" />
           </div>
         )}
       </div>

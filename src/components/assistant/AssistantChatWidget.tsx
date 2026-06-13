@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, X, Send, Bot, Sparkles, Loader2, BookOpen, ArrowRight, User, GraduationCap, Rocket } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Sparkles, Loader2, BookOpen, ArrowRight, User, GraduationCap, Rocket, RotateCcw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { SpecializationBuilderOverlay } from './SpecializationBuilderOverlay';
 
 interface Message {
   id: string;
@@ -31,6 +32,7 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
   const [syllabusLevel, setSyllabusLevel] = useState('');
   const [syllabusTime, setSyllabusTime] = useState('');
   const [syllabusResult, setSyllabusResult] = useState<any>(null);
+  const [isSyllabusOverlayOpen, setIsSyllabusOverlayOpen] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +68,8 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
         body: JSON.stringify({
           message: userText,
           conversationId: conversationId || undefined,
-          productContext: productId
+          productContext: productId,
+          agentType: 'platform_assistant'
         })
       });
 
@@ -136,9 +139,10 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
       if (!session) return;
 
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const storedId = sessionStorage.getItem('codeengine_chat_conversation_id') || undefined;
       
       // 1. Fast load of existing history
-      const historyResponse = await fetch(`${backendUrl}/api/assistant/history`, {
+      const historyResponse = await fetch(`${backendUrl}/api/assistant/history${storedId ? `?conversationId=${storedId}` : ''}`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
@@ -147,6 +151,7 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
       if (historyResult.success) {
         setMessages(historyResult.messages || []);
         setConversationId(historyResult.conversationId);
+        sessionStorage.setItem('codeengine_chat_conversation_id', historyResult.conversationId);
       }
 
       // 2. Proactive initiate check in the background
@@ -154,8 +159,13 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
       const initiateResponse = await fetch(`${backendUrl}/api/assistant/initiate`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
-        }
+        },
+        body: JSON.stringify({
+          conversationId: historyResult.conversationId || storedId,
+          agentType: 'platform_assistant'
+        })
       });
       const initiateResult = await initiateResponse.json();
       if (initiateResult.success) {
@@ -167,6 +177,46 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
       setLoading(false);
     }
   }
+
+  const handleNewSession = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const res = await fetch(`${backendUrl}/api/assistant/new-session`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const result = await res.json();
+      if (result.success) {
+        setMessages([]);
+        setConversationId(result.conversationId);
+        sessionStorage.setItem('codeengine_chat_conversation_id', result.conversationId);
+        
+        // Initiate new chat session proactive greeting
+        const initRes = await fetch(`${backendUrl}/api/assistant/initiate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ conversationId: result.conversationId, agentType: 'platform_assistant' })
+        });
+        const initData = await initRes.json();
+        if (initData.success) {
+          setMessages(initData.messages || []);
+        }
+      }
+    } catch (err) {
+      console.error('Error starting new session:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,7 +249,8 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
         body: JSON.stringify({
           message: userText,
           conversationId: conversationId || undefined,
-          productContext: productContext || undefined
+          productContext: productContext || undefined,
+          agentType: 'platform_assistant'
         })
       });
 
@@ -317,13 +368,23 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
               
               <div className="flex items-center gap-1.5">
                 {syllabusMode === 'idle' && (
-                  <button
-                    onClick={() => setSyllabusMode('step1')}
-                    className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-amber-400 transition-all group"
-                    title="Criar Curso Personalizado"
-                  >
-                    <GraduationCap className="w-4 h-4" />
-                  </button>
+                  <>
+                    <button
+                      onClick={handleNewSession}
+                      disabled={loading}
+                      className="p-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-on-surface-variant hover:text-white transition-all disabled:opacity-40"
+                      title="Nova Conversa"
+                    >
+                      <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                      onClick={() => setSyllabusMode('step1')}
+                      className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-amber-400 transition-all group"
+                      title="Criar Curso Personalizado"
+                    >
+                      <GraduationCap className="w-4 h-4" />
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={() => setIsOpen(false)}
@@ -398,7 +459,12 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
                         {['15 min', '30 min', '1 hora', '2+ horas'].map(t => (
                           <button
                             key={t}
-                            onClick={() => { setSyllabusTime(t); void generateSyllabus(); }}
+                            onClick={() => {
+                              setSyllabusTime(t);
+                              setSyllabusMode('idle');
+                              setIsOpen(false);
+                              setIsSyllabusOverlayOpen(true);
+                            }}
                             className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-on-surface-variant hover:bg-amber-500/10 hover:border-amber-500/20 hover:text-amber-400 font-sans text-xs font-semibold transition-all"
                           >{t}</button>
                         ))}
@@ -603,6 +669,26 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
           )}
         </AnimatePresence>
       </button>
+
+      <SpecializationBuilderOverlay
+        isOpen={isSyllabusOverlayOpen}
+        objective={syllabusObjective}
+        level={syllabusLevel}
+        time={syllabusTime}
+        onClose={() => {
+          setIsSyllabusOverlayOpen(false);
+          setSyllabusObjective('');
+          setSyllabusLevel('');
+          setSyllabusTime('');
+        }}
+        onSuccess={() => {
+          setIsSyllabusOverlayOpen(false);
+          setSyllabusObjective('');
+          setSyllabusLevel('');
+          setSyllabusTime('');
+          onNavigateToScreen?.('member', 'especializacoes');
+        }}
+      />
     </div>
   );
 }
