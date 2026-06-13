@@ -26,10 +26,10 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // Load chat history on mount (only when open)
+  // Load chat history and initiate proactive greetings on mount (only when open)
   useEffect(() => {
     if (isOpen) {
-      void loadHistory();
+      void loadAndInitiate();
       setHasUnread(false);
     }
   }, [isOpen]);
@@ -39,25 +39,41 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  async function loadHistory() {
+  async function loadAndInitiate() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-      const response = await fetch(`${backendUrl}/api/assistant/history`, {
+      
+      // 1. Fast load of existing history
+      const historyResponse = await fetch(`${backendUrl}/api/assistant/history`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
       });
+      const historyResult = await historyResponse.json();
+      if (historyResult.success) {
+        setMessages(historyResult.messages || []);
+        setConversationId(historyResult.conversationId);
+      }
 
-      const result = await response.json();
-      if (result.success) {
-        setMessages(result.messages || []);
-        setConversationId(result.conversationId);
+      // 2. Proactive initiate check in the background
+      setLoading(true);
+      const initiateResponse = await fetch(`${backendUrl}/api/assistant/initiate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const initiateResult = await initiateResponse.json();
+      if (initiateResult.success) {
+        setMessages(initiateResult.messages || []);
       }
     } catch (err) {
-      console.error('Error loading assistant history:', err);
+      console.error('Error loading and initiating assistant:', err);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -154,7 +170,7 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="w-[calc(100vw-48px)] sm:w-[380px] h-[550px] bg-surface/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.65),_0_0_40px_rgba(192,193,255,0.05)] flex flex-col mb-[16px] overflow-hidden"
+            className="w-[calc(100vw-48px)] sm:w-[380px] h-[550px] max-h-[calc(100vh-120px)] bg-surface/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.65),_0_0_40px_rgba(192,193,255,0.05)] flex flex-col mb-[16px] overflow-hidden"
           >
             {/* Header */}
             <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-primary/10 via-secondary/5 to-transparent relative">

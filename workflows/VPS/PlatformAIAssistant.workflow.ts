@@ -31,7 +31,7 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 @workflow({
     id: 'wzRiWD4xi13TESqy',
     name: 'Platform AI Assistant',
-    active: false,
+    active: true,
     isArchived: false,
     settings: { executionOrder: 'v1' },
 })
