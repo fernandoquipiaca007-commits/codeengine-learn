@@ -161,6 +161,7 @@
     "title": "Espace Membre",
     "tabs": {
       "home": "Accueil",
+      "specializations": "Spécialisations",
       "library": "Bibliothèque",
       "purchases": "Achats",
       "notifications": "Notifications"

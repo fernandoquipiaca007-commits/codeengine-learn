@@ -161,6 +161,7 @@
     "title": "Member Area",
     "tabs": {
       "home": "Home",
+      "specializations": "Specializations",
       "library": "Library",
       "purchases": "Purchases",
       "notifications": "Notifications"

@@ -8,6 +8,7 @@ import { NotificationPanel } from '../components/member/NotificationPanel';
 import { LearningHub } from '../components/member/LearningHub';
 import { MyLibrary } from '../components/member/MyLibrary';
 import { RewardsPanel } from '../components/member/RewardsPanel';
+import { CustomCoursesHub } from '../components/member/CustomCoursesHub';
 import { OrderStatusTracker } from '../components/member/OrderStatusTracker';
 import { downloadProduct } from '../lib/download-file';
 import { useLocale } from '../contexts/LocaleContext';
@@ -31,7 +32,7 @@ interface MemberProps {
   onLearnViewChange?: (isImmersive: boolean) => void;
 }
 
-type Section = 'inicio' | 'biblioteca' | 'compras' | 'notificacoes' | 'recompensas';
+type Section = 'inicio' | 'biblioteca' | 'compras' | 'notificacoes' | 'recompensas' | 'especializacoes';
 
 type LearnView = {
   type: 'course' | 'ebook';
@@ -52,6 +53,7 @@ const LEGACY_SECTION: Record<string, Section> = {
   compras: 'compras',
   notificacoes: 'notificacoes',
   recompensas: 'recompensas',
+  especializacoes: 'especializacoes',
 };
 
 function parseInitial(section: string): { tab: Section; learn: LearnView | null } {
@@ -417,6 +419,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
   const tabs: { id: Section; label: string }[] = [
     { id: 'inicio', label: t('member.tabs.home') },
+    { id: 'especializacoes', label: t('member.tabs.specializations').toUpperCase() },
     { id: 'biblioteca', label: t('member.tabs.library') },
     { id: 'compras', label: t('member.tabs.purchases') },
     { id: 'notificacoes', label: t('member.tabs.notifications') },
@@ -522,6 +525,13 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
         {currentSection === 'recompensas' && (
           <RewardsPanel memberId={memberData.id} />
+        )}
+
+        {currentSection === 'especializacoes' && (
+          <CustomCoursesHub
+            onOpenCourse={openCourse}
+            onOpenEbook={openEbook}
+          />
         )}
       </motion.div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MessageSquare, X, Send, Bot, Sparkles, Loader2, BookOpen, ArrowRight, User } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Sparkles, Loader2, BookOpen, ArrowRight, User, GraduationCap, Rocket } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface Message {
@@ -13,15 +13,23 @@ interface Message {
 
 interface AssistantChatWidgetProps {
   onNavigateToProduct: (productId: string) => void;
+  onNavigateToScreen?: (screen: string, section?: string) => void;
 }
 
-export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidgetProps) {
+export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }: AssistantChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [hasUnread, setHasUnread] = useState(false);
+  
+  // Syllabus generation flow
+  const [syllabusMode, setSyllabusMode] = useState<'idle' | 'step1' | 'step2' | 'step3' | 'generating' | 'done'>('idle');
+  const [syllabusObjective, setSyllabusObjective] = useState('');
+  const [syllabusLevel, setSyllabusLevel] = useState('');
+  const [syllabusTime, setSyllabusTime] = useState('');
+  const [syllabusResult, setSyllabusResult] = useState<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -160,6 +168,41 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
     };
   };
 
+  // ── Syllabus generation function ──
+  async function generateSyllabus() {
+    setSyllabusMode('generating');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const response = await fetch(`${backendUrl}/api/assistant/generate-syllabus`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          objective: syllabusObjective,
+          level: syllabusLevel,
+          time: syllabusTime,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setSyllabusResult(result.customCourse);
+        setSyllabusMode('done');
+      } else {
+        console.error('Syllabus generation failed:', result.error);
+        setSyllabusMode('idle');
+      }
+    } catch (err) {
+      console.error('Error generating syllabus:', err);
+      setSyllabusMode('idle');
+    }
+  }
+
   return (
     <div className="fixed bottom-[24px] right-[24px] z-50 flex flex-col items-end max-w-[calc(100vw-48px)]">
       {/* Chat window */}
@@ -188,12 +231,23 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
                 </div>
               </div>
               
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10 text-on-surface-variant hover:text-white transition-all"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                {syllabusMode === 'idle' && (
+                  <button
+                    onClick={() => setSyllabusMode('step1')}
+                    className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-amber-400 transition-all group"
+                    title="Criar Curso Personalizado"
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10 text-on-surface-variant hover:text-white transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Messages Body */}
@@ -201,7 +255,120 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
               ref={chatContainerRef}
               className="flex-grow p-4 overflow-y-auto space-y-4 flex flex-col scrollbar-thin"
             >
-              {messages.length === 0 && !loading && (
+              {/* Syllabus Generation Flow */}
+              {syllabusMode !== 'idle' && syllabusMode !== 'done' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] p-4 space-y-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-amber-400" />
+                    <h4 className="font-display text-xs font-bold text-white uppercase tracking-wider">Criar Curso Personalizado</h4>
+                  </div>
+
+                  {syllabusMode === 'step1' && (
+                    <div className="space-y-2">
+                      <p className="font-sans text-xs text-on-surface-variant/80">Qual é o seu objetivo principal? O que você quer aprender ou alcançar?</p>
+                      <input
+                        type="text"
+                        value={syllabusObjective}
+                        onChange={e => setSyllabusObjective(e.target.value)}
+                        placeholder="Ex: Automatizar minha consultoria com IA"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/30 font-sans text-xs focus:outline-none focus:border-amber-500/50 transition-colors"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => { setSyllabusMode('idle'); setSyllabusObjective(''); }} className="px-3 py-1.5 rounded-lg border border-white/10 font-sans text-xs text-on-surface-variant hover:bg-white/5 transition-all">Cancelar</button>
+                        <button
+                          onClick={() => syllabusObjective.trim() && setSyllabusMode('step2')}
+                          disabled={!syllabusObjective.trim()}
+                          className="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 font-sans text-xs font-semibold text-amber-400 hover:bg-amber-500/30 transition-all disabled:opacity-40"
+                        >Próximo →</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {syllabusMode === 'step2' && (
+                    <div className="space-y-2">
+                      <p className="font-sans text-xs text-on-surface-variant/80">Qual o seu nível de experiência neste assunto?</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {['Iniciante', 'Intermediário', 'Avançado'].map(lvl => (
+                          <button
+                            key={lvl}
+                            onClick={() => { setSyllabusLevel(lvl.toLowerCase()); setSyllabusMode('step3'); }}
+                            className={`px-3 py-1.5 rounded-lg border font-sans text-xs font-semibold transition-all ${
+                              syllabusLevel === lvl.toLowerCase()
+                                ? 'bg-amber-500/20 border-amber-500/30 text-amber-400'
+                                : 'bg-white/5 border-white/10 text-on-surface-variant hover:bg-white/10'
+                            }`}
+                          >{lvl}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {syllabusMode === 'step3' && (
+                    <div className="space-y-2">
+                      <p className="font-sans text-xs text-on-surface-variant/80">Quanto tempo por dia você pode dedicar aos estudos?</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {['15 min', '30 min', '1 hora', '2+ horas'].map(t => (
+                          <button
+                            key={t}
+                            onClick={() => { setSyllabusTime(t); void generateSyllabus(); }}
+                            className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-on-surface-variant hover:bg-amber-500/10 hover:border-amber-500/20 hover:text-amber-400 font-sans text-xs font-semibold transition-all"
+                          >{t}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {syllabusMode === 'generating' && (
+                    <div className="flex items-center gap-3 py-2">
+                      <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+                      <div>
+                        <p className="font-sans text-xs text-white font-semibold">Mapeando materiais da plataforma...</p>
+                        <p className="font-sans text-[10px] text-on-surface-variant/60">A IA está criando seu plano de estudos personalizado</p>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Syllabus Generation Success */}
+              {syllabusMode === 'done' && syllabusResult && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="rounded-2xl border border-green-500/20 bg-green-500/[0.04] p-4 space-y-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <Rocket className="w-4 h-4 text-green-400" />
+                    <h4 className="font-display text-xs font-bold text-green-400 uppercase tracking-wider">Curso Criado!</h4>
+                  </div>
+                  <p className="font-sans text-xs text-white font-semibold">{syllabusResult.title}</p>
+                  <p className="font-sans text-[10px] text-on-surface-variant/70">
+                    {syllabusResult.productCount} materiais selecionados · {syllabusResult.discount}% de desconto
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-xs text-on-surface-variant/50 line-through">${syllabusResult.totalPrice?.toFixed(2)}</span>
+                    <span className="font-display text-sm font-bold text-white">${syllabusResult.discountedPrice?.toFixed(2)}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSyllabusMode('idle');
+                      setSyllabusResult(null);
+                      setIsOpen(false);
+                      onNavigateToScreen?.('member', 'especializacoes');
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-primary text-on-primary font-display text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 hover:bg-primary-fixed transition-all"
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    Ver Curso Sequencial
+                  </button>
+                </motion.div>
+              )}
+
+              {messages.length === 0 && !loading && syllabusMode === 'idle' && (
                 <div className="flex flex-col items-center justify-center text-center py-16 px-4">
                   <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4">
                     <Bot className="w-6 h-6 text-on-surface-variant" />
@@ -288,6 +455,7 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
             </div>
 
             {/* Input Bar */}
+            {syllabusMode === 'idle' && (
             <form 
               onSubmit={handleSendMessage}
               className="p-3 border-t border-white/10 flex items-center gap-2 bg-background/50"
@@ -312,6 +480,7 @@ export function AssistantChatWidget({ onNavigateToProduct }: AssistantChatWidget
                 <Send className="w-4 h-4" />
               </button>
             </form>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

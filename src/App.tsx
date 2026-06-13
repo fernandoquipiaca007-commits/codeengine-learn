@@ -425,7 +425,7 @@ export default function App() {
       )}
 
       {user && !isImmersive && !showOnboarding && (
-        <AssistantChatWidget onNavigateToProduct={navigateToProduct} />
+        <AssistantChatWidget onNavigateToProduct={navigateToProduct} onNavigateToScreen={navigateToScreen} />
       )}
     </div>
   );
