@@ -457,10 +457,19 @@ export function CustomCoursesHub({ onOpenCourse, onOpenEbook }: CustomCoursesHub
       {/* Course List */}
       {courses.length > 0 ? (
         <div className="space-y-3">
-          <h3 className="font-display text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-primary" />
-            Minhas Especializações
-          </h3>
+          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+            <h3 className="font-display text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-primary" />
+              Minhas Especializações
+            </h3>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('open-specialization-builder'))}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-[10px] font-bold text-amber-400 uppercase tracking-wider transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nova Especialização
+            </button>
+          </div>
           {courses.map(course => (
             <CourseCard key={course.id} course={course} />
           ))}
@@ -469,19 +478,22 @@ export function CustomCoursesHub({ onOpenCourse, onOpenEbook }: CustomCoursesHub
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-16 px-4"
+          className="text-center py-16 px-4 border border-white/5 bg-white/[0.01] rounded-2xl"
         >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-            <GraduationCap className="w-8 h-8 text-on-surface-variant/40" />
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-4 text-amber-400">
+            <GraduationCap className="w-8 h-8" />
           </div>
           <h3 className="font-display text-sm font-bold text-white mb-1">Nenhuma especialização ainda</h3>
-          <p className="font-sans text-xs text-on-surface-variant/60 max-w-[260px] mx-auto">
-            Use o Assistente IA para criar seu plano de estudos personalizado com base no seu objetivo.
+          <p className="font-sans text-xs text-on-surface-variant/60 max-w-[280px] mx-auto leading-relaxed">
+            Monte um cronograma de estudos sequencial personalizado, selecionando os melhores cursos e e-books com base no seu objetivo pessoal de aprendizado.
           </p>
-          <div className="mt-4 flex items-center justify-center gap-1 font-sans text-[10px] text-primary">
-            <Sparkles className="w-3 h-3" />
-            Clique no botão do Assistente para começar
-          </div>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-specialization-builder'))}
+            className="mt-6 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-display text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-amber-500/10 flex items-center gap-2 mx-auto"
+          >
+            <GraduationCap className="w-4 h-4" />
+            Montar Especialização
+          </button>
         </motion.div>
       )}
 

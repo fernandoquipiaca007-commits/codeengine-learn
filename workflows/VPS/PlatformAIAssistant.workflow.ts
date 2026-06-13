@@ -2,7 +2,7 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 
 // <workflow-map>
 // Workflow : Platform AI Assistant
-// Nodes   : 7  |  Connections: 5
+// Nodes   : 17  |  Connections: 12
 //
 // NODE INDEX
 // ──────────────────────────────────────────────────────────────────
@@ -10,8 +10,18 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 // Webhook                            webhook
 // GetContext                         httpRequest
 // CodeContext                        code
-// NvidiaChatModel                    lmChatNvidia               [creds] [ai_languageModel]
-// AiAgent                            agent                      [AI]
+// AgentRouter                        switch
+// PlatformAssistantAgent             agent                      [AI]
+// ComboSpecialistAgent               agent                      [AI]
+// EbookMentorAgent                   agent                      [AI]
+// CourseMentorAgent                  agent                      [AI]
+// NvidiaChatModel                    lmChatNvidia               [creds] [ai_languageModel] [ai_languageModel] [ai_languageModel] [ai_languageModel]
+// SimpleMemoryPlatform               memoryBufferWindow         [ai_memory]
+// SimpleMemoryCombo                  memoryBufferWindow         [ai_memory]
+// SimpleMemoryEbook                  memoryBufferWindow         [ai_memory]
+// SimpleMemoryCourse                 memoryBufferWindow         [ai_memory]
+// Calculator                         toolCalculator             [ai_tool] [ai_tool] [ai_tool] [ai_tool]
+// Wikipedia                          toolWikipedia              [ai_tool] [ai_tool] [ai_tool]
 // SaveResponse                       httpRequest
 // RespondToWebhook                   respondToWebhook
 //
@@ -20,12 +30,22 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 // Webhook
 //    → GetContext
 //      → CodeContext
-//        → AiAgent
-//          → SaveResponse
-//            → RespondToWebhook
+//        → AgentRouter
+//          → PlatformAssistantAgent
+//            → SaveResponse
+//              → RespondToWebhook
+//         .out(1) → ComboSpecialistAgent
+//            → SaveResponse (↩ loop)
+//         .out(2) → EbookMentorAgent
+//            → SaveResponse (↩ loop)
+//         .out(3) → CourseMentorAgent
+//            → SaveResponse (↩ loop)
 //
 // AI CONNECTIONS
-// AiAgent.uses({ ai_languageModel: NvidiaChatModel })
+// PlatformAssistantAgent.uses({ ai_languageModel: NvidiaChatModel, ai_memory: SimpleMemoryPlatform, ai_tool: [Calculator, Wikipedia] })
+// ComboSpecialistAgent.uses({ ai_languageModel: NvidiaChatModel, ai_tool: [Calculator], ai_memory: SimpleMemoryCombo })
+// EbookMentorAgent.uses({ ai_languageModel: NvidiaChatModel, ai_tool: [Calculator, Wikipedia], ai_memory: SimpleMemoryEbook })
+// CourseMentorAgent.uses({ ai_languageModel: NvidiaChatModel, ai_tool: [Calculator, Wikipedia], ai_memory: SimpleMemoryCourse })
 // </workflow-map>
 
 // =====================================================================
@@ -37,7 +57,7 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
     name: 'Platform AI Assistant',
     active: true,
     isArchived: false,
-    settings: { executionOrder: 'v1' },
+    settings: { executionOrder: 'v1', binaryMode: 'separate' },
 })
 export class PlatformAiAssistantWorkflow {
     // =====================================================================
@@ -127,13 +147,19 @@ let systemPrompt = '';
 
 if (agentType === 'platform_assistant') {
   systemPrompt = \`Você é o Agente 1 — Assistente da Plataforma CodeEngine Learn.
-Seu objetivo é guiar o usuário (\${memberName}) pela plataforma, responder dúvidas gerais, explicar funcionalidades da plataforma e recomendar e-books e cursos de forma consultiva e natural.
-Tom de voz: Empático, profissional, consultivo, natural, amigável. Chame o usuário pelo nome.
+Seu objetivo é conversar de forma leve, amigável e extremamente natural com o usuário (\${memberName}).
+Não pareça um robô ou um atendente de telemarketing. Fale de forma fluida, como se fosse um parceiro de estudos experiente e próximo, usando expressões naturais e simpáticas do português de Portugal ("Olha", "Pois é", "Tudo bem", "Como estás?", "Como te posso ajudar?").
+
+DIRETRIZES CRÍTICAS DE DIÁLOGO:
+1. Responda de forma simples, curta e direta. NUNCA envie textos gigantes cheios de explicações ou repetindo dados que o usuário já mencionou ou já sabe. Evite excesso de pontuação.
+2. NUNCA force recomendações ou envie links logo na primeira mensagem. Primeiro converse, crie conexão, pergunte sobre as dificuldades dele. Somente quando o usuário demonstrar interesse em um assunto ou perguntar diretamente sobre e-books ou cursos é que você deve sugerir alguma recomendação de forma sutil e consultiva.
+3. Se o usuário estiver perguntando sobre um produto (ID: \${productContext || 'Nenhum'}), explique brevemente os benefícios em tópicos limpos e sugira que ele compre usando o comando RECOMMEND.
+4. Quando for oportuno recomendar, use a linha de comando no final da resposta: [RECOMMEND: <ID_DO_PRODUTO> | <AÇÃO>], onde <AÇÃO> é 'Começar Agora', 'Quero Aprender', 'Ver Conteúdo' ou 'Acessar Material'.
 
 PERFIL DO USUÁRIO:
 - O que quer aprender: \${onboarding.wants_to_learn || 'Não informado'}
 - Objetivo: \${onboarding.goal || 'Não informado'}
-- Maior dificuldade: \${onboarding.difficulty || 'Não informada'}
+- Maior dificuldade: \${onboarding.difficulty || 'Por onde começar'}
 \`;
 
   if (productContext) {
@@ -245,33 +271,38 @@ return {
     member_id: input.json.member_id,
     conversation_id: conversationId,
     systemPrompt,
-    userMessage
+    userMessage,
+    agent_type: agentType
   }
 };
 `,
     };
 
     @node({
-        id: 'nvidia-nemotron-chat-model',
-        name: 'NVIDIA Chat Model',
-        type: '@n8n/n8n-nodes-langchain.lmChatNvidia',
-        version: 1,
-        position: [760, 320],
-        credentials: { nvidiaApi: { id: 'RkZuZ2qX37TLpqfd', name: 'NVIDIA Nemotron account' } },
+        id: 'agent-router',
+        name: 'Agent Router',
+        type: 'n8n-nodes-base.switch',
+        version: 3.4,
+        position: [760, 200],
     })
-    NvidiaChatModel = {
-        model: 'nvidia/llama-3.3-nemotron-super-49b-v1',
+    AgentRouter = {
+        mode: 'expression',
+        numberOutputs: 4,
+        output: '={{ ["platform_assistant", "combo_specialist", "ebook_mentor", "course_mentor"].indexOf($json.agent_type || "platform_assistant") }}',
+        rules: {
+            values: [],
+        },
         options: {},
     };
 
     @node({
-        id: 'ai-agent-assistant',
-        name: 'AI Agent',
+        id: 'platform-assistant-agent',
+        name: 'Platform Assistant Agent',
         type: '@n8n/n8n-nodes-langchain.agent',
         version: 3.1,
-        position: [760, 150],
+        position: [980, 50],
     })
-    AiAgent = {
+    PlatformAssistantAgent = {
         text: '={{ $json.userMessage }}',
         options: {
             systemMessage: '={{ $json.systemPrompt }}',
@@ -280,11 +311,139 @@ return {
     };
 
     @node({
+        id: 'combo-specialist-agent',
+        name: 'Combo Specialist Agent',
+        type: '@n8n/n8n-nodes-langchain.agent',
+        version: 3.1,
+        position: [980, 180],
+    })
+    ComboSpecialistAgent = {
+        text: '={{ $json.userMessage }}',
+        options: {
+            systemMessage: '={{ $json.systemPrompt }}',
+        },
+        promptType: 'define',
+    };
+
+    @node({
+        id: 'ebook-mentor-agent',
+        name: 'Ebook Mentor Agent',
+        type: '@n8n/n8n-nodes-langchain.agent',
+        version: 3.1,
+        position: [980, 310],
+    })
+    EbookMentorAgent = {
+        text: '={{ $json.userMessage }}',
+        options: {
+            systemMessage: '={{ $json.systemPrompt }}',
+        },
+        promptType: 'define',
+    };
+
+    @node({
+        id: 'course-mentor-agent',
+        name: 'Course Mentor Agent',
+        type: '@n8n/n8n-nodes-langchain.agent',
+        version: 3.1,
+        position: [980, 440],
+    })
+    CourseMentorAgent = {
+        text: '={{ $json.userMessage }}',
+        options: {
+            systemMessage: '={{ $json.systemPrompt }}',
+        },
+        promptType: 'define',
+    };
+
+    @node({
+        id: 'nvidia-nemotron-chat-model',
+        name: 'NVIDIA Chat Model',
+        type: '@n8n/n8n-nodes-langchain.lmChatNvidia',
+        version: 1,
+        position: [980, 600],
+        credentials: { nvidiaApi: { id: 'RkZuZ2qX37TLpqfd', name: 'NVIDIA Nemotron account' } },
+    })
+    NvidiaChatModel = {
+        model: 'nvidia/llama-3.3-nemotron-super-49b-v1',
+        options: {},
+    };
+
+    @node({
+        id: 'simple-memory-platform',
+        name: 'Simple Memory Platform',
+        type: '@n8n/n8n-nodes-langchain.memoryBufferWindow',
+        version: 1.4,
+        position: [1180, -40],
+    })
+    SimpleMemoryPlatform = {
+        sessionKey: 'chat_history',
+        sessionIdType: 'fromInput',
+        contextWindowLength: 10,
+    };
+
+    @node({
+        id: 'simple-memory-combo',
+        name: 'Simple Memory Combo',
+        type: '@n8n/n8n-nodes-langchain.memoryBufferWindow',
+        version: 1.4,
+        position: [1180, 100],
+    })
+    SimpleMemoryCombo = {
+        sessionKey: 'chat_history',
+        sessionIdType: 'fromInput',
+        contextWindowLength: 10,
+    };
+
+    @node({
+        id: 'simple-memory-ebook',
+        name: 'Simple Memory Ebook',
+        type: '@n8n/n8n-nodes-langchain.memoryBufferWindow',
+        version: 1.4,
+        position: [1180, 240],
+    })
+    SimpleMemoryEbook = {
+        sessionKey: 'chat_history',
+        sessionIdType: 'fromInput',
+        contextWindowLength: 10,
+    };
+
+    @node({
+        id: 'simple-memory-course',
+        name: 'Simple Memory Course',
+        type: '@n8n/n8n-nodes-langchain.memoryBufferWindow',
+        version: 1.4,
+        position: [1180, 380],
+    })
+    SimpleMemoryCourse = {
+        sessionKey: 'chat_history',
+        sessionIdType: 'fromInput',
+        contextWindowLength: 10,
+    };
+
+    @node({
+        id: 'calculator-tool',
+        name: 'Calculator',
+        type: '@n8n/n8n-nodes-langchain.toolCalculator',
+        version: 1,
+        position: [760, 600],
+    })
+    Calculator = {};
+
+    @node({
+        id: 'wikipedia-tool',
+        name: 'Wikipedia',
+        type: '@n8n/n8n-nodes-langchain.toolWikipedia',
+        version: 1,
+        position: [880, 600],
+    })
+    Wikipedia = {};
+
+    @node({
         id: 'supabase-save-assistant-response',
         name: 'Save Response',
         type: 'n8n-nodes-base.httpRequest',
         version: 4.4,
-        position: [980, 200],
+        position: [1360, 200],
     })
     SaveResponse = {
         url: 'https://ffdqqiunkzhtgbgaojay.supabase.co/rest/v1/assistant_messages',
@@ -322,13 +481,13 @@ return {
         name: 'Respond to Webhook',
         type: 'n8n-nodes-base.respondToWebhook',
         version: 1.1,
-        position: [1200, 200],
+        position: [1580, 200],
     })
     RespondToWebhook = {
         respondWith: 'json',
         responseBody: `={
   "success": true,
-  "reply": {{ JSON.stringify($('AI Agent').item.json.output) }},
+  "reply": {{ JSON.stringify($('Platform Assistant Agent').item?.json?.output || $('Combo Specialist Agent').item?.json?.output || $('Ebook Mentor Agent').item?.json?.output || $('Course Mentor Agent').item?.json?.output) }},
   "metadata": {}
 }`,
         options: [],
@@ -342,12 +501,36 @@ return {
     defineRouting() {
         this.Webhook.out(0).to(this.GetContext.in(0));
         this.GetContext.out(0).to(this.CodeContext.in(0));
-        this.CodeContext.out(0).to(this.AiAgent.in(0));
-        this.AiAgent.out(0).to(this.SaveResponse.in(0));
+        this.CodeContext.out(0).to(this.AgentRouter.in(0));
+        this.AgentRouter.out(0).to(this.PlatformAssistantAgent.in(0));
+        this.AgentRouter.out(1).to(this.ComboSpecialistAgent.in(0));
+        this.AgentRouter.out(2).to(this.EbookMentorAgent.in(0));
+        this.AgentRouter.out(3).to(this.CourseMentorAgent.in(0));
+        this.PlatformAssistantAgent.out(0).to(this.SaveResponse.in(0));
+        this.ComboSpecialistAgent.out(0).to(this.SaveResponse.in(0));
+        this.EbookMentorAgent.out(0).to(this.SaveResponse.in(0));
+        this.CourseMentorAgent.out(0).to(this.SaveResponse.in(0));
         this.SaveResponse.out(0).to(this.RespondToWebhook.in(0));
 
-        this.AiAgent.uses({
+        this.PlatformAssistantAgent.uses({
             ai_languageModel: this.NvidiaChatModel.output,
+            ai_memory: this.SimpleMemoryPlatform.output,
+            ai_tool: [this.Calculator.output, this.Wikipedia.output],
+        });
+        this.ComboSpecialistAgent.uses({
+            ai_languageModel: this.NvidiaChatModel.output,
+            ai_memory: this.SimpleMemoryCombo.output,
+            ai_tool: [this.Calculator.output],
+        });
+        this.EbookMentorAgent.uses({
+            ai_languageModel: this.NvidiaChatModel.output,
+            ai_memory: this.SimpleMemoryEbook.output,
+            ai_tool: [this.Calculator.output, this.Wikipedia.output],
+        });
+        this.CourseMentorAgent.uses({
+            ai_languageModel: this.NvidiaChatModel.output,
+            ai_memory: this.SimpleMemoryCourse.output,
+            ai_tool: [this.Calculator.output, this.Wikipedia.output],
         });
     }
 }
