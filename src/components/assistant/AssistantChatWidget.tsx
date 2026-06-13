@@ -32,29 +32,56 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const isInquiryTriggered = useRef(false);
 
   // Programmatic product details inquiry
   async function triggerProductInquiry(productId: string, productTitle: string) {
+    isInquiryTriggered.current = true;
     setIsOpen(true);
     setLoading(true);
     setProductContext(productId);
-
-    const userText = `Gostaria de obter detalhes sobre o produto "${productTitle}".`;
-
-    // Append user message locally
-    const tempUserMsg: Message = {
-      id: `temp-user-${Date.now()}`,
-      sender: 'user',
-      content: userText,
-      created_at: new Date().toISOString()
-    };
-    setMessages(prev => [...prev, tempUserMsg]);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
+      // 1. Fetch active history and conversationId for this product context
+      const historyResponse = await fetch(
+        `${backendUrl}/api/assistant/history?productId=${productId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        }
+      );
+      const historyResult = await historyResponse.json();
+      let activeConvId = conversationId;
+      let existingMessages: Message[] = [];
+      if (historyResult.success) {
+        existingMessages = historyResult.messages || [];
+        setMessages(existingMessages);
+        setConversationId(historyResult.conversationId);
+        activeConvId = historyResult.conversationId;
+      }
+
+      // 2. If there are already messages in this conversation, do not send the inquiry again
+      if (existingMessages.length > 0) {
+        setLoading(false);
+        return;
+      }
+
+      // 3. Otherwise, send the programmatic inquiry message
+      const userText = `Gostaria de obter detalhes sobre o produto "${productTitle}".`;
+      const tempUserMsg: Message = {
+        id: `temp-user-${Date.now()}`,
+        sender: 'user',
+        content: userText,
+        created_at: new Date().toISOString()
+      };
+      setMessages([tempUserMsg]);
+
       const response = await fetch(`${backendUrl}/api/assistant/message`, {
         method: 'POST',
         headers: {
@@ -63,7 +90,7 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
         },
         body: JSON.stringify({
           message: userText,
-          conversationId: conversationId || undefined,
+          conversationId: activeConvId || undefined,
           productContext: productId,
           agentType: 'platform_assistant'
         })
@@ -129,11 +156,17 @@ export function AssistantChatWidget({ onNavigateToProduct, onNavigateToScreen }:
   // Load chat history and initiate proactive greetings on mount or when context changes
   useEffect(() => {
     if (isOpen) {
-      void loadAndInitiate();
-      setHasUnread(false);
+      if (isInquiryTriggered.current) {
+        isInquiryTriggered.current = false;
+        setHasUnread(false);
+      } else {
+        void loadAndInitiate();
+        setHasUnread(false);
+      }
     } else {
       // Reset product context when chat is closed
       setProductContext(null);
+      isInquiryTriggered.current = false;
     }
   }, [isOpen, productContext]);
 
