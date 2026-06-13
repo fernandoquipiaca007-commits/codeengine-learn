@@ -10,8 +10,8 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 // Webhook                            webhook
 // GetContext                         httpRequest
 // CodeContext                        code
-// NvidiaChatModel                    lmChatNvidia               [creds]
-// AiAgent                            agent
+// NvidiaChatModel                    lmChatNvidia               [creds] [ai_languageModel]
+// AiAgent                            agent                      [AI]
 // SaveResponse                       httpRequest
 // RespondToWebhook                   respondToWebhook
 //
@@ -23,6 +23,9 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 //        → AiAgent
 //          → SaveResponse
 //            → RespondToWebhook
+//
+// AI CONNECTIONS
+// AiAgent.uses({ ai_languageModel: NvidiaChatModel })
 // </workflow-map>
 
 // =====================================================================
@@ -222,7 +225,7 @@ return {
         id: 'ai-agent-assistant',
         name: 'AI Agent',
         type: '@n8n/n8n-nodes-langchain.agent',
-        version: 1.7,
+        version: 3.1,
         position: [760, 150],
     })
     AiAgent = {
@@ -299,5 +302,9 @@ return {
         this.CodeContext.out(0).to(this.AiAgent.in(0));
         this.AiAgent.out(0).to(this.SaveResponse.in(0));
         this.SaveResponse.out(0).to(this.RespondToWebhook.in(0));
+
+        this.AiAgent.uses({
+            ai_languageModel: this.NvidiaChatModel.output,
+        });
     }
 }
