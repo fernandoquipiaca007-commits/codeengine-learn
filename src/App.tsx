@@ -142,6 +142,13 @@ export default function App() {
         setShowOnboarding(false);
         return;
       }
+
+      // Check if onboarding was already completed/dismissed in this browser session
+      if (sessionStorage.getItem(`onboarding_completed_${user.id}`) === 'true') {
+        setShowOnboarding(false);
+        return;
+      }
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
@@ -184,7 +191,12 @@ export default function App() {
           }
         }
 
-        setShowOnboarding(!completed);
+        if (completed) {
+          sessionStorage.setItem(`onboarding_completed_${user.id}`, 'true');
+          setShowOnboarding(false);
+        } else {
+          setShowOnboarding(true);
+        }
       } catch (err) {
         console.error('Error checking onboarding status:', err);
       }
@@ -406,7 +418,10 @@ export default function App() {
       <PushPermissionPrompt />
 
       {showOnboarding && (
-        <OnboardingModal onComplete={() => setShowOnboarding(false)} />
+        <OnboardingModal onComplete={() => {
+          if (user) sessionStorage.setItem(`onboarding_completed_${user.id}`, 'true');
+          setShowOnboarding(false);
+        }} />
       )}
 
       {user && !isImmersive && !showOnboarding && (

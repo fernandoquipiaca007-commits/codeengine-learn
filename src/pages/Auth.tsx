@@ -63,18 +63,18 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           }).catch(() => {}); // fire-and-forget
         }
 
-        // Check if email confirmation is required
-        if (data.user && !data.user.email_confirmed_at) {
-          setSuccess(t('signUpSuccess'));
+        if (data.session) {
+          setSuccess('Cadastro realizado com sucesso! Entrando...');
+          setTimeout(() => {
+            setScreen('member');
+          }, 1500);
         } else {
           setSuccess(t('signUpSuccess'));
+          setTimeout(() => {
+            setMode('login');
+            setSuccess('');
+          }, 4000);
         }
-        
-        // Auto-switch to login mode after 2 seconds
-        setTimeout(() => {
-          setMode('login');
-          setSuccess('');
-        }, 2000);
       } else if (mode === 'login') {
         // Sign in
         const { data, error: signInError } = await supabase.auth.signInWithPassword({

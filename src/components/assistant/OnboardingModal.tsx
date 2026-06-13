@@ -13,6 +13,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
   const [wantsToLearn, setWantsToLearn] = useState('');
   const [goal, setGoal] = useState('');
   const [difficulty, setDifficulty] = useState('');
+  const [otherWantsToLearn, setOtherWantsToLearn] = useState('');
   const [loading, setLoading] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState('');
   const [userName, setUserName] = useState('Membro');
@@ -54,7 +55,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
           },
           body: JSON.stringify({
             referralSource,
-            wantsToLearn,
+            wantsToLearn: wantsToLearn === 'Outro' ? otherWantsToLearn : wantsToLearn,
             goal,
             difficulty
           })
@@ -93,7 +94,7 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
               .insert({
                 member_id: member.id,
                 referral_source: referralSource,
-                wants_to_learn: wantsToLearn,
+                wants_to_learn: wantsToLearn === 'Outro' ? otherWantsToLearn : wantsToLearn,
                 goal,
                 difficulty
               });
@@ -253,7 +254,8 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                     'Automações com n8n / Make',
                     'Programação & Código (React/Node)',
                     'Tráfego Pago & Vendas Online',
-                    'Modelagem de Negócios / SaaS'
+                    'Modelagem de Negócios / SaaS',
+                    'Outro'
                   ].map((learn) => (
                     <button
                       key={learn}
@@ -268,6 +270,21 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                     </button>
                   ))}
                 </div>
+
+                {wantsToLearn === 'Outro' && (
+                  <div className="flex flex-col gap-2 mt-2">
+                    <input
+                      type="text"
+                      value={otherWantsToLearn}
+                      onChange={(e) => setOtherWantsToLearn(e.target.value)}
+                      placeholder="Escreva o que deseja aprender (ex: Fitness, Design, Finanças...)"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 font-sans text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                    />
+                    <p className="font-sans text-xs text-on-surface-variant/50">
+                      Você pode escrever qualquer assunto de seu interesse!
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -411,13 +428,13 @@ export function OnboardingModal({ onComplete }: OnboardingModalProps) {
                     onClick={handleNext}
                     disabled={
                       (step === 'q1' && !referralSource) ||
-                      (step === 'q2' && !wantsToLearn) ||
+                      (step === 'q2' && (!wantsToLearn || (wantsToLearn === 'Outro' && !otherWantsToLearn.trim()))) ||
                       (step === 'q3' && !goal.trim()) ||
                       (step === 'q4' && !difficulty.trim())
                     }
                     className={`font-display text-xs font-bold tracking-widest uppercase px-6 py-3 rounded-full flex items-center gap-1.5 transition-all ${
                       (step === 'q1' && !referralSource) ||
-                      (step === 'q2' && !wantsToLearn) ||
+                      (step === 'q2' && (!wantsToLearn || (wantsToLearn === 'Outro' && !otherWantsToLearn.trim()))) ||
                       (step === 'q3' && !goal.trim()) ||
                       (step === 'q4' && !difficulty.trim())
                         ? 'bg-white/5 border border-white/10 text-on-surface-variant/40 cursor-not-allowed'
