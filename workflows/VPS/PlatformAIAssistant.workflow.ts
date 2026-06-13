@@ -10,8 +10,8 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 // Webhook                            webhook
 // GetContext                         httpRequest
 // CodeContext                        code
-// NvidiaChatModel                    lmChatNvidia               [creds] [ai_languageModel]
-// AiAgent                            agent                      [AI]
+// NvidiaChatModel                    lmChatNvidia               [creds]
+// AiAgent                            agent
 // SaveResponse                       httpRequest
 // RespondToWebhook                   respondToWebhook
 //
@@ -23,9 +23,6 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
 //        → AiAgent
 //          → SaveResponse
 //            → RespondToWebhook
-//
-// AI CONNECTIONS
-// AiAgent.uses({ ai_languageModel: NvidiaChatModel })
 // </workflow-map>
 
 // =====================================================================
@@ -266,7 +263,7 @@ return {
         jsonBody: `={
   "conversation_id": "{{ $('Code Context').item.json.conversation_id }}",
   "sender": "assistant",
-  "content": "{{ $json.output }}",
+  "content": {{ JSON.stringify($json.output) }},
   "metadata": {
     "raw_agent": {{ JSON.stringify($json) }}
   }
@@ -285,7 +282,7 @@ return {
         respondWith: 'json',
         responseBody: `={
   "success": true,
-  "reply": "{{ $('AI Agent').item.json.output }}",
+  "reply": {{ JSON.stringify($('AI Agent').item.json.output) }},
   "metadata": {}
 }`,
         options: [],
@@ -302,9 +299,5 @@ return {
         this.CodeContext.out(0).to(this.AiAgent.in(0));
         this.AiAgent.out(0).to(this.SaveResponse.in(0));
         this.SaveResponse.out(0).to(this.RespondToWebhook.in(0));
-
-        this.AiAgent.uses({
-            ai_languageModel: this.NvidiaChatModel.output,
-        });
     }
 }
