@@ -5,16 +5,9 @@ import './index.css';
 import './lib/i18n';
 import { LocaleProvider } from './contexts/LocaleContext';
 
-// Global controllerchange listener to ensure clean updates
-if ('serviceWorker' in navigator) {
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    console.log('[PWA] Service worker controller changed. Reloading page globally...');
-    window.location.reload();
-  });
-}
+// NOTE: The controllerchange → reload pattern was REMOVED.
+// It caused the page to auto-reload every ~15s after first SW activation.
+// Updates are now user-initiated via UpdatePrompt component.
 
 class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; isChunkError: boolean }> {
   state = { hasError: false, isChunkError: false };
