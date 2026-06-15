@@ -7,7 +7,7 @@ import { useLocale } from '../../contexts/LocaleContext';
 
 interface Video {
   id: string;
-  video_type: 'youtube' | 'vimeo' | 'instagram' | 'upload';
+  video_type: 'youtube' | 'vimeo' | 'instagram' | 'upload' | 'google-drive';
   video_url: string;
   title: string | null;
   description: string | null;
@@ -114,6 +114,17 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
     if (video.video_type === 'instagram') {
       return url.replace('/p/', '/embed/p/');
     }
+
+    if (video.video_type === 'google-drive') {
+      // URL is already normalized to /file/d/ID/preview by the admin
+      // But handle raw share links just in case
+      if (url.includes('/preview')) return url;
+      const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) return `https://drive.google.com/file/d/${match[1]}/preview`;
+      const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (idMatch) return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+      return url;
+    }
     
     return url;
   }
@@ -155,6 +166,7 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                title={activeVideoData.title || 'Video'}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-sm">
