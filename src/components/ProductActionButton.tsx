@@ -23,6 +23,9 @@ interface ProductActionButtonProps {
   onNavigateToLibrary?: () => void;
   onStartLearning?: (productId: string, type: 'course' | 'ebook') => void;
   ctaText?: string;
+  /** Called when user tries to buy/claim without being authenticated.
+   *  The caller should navigate to the signup/login screen. */
+  onRequireAuth?: () => void;
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -41,6 +44,7 @@ export function ProductActionButton({
   onNavigateToLibrary,
   onStartLearning,
   ctaText,
+  onRequireAuth,
 }: ProductActionButtonProps) {
   const { locale } = useLocale();
   const { t } = useTranslation(['common', 'checkout'], { lng: locale });
@@ -85,8 +89,32 @@ export function ProductActionButton({
 
   async function loadUser() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      const { data: { user: u } } = await supabase.auth.getUser();
+      setUser(u);
+
+      // Auto-trigger pending checkout intent (set before redirecting to signup)
+      if (u) {
+        const raw = sessionStorage.getItem('pendingCheckout');
+        if (raw) {
+          try {
+            const intent = JSON.parse(raw) as {
+              productId: string;
+              hasMultiPayment: boolean;
+            };
+            if (intent.productId === productId) {
+              sessionStorage.removeItem('pendingCheckout');
+              // Small delay so component state settles before triggering checkout
+              setTimeout(() => {
+                if (intent.hasMultiPayment) {
+                  setShowPaymentSelector(true);
+                } else {
+                  void handlePaidCheckout(u);
+                }
+              }, 400);
+            }
+          } catch {}
+        }
+      }
     } catch (error) {
       console.error('Error loading user:', error);
     } finally {
@@ -96,24 +124,50 @@ export function ProductActionButton({
 
   const handleBuyClick = () => {
     if (loading || ownsProduct) return;
-    // If product has FastPay link, show payment method selector
+
+    // Not logged in → save intent and redirect to signup
+    if (!user) {
+      sessionStorage.setItem('pendingCheckout', JSON.stringify({
+        productId,
+        hasMultiPayment: !!fastpayLink,
+        fastpayLink: fastpayLink || null,
+        aoaPrice: aoaPrice ?? null,
+        price,
+        productTitle,
+      }));
+      onRequireAuth?.();
+      return;
+    }
+
+    // Logged in — proceed normally
     if (fastpayLink) {
       setShowPaymentSelector(true);
     } else {
-      handlePaidCheckout();
+      void handlePaidCheckout();
     }
   };
 
-  const handlePaidCheckout = async () => {
+  const handlePaidCheckout = async (loggedInUser?: any) => {
     if (loading) return; // Prevent double-click
     if (ownsProduct) return; // Already owns
     setShowPaymentSelector(false);
     setLoading(true);
     setError(null);
 
+    // Use the freshly-loaded user (passed directly) or fall back to state
+    const currentUser = loggedInUser ?? user;
+
     try {
-      if (!user) {
-        alert(t('errors.loginRequired'));
+      if (!currentUser) {
+        sessionStorage.setItem('pendingCheckout', JSON.stringify({
+          productId,
+          hasMultiPayment: !!fastpayLink,
+          fastpayLink: fastpayLink || null,
+          aoaPrice: aoaPrice ?? null,
+          price,
+          productTitle,
+        }));
+        onRequireAuth?.();
         return;
       }
 
@@ -122,7 +176,7 @@ export function ProductActionButton({
       const { data: member } = await supabase
         .from('members')
         .select('id')
-        .eq('auth_id', user.id)
+        .eq('auth_id', currentUser.id)
         .single();
 
       // Read referral code from localStorage
@@ -140,9 +194,9 @@ export function ProductActionButton({
         body: JSON.stringify({
           productId,
           couponCode: couponCode || undefined,
-          userId: member?.id || user.id,
-          authUserId: user.id,
-          userEmail: user.email,
+          userId: member?.id || currentUser.id,
+          authUserId: currentUser.id,
+          userEmail: currentUser.email,
           referralCode: referralCode || undefined,
           successUrl: `${appUrl}?screen=success`,
           cancelUrl: `${appUrl}?screen=cancel`,
@@ -194,7 +248,13 @@ export function ProductActionButton({
 
     try {
       if (!user) {
-        setError(t('errors.loginRequired'));
+        // Save intent and redirect to signup for free products too
+        sessionStorage.setItem('pendingCheckout', JSON.stringify({
+          productId,
+          hasMultiPayment: false,
+          isFree: true,
+        }));
+        onRequireAuth?.();
         return;
       }
 

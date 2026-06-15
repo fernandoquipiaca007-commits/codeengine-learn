@@ -853,6 +853,7 @@ export function Product({ setScreen, productId }: ProductProps) {
             ctaText={ctaLabel}
             onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
             onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
+            onRequireAuth={() => setScreen && setScreen('signup')}
           />
         </div>
       </div>
@@ -1022,6 +1023,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                 ctaText={ctaLabel}
                 onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
                 onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
+                onRequireAuth={() => setScreen && setScreen('signup')}
               />
             </div>
 

@@ -63,18 +63,31 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           }).catch(() => {}); // fire-and-forget
         }
 
-        // Check if email confirmation is required
-        if (data.user && !data.user.email_confirmed_at) {
-          setSuccess(t('signUpSuccess'));
+        if (data.session) {
+          setSuccess('Cadastro realizado com sucesso! Entrando...');
+          setTimeout(() => {
+            // If user was trying to buy a product, go back to it (ProductActionButton will auto-trigger checkout)
+            const raw = sessionStorage.getItem('pendingCheckout');
+            if (raw) {
+              try {
+                const intent = JSON.parse(raw) as { productId: string };
+                if (intent.productId) {
+                  setScreen('product');
+                  window.dispatchEvent(new CustomEvent('navigate-product', { detail: intent.productId }));
+                  return;
+                }
+              } catch {}
+            }
+            setScreen('member');
+          }, 1500);
         } else {
           setSuccess(t('signUpSuccess'));
+          setTimeout(() => {
+            setMode('login');
+            setSuccess('');
+          }, 2000);
         }
-        
-        // Auto-switch to login mode after 2 seconds
-        setTimeout(() => {
-          setMode('login');
-          setSuccess('');
-        }, 2000);
+
       } else if (mode === 'login') {
         // Sign in
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -87,12 +100,23 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         if (data.user) {
           setSuccess(t('signInSuccess'));
           setTimeout(() => {
-            // Check for pending referral product redirect
+            // Priority 1: pending checkout intent (user was trying to buy before logging in)
+            const rawCheckout = sessionStorage.getItem('pendingCheckout');
+            if (rawCheckout) {
+              try {
+                const intent = JSON.parse(rawCheckout) as { productId: string };
+                if (intent.productId) {
+                  setScreen('product');
+                  window.dispatchEvent(new CustomEvent('navigate-product', { detail: intent.productId }));
+                  return;
+                }
+              } catch {}
+            }
+            // Priority 2: generic pending product navigation
             const pendingProduct = sessionStorage.getItem('pendingProductId');
             if (pendingProduct) {
               sessionStorage.removeItem('pendingProductId');
-              setScreen(`product`);
-              // Use custom event to trigger product navigation
+              setScreen('product');
               window.dispatchEvent(new CustomEvent('navigate-product', { detail: pendingProduct }));
             } else {
               setScreen('member');
