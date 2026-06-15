@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Mail, Lock, User, ArrowRight, AlertCircle, Globe, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
+import { useLocale } from '../contexts/LocaleContext';
+import { countryToLocale } from '../lib/locale';
 
 interface AuthProps {
   setScreen: (screen: string) => void;
@@ -13,6 +15,7 @@ type AuthMode = 'login' | 'signup' | 'reset';
 
 export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
   const { t } = useTranslation('auth');
+  const { setLocale } = useLocale();
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -65,6 +68,8 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
         if (data.session) {
           setSuccess('Cadastro realizado com sucesso! Entrando...');
+          // Immediately apply locale based on the country selected during signup
+          void setLocale(countryToLocale(country));
           setTimeout(() => {
             // If user was trying to buy a product, go back to it (ProductActionButton will auto-trigger checkout)
             const raw = sessionStorage.getItem('pendingCheckout');

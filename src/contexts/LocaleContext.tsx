@@ -8,6 +8,7 @@ import {
   setStoredLocale,
   getBrowserLocale,
   normalizeLocale,
+  countryToLocale,
   LOCALE_STORAGE_KEY,
 } from '../lib/locale';
 
@@ -20,20 +21,10 @@ interface LocaleContextValue {
 }
 
 const LocaleContext = createContext<LocaleContextValue>({
-  locale: 'pt',
+  locale: 'en',
   setLocale: async () => {},
   isLoading: true,
 });
-
-const PT_COUNTRIES = new Set(['PT', 'BR', 'AO', 'MZ', 'CV', 'ST', 'GW', 'TL']);
-const FR_COUNTRIES = new Set(['FR', 'BE', 'CH', 'SN', 'CI', 'ML', 'BF', 'NE', 'TD', 'CG', 'CD', 'MG', 'CM', 'RW', 'BI', 'DJ', 'KM']);
-
-function mapCountryToLocale(code: string): AppLocale {
-  const upper = code.toUpperCase();
-  if (PT_COUNTRIES.has(upper)) return 'pt';
-  if (FR_COUNTRIES.has(upper)) return 'fr';
-  return 'en';
-}
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const { i18n } = useTranslation();
@@ -46,7 +37,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     if (stored === 'pt' || stored === 'en' || stored === 'fr') {
       return stored as AppLocale;
     }
-    return 'pt';
+    return 'en';
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -67,7 +58,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const { countryCode } = await res.json();
         if (countryCode) {
-          const detected = mapCountryToLocale(countryCode);
+          const detected = countryToLocale(countryCode);
           console.log(`[locale] Detected country ${countryCode} -> mapped to ${detected}`);
           return detected;
         }
@@ -104,7 +95,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       /* fallback */
     }
 
-    return 'pt';
+    return 'en';
   }, []);
 
   useEffect(() => {

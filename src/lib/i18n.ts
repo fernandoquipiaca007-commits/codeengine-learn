@@ -28,7 +28,7 @@ i18n
       en: { common: enCommon, member: enMember, checkout: enCheckout, auth: enAuth, pages: enPages },
       fr: { common: frCommon, member: frMember, checkout: frCheckout, auth: frAuth, pages: frPages },
     },
-    fallbackLng: 'pt',
+    fallbackLng: 'en',
     defaultNS: 'common',
     ns: ['common', 'member', 'checkout', 'auth', 'pages'],
     interpolation: { escapeValue: false },

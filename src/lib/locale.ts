@@ -4,27 +4,34 @@ export const SUPPORTED_LOCALES: AppLocale[] = ['pt', 'en', 'fr'];
 export const LOCALE_STORAGE_KEY = 'codeengine_locale';
 
 const COUNTRY_TO_LOCALE: Record<string, AppLocale> = {
-  AO: 'pt', BR: 'pt', PT: 'pt', MZ: 'pt', CV: 'pt',
-  US: 'en', GB: 'en', CA: 'en', AU: 'en', IE: 'en', NZ: 'en',
+  // Portuguese-speaking countries
+  AO: 'pt', BR: 'pt', PT: 'pt', MZ: 'pt', CV: 'pt', ST: 'pt', GW: 'pt', TL: 'pt',
+  // French-speaking countries
   FR: 'fr', BE: 'fr', CH: 'fr', LU: 'fr', MC: 'fr',
+  SN: 'fr', CI: 'fr', ML: 'fr', BF: 'fr', NE: 'fr', TD: 'fr',
+  CG: 'fr', CD: 'fr', MG: 'fr', CM: 'fr', RW: 'fr', BI: 'fr',
+  DJ: 'fr', KM: 'fr', GQ: 'fr', GA: 'fr', MR: 'fr', TG: 'fr', BJ: 'fr',
+  // English-speaking countries (explicit, rest defaults to 'en')
+  US: 'en', GB: 'en', CA: 'en', AU: 'en', IE: 'en', NZ: 'en',
+  ZA: 'en', NG: 'en', KE: 'en', GH: 'en', ZW: 'en', ZM: 'en',
 };
 
 export function normalizeLocale(input?: string | null): AppLocale {
-  if (!input) return 'pt';
+  if (!input) return 'en';
   const lower = input.toLowerCase();
   if (lower.startsWith('pt')) return 'pt';
   if (lower.startsWith('en')) return 'en';
   if (lower.startsWith('fr')) return 'fr';
-  return 'pt';
+  return 'en';
 }
 
-export function countryToLocale(countryCode?: string | null): AppLocale | null {
-  if (!countryCode) return null;
-  return COUNTRY_TO_LOCALE[countryCode.toUpperCase()] ?? null;
+export function countryToLocale(countryCode?: string | null): AppLocale {
+  if (!countryCode) return 'en';
+  return COUNTRY_TO_LOCALE[countryCode.toUpperCase()] ?? 'en';
 }
 
 export function getBrowserLocale(): AppLocale {
-  const nav = typeof navigator !== 'undefined' ? navigator.language : 'pt';
+  const nav = typeof navigator !== 'undefined' ? navigator.language : 'en';
   return normalizeLocale(nav);
 }
 
