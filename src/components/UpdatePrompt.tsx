@@ -49,17 +49,12 @@ export function UpdatePrompt() {
 
   useEffect(() => {
     if (needRefresh) {
-      // Check if running in installed PWA standalone mode
-      const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
-      if (isStandalonePWA) {
-        setShowUpdate(true);
-      } else {
-        // For standard browsers, silently auto-update!
-        console.log('[PWA] Standard browser detected, auto-updating in background...');
-        void handleUpdate();
-      }
+      // Always show the update banner — never auto-reload without user consent.
+      // Auto-reloading was causing the page to refresh itself ~15 seconds after load.
+      setShowUpdate(true);
     }
   }, [needRefresh]);
+
 
   async function handleUpdate() {
     const reloadKey = 'pwa_last_silent_reload';

@@ -121,11 +121,45 @@ const PageContent = memo(function PageContent({
   );
 });
 
+// Screens that should NOT be persisted (always reset to home on refresh)
+const NON_PERSISTENT_SCREENS = new Set([
+  'auth', 'signup', 'reset-password', 'success', 'cancel',
+]);
+
+// Read initial screen from sessionStorage (only when there are no URL params)
+function getInitialScreen(): string {
+  const params = new URLSearchParams(window.location.search);
+  const pathname = window.location.pathname;
+  const hash = window.location.hash;
+  // If special URL params are present, let the useEffect handle routing
+  const hasSpecialRoute =
+    params.has('screen') ||
+    pathname !== '/' ||
+    hash.includes('access_token=') ||
+    hash.includes('type=recovery');
+  if (hasSpecialRoute) return 'home';
+  const stored = sessionStorage.getItem('ce_last_screen');
+  const valid = ['home','library','member','about','releases','contact',
+    'favorites','news','settings','privacy','terms','licensing','support',
+    'rewards','product'];
+  return (stored && valid.includes(stored)) ? stored : 'home';
+}
+
+function getInitialProductId(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  const pathname = window.location.pathname;
+  const hasSpecialRoute = params.has('screen') || pathname !== '/';
+  if (hasSpecialRoute) return null;
+  const screen = sessionStorage.getItem('ce_last_screen');
+  if (screen !== 'product') return null;
+  return sessionStorage.getItem('ce_last_product_id') || null;
+}
+
 // ─── App root ─────────────────────────────────────────────────────────────────
 export default function App() {
   const { locale } = useLocale();
-  const [currentScreen, setScreen] = useState('home');
-  const [currentProductId, setCurrentProductId] = useState<string | null>(null);
+  const [currentScreen, setScreen] = useState(getInitialScreen);
+  const [currentProductId, setCurrentProductId] = useState<string | null>(getInitialProductId);
   const [memberSection, setMemberSection] = useState<string>('inicio');
   const [showSearch, setShowSearch] = useState(false);
   const [isImmersive, setIsImmersive] = useState(false);
@@ -148,6 +182,18 @@ export default function App() {
       setScreen(screen);
     }
   };
+
+  // Persist current screen to sessionStorage so it survives page refreshes
+  useEffect(() => {
+    if (!NON_PERSISTENT_SCREENS.has(currentScreen)) {
+      sessionStorage.setItem('ce_last_screen', currentScreen);
+      if (currentScreen === 'product' && currentProductId) {
+        sessionStorage.setItem('ce_last_product_id', currentProductId);
+      } else {
+        sessionStorage.removeItem('ce_last_product_id');
+      }
+    }
+  }, [currentScreen, currentProductId]);
 
   useEffect(() => {
     // Listen for PWA installation prompt globally
