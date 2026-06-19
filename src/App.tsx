@@ -36,6 +36,9 @@ const Success = lazy(() => import('./pages/Success').then(m => ({ default: m.Suc
 const Cancel = lazy(() => import('./pages/Cancel').then(m => ({ default: m.Cancel })));
 const Rewards = lazy(() => import('./pages/Rewards').then(m => ({ default: m.Rewards })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword').then(m => ({ default: m.ResetPassword })));
+const CollaboratorApply = lazy(() => import('./pages/CollaboratorApply').then(m => ({ default: m.CollaboratorApply })));
+const CollaboratorDashboard = lazy(() => import('./pages/CollaboratorDashboard').then(m => ({ default: m.CollaboratorDashboard })));
+const CollaboratorProducts = lazy(() => import('./pages/CollaboratorProducts').then(m => ({ default: m.CollaboratorProducts })));
 
 // ─── Page transition variants ─────────────────────────────────────────────────
 const pageVariants = {
@@ -117,6 +120,23 @@ const PageContent = memo(function PageContent({
       {currentScreen === 'success' && <Success setScreen={navigateToScreen} />}
       {currentScreen === 'cancel' && <Cancel setScreen={navigateToScreen} />}
       {currentScreen === 'rewards' && <Rewards setScreen={navigateToScreen} />}
+      {currentScreen === 'colaborador-candidatura' && (
+        <CollaboratorApply
+          setScreen={navigateToScreen}
+          onCandidacyApproved={() => navigateToScreen('colaborador')}
+        />
+      )}
+      {currentScreen === 'colaborador' && (
+        <CollaboratorDashboard
+          setScreen={navigateToScreen}
+          onGoToProducts={() => navigateToScreen('colaborador-produtos')}
+        />
+      )}
+      {currentScreen === 'colaborador-produtos' && (
+        <CollaboratorProducts
+          setScreen={navigateToScreen}
+        />
+      )}
     </Suspense>
   );
 });
@@ -141,7 +161,7 @@ function getInitialScreen(): string {
   const stored = sessionStorage.getItem('ce_last_screen');
   const valid = ['home','library','member','about','releases','contact',
     'favorites','news','settings','privacy','terms','licensing','support',
-    'rewards','product'];
+    'rewards','product', 'colaborador-candidatura', 'colaborador', 'colaborador-produtos'];
   return (stored && valid.includes(stored)) ? stored : 'home';
 }
 

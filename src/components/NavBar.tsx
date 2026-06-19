@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LucideSearch, Menu, User, LogOut, Heart, ShoppingBag, Bell, Settings } from 'lucide-react';
+import { LucideSearch, Menu, User, LogOut, Heart, ShoppingBag, Bell, Settings, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
@@ -28,6 +28,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [collabStatus, setCollabStatus] = useState<string>('not_applied');
 
   const memberLevel = balance?.level ?? 'starter';
   const isLoggedIn = !!user;
@@ -87,6 +88,32 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) {
+      setCollabStatus('not_applied');
+      return;
+    }
+
+    const fetchCollabStatus = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const res = await fetch(`${BACKEND_URL}/api/collaborators/status`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setCollabStatus(data.status);
+        }
+      } catch (err) {
+        console.error('Error fetching collaborator status in navbar:', err);
+      }
+    };
+
+    void fetchCollabStatus();
+  }, [user]);
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
@@ -446,6 +473,23 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                     >
                       <Settings className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
                       <span className="truncate">{t('profile.settings')}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (collabStatus === 'approved') {
+                          setScreen('colaborador');
+                        } else {
+                          setScreen('colaborador-candidatura');
+                        }
+                        setShowProfileMenu(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all border-t border-white/5 pt-2"
+                    >
+                      <Briefcase className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0 text-primary" />
+                      <span className="truncate font-semibold">
+                        {collabStatus === 'approved' ? 'Painel do Criador' : 'Seja um Colaborador'}
+                      </span>
                     </button>
                     
                     <div className="border-t border-white/15 mt-2 pt-2 bg-gradient-to-t from-white/5 to-transparent">
