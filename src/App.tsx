@@ -7,6 +7,7 @@ import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { PushPermissionPrompt } from './components/PushPermissionPrompt';
 import { useLocale } from './contexts/LocaleContext';
+import { supabase } from './lib/supabase';
 
 // ─── Lazy-loaded heavy components ─────────────────────────────────────────────
 // Background3D uses Three.js (~500KB) — load async so it doesn't block paint
@@ -262,7 +263,6 @@ export default function App() {
     // Detect recovery sessions or reset password routes
     if (
       hash.includes('type=recovery') ||
-      hash.includes('access_token=') ||
       pathname === '/reset-password' ||
       pathname === '/reset-password/'
     ) {
@@ -359,6 +359,61 @@ export default function App() {
     window.addEventListener('navigate-product', handler);
     return () => window.removeEventListener('navigate-product', handler);
   }, []);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Clear hash if returning from OAuth redirect
+        if (window.location.hash.includes('access_token=')) {
+          window.history.replaceState({}, '', '/');
+        }
+
+        const wasAuthenticating = sessionStorage.getItem('ce_google_signing_in') === 'true';
+
+        if (wasAuthenticating) {
+          sessionStorage.removeItem('ce_google_signing_in');
+
+          // Welcome API call (fire-and-forget)
+          fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/auth/welcome`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json', 
+              Authorization: `Bearer ${session.access_token}` 
+            },
+          }).catch(() => {});
+
+          const rawCheckout = sessionStorage.getItem('pendingCheckout');
+          if (rawCheckout) {
+            try {
+              const intent = JSON.parse(rawCheckout) as { productId: string };
+              if (intent.productId) {
+                sessionStorage.removeItem('pendingCheckout');
+                setTimeout(() => {
+                  navigateToProduct(intent.productId);
+                }, 100);
+                return;
+              }
+            } catch {}
+          }
+
+          const pendingProduct = sessionStorage.getItem('pendingProductId');
+          if (pendingProduct) {
+            sessionStorage.removeItem('pendingProductId');
+            setTimeout(() => {
+              navigateToProduct(pendingProduct);
+            }, 100);
+            return;
+          }
+
+          navigateToScreen('member');
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigateToScreen, navigateToProduct]);
 
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">

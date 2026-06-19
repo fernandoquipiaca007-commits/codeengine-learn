@@ -36,6 +36,26 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  async function handleGoogleSignIn() {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      sessionStorage.setItem('ce_google_signing_in', 'true');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        }
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error('Google Auth Error:', err);
+      setError(err instanceof Error ? err.message : t('genericError'));
+      setLoading(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -443,6 +463,35 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                 )}
               </button>
             </form>
+
+            {mode !== 'reset' && (
+              <>
+                <div className="flex items-center my-6">
+                  <div className="flex-grow border-t border-white/10"></div>
+                  <span className="px-3 font-sans text-xs text-on-surface-variant/60 uppercase tracking-wider">
+                    {t('orContinueWith')}
+                  </span>
+                  <div className="flex-grow border-t border-white/10"></div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 rounded-lg border border-white/10 bg-white/5 py-3.5 px-4 font-sans text-sm font-semibold text-white transition-all hover:bg-white/10 hover:border-white/20 disabled:opacity-50"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                    <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                      <path d="M21.35,11.1H12v2.7h5.38c-0.24,1.28 -0.96,2.37 -2.04,3.1v2.6h3.28c1.92,-1.78 3.03,-4.4 3.03,-7.4c0,-0.34 -0.03,-0.68 -0.09,-1Z" fill="#4285F4" />
+                      <path d="M12,20.6c2.7,0 4.96,-0.9 6.62,-2.4l-3.28,-2.6c-0.9,0.6 -2.07,0.97 -3.34,0.97 -2.57,0 -4.75,-1.73 -5.53,-4.06H3.1v2.7C4.74,18.4 8.1,20.6 12,20.6Z" fill="#34A853" />
+                      <path d="M6.47,12.51c-0.2,-0.6 -0.31,-1.24 -0.31,-1.9c0,-0.66 0.11,-1.3 0.31,-1.9V6.01H3.1C2.4,7.41 2,9 2,10.61c0,1.61 0.4,3.2 1.1,4.6l3.37,-2.7Z" fill="#FBBC05" />
+                      <path d="M12,4.8c1.47,0 2.78,0.5 3.82,1.5l2.87,-2.87C16.96,1.86 14.7,1 12,1 8.1,1 4.74,3.2 3.1,6.41l3.37,2.7C7.25,6.78 9.43,4.8 12,4.8Z" fill="#EA4335" />
+                    </g>
+                  </svg>
+                  {mode === 'login' ? t('signInWith') : t('signUpWith')} {t('google')}
+                </button>
+              </>
+            )}
 
             {/* Mode Switcher */}
             <div className="mt-6 text-center space-y-3">
