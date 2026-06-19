@@ -40,6 +40,17 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSuccess, setModalSuccess] = useState<string | null>(null);
 
+  // Wallet Settings Modal / State
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [tempPayoutMethod, setTempPayoutMethod] = useState<'paypal' | 'iban'>('paypal');
+  const [paypalEmail, setPaypalEmail] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bankHolder, setBankHolder] = useState('');
+  const [iban, setIban] = useState('');
+  const [savingWallet, setSavingWallet] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
+  const [walletSuccess, setWalletSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -84,6 +95,18 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     setModalError(null);
     setModalSuccess(null);
 
+    // Validate that the payout settings are configured
+    const hasDetails = profile?.payoutInfo && (
+      (profile.payoutMethod === 'paypal' && profile.payoutInfo.email) ||
+      (profile.payoutMethod === 'iban' && profile.payoutInfo.iban)
+    );
+
+    if (!hasDetails) {
+      setModalError('Por favor, configure seus dados de destino em "Configurar Carteira" antes de solicitar um saque.');
+      setSubmittingWithdraw(false);
+      return;
+    }
+
     const amountNum = Number(withdrawAmount);
     if (isNaN(amountNum) || amountNum < 20) {
       setModalError('O valor mínimo de saque é R$ 20.00 / $ 20.00 / 20.000 Kz.');
@@ -124,6 +147,73 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       setModalError('Erro de conexão.');
     } finally {
       setSubmittingWithdraw(false);
+    }
+  }
+
+  const openWalletModal = () => {
+    setTempPayoutMethod(profile?.payoutMethod || 'paypal');
+    setPaypalEmail(profile?.payoutInfo?.email || '');
+    setBankName(profile?.payoutInfo?.bankName || '');
+    setBankHolder(profile?.payoutInfo?.bankHolder || '');
+    setIban(profile?.payoutInfo?.iban || '');
+    setWalletError(null);
+    setWalletSuccess(null);
+    setShowWalletModal(true);
+  };
+
+  async function handleWalletSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingWallet(true);
+    setWalletError(null);
+    setWalletSuccess(null);
+
+    const payoutInfo: any = {};
+    if (tempPayoutMethod === 'paypal') {
+      if (!paypalEmail.trim()) {
+        setWalletError('O e-mail do PayPal é obrigatório.');
+        setSavingWallet(false);
+        return;
+      }
+      payoutInfo.email = paypalEmail.trim();
+    } else {
+      if (!bankName.trim() || !bankHolder.trim() || !iban.trim()) {
+        setWalletError('Banco, Titular da Conta e IBAN são obrigatórios.');
+        setSavingWallet(false);
+        return;
+      }
+      payoutInfo.bankName = bankName.trim();
+      payoutInfo.bankHolder = bankHolder.trim();
+      payoutInfo.iban = iban.trim();
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          payoutMethod: tempPayoutMethod,
+          payoutInfo
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setWalletSuccess('Carteira salva com sucesso!');
+        setProfile(data.profile);
+        setTimeout(() => setShowWalletModal(false), 1500);
+      } else {
+        setWalletError(data.error || 'Erro ao salvar configurações de carteira.');
+      }
+    } catch (err) {
+      setWalletError('Erro de conexão ao salvar.');
+    } finally {
+      setSavingWallet(false);
     }
   }
 
@@ -183,7 +273,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           <h1 className="text-3xl font-bold text-gray-900 font-display">Painel do Criador</h1>
           <p className="mt-1 text-gray-500">Olá, {profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={openWalletModal}
+            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all text-sm"
+          >
+            <Landmark size={18} />
+            Configurar Carteira
+          </button>
           <button
             onClick={onGoToProducts}
             className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all text-sm"
@@ -436,6 +533,138 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 {submittingWithdraw ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                 ) : 'Confirmar Solicitação'}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal: Configurar Carteira */}
+      {showWalletModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-6 shadow-xl"
+          >
+            <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Configurações de Carteira</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowWalletModal(false);
+                  setWalletError(null);
+                  setWalletSuccess(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 text-sm font-medium"
+              >
+                Fechar
+              </button>
+            </div>
+
+            {walletSuccess && (
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-green-50 p-3 text-sm text-green-700">
+                <CheckCircle size={16} />
+                <span>{walletSuccess}</span>
+              </div>
+            )}
+
+            {walletError && (
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+                <AlertCircle size={16} />
+                <span>{walletError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleWalletSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Método de Destino</label>
+                <div className="grid grid-cols-2 gap-3 font-sans">
+                  <button
+                    type="button"
+                    onClick={() => setTempPayoutMethod('paypal')}
+                    className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-medium transition-all ${
+                      tempPayoutMethod === 'paypal'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Mail size={16} />
+                    PayPal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTempPayoutMethod('iban')}
+                    className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-medium transition-all ${
+                      tempPayoutMethod === 'iban'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Landmark size={16} />
+                    IBAN Bancário
+                  </button>
+                </div>
+              </div>
+
+              {tempPayoutMethod === 'paypal' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">E-mail do PayPal</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="exemplo@email.com"
+                    value={paypalEmail}
+                    onChange={(e) => setPaypalEmail(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-sans"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-3 font-sans">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Banco</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ex: Banco de Fomento Angola (BFA)"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Titular da Conta</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nome completo do titular"
+                      value={bankHolder}
+                      onChange={(e) => setBankHolder(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="AO06.0000.0000.0000.0000.0"
+                      value={iban}
+                      onChange={(e) => setIban(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={savingWallet}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-white shadow-sm hover:bg-primary-hover transition-all text-sm disabled:opacity-50 font-sans"
+              >
+                {savingWallet ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                ) : 'Salvar Carteira'}
               </button>
             </form>
           </motion.div>
