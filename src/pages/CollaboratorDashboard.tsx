@@ -13,16 +13,29 @@ interface CollaboratorDashboardProps {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
+interface CollaboratorProfile {
+  id: string;
+  displayName: string;
+  plan: string;
+  payoutMethod: 'paypal' | 'iban';
+  payoutInfo: {
+    email?: string;
+    bankName?: string;
+    bankHolder?: string;
+    iban?: string;
+  };
+}
+
 export function CollaboratorDashboard({ setScreen, onGoToProducts }: CollaboratorDashboardProps) {
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
   const [balance, setBalance] = useState<any>(null);
   const [ledger, setLedger] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   
   // Withdrawal Request Modal / State
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState<string>('');
   const [submittingWithdraw, setSubmittingWithdraw] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSuccess, setModalSuccess] = useState<string | null>(null);
@@ -392,7 +405,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     step="0.01"
                     required
                     placeholder="0.00"
-                    value={withdrawAmount}
+                    value={withdrawAmount as any}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                     className="w-full rounded-xl border-none pl-9 pr-4 py-3 text-sm font-bold focus:outline-none focus:ring-0"
                   />

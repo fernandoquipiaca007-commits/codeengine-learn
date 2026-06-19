@@ -21,10 +21,6 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
   const [bio, setBio] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [payoutMethod, setPayoutMethod] = useState<'paypal' | 'iban'>('paypal');
-  const [paypalEmail, setPaypalEmail] = useState('');
-  const [bankName, setBankName] = useState('');
-  const [bankHolder, setBankHolder] = useState('');
-  const [bankIban, setBankIban] = useState('');
 
   // Onboarding survey states
   const [surveyTypes, setSurveyTypes] = useState<string[]>([]);
@@ -79,9 +75,8 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
         return;
       }
 
-      const payoutInfo = payoutMethod === 'paypal' 
-        ? { email: paypalEmail }
-        : { bankName, bankHolder, iban: bankIban };
+      // Detailed payout info will be configured in the Wallet settings after approval.
+      const payoutInfo = {}; 
 
       const survey = {
         contentTypes: surveyTypes,
@@ -103,8 +98,8 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
           survey
         })
       });
-
       const data = await res.json();
+
       if (data.success) {
         setCandidacyStatus('pending');
         setMessage({ type: 'success', text: data.message });
@@ -138,18 +133,18 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-blue-100 bg-white p-8 shadow-sm"
+          className="glass-panel p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl text-white"
         >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 text-primary">
             <Clock size={32} className="animate-pulse" />
           </div>
-          <h2 className="mb-3 text-2xl font-bold text-gray-900 font-display">Candidatura em Análise</h2>
-          <p className="mb-6 text-gray-600">
+          <h2 className="mb-3 text-2xl font-bold font-display text-white">Candidatura em Análise</h2>
+          <p className="mb-6 text-white/70">
             Recebemos seus dados profissionais e sua pesquisa estratégica de infraestrutura. 
             Nossa equipe administrativa está revisando sua solicitação para ativação do seu painel de criador.
           </p>
-          <div className="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">
-            Status: <span className="font-semibold text-blue-600">Aguardando Aprovação</span>
+          <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/50">
+            Status: <span className="font-semibold text-primary">Aguardando Aprovação</span>
           </div>
         </motion.div>
       </div>
@@ -162,21 +157,21 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-red-100 bg-white p-8 shadow-sm"
+          className="glass-panel p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl text-white"
         >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20 text-red-400">
             <AlertCircle size={32} />
           </div>
-          <h2 className="mb-3 text-2xl font-bold text-gray-900 font-display">Candidatura Recusada</h2>
-          <p className="mb-4 text-red-600 text-sm bg-red-50 p-4 rounded-xl">
+          <h2 className="mb-3 text-2xl font-bold font-display text-white">Candidatura Recusada</h2>
+          <p className="mb-4 text-red-300 text-sm bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
             <strong>Motivo:</strong> {rejectReason}
           </p>
-          <p className="mb-6 text-gray-600 text-sm">
+          <p className="mb-6 text-white/70 text-sm">
             Você pode corrigir suas informações ou ajustar sua proposta e enviar uma nova candidatura.
           </p>
           <button
             onClick={() => setCandidacyStatus('not_applied')}
-            className="rounded-xl bg-primary px-6 py-3 font-semibold text-white shadow-sm hover:bg-primary-hover transition-all"
+            className="rounded-xl bg-primary px-6 py-3 font-semibold text-white shadow-sm hover:bg-primary/95 transition-all text-sm"
           >
             Tentar Novamente
           </button>
@@ -190,21 +185,23 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-gray-100 bg-white p-8 shadow-md"
+        className="glass-panel p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl text-white"
       >
-        <div className="mb-8 border-b border-gray-100 pb-6 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-light text-primary">
+        <div className="mb-8 border-b border-white/10 pb-6 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary">
             <ShieldCheck size={28} />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 font-display">Candidatar-se a Colaborador</h1>
-          <p className="mt-2 text-gray-500">
+          <h1 className="text-3xl font-bold font-display text-white">Candidatar-se a Colaborador</h1>
+          <p className="mt-2 text-white/60 text-sm">
             Publique seus e-books e cursos digitais no ecossistema da Codeengine
           </p>
         </div>
 
         {message && (
-          <div className={`mb-6 flex items-start gap-3 rounded-xl p-4 text-sm ${
-            message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+          <div className={`mb-6 flex items-start gap-3 rounded-xl p-4 text-sm border ${
+            message.type === 'success' 
+              ? 'bg-green-500/10 text-green-300 border-green-500/20' 
+              : 'bg-red-500/10 text-red-300 border-red-500/20'
           }`}>
             {message.type === 'success' ? <CheckCircle className="shrink-0 mt-0.5" size={18} /> : <AlertCircle className="shrink-0 mt-0.5" size={18} />}
             <span>{message.text}</span>
@@ -214,55 +211,57 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Seção 1: Dados do Perfil */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900 border-l-4 border-primary pl-2">1. Perfil Profissional</h3>
+            <h3 className="mb-4 text-lg font-semibold text-white border-l-4 border-primary pl-2 font-display">1. Perfil Profissional</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome de Exibição / Canal</label>
+                <label className="block text-sm font-medium text-white/80 mb-1">Nome de Exibição / Canal</label>
                 <input
                   type="text"
                   required
                   placeholder="Ex: Professor João Silva ou DevAcademy"
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-colors font-sans text-sm"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Área de Especialização / Especialidade</label>
+                <label className="block text-sm font-medium text-white/80 mb-1">Área de Especialização / Especialidade</label>
                 <input
                   type="text"
                   required
                   placeholder="Ex: Programação Web, Design Gráfico, Marketing Digital"
                   value={specialty}
                   onChange={e => setSpecialty(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-colors font-sans text-sm"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Minibiografia / Descrição</label>
+                <label className="block text-sm font-medium text-white/80 mb-1">Minibiografia / Descrição</label>
                 <textarea
                   placeholder="Conte um pouco sobre sua trajetória profissional e o conteúdo que deseja compartilhar."
                   value={bio}
                   onChange={e => setBio(e.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                  className="w-full px-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-colors font-sans text-sm resize-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* Seção 2: Dados de Pagamento (PayPal / IBAN) */}
+          {/* Seção 2: Preferências de Repasse */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900 border-l-4 border-primary pl-2">2. Preferências de Repasse Financeiro</h3>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Método de Payout Preferido</label>
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <h3 className="mb-4 text-lg font-semibold text-white border-l-4 border-primary pl-2 font-display">2. Preferências de Repasse Financeiro</h3>
+            <p className="text-white/50 text-xs mb-3 font-sans">
+              Selecione o método de pagamento preferencial. Você poderá configurar seus dados de recebimento (e-mail PayPal ou IBAN bancário) a qualquer momento na sua carteira após aprovação.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setPayoutMethod('paypal')}
                 className={`flex items-center justify-center gap-2 rounded-xl border p-4 text-sm font-medium transition-all ${
                   payoutMethod === 'paypal' 
-                    ? 'border-primary bg-primary-light text-primary' 
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'border-primary bg-primary/20 text-white' 
+                    : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                 }`}
               >
                 <Mail size={18} />
@@ -273,91 +272,31 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                 onClick={() => setPayoutMethod('iban')}
                 className={`flex items-center justify-center gap-2 rounded-xl border p-4 text-sm font-medium transition-all ${
                   payoutMethod === 'iban' 
-                    ? 'border-primary bg-primary-light text-primary' 
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'border-primary bg-primary/20 text-white' 
+                    : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                 }`}
               >
                 <Landmark size={18} />
-                IBAN Bancário (Angola)
+                IBAN Bancário (Nacional)
               </button>
             </div>
-
-            {payoutMethod === 'paypal' ? (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-mail da Conta PayPal</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="seuemail@paypal.com"
-                  value={paypalEmail}
-                  onChange={e => setPaypalEmail(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Banco</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ex: BFA, BAI, BIC"
-                      value={bankName}
-                      onChange={e => setBankName(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Titular da Conta</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ex: Fernando Quipiaca"
-                      value={bankHolder}
-                      onChange={e => setBankHolder(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Número IBAN</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="AO06.0000.0000..."
-                      value={bankIban}
-                      onChange={e => setBankIban(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </div>
 
           {/* Seção 3: Pesquisa Estratégica de Storage */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900 border-l-4 border-primary pl-2">3. Estimativa de Armazenamento (Onboarding)</h3>
+            <h3 className="mb-4 text-lg font-semibold text-white border-l-4 border-primary pl-2 font-display">3. Estimativa de Armazenamento</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Que tipos de conteúdo você pretende publicar?</label>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-white/80 mb-2">Que tipos de conteúdo você pretende publicar?</label>
+                <div className="grid gap-2 sm:grid-cols-2 font-sans">
                   <button
                     type="button"
                     onClick={() => toggleContentType('ebooks')}
                     className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
                       surveyTypes.includes('ebooks')
-                        ? 'border-primary bg-primary-light text-primary'
-                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                        ? 'border-primary bg-primary/20 text-white'
+                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                     }`}
                   >
                     <FileText size={18} />
@@ -368,8 +307,8 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                     onClick={() => toggleContentType('courses')}
                     className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
                       surveyTypes.includes('courses')
-                        ? 'border-primary bg-primary-light text-primary'
-                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                        ? 'border-primary bg-primary/20 text-white'
+                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                     }`}
                   >
                     <Video size={18} />
@@ -380,8 +319,8 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                     onClick={() => toggleContentType('tools')}
                     className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
                       surveyTypes.includes('tools')
-                        ? 'border-primary bg-primary-light text-primary'
-                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                        ? 'border-primary bg-primary/20 text-white'
+                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                     }`}
                   >
                     <Terminal size={18} />
@@ -392,8 +331,8 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                     onClick={() => toggleContentType('events')}
                     className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
                       surveyTypes.includes('events')
-                        ? 'border-primary bg-primary-light text-primary'
-                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                        ? 'border-primary bg-primary/20 text-white'
+                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                     }`}
                   >
                     <Calendar size={18} />
@@ -403,10 +342,10 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quantos GB de conteúdo estima publicar nos primeiros 90 dias?</label>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-white/80 mb-2">Quantos GB de conteúdo estima publicar nos primeiros 90 dias?</label>
+                <div className="grid gap-2 sm:grid-cols-2 font-sans">
                   <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === 'less_1gb' ? 'border-primary bg-primary-light text-primary' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    surveyVolume === 'less_1gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                   }`}>
                     <input
                       type="radio"
@@ -419,7 +358,7 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                     Menos de 1 GB (Apenas textos e PDFs)
                   </label>
                   <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === '1_5gb' ? 'border-primary bg-primary-light text-primary' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    surveyVolume === '1_5gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                   }`}>
                     <input
                       type="radio"
@@ -429,10 +368,10 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                       onChange={() => setSurveyVolume('1_5gb')}
                       className="accent-primary"
                     />
-                    1 a 5 GB (Softwares leves ou e-books densos)
+                    1 a 5 GB (Softwares leves ou e-books)
                   </label>
                   <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === '5_20gb' ? 'border-primary bg-primary-light text-primary' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    surveyVolume === '5_20gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                   }`}>
                     <input
                       type="radio"
@@ -442,10 +381,10 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                       onChange={() => setSurveyVolume('5_20gb')}
                       className="accent-primary"
                     />
-                    5 a 20 GB (Cursos pequenos ou apostilas com áudio)
+                    5 a 20 GB (Cursos pequenos/apostilas)
                   </label>
                   <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === 'more_20gb' ? 'border-primary bg-primary-light text-primary' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    surveyVolume === 'more_20gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
                   }`}>
                     <input
                       type="radio"
@@ -455,25 +394,25 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                       onChange={() => setSurveyVolume('more_20gb')}
                       className="accent-primary"
                     />
-                    Mais de 20 GB (Múltiplos cursos em vídeo)
+                    Mais de 20 GB (Cursos em vídeo)
                   </label>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
+          <div className="pt-6 border-t border-white/10 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={() => setScreen('member')}
-              className="rounded-xl border border-gray-200 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50 transition-all text-sm"
+              className="rounded-xl border border-white/10 px-6 py-3 font-semibold text-white/70 hover:bg-white/5 transition-all text-sm font-sans"
             >
               Voltar ao Perfil
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-white shadow-sm hover:bg-primary-hover transition-all text-sm disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-white shadow-sm hover:bg-primary/90 transition-all text-sm disabled:opacity-50 font-sans"
             >
               {submitting ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>

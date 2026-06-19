@@ -304,6 +304,24 @@ export default function App() {
     if (pathname === '/cancel' || pathname === '/cancel/') {
       setScreen('cancel');
       window.history.replaceState({}, '', '/');
+      return;
+    }
+
+    // Handle collaborator pathnames
+    if (pathname === '/colaborador' || pathname === '/colaborador/') {
+      setScreen('colaborador');
+      window.history.replaceState({}, '', '/');
+      return;
+    }
+    if (pathname === '/colaborador/candidatura' || pathname === '/colaborador/candidatura/') {
+      setScreen('colaborador-candidatura');
+      window.history.replaceState({}, '', '/');
+      return;
+    }
+    if (pathname === '/colaborador/produtos' || pathname === '/colaborador/produtos/') {
+      setScreen('colaborador-produtos');
+      window.history.replaceState({}, '', '/');
+      return;
     }
 
     // Handle any ?screen= parameter
