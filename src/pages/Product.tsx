@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Star, Lock, Play, Download, ArrowLeft, Languages, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Star, Lock, Play, Download, ArrowLeft, Languages, AlertTriangle, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -131,6 +131,39 @@ export function Product({ setScreen, productId }: ProductProps) {
   const [discount, setDiscount] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [campaignPrice, setCampaignPrice] = useState<number | null>(null);
+  const [campaignEndDate, setCampaignEndDate] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!campaignEndDate) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const calculateTime = () => {
+      const difference = new Date(campaignEndDate).getTime() - new Date().getTime();
+      if (difference <= 0) {
+        setTimeLeft(null);
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((difference % (1000 * 60)) / 1000),
+      });
+    };
+
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+    return () => clearInterval(interval);
+  }, [campaignEndDate]);
+
   const [pageLayout, setPageLayout] = useState<PageLayoutConfig | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const [isHeroVisible, setIsHeroVisible] = useState(true);
@@ -736,7 +769,7 @@ export function Product({ setScreen, productId }: ProductProps) {
     <ProductPurchaseProvider productId={product.id}>
     <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
       {/* Campaign Banner */}
-      <CampaignBanner productId={product.id} onSpecialPrice={setCampaignPrice} />
+      <CampaignBanner productId={product.id} onSpecialPrice={setCampaignPrice} onCampaignActive={setCampaignEndDate} />
       
       {/* Back Button */}
       {setScreen && (
@@ -965,6 +998,31 @@ export function Product({ setScreen, productId }: ProductProps) {
               )}
             </div>
             
+            {/* Campaign Countdown Timer */}
+            {timeLeft && (
+              <div className="flex flex-col items-center justify-center p-3 bg-red-500/10 border border-red-500/25 rounded-xl mb-1 animate-pulse">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Clock className="w-3.5 h-3.5 text-red-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-red-400">
+                    A Oferta Especial Termina Em:
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 font-mono text-sm sm:text-base font-extrabold text-white">
+                  {timeLeft.days > 0 && (
+                    <>
+                      <span className="bg-red-950/45 px-1.5 py-0.5 rounded border border-red-900/30 text-xs">{timeLeft.days}d</span>
+                      <span>:</span>
+                    </>
+                  )}
+                  <span className="bg-red-950/45 px-1.5 py-0.5 rounded border border-red-900/30 text-xs">{String(timeLeft.hours).padStart(2, '0')}h</span>
+                  <span>:</span>
+                  <span className="bg-red-950/45 px-1.5 py-0.5 rounded border border-red-900/30 text-xs">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+                  <span>:</span>
+                  <span className="bg-red-950/45 px-1.5 py-0.5 rounded border border-red-500/40 text-xs text-red-400 font-bold">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+                </div>
+              </div>
+            )}
+
             {/* Coupon Input */}
             <ProductCouponSection
               productId={product.id}

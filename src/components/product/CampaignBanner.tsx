@@ -15,6 +15,7 @@ interface Campaign {
 interface CampaignBannerProps {
   productId: string;
   onSpecialPrice?: (price: number | null) => void;
+  onCampaignActive?: (endDate: string | null) => void;
 }
 
 function normalizeCampaign(row: Record<string, unknown>): Campaign | null {
@@ -45,9 +46,12 @@ function normalizeCampaign(row: Record<string, unknown>): Campaign | null {
   };
 }
 
-export function CampaignBanner({ productId, onSpecialPrice }: CampaignBannerProps) {
+export function CampaignBanner({ productId, onSpecialPrice, onCampaignActive }: CampaignBannerProps) {
   const onSpecialPriceRef = useRef(onSpecialPrice);
   onSpecialPriceRef.current = onSpecialPrice;
+
+  const onCampaignActiveRef = useRef(onCampaignActive);
+  onCampaignActiveRef.current = onCampaignActive;
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [timeLeft, setTimeLeft] = useState<{
@@ -84,13 +88,16 @@ export function CampaignBanner({ productId, onSpecialPrice }: CampaignBannerProp
 
       if (active?.show_countdown && active.end_date) {
         calculateTimeLeft(active.end_date);
+        onCampaignActiveRef.current?.(active.end_date);
       } else {
         setTimeLeft(null);
+        onCampaignActiveRef.current?.(null);
       }
     } catch (error) {
       console.error('Error loading campaign:', error);
       setCampaign(null);
       onSpecialPriceRef.current?.(null);
+      onCampaignActiveRef.current?.(null);
     }
   }, [productId]);
 
