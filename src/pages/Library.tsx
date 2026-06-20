@@ -124,8 +124,8 @@ export function Library({ setScreen, onProductClick }: {
         console.error('Error fetching subcategories:', err);
         setSubcategories([]);
       }
-      setSelectedSubcategory(null);
     }
+    setSelectedSubcategory(null);
     void loadSubcategories();
   }, [selectedCategory]);
 
