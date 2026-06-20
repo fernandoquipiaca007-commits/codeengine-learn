@@ -30,6 +30,31 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // 2-minute countdown timer state (persisted in localStorage)
+  const [resendCountdown, setResendCountdown] = useState<number>(() => {
+    const stored = localStorage.getItem('ce_resend_expiry');
+    if (stored) {
+      const expiry = parseInt(stored, 10);
+      const remaining = Math.ceil((expiry - Date.now()) / 1000);
+      return remaining > 0 ? remaining : 0;
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const expiry = Date.now() + resendCountdown * 1000;
+      // Only write if not already set to avoid resetting the expiry time on each tick
+      if (!localStorage.getItem('ce_resend_expiry')) {
+        localStorage.setItem('ce_resend_expiry', expiry.toString());
+      }
+      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      localStorage.removeItem('ce_resend_expiry');
+    }
+  }, [resendCountdown]);
 
   // Password Visibility States
   const [showPassword, setShowPassword] = useState(false);
@@ -162,6 +187,8 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
             throw new Error(result.error || t('resetLinkError'));
           }
 
+          localStorage.setItem('ce_resend_expiry', (Date.now() + 120 * 1000).toString());
+          setResendCountdown(120);
           setCodeSent(true);
           setSuccess(t('resetCodeSent'));
         } else {
@@ -448,7 +475,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (mode === 'reset' && !codeSent && resendCountdown > 0)}
                 className="w-full bg-primary text-on-primary font-display text-base font-bold px-6 py-4 rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(192,193,255,0.3)] hover:shadow-[0_0_30px_rgba(192,193,255,0.5)] disabled:opacity-50 disabled:cursor-not-allowed group"
               >
                 {loading ? (
@@ -457,11 +484,62 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                   <>
                     {mode === 'login' && t('signIn')}
                     {mode === 'signup' && t('signUp')}
-                    {mode === 'reset' && (codeSent ? t('resetPasswordAction') : t('sendCodeAction'))}
+                    {mode === 'reset' && (
+                      codeSent 
+                        ? t('resetPasswordAction') 
+                        : (resendCountdown > 0 
+                            ? `Aguarde ${Math.floor(resendCountdown / 60)}:${(resendCountdown % 60).toString().padStart(2, '0')}` 
+                            : t('sendCodeAction'))
+                    )}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </button>
+
+              {/* Resend Verification Code Timer / Button */}
+              {mode === 'reset' && codeSent && (
+                <div className="mt-4 text-center">
+                  {resendCountdown > 0 ? (
+                    <p className="font-sans text-sm text-on-surface-variant/80">
+                      Você pode solicitar um novo código em: <span className="font-semibold text-primary">{Math.floor(resendCountdown / 60)}:{(resendCountdown % 60).toString().padStart(2, '0')}</span>
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={async () => {
+                        setLoading(true);
+                        setError('');
+                        setSuccess('');
+                        try {
+                          const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+                          const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email }),
+                          });
+
+                          const result = await response.json();
+                          if (!response.ok || !result.success) {
+                            throw new Error(result.error || t('resetLinkError'));
+                          }
+
+                          localStorage.setItem('ce_resend_expiry', (Date.now() + 120 * 1000).toString());
+                          setResendCountdown(120);
+                          setSuccess(t('resetCodeSent'));
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : t('genericError'));
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      className="font-sans text-sm text-primary hover:text-primary/80 font-semibold transition-colors disabled:opacity-50"
+                    >
+                      Reenviar Código de Confirmação
+                    </button>
+                  )}
+                </div>
+              )}
             </form>
 
             {mode !== 'reset' && (
