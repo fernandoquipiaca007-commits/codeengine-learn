@@ -10,6 +10,8 @@ import { useTranslation } from 'react-i18next';
 import { LazyImage } from '../components/ui/LazyImage';
 import { useLocale } from '../contexts/LocaleContext';
 import { fetchLocalizedProducts } from '../hooks/useLocalizedProduct';
+import { formatProductPrice } from '../lib/safe-display';
+
 
 interface ReleasesProps {
   setScreen: (screen: string) => void;
@@ -237,7 +239,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
                     {product.is_free || product.price === 0 ? (
                       <span className="text-green-400">{t('releases.badges.free')}</span>
                     ) : (
-                      <>$ {product.price}</>
+                      <>{formatProductPrice(product.price, product.aoa_price)}</>
                     )}
                   </div>
                   

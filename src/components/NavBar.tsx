@@ -220,17 +220,17 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
             e.currentTarget.style.display = 'none';
           }}
         />
-        <span className="hidden md:inline font-display text-sm sm:text-base md:text-lg font-bold tracking-tighter text-on-surface whitespace-nowrap">
+        <span className="hidden 2xl:inline font-display text-sm sm:text-base md:text-lg font-bold tracking-tighter text-on-surface whitespace-nowrap">
           CodeEngine 1
         </span>
       </div>
       
       {/* Desktop Navigation - Hidden on tablet and below */}
-      <div className="hidden xl:flex items-center gap-3 2xl:gap-5 flex-shrink min-w-0">
+      <div className="hidden xl:flex items-center gap-1 xl:gap-1.5 2xl:gap-3 flex-shrink min-w-0">
         <button 
           onClick={() => setScreen('home')}
           className={cn(
-            "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
+            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
             currentScreen === 'home' 
               ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
               : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
@@ -243,7 +243,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           onClick={() => setScreen('library')}
           onMouseEnter={handleLibraryHover}
           className={cn(
-            "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
+            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
             currentScreen === 'library' 
               ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
               : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
@@ -255,7 +255,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         <button 
           onClick={() => setScreen('releases')}
           className={cn(
-            "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
+            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
             currentScreen === 'releases' 
               ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
               : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
@@ -267,7 +267,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         <button 
           onClick={() => setScreen('news')}
           className={cn(
-            "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
+            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
             currentScreen === 'news' 
               ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
               : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
@@ -279,7 +279,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         <button 
           onClick={() => setScreen('about')}
           className={cn(
-            "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
+            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
             currentScreen === 'about' 
               ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
               : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
@@ -291,7 +291,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         <button 
           onClick={() => setScreen('contact')}
           className={cn(
-            "font-display text-[10px] 2xl:text-xs font-semibold tracking-widest uppercase transition-all duration-200 px-1.5 2xl:px-2 py-1 whitespace-nowrap",
+            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
             currentScreen === 'contact' 
               ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
               : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
@@ -302,7 +302,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
       </div>
       
       {/* Right Side Actions - Intelligent Progressive Collapse */}
-      <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 flex-shrink-0 min-w-0">
+      <div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2 flex-shrink-0 min-w-0">
         <LanguageSelector variant="dropdown" className="hidden lg:block flex-shrink-0" />
         {/* Search Button - Always visible */}
         <button 
@@ -476,13 +476,13 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           <>
             <button 
               onClick={() => setScreen('auth')}
-              className="hidden lg:block font-display text-[10px] xl:text-xs font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
+              className="hidden lg:block font-display text-[10px] xl:text-xs font-semibold tracking-wider uppercase text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
             >
               {t('nav.signIn')}
             </button>
             <button 
               onClick={() => setScreen('signup')}
-              className="font-display text-[10px] xl:text-xs font-semibold tracking-widest uppercase px-3.5 py-2 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex-shrink-0 whitespace-nowrap"
+              className="font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex-shrink-0 whitespace-nowrap"
             >
               <span className="hidden lg:inline">{t('nav.becomeMember')}</span>
               <span className="lg:hidden">{t('nav.signIn')}</span>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowRight, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle } from 'lucide-react';
+import { ArrowRight, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle, Filter, ChevronDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Product, Category } from '../types/store';
 import { useFavorites } from '../hooks/useFavorites';
@@ -15,6 +15,8 @@ import { useAuthSession } from '../hooks/useAuthSession';
 import { LazyImage } from '../components/ui/LazyImage';
 import { queryCache } from '../lib/queryCache';
 import { prefetchProduct } from '../lib/prefetch';
+import { formatProductPrice } from '../lib/safe-display';
+
 
 interface Subcategory {
   id: string;
@@ -35,6 +37,8 @@ export function Library({ setScreen, onProductClick }: {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [showSubcategoriesDropdown, setShowSubcategoriesDropdown] = useState(false);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthSession();
@@ -209,100 +213,136 @@ export function Library({ setScreen, onProductClick }: {
 
       {/* Content */}
       {!loading && (
-        <div className="flex flex-col lg:flex-row gap-10 relative z-10">
-          {/* Sidebar */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <div className="glass-panel rounded-xl p-6 mb-6 lg:mb-0 lg:sticky lg:top-28">
-              <h3 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-4 pb-4 border-b border-white/10">
-                {t('library.categories')}
-              </h3>
-              <ul className="flex flex-wrap gap-2 sm:flex-col sm:gap-1">
-                {/* All Categories */}
-                <li>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedCategory(null);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-sans text-base font-semibold transition-all ${
-                      selectedCategory === null
-                        ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(192,193,255,0.1)]'
-                        : 'text-on-surface-variant hover:bg-white/5 hover:text-on-surface'
-                    }`}
-                  >
-                    <LayoutDashboard className="w-5 h-5" /> {t('library.all')} ({products.length})
-                  </button>
-                </li>
-
-                {/* Dynamic Categories */}
-                {categories.map((category) => {
-                  const Icon = getCategoryIcon(category.name);
-                  const count = products.filter((p) => p.category_id === category.id).length;
-                  const localizedProd = products.find((p) => p.category_id === category.id);
-                  const displayCategoryName = (localizedProd as any)?.category_name || category.name;
-                  
-                  return (
-                    <li key={category.id}>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelectedCategory(category.id);
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-sans text-base transition-all ${
-                          selectedCategory === category.id
-                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(192,193,255,0.1)] font-semibold'
-                            : 'text-on-surface-variant hover:bg-white/5 hover:text-on-surface'
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" /> {displayCategoryName} ({count})
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </aside>
-
-          {/* Product Grid */}
-          <div className="flex-grow animate__animated animate__fadeIn">
-            {/* Subcategories Filter Bar */}
-            {subcategories.length > 0 && (
-              <div className="glass-panel rounded-xl p-3 mb-8 flex flex-wrap gap-2 items-center border border-white/5 shadow-[0_0_20px_rgba(0,0,0,0.3)] relative overflow-hidden backdrop-blur-md">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-50 z-0 pointer-events-none"></div>
-                <span className="font-display text-[10px] font-bold tracking-widest uppercase text-on-surface-variant/60 px-3 py-1 relative z-10">
-                  Subcategoria:
+        <div className="relative z-10 animate__animated animate__fadeIn">
+          {/* Filter Bar */}
+          <div className="flex flex-wrap items-center gap-3 mb-8 z-20">
+            {/* Categories Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCategoriesDropdown(!showCategoriesDropdown);
+                  setShowSubcategoriesDropdown(false);
+                }}
+                className="flex items-center justify-between px-5 py-3 rounded-xl bg-surface/80 border border-white/10 text-xs font-semibold text-white hover:bg-white/5 transition-all shadow-[0_0_20px_rgba(0,0,0,0.2)]"
+              >
+                <span className="flex items-center gap-2">
+                  <LayoutDashboard className="w-4 h-4 text-primary" />
+                  <span>
+                    {selectedCategory 
+                      ? (products.find((p) => p.category_id === selectedCategory)?.category_name || categories.find(c => c.id === selectedCategory)?.name || 'Categoria') 
+                      : 'Todas as Categorias'}
+                  </span>
                 </span>
-                <div className="flex flex-wrap gap-2 relative z-10">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedSubcategory(null)}
-                    className={`px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider transition-all duration-300 border ${
-                      selectedSubcategory === null
-                        ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_15px_rgba(192,193,255,0.15)] font-bold'
-                        : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface hover:border-white/10'
-                    }`}
-                  >
-                    Todas
-                  </button>
-                  {subcategories.map((sub) => (
+                <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${showCategoriesDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showCategoriesDropdown && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-30" 
+                    onClick={() => setShowCategoriesDropdown(false)} 
+                  />
+                  <div className="absolute left-0 mt-2 w-64 rounded-xl bg-surface-high border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 animate-in fade-in slide-in-from-top-1 duration-200 max-h-[250px] overflow-y-auto">
                     <button
-                      key={sub.id}
                       type="button"
-                      onClick={() => setSelectedSubcategory(sub.id)}
-                      className={`px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider transition-all duration-300 border ${
-                        selectedSubcategory === sub.id
-                          ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_15px_rgba(192,193,255,0.15)] font-bold'
-                          : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface hover:border-white/10'
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        setShowCategoriesDropdown(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors ${
+                        selectedCategory === null ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
                       }`}
                     >
-                      {sub.name}
+                      Todas as Categorias ({products.length})
                     </button>
-                  ))}
-                </div>
+                    {categories.map((category) => {
+                      const count = products.filter((p) => p.category_id === category.id).length;
+                      const localizedProd = products.find((p) => p.category_id === category.id);
+                      const displayCategoryName = (localizedProd as any)?.category_name || category.name;
+                      return (
+                        <button
+                          key={category.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategory(category.id);
+                            setShowCategoriesDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                            selectedCategory === category.id ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
+                          }`}
+                        >
+                          {displayCategoryName} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Subcategories Dropdown */}
+            {selectedCategory && subcategories.length > 0 && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSubcategoriesDropdown(!showSubcategoriesDropdown);
+                    setShowCategoriesDropdown(false);
+                  }}
+                  className="flex items-center justify-between px-5 py-3 rounded-xl bg-surface/80 border border-white/10 text-xs font-semibold text-white hover:bg-white/5 transition-all shadow-[0_0_20px_rgba(0,0,0,0.2)]"
+                >
+                  <span className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-primary" />
+                    <span>
+                      {selectedSubcategory 
+                        ? subcategories.find(s => s.id === selectedSubcategory)?.name 
+                        : 'Todos os Nichos'}
+                    </span>
+                  </span>
+                  <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${showSubcategoriesDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showSubcategoriesDropdown && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-30" 
+                      onClick={() => setShowSubcategoriesDropdown(false)} 
+                    />
+                    <div className="absolute left-0 mt-2 w-64 rounded-xl bg-surface-high border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 animate-in fade-in slide-in-from-top-1 duration-200 max-h-[250px] overflow-y-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSubcategory(null);
+                          setShowSubcategoriesDropdown(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors ${
+                          selectedSubcategory === null ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
+                        }`}
+                      >
+                        Todos os Nichos
+                      </button>
+                      {subcategories.map((sub) => (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSubcategory(sub.id);
+                            setShowSubcategoriesDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                            selectedSubcategory === sub.id ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
+                          }`}
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
+          </div>
 
             {filteredProducts.length === 0 ? (
               <div className="glass-panel rounded-xl p-12 text-center">
@@ -399,22 +439,22 @@ export function Library({ setScreen, onProductClick }: {
                         )}
 
                         {/* Price and CTA */}
-                        <div className="flex flex-wrap items-center justify-between mt-auto w-full gap-3">
-                          <span className="font-mono text-base sm:text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
-                            {product.is_free ? t('library.free') : `$ ${product.price}`}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-auto w-full gap-3">
+                          <span className="font-mono text-base sm:text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] min-w-0 sm:text-left text-center block sm:inline">
+                            {product.is_free ? t('library.free') : formatProductPrice(product.price, product.aoa_price)}
                           </span>
                           {isOwned(product.id) ? (
-                            <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">
+                            <div className="w-full sm:w-auto px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center justify-center gap-1.5 transition-all text-center">
                               <CheckCircle className="w-3.5 h-3.5" />
                               {tCommon('product.alreadyOwned')}
                             </div>
                           ) : product.is_free ? (
-                            <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1 transition-all">
+                            <div className="w-full sm:w-auto px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center justify-center gap-1 transition-all text-center">
                               Acesso Livre
                               <ArrowRight className="w-3.5 h-3.5" />
                             </div>
                           ) : (
-                            <button className="secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 group-active:bg-white/10 group-active:border-primary/50 text-white transition-all shrink-0">
+                            <button className="w-full sm:w-auto secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center justify-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 group-active:bg-white/10 group-active:border-primary/50 text-white transition-all text-center break-words whitespace-normal leading-tight">
                               {product.cta_text || 'Comprar'}{' '}
                               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-active:translate-x-0.5 transition-transform" />
                             </button>
@@ -426,7 +466,6 @@ export function Library({ setScreen, onProductClick }: {
                 })}
               </div>
             )}
-          </div>
         </div>
       )}
     </div>

@@ -16,7 +16,7 @@ import { CouponInput } from '../components/product/CouponInput';
 import { CampaignBanner } from '../components/product/CampaignBanner';
 import { ProductActionButton } from '../components/ProductActionButton';
 import { CourseCurriculum } from '../components/product/CourseCurriculum';
-import { parseJsonField, safePrice, safeText } from '../lib/safe-display';
+import { parseJsonField, safePrice, safeText, isUserInAngola } from '../lib/safe-display';
 import { parsePageLayoutConfig, isSectionEnabled, type PageLayoutConfig } from '../lib/page-layout';
 import { resolveContentLocale } from '../lib/content-locale';
 import { useLocale } from '../contexts/LocaleContext';
@@ -625,6 +625,24 @@ export function Product({ setScreen, productId }: ProductProps) {
     return Math.max(0, basePrice - discount - referralDiscount);
   }
 
+  function renderFormattedPrice(usdPrice: number, aoaPriceVal?: number | null) {
+    if (isUserInAngola() && aoaPriceVal != null && aoaPriceVal > 0) {
+      let finalAoa = aoaPriceVal;
+      const listPriceVal = safePrice(product?.price);
+      if (listPriceVal > 0) {
+        const ratio = usdPrice / listPriceVal;
+        finalAoa = aoaPriceVal * ratio;
+      }
+      
+      const formatted = new Intl.NumberFormat('pt-AO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(finalAoa);
+      return `${formatted} Kz`;
+    }
+    return `$ ${usdPrice}`;
+  }
+
   function translateDbText(text?: string | null): string {
     if (!text) return '';
     if (locale === 'pt') return text;
@@ -871,7 +889,7 @@ export function Product({ setScreen, productId }: ProductProps) {
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
             <p className="font-sans text-xs text-on-surface-variant">{t('product.finalPrice')}</p>
-            <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
+            <p className="font-mono text-xl font-bold text-primary">{renderFormattedPrice(getFinalPrice(), (product as any)?.aoa_price)}</p>
           </div>
           <ProductActionButton
             productId={product.id}
@@ -984,16 +1002,16 @@ export function Product({ setScreen, productId }: ProductProps) {
               {(campaignPrice || discount > 0) ? (
                 <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
                   <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/50 line-through">
-                    {tDict.before} ${listPrice}
+                    {tDict.before} {renderFormattedPrice(listPrice, (product as any)?.aoa_price)}
                   </span>
                   <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/30">|</span>
                   <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                    {tDict.now} ${getFinalPrice()}
+                    {tDict.now} {renderFormattedPrice(getFinalPrice(), (product as any)?.aoa_price)}
                   </span>
                 </div>
               ) : (
                 <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                  $ {getFinalPrice()}
+                  {renderFormattedPrice(getFinalPrice(), (product as any)?.aoa_price)}
                 </span>
               )}
             </div>

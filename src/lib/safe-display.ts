@@ -23,3 +23,24 @@ export function safePrice(value: unknown): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
 }
+
+export function isUserInAngola(): boolean {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz === 'Africa/Luanda';
+  } catch (e) {
+    return false;
+  }
+}
+
+export function formatProductPrice(price: number, aoaPrice?: number | null): string {
+  if (isUserInAngola() && aoaPrice != null && aoaPrice > 0) {
+    const formatted = new Intl.NumberFormat('pt-AO', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(aoaPrice);
+    return `${formatted} Kz`;
+  }
+  return `$ ${price}`;
+}
+

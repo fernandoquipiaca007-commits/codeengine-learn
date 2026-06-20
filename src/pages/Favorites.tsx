@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Heart, Trash2, ShoppingCart, ArrowRight, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types/store';
+import { formatProductPrice } from '../lib/safe-display';
+
 
 interface FavoritesProps {
   setScreen: (screen: string) => void;
@@ -228,7 +230,7 @@ export function Favorites({ setScreen }: FavoritesProps) {
                 {/* Footer */}
                 <div className="flex items-center justify-between">
                   <div className="font-display text-2xl font-bold text-primary">
-                    $ {favorite.product.price}
+                    {favorite.product.is_free ? 'Acesso Livre' : formatProductPrice(favorite.product.price, favorite.product.aoa_price)}
                   </div>
                   
                   <button 
