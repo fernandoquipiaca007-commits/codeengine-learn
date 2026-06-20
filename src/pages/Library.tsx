@@ -133,6 +133,21 @@ export function Library({ setScreen, onProductClick }: {
     void loadSubcategories();
   }, [selectedCategory]);
 
+  // Dispatch event when Fitness category/subcategory is selected
+  useEffect(() => {
+    const isFitness = selectedSubcategory === '6066beb4-c6c9-4c94-930d-a69fcdbab114' || 
+                      (selectedCategory && categories.find(c => c.id === selectedCategory)?.name.toLowerCase().includes('fitness')) ||
+                      (selectedSubcategory && subcategories.find(s => s.id === selectedSubcategory)?.name.toLowerCase().includes('fitness'));
+    
+    const event = new CustomEvent('fitness-category-active', { detail: { active: !!isFitness } });
+    window.dispatchEvent(event);
+    
+    return () => {
+      const event = new CustomEvent('fitness-category-active', { detail: { active: false } });
+      window.dispatchEvent(event);
+    };
+  }, [selectedCategory, selectedSubcategory, categories, subcategories]);
+
   // Setup realtime subscription for products with queryCache SWR invalidation
   useEffect(() => {
     const bump = () => {

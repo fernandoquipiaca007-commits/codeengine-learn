@@ -13,6 +13,9 @@ import { supabase } from './lib/supabase';
 const Background3D = lazy(() =>
   import('./components/Background3D').then((m) => ({ default: m.Background3D }))
 );
+const DynamicFitnessBackground = lazy(() =>
+  import('./components/DynamicFitnessBackground').then((m) => ({ default: m.DynamicFitnessBackground }))
+);
 
 // ─── Lazy-loaded pages (code splitting) ───────────────────────────────────────
 // Each page is loaded on demand — not bundled into the initial JS payload.
@@ -163,6 +166,7 @@ export default function App() {
   const [memberSection, setMemberSection] = useState<string>('inicio');
   const [showSearch, setShowSearch] = useState(false);
   const [isImmersive, setIsImmersive] = useState(false);
+  const [isFitnessActive, setIsFitnessActive] = useState(false);
 
   const navigateToProduct = (productId: string) => {
     setCurrentProductId(productId);
@@ -322,6 +326,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const handleFitnessActive = (e: Event) => {
+      const active = (e as CustomEvent).detail?.active ?? false;
+      setIsFitnessActive(active);
+    };
+    window.addEventListener('fitness-category-active', handleFitnessActive);
+    return () => window.removeEventListener('fitness-category-active', handleFitnessActive);
+  }, []);
+
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         // Clear hash if returning from OAuth redirect
@@ -378,15 +391,21 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">
-      {/* Background3D is lazy-loaded: Three.js ~500KB deferred after initial paint */}
-      <Suspense fallback={
-        <div className="fixed inset-0 z-[-10] bg-background">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[150px] opacity-50" />
-        </div>
-      }>
-        <Background3D isImmersive={isImmersive} />
-      </Suspense>
+      {/* Background3D or DynamicFitnessBackground */}
+      {isFitnessActive ? (
+        <Suspense fallback={<div className="fixed inset-0 z-[-10] bg-black" />}>
+          <DynamicFitnessBackground />
+        </Suspense>
+      ) : (
+        <Suspense fallback={
+          <div className="fixed inset-0 z-[-10] bg-background">
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[150px] opacity-50" />
+          </div>
+        }>
+          <Background3D isImmersive={isImmersive} />
+        </Suspense>
+      )}
       {!isImmersive && (
         <NavBar
           currentScreen={currentScreen}

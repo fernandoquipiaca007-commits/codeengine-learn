@@ -1,0 +1,6 @@
+- [x] Create `task.md` and check off items as we progress
+- [x] Create `DynamicFitnessBackground.tsx` component
+- [x] Update `Library.tsx` to dispatch custom category events
+- [x] Update `App.tsx` to listen to category events and mount/unmount the background
+- [/] Verify the implementation locally by running building/dev commands
+- [ ] Create walkthrough documentation
