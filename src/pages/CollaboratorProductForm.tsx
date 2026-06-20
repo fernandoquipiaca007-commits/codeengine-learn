@@ -363,7 +363,7 @@ export function CollaboratorProductForm({
 
     // Free plan file validation
     if (collaboratorPlan === 'ebook_creator' && bucket === 'ebooks-private') {
-      const allowedExts = ['pdf', 'epub', 'docx', 'zip'];
+      const allowedExts = ['pdf', 'epub', 'docx', 'zip', 'mp3', 'wav', 'm4a'];
       const ext = file.name.split('.').pop()?.toLowerCase() || '';
       if (!allowedExts.includes(ext)) {
         setUploadProgress(prev => ({ ...prev, [key]: '' }));
