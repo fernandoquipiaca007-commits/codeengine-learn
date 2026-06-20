@@ -266,32 +266,36 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen page-wrapper">
       {/* Header */}
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-display">Painel do Criador</h1>
-          <p className="mt-1 text-gray-500">Olá, {profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.</p>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em]">
+            Painel do Criador
+          </h1>
+          <p className="mt-2 text-on-surface-variant font-sans text-sm sm:text-base">
+            Olá, {profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.
+          </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={openWalletModal}
-            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all text-sm"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 font-semibold text-on-surface hover:bg-white/10 transition-all text-sm"
           >
-            <Landmark size={18} />
+            <Landmark size={18} className="text-primary" />
             Configurar Carteira
           </button>
           <button
             onClick={onGoToProducts}
-            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-all text-sm"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 font-semibold text-on-surface hover:bg-white/10 transition-all text-sm"
           >
-            <FileText size={18} />
+            <FileText size={18} className="text-primary" />
             Meus Produtos
           </button>
           <button
             onClick={() => setShowWithdrawModal(true)}
             disabled={(Number(balance?.available_balance) || 0) < 20}
-            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-semibold text-white shadow-sm hover:bg-primary-hover transition-all text-sm disabled:opacity-50"
+            className="flex items-center gap-2 rounded-full bg-on-surface px-5 py-2.5 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] disabled:opacity-50"
           >
             <PlusCircle size={18} />
             Solicitar Saque
@@ -300,105 +304,109 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       </div>
 
       {/* Cards de Saldo */}
-      <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
         {/* Card 1: Disponível */}
-        <div className="rounded-2xl border border-green-100 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/15">
               <CheckCircle size={20} />
             </div>
-            <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Liberado</span>
+            <span className="text-xs font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">Liberado</span>
           </div>
-          <span className="block text-sm font-medium text-gray-500">Saldo Disponível</span>
-          <span className="block mt-1 text-2xl font-bold text-gray-950 font-display">
+          <span className="block text-sm font-medium text-on-surface-variant">Saldo Disponível</span>
+          <span className="block mt-1 text-2xl font-bold text-white font-mono">
             {formatMoney(balance?.available_balance)}
           </span>
         </div>
 
         {/* Card 2: Pendente */}
-        <div className="rounded-2xl border border-orange-100 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-orange-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/15">
               <Clock size={20} />
             </div>
-            <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Carência</span>
+            <span className="text-xs font-semibold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">Carência</span>
           </div>
-          <span className="block text-sm font-medium text-gray-500">Saldo Pendente</span>
-          <span className="block mt-1 text-2xl font-bold text-gray-950 font-display">
+          <span className="block text-sm font-medium text-on-surface-variant">Saldo Pendente</span>
+          <span className="block mt-1 text-2xl font-bold text-white font-mono">
             {formatMoney(balance?.pending_balance)}
           </span>
         </div>
 
         {/* Card 3: Acumulado Histórico */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
               <TrendingUp size={20} />
             </div>
-            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Histórico</span>
+            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Histórico</span>
           </div>
-          <span className="block text-sm font-medium text-gray-500">Total Acumulado</span>
-          <span className="block mt-1 text-2xl font-bold text-gray-950 font-display">
+          <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado</span>
+          <span className="block mt-1 text-2xl font-bold text-white font-mono">
             {formatMoney(balance?.accumulated_earnings)}
           </span>
         </div>
 
         {/* Card 4: Já Sacado */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-tertiary/10 text-tertiary border border-tertiary/15">
               {profile?.payoutMethod === 'paypal' ? <Mail size={20} /> : <Landmark size={20} />}
             </div>
-            <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">Pago</span>
+            <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full border border-tertiary/20">Pago</span>
           </div>
-          <span className="block text-sm font-medium text-gray-500">Total Sacado</span>
-          <span className="block mt-1 text-2xl font-bold text-gray-950 font-display">
+          <span className="block text-sm font-medium text-on-surface-variant">Total Sacado</span>
+          <span className="block mt-1 text-2xl font-bold text-white font-mono">
             {formatMoney(balance?.withdrawn_amount)}
           </span>
         </div>
       </div>
 
       {/* Main Grid: Extrato e Solicitações */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 relative z-10">
         {/* Ledger Extrato */}
-        <div className="lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-bold text-gray-900 font-display">Extrato Contábil Recente</h3>
+        <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-white/10">
+          <h3 className="mb-6 text-lg font-bold text-white font-display">Extrato Contábil Recente</h3>
           {ledger.length === 0 ? (
-            <div className="py-8 text-center text-gray-400 text-sm">Nenhum lançamento contábil registrado ainda.</div>
+            <div className="py-8 text-center text-on-surface-variant text-sm font-sans">Nenhum lançamento contábil registrado ainda.</div>
           ) : (
-            <div className="divide-y divide-gray-100 overflow-x-auto">
-              <table className="w-full text-left text-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="text-gray-400 font-medium">
-                    <th className="pb-3">Data</th>
-                    <th className="pb-3">Descrição</th>
-                    <th className="pb-3">Tipo</th>
-                    <th className="pb-3 text-right">Valor</th>
-                    <th className="pb-3 text-right">Status</th>
+                  <tr className="text-on-surface-variant font-semibold border-b border-white/10">
+                    <th className="pb-3 text-xs uppercase tracking-wider">Data</th>
+                    <th className="pb-3 text-xs uppercase tracking-wider">Descrição</th>
+                    <th className="pb-3 text-xs uppercase tracking-wider">Tipo</th>
+                    <th className="pb-3 text-xs uppercase tracking-wider text-right">Valor</th>
+                    <th className="pb-3 text-xs uppercase tracking-wider text-right">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-white/5">
                   {ledger.map((item) => (
-                    <tr key={item.id} className="text-gray-700">
-                      <td className="py-3 text-gray-400 text-xs">
+                    <tr key={item.id} className="text-on-surface">
+                      <td className="py-4 text-on-surface-variant text-xs font-mono">
                         {new Date(item.created_at).toLocaleDateString('pt-BR')}
                       </td>
-                      <td className="py-3 font-medium text-gray-900">{item.description}</td>
-                      <td className="py-3">
+                      <td className="py-4 font-medium text-white">{item.description}</td>
+                      <td className="py-4">
                         {item.type === 'credit' ? (
-                          <span className="flex items-center gap-1 text-green-600 text-xs font-semibold">
+                          <span className="flex items-center gap-1 text-green-400 text-xs font-semibold">
                             <ArrowUpRight size={14} /> Entrada
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1 text-red-600 text-xs font-semibold">
+                          <span className="flex items-center gap-1 text-red-400 text-xs font-semibold">
                             <ArrowDownRight size={14} /> Saída
                           </span>
                         )}
                       </td>
-                      <td className={`py-3 text-right font-semibold ${item.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                      <td className={`py-4 text-right font-mono font-semibold ${item.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
                         {item.type === 'credit' ? '+' : '-'}{formatMoney(item.amount)}
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-4 text-right">
                         {getLedgerStatusBadge(item.status)}
                       </td>
                     </tr>
@@ -410,21 +418,21 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         </div>
 
         {/* Fila de Retiradas */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-bold text-gray-900 font-display">Solicitações de Saque</h3>
+        <div className="glass-panel rounded-2xl p-6 border border-white/10">
+          <h3 className="mb-6 text-lg font-bold text-white font-display">Solicitações de Saque</h3>
           {withdrawals.length === 0 ? (
-            <div className="py-8 text-center text-gray-400 text-sm">Nenhuma solicitação de saque enviada.</div>
+            <div className="py-8 text-center text-on-surface-variant text-sm font-sans">Nenhuma solicitação de saque enviada.</div>
           ) : (
             <div className="space-y-4">
               {withdrawals.map((w) => (
-                <div key={w.id} className="rounded-xl border border-gray-100 p-4 hover:bg-gray-50 transition-all">
+                <div key={w.id} className="rounded-xl border border-white/5 bg-white/5 p-4 hover:bg-white/10 transition-all">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-gray-900">{formatMoney(w.amount)}</span>
+                    <span className="font-bold text-white font-mono">{formatMoney(w.amount)}</span>
                     {getWithdrawalStatusBadge(w.status)}
                   </div>
-                  <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                  <div className="flex items-center justify-between text-xs text-on-surface-variant mb-1 font-sans">
                     <span>Método: {String(w.payout_method_details?.method || '').toUpperCase()}</span>
-                    <span>{new Date(w.created_at).toLocaleDateString('pt-BR')}</span>
+                    <span className="font-mono">{new Date(w.created_at).toLocaleDateString('pt-BR')}</span>
                   </div>
                   
                   {w.status === 'completed' && w.receipt_url && (
@@ -438,7 +446,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     </a>
                   )}
                   {w.status === 'rejected' && w.rejection_reason && (
-                    <div className="mt-2 rounded-lg bg-red-50 p-2 text-xs text-red-700">
+                    <div className="mt-2 rounded-lg bg-red-500/10 border border-red-500/20 p-2 text-xs text-red-300">
                       <strong>Rejeitado:</strong> {w.rejection_reason}
                     </div>
                   )}
@@ -451,50 +459,50 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
       {/* Modal: Solicitar Saque */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-6 shadow-xl"
+            className="w-full max-w-md rounded-2xl border border-white/15 bg-surface/95 backdrop-blur-xl p-6 shadow-2xl overlay-premium"
           >
-            <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-lg font-bold text-gray-900 font-display">Solicitar Saque</h3>
+            <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-lg font-bold text-white font-display">Solicitar Saque</h3>
               <button
                 onClick={() => {
                   setShowWithdrawModal(false);
                   setModalError(null);
                   setModalSuccess(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 text-sm font-medium"
+                className="text-on-surface-variant hover:text-white text-sm font-medium transition-colors"
               >
                 Fechar
               </button>
             </div>
 
             {modalSuccess && (
-              <div className="mb-4 flex items-center gap-2 rounded-xl bg-green-50 p-3 text-sm text-green-700">
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-green-500/10 border border-green-500/20 p-3 text-sm text-green-300">
                 <CheckCircle size={16} />
                 <span>{modalSuccess}</span>
               </div>
             )}
 
             {modalError && (
-              <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-300">
                 <AlertCircle size={16} />
                 <span>{modalError}</span>
               </div>
             )}
 
-            <form onSubmit={handleWithdrawSubmit} className="space-y-4">
+            <form onSubmit={handleWithdrawSubmit} className="space-y-4 font-sans">
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">Saldo Disponível para Saque</label>
-                <div className="text-xl font-bold text-green-600">{formatMoney(balance?.available_balance)}</div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Saldo Disponível para Saque</label>
+                <div className="text-2xl font-bold text-green-400 font-mono">{formatMoney(balance?.available_balance)}</div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Valor do Saque</label>
-                <div className="relative rounded-xl border border-gray-200">
-                  <span className="absolute left-3 top-3.5 text-gray-400 text-sm font-bold">
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Valor do Saque</label>
+                <div className="relative rounded-xl border border-white/10 bg-surface-high">
+                  <span className="absolute left-4 top-3.5 text-on-surface-variant text-sm font-bold font-mono">
                     {profile?.payoutMethod === 'iban' ? 'Kz' : '$'}
                   </span>
                   <input
@@ -504,23 +512,23 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     placeholder="0.00"
                     value={withdrawAmount as any}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                    className="w-full rounded-xl border-none pl-9 pr-4 py-3 text-sm font-bold focus:outline-none focus:ring-0"
+                    className="w-full rounded-xl border-none pl-10 pr-4 py-3 text-sm font-bold font-mono text-white focus:outline-none focus:ring-0 focus:border-none bg-transparent"
                   />
                 </div>
-                <span className="mt-1 block text-xs text-gray-400">
+                <span className="mt-1 block text-xs text-on-surface-variant">
                   Limite mínimo de resgate: {profile?.payoutMethod === 'iban' ? '20.000 Kz' : '$20.00'}.
                 </span>
               </div>
 
-              <div className="rounded-xl bg-gray-50 p-4 text-xs text-gray-500 space-y-1">
-                <div className="font-semibold text-gray-700 mb-1">Dados de Destino:</div>
+              <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-xs text-on-surface-variant space-y-1">
+                <div className="font-semibold text-white mb-1 uppercase tracking-wider">Dados de Destino:</div>
                 {profile?.payoutMethod === 'paypal' ? (
-                  <div>PayPal Email: <span className="font-medium text-gray-900">{profile?.payoutInfo?.email}</span></div>
+                  <div>PayPal Email: <span className="font-medium text-white">{profile?.payoutInfo?.email}</span></div>
                 ) : (
                   <>
-                    <div>Banco: <span className="font-medium text-gray-900">{profile?.payoutInfo?.bankName}</span></div>
-                    <div>Titular: <span className="font-medium text-gray-900">{profile?.payoutInfo?.bankHolder}</span></div>
-                    <div>IBAN: <span className="font-medium text-gray-900">{profile?.payoutInfo?.iban}</span></div>
+                    <div>Banco: <span className="font-medium text-white">{profile?.payoutInfo?.bankName}</span></div>
+                    <div>Titular: <span className="font-medium text-white">{profile?.payoutInfo?.bankHolder}</span></div>
+                    <div>IBAN: <span className="font-medium text-white font-mono">{profile?.payoutInfo?.iban}</span></div>
                   </>
                 )}
               </div>
@@ -528,10 +536,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <button
                 type="submit"
                 disabled={submittingWithdraw || !withdrawAmount}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-white shadow-sm hover:bg-primary-hover transition-all text-sm disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-on-surface py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm disabled:opacity-50 font-display uppercase tracking-widest text-xs"
               >
                 {submittingWithdraw ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
                 ) : 'Confirmar Solicitação'}
               </button>
             </form>
@@ -541,14 +549,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
       {/* Modal: Configurar Carteira */}
       {showWalletModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-6 shadow-xl"
+            className="w-full max-w-md rounded-2xl border border-white/15 bg-surface/95 backdrop-blur-xl p-6 shadow-2xl overlay-premium"
           >
-            <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-lg font-bold text-gray-900 font-display">Configurações de Carteira</h3>
+            <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-lg font-bold text-white font-display">Configurações de Carteira</h3>
               <button
                 type="button"
                 onClick={() => {
@@ -556,21 +564,21 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   setWalletError(null);
                   setWalletSuccess(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 text-sm font-medium"
+                className="text-on-surface-variant hover:text-white text-sm font-medium transition-colors"
               >
                 Fechar
               </button>
             </div>
 
             {walletSuccess && (
-              <div className="mb-4 flex items-center gap-2 rounded-xl bg-green-50 p-3 text-sm text-green-700">
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-green-500/10 border border-green-500/20 p-3 text-sm text-green-300">
                 <CheckCircle size={16} />
                 <span>{walletSuccess}</span>
               </div>
             )}
 
             {walletError && (
-              <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-300">
                 <AlertCircle size={16} />
                 <span>{walletError}</span>
               </div>
@@ -578,15 +586,15 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
             <form onSubmit={handleWalletSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Método de Destino</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2 uppercase tracking-wider">Método de Destino</label>
                 <div className="grid grid-cols-2 gap-3 font-sans">
                   <button
                     type="button"
                     onClick={() => setTempPayoutMethod('paypal')}
                     className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-medium transition-all ${
                       tempPayoutMethod === 'paypal'
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        ? 'border-primary bg-primary/15 text-primary shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                        : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     <Mail size={16} />
@@ -597,8 +605,8 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     onClick={() => setTempPayoutMethod('iban')}
                     className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-medium transition-all ${
                       tempPayoutMethod === 'iban'
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        ? 'border-primary bg-primary/15 text-primary shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                        : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     <Landmark size={16} />
@@ -609,49 +617,49 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
               {tempPayoutMethod === 'paypal' ? (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">E-mail do PayPal</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">E-mail do PayPal</label>
                   <input
                     type="email"
                     required
                     placeholder="exemplo@email.com"
                     value={paypalEmail}
                     onChange={(e) => setPaypalEmail(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-sans"
+                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 font-sans"
                   />
                 </div>
               ) : (
                 <div className="space-y-3 font-sans">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Banco</label>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Nome do Banco</label>
                     <input
                       type="text"
                       required
                       placeholder="Ex: Banco de Fomento Angola (BFA)"
                       value={bankName}
                       onChange={(e) => setBankName(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Titular da Conta</label>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Titular da Conta</label>
                     <input
                       type="text"
                       required
                       placeholder="Nome completo do titular"
                       value={bankHolder}
                       onChange={(e) => setBankHolder(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">IBAN</label>
                     <input
                       type="text"
                       required
                       placeholder="AO06.0000.0000.0000.0000.0"
                       value={iban}
                       onChange={(e) => setIban(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 font-mono"
                     />
                   </div>
                 </div>
@@ -660,10 +668,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <button
                 type="submit"
                 disabled={savingWallet}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-white shadow-sm hover:bg-primary-hover transition-all text-sm disabled:opacity-50 font-sans"
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-on-surface py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm disabled:opacity-50 font-display uppercase tracking-widest text-xs"
               >
                 {savingWallet ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
                 ) : 'Salvar Carteira'}
               </button>
             </form>
