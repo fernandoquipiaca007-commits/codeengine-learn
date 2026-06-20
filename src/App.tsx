@@ -4,7 +4,6 @@ import { NavBar } from './components/NavBar';
 import { Footer } from './components/Footer';
 import { SearchModal } from './components/SearchModal';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
-import { UpdatePrompt } from './components/UpdatePrompt';
 import { PushPermissionPrompt } from './components/PushPermissionPrompt';
 import { useLocale } from './contexts/LocaleContext';
 import { supabase } from './lib/supabase';
@@ -438,7 +437,6 @@ export default function App() {
 
       {!isImmersive && <Footer setScreen={navigateToScreen} />}
       <PwaInstallBanner />
-      <UpdatePrompt />
       <PushPermissionPrompt />
     </div>
   );

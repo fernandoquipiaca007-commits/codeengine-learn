@@ -67,16 +67,16 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: b
 
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#0d0d0e] px-6 text-center text-on-surface">
-          <div className="glass-panel max-w-md p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl">
-            <h1 className="font-display text-2xl font-bold text-white mb-4">Atualização Disponível</h1>
+          <div className="glass-panel max-w-md p-8 rounded-2xl border border-red-500/20 shadow-xl bg-surface-container-low/30 backdrop-blur-xl">
+            <h1 className="font-display text-2xl font-bold text-red-400 mb-4">Ocorreu um erro</h1>
             <p className="font-sans text-sm text-on-surface-variant mb-6">
-              Houve uma alteração nos arquivos do aplicativo. Por favor, clique abaixo para recarregar e carregar a versão mais recente.
+              Ocorreu um problema ao carregar esta página. Por favor, tente recarregar o navegador.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-2.5 rounded-full bg-[#6366f1] text-white font-display text-sm font-semibold hover:scale-95 transition-transform shadow-lg shadow-indigo-500/20"
+              className="px-6 py-2.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-200 font-display text-sm font-semibold hover:bg-[#ef4444]/20 transition-all shadow-lg"
             >
-              Recarregar Aplicativo
+              Recarregar Página
             </button>
           </div>
         </div>
