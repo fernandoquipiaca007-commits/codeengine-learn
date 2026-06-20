@@ -802,26 +802,53 @@ export function CollaboratorProductForm({
                 />
               </div>
 
-              {/* Stripe Upgrade Widget inside the form */}
+              {/* Stripe & FastPay Upgrade Widget inside the form */}
               {collaboratorPlan !== 'course_creator' && (
-                <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3 mt-4">
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-4 mt-4">
                   <div className="flex items-start gap-2.5">
                     <Award className="text-primary w-5 h-5 shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-sm font-bold text-white">Publique cursos em vídeo por apenas $9/mês</h4>
+                      <h4 className="text-sm font-bold text-white">Publique cursos em vídeo por apenas $9/mês (Aprox. 8.000 Kz)</h4>
                       <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                        Faça o upgrade para o plano <strong>Course Creator</strong> para hospedar seus vídeos diretamente e desbloquear recursos premium de streaming na CodeEngine.
+                        Faça o upgrade para o plano <strong>Course Creator</strong> para hospedar seus vídeos e cursos diretamente, obtendo taxa reduzida e outras vantagens exclusivas.
                       </p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    disabled={isUpgrading}
-                    onClick={handleUpgradePlan}
-                    className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors disabled:opacity-50"
-                  >
-                    {isUpgrading ? 'Processando...' : 'Fazer Upgrade para Premium via Stripe'}
-                  </button>
+
+                  {/* Option A: Stripe */}
+                  <div className="border-t border-white/5 pt-3">
+                    <span className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Opção 1: Cartão de Crédito / Stripe (Cobrança Automática)</span>
+                    <button
+                      type="button"
+                      disabled={isUpgrading}
+                      onClick={handleUpgradePlan}
+                      className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors disabled:opacity-50"
+                    >
+                      {isUpgrading ? 'Processando...' : 'Fazer Upgrade via Stripe ($9/mês)'}
+                    </button>
+                  </div>
+
+                  {/* Option B: FastPay */}
+                  <div className="border-t border-white/5 pt-3 space-y-2">
+                    <span className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Opção 2: FastPay / IBAN Local (Sem Débito Automático)</span>
+                    <div className="rounded-lg bg-black/30 p-2.5 text-[11px] text-on-surface-variant space-y-1 font-sans">
+                      <p className="font-bold text-white">Coordenadas Bancárias (CodeEngine):</p>
+                      <p>Banco: <strong className="text-white">BAI</strong></p>
+                      <p>IBAN: <strong className="text-white">AO06.0040.0000.1234.5678.9012.3</strong></p>
+                      <p>Valor: <strong className="text-white">8.000 Kz / mês</strong></p>
+                      <p className="text-yellow-400/90 text-[10px] mt-1.5 font-semibold">
+                        * Atenção: Pagamentos manuais via FastPay expiram a cada 30 dias. Um alerta vermelho será exibido antes do encerramento do plano para você reenviar o comprovativo.
+                      </p>
+                    </div>
+                    <a
+                      href="https://wa.me/244900000000?text=Olá,%20gostaria%20de%20ativar%20o%20plano%20Course%20Creator%20via%20FastPay"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full text-center rounded-lg bg-green-600/95 py-2 text-xs font-bold text-white hover:bg-green-700 transition-colors"
+                    >
+                      Enviar Comprovativo FastPay via WhatsApp
+                    </a>
+                  </div>
                 </div>
               )}
             </div>

@@ -24,6 +24,8 @@ interface CollaboratorProfile {
     bankHolder?: string;
     iban?: string;
   };
+  planExpiresAt?: string;
+  upgradeMethod?: 'stripe' | 'fastpay';
 }
 
 export function CollaboratorDashboard({ setScreen, onGoToProducts }: CollaboratorDashboardProps) {
@@ -302,6 +304,61 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           </button>
         </div>
       </div>
+
+      {/* Plan Expiration & Grace Period Alerts */}
+      {(() => {
+        if (!profile || profile.plan !== 'course_creator' || !profile.planExpiresAt) return null;
+        
+        const now = new Date();
+        const expiresAt = new Date(profile.planExpiresAt);
+        const daysDiff = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff <= 0) {
+          // Grace period check: 2 days threshold
+          const graceThreshold = new Date(expiresAt.getTime() + 2 * 24 * 60 * 60 * 1000);
+          if (now <= graceThreshold) {
+            return (
+              <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex gap-3 items-start animate-pulse">
+                <AlertCircle className="text-red-400 w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-white">Período de Tolerância Ativo (Expiração Crítica)</h4>
+                  <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                    Sua assinatura do plano <strong>Course Creator</strong> via {profile.upgradeMethod === 'fastpay' ? 'FastPay' : 'Stripe'} expirou em {expiresAt.toLocaleDateString()}. 
+                    Você tem um prazo limite de tolerância de até 2 dias para regularizar seu pagamento. 
+                    Se não realizar a renovação hoje, seus cursos e hospedagens de vídeos serão desativados.
+                  </p>
+                </div>
+              </div>
+            );
+          } else {
+            return (
+              <div className="mb-6 rounded-xl border border-red-600 bg-red-950/40 p-4 flex gap-3 items-start">
+                <AlertCircle className="text-red-500 w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-white">Plano Expirado - Cursos Desativados</h4>
+                  <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                    Sua assinatura expirou e o período de tolerância encerrou. Seus cursos foram marcados como inativos. 
+                    Realize o pagamento de renovação para reativar todos os seus conteúdos imediatamente.
+                  </p>
+                </div>
+              </div>
+            );
+          }
+        } else if (daysDiff <= 5) {
+          return (
+            <div className="mb-6 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4 flex gap-3 items-start">
+              <AlertCircle className="text-yellow-400 w-5 h-5 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-white">Sua Assinatura Expira em {daysDiff} {daysDiff === 1 ? 'dia' : 'dias'}</h4>
+                <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                  Lembrete: Como seu plano foi ativado via {profile.upgradeMethod === 'fastpay' ? 'FastPay (Manual)' : 'Stripe'}, certifique-se de regularizar a renovação antes de {expiresAt.toLocaleDateString()} para que não ocorra a suspensão de uploads de vídeos dos seus produtos.
+                </p>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {/* Cards de Saldo */}
       <div className="mb-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
