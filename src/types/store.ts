@@ -22,6 +22,8 @@ export interface Product {
   status: 'draft' | 'active' | 'archived';
   is_free?: boolean;
   product_type?: 'file' | 'course' | 'ebook';
+  aoa_price?: number | null;
+  fastpay_link?: string | null;
   created_at: string;
   updated_at: string;
 }
