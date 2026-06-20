@@ -16,6 +16,13 @@ interface Category {
   name_fr?: string;
 }
 
+interface Subcategory {
+  id: string;
+  category_id: string;
+  name: string;
+  description?: string;
+}
+
 interface CampaignState {
   banner_text: string;
   special_price: string;
@@ -137,6 +144,10 @@ export function CollaboratorProductForm({
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
 
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategoryId, setSubcategoryId] = useState('');
+  const [videoSourceType, setVideoSourceType] = useState<'youtube' | 'vimeo' | 'wistia' | 'loom' | 'external'>('youtube');
+
   // Upgrade Plan Stripe Automation State
   const [isUpgrading, setIsUpgrading] = useState(false);
 
@@ -146,6 +157,16 @@ export function CollaboratorProductForm({
       fetchProductDetails(productId);
     }
   }, [productId]);
+
+  // Load subcategories when category changes
+  useEffect(() => {
+    if (categoryId) {
+      fetchSubcategories(categoryId);
+    } else {
+      setSubcategories([]);
+      setSubcategoryId('');
+    }
+  }, [categoryId]);
 
   async function fetchCategories() {
     try {
@@ -171,6 +192,31 @@ export function CollaboratorProductForm({
     }
   }
 
+  async function fetchSubcategories(catId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('subcategories')
+        .select('id, name, description')
+        .eq('category_id', catId)
+        .order('display_order', { ascending: true });
+      if (!error && data) {
+        setSubcategories(data);
+        // Retain current subcategory or default to empty
+        if (data.length > 0) {
+          // Keep current subcategoryId if it still exists in the newly fetched subcategories
+          const exists = data.some(s => s.id === subcategoryId);
+          if (!exists) {
+            setSubcategoryId('');
+          }
+        } else {
+          setSubcategoryId('');
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching subcategories:', err);
+    }
+  }
+
   async function fetchProductDetails(id: string) {
     setFetchingProduct(true);
     try {
@@ -191,11 +237,29 @@ export function CollaboratorProductForm({
           setTitle(prod.title || '');
           setDescription(prod.description || '');
           setCategoryId(prod.category_id || '');
+          setSubcategoryId(prod.subcategory_id || '');
           setCoverUrl(prod.cover_url || '');
           setPreviewUrl(prod.preview_url || '');
           
           if (prod.video_url?.includes('youtube.com') || prod.video_url?.includes('youtu.be')) {
             setYoutubeVideoUrl(prod.video_url);
+            setVideoSourceType('youtube');
+            setVideoUrl('');
+          } else if (prod.video_url?.includes('vimeo.com')) {
+            setYoutubeVideoUrl(prod.video_url);
+            setVideoSourceType('vimeo');
+            setVideoUrl('');
+          } else if (prod.video_url?.includes('wistia.com') || prod.video_url?.includes('wi.st')) {
+            setYoutubeVideoUrl(prod.video_url);
+            setVideoSourceType('wistia');
+            setVideoUrl('');
+          } else if (prod.video_url?.includes('loom.com')) {
+            setYoutubeVideoUrl(prod.video_url);
+            setVideoSourceType('loom');
+            setVideoUrl('');
+          } else if (prod.video_url && !prod.video_url.includes('supabase') && (prod.video_url.startsWith('http://') || prod.video_url.startsWith('https://'))) {
+            setYoutubeVideoUrl(prod.video_url);
+            setVideoSourceType('external');
             setVideoUrl('');
           } else {
             setVideoUrl(prod.video_url || '');
@@ -406,6 +470,7 @@ export function CollaboratorProductForm({
         title,
         description,
         categoryId,
+        subcategoryId: subcategoryId || null,
         price: Number(priceUSD),
         aoaPrice: Number(priceAOA),
         coverUrl,
@@ -649,15 +714,32 @@ export function CollaboratorProductForm({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Tags (separadas por vírgula)</label>
-                  <input
-                    type="text"
-                    value={tagsInput}
-                    onChange={e => setTagsInput(e.target.value)}
-                    placeholder="flexbox, css, design"
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
-                  />
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Subcategoria</label>
+                  <select
+                    value={subcategoryId}
+                    onChange={e => setSubcategoryId(e.target.value)}
+                    disabled={subcategories.length === 0}
+                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors disabled:opacity-50"
+                  >
+                    <option value="">Nenhuma subcategoria</option>
+                    {subcategories.map(s => (
+                      <option key={s.id} value={s.id} className="bg-surface-high text-white">
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Tags (separadas por vírgula)</label>
+                <input
+                  type="text"
+                  value={tagsInput}
+                  onChange={e => setTagsInput(e.target.value)}
+                  placeholder="flexbox, css, design"
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                />
               </div>
 
               {/* Dual Price Integration */}
@@ -830,19 +912,32 @@ export function CollaboratorProductForm({
                 </span>
                 {collaboratorPlan !== 'course_creator' ? (
                   <div className="space-y-2 mt-2">
-                    <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Link de Vídeo do YouTube (Plano Grátis)</label>
+                    <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Origem do Vídeo (Plano Grátis)</label>
+                    <select
+                      value={videoSourceType}
+                      onChange={e => setVideoSourceType(e.target.value as any)}
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white focus:outline-none"
+                    >
+                      <option value="youtube">YouTube (Streaming Rápido)</option>
+                      <option value="vimeo">Vimeo (Streaming Premium)</option>
+                      <option value="wistia">Wistia (Vídeo Marketing)</option>
+                      <option value="loom">Loom (Apresentação Rápida)</option>
+                      <option value="external">Link Direto / MP4 Externo</option>
+                    </select>
+
+                    <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mt-1">URL do Vídeo</label>
                     <div className="flex gap-2">
                       <input
                         type="url"
-                        placeholder="https://www.youtube.com/watch?v=..."
+                        placeholder="Insira o link de compartilhamento..."
                         value={youtubeVideoUrl}
                         onChange={e => setYoutubeVideoUrl(e.target.value)}
                         className="flex-1 rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
                       />
                       <span className="flex items-center text-on-surface-variant"><PlayCircle size={18} /></span>
                     </div>
-                    <span className="block text-[10px] text-primary">
-                      Como criador no plano gratuito, você pode vincular vídeos externos do YouTube. Para fazer upload direto, utilize o widget Stripe acima.
+                    <span className="block text-[10px] text-primary leading-normal">
+                      Como criador no plano gratuito, você pode hospedar seus vídeos em plataformas externas de streaming rápido. Para fazer upload e hospedagem direta na CodeEngine, faça o upgrade acima.
                     </span>
                   </div>
                 ) : (
