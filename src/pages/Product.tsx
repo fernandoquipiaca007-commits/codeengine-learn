@@ -786,11 +786,25 @@ export function Product({ setScreen, productId }: ProductProps) {
       <section ref={heroRef} className="grid gap-8 md:grid-cols-[1.15fr_0.85fr] md:gap-12 items-center mb-16 relative">
         {/* Content Left */}
         <div className="flex flex-col gap-5 relative z-10 min-w-0 w-full">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel w-fit border border-primary/30">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
-              {t('product.premiumBadge')}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel w-fit border border-primary/30">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+              <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
+                {t('product.premiumBadge')}
+              </span>
+            </div>
+
+            {(product as any).collaborator_id ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 border border-primary/25 text-xs font-semibold text-primary font-display">
+                <span className="text-[10px]">👤</span>
+                Criador Parceiro
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant font-display">
+                <span className="text-[10px]">⚙️</span>
+                Oficial CodeEngine
+              </div>
+            )}
           </div>
           
           <h1 className={`${
