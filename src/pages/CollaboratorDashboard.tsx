@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { 
   TrendingUp, Clock, CheckCircle, ArrowUpRight, ArrowDownRight, 
-  DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink 
+  DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink, Award, ShieldCheck, Video, PlayCircle
 } from 'lucide-react';
 
 interface CollaboratorDashboardProps {
@@ -52,6 +52,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [savingWallet, setSavingWallet] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [walletSuccess, setWalletSuccess] = useState<string | null>(null);
+
+  // Benefits & Pricing modal
+  const [showPlanBenefitsModal, setShowPlanBenefitsModal] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -280,6 +283,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           </p>
         </div>
         <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={() => setShowPlanBenefitsModal(true)}
+            className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2.5 font-semibold text-white hover:bg-primary/20 transition-all text-sm shadow-[0_0_15px_rgba(192,193,255,0.1)]"
+          >
+            <Award size={18} className="text-primary animate-pulse" />
+            Benefícios do Plano Premium
+          </button>
           <button
             onClick={openWalletModal}
             className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 font-semibold text-on-surface hover:bg-white/10 transition-all text-sm"
@@ -745,13 +755,116 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <button
                 type="submit"
                 disabled={savingWallet}
-                className="w-full flex items-center justify-center gap-2 rounded-full bg-on-surface py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm disabled:opacity-50 font-display uppercase tracking-widest text-xs"
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-on-surface py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm disabled:opacity-50 font-display uppercase tracking-widest text-xs mt-6"
               >
                 {savingWallet ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
                 ) : 'Salvar Carteira'}
               </button>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Plan Benefits & Marketing Modal */}
+      {showPlanBenefitsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full max-w-2xl rounded-2xl border border-white/10 bg-surface p-6 shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] -top-10 -right-10"></div>
+            
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <Award className="text-primary w-6 h-6" />
+                <h3 className="font-display text-lg font-bold text-white">Programa Course Creator - CodeEngine</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPlanBenefitsModal(false)}
+                className="text-on-surface-variant hover:text-white text-sm font-medium transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+
+            <div className="space-y-6 font-sans text-sm text-on-surface-variant overflow-y-auto max-h-[70vh] pr-2">
+              <div className="bg-primary/5 rounded-xl border border-primary/20 p-4">
+                <h4 className="text-white font-bold mb-1">Por que fazer o upgrade para o Course Creator?</h4>
+                <p className="text-xs leading-relaxed">
+                  O plano grátis (Ebook Creator) é excelente para iniciar com arquivos simples, mas os criadores profissionais necessitam de recursos avançados para reter seus alunos e construir cursos em vídeo profissionais com segurança.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-white font-semibold">
+                    <Video className="text-primary w-4 h-4" />
+                    <span>Hospedagem de Vídeos</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-on-surface-variant">
+                    Hospede seus arquivos de vídeo diretamente na infraestrutura segura da CodeEngine. Esqueça links de terceiros e proteja suas aulas contra pirataria.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-white font-semibold">
+                    <CheckCircle className="text-primary w-4 h-4" />
+                    <span>Taxas de Comissão Menores</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-on-surface-variant">
+                    Colaboradores no plano premium desfrutam de taxas administrativas reduzidas em suas vendas na plataforma, maximizando seus lucros.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-white font-semibold">
+                    <TrendingUp className="text-primary w-4 h-4" />
+                    <span>Destaque na Biblioteca</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-on-surface-variant">
+                    Seus cursos ganham selo verificado e prioridade de busca na vitrine principal da CodeEngine para os membros da comunidade.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-white font-semibold">
+                    <ShieldCheck className="text-primary w-4 h-4" />
+                    <span>Sem Limite de Upload</span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-on-surface-variant">
+                    Faça upload de arquivos maiores de até 2GB por curso ou e-book de forma segura e totalmente otimizada para download rápido.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-dashed border-white/10 p-4 text-center space-y-3 bg-black/20">
+                <span className="block text-xs uppercase tracking-wider font-bold text-white">Investimento Mensal</span>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-3xl font-extrabold text-white font-mono">$9.00 USD</span>
+                  <span className="text-sm text-on-surface-variant">ou</span>
+                  <span className="text-2xl font-bold text-primary font-mono">8.000 Kz AOA</span>
+                </div>
+                <p className="text-[11px]">
+                  Faturamento mensal recorrente. Cancele quando quiser diretamente de suas configurações.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={async () => {
+                    setShowPlanBenefitsModal(false);
+                    onGoToProducts(); // Direct them to add a product or upgrade widget
+                  }}
+                  className="flex-1 rounded-full bg-primary py-3 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors font-display uppercase tracking-widest"
+                >
+                  Fazer Upgrade Agora
+                </button>
+              </div>
+            </div>
           </motion.div>
         </div>
       )}
