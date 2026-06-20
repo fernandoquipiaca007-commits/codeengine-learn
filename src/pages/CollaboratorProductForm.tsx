@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter } from 'lucide-react';
+import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle } from 'lucide-react';
 
 interface CollaboratorProductFormProps {
   productId?: string | null;
@@ -81,6 +81,7 @@ export function CollaboratorProductForm({
   const [coverUrl, setCoverUrl] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [youtubeVideoUrl, setYoutubeVideoUrl] = useState(''); // Youtube URL for free plan
   const [storageUrl, setStorageUrl] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [ctaText, setCtaText] = useState('Comprar Agora');
@@ -110,6 +111,9 @@ export function CollaboratorProductForm({
     fr: { title: '', description: '', cta_text: 'Acheter Maintenant' }
   });
 
+  // Validation feedback triggers
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
   // New item draft states
   const [newCoupon, setNewCoupon] = useState<CouponState>({
     code: '',
@@ -133,6 +137,9 @@ export function CollaboratorProductForm({
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Upgrade Plan Stripe Automation State
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
   useEffect(() => {
     fetchCategories();
     if (productId) {
@@ -148,9 +155,15 @@ export function CollaboratorProductForm({
         .order('display_order', { ascending: true });
 
       if (!error && data) {
-        setCategories(data);
-        if (data.length > 0 && !categoryId) {
-          setCategoryId(data[0].id);
+        // Filter categories: Only templates, ebooks, libraries, etc.
+        // Prevent courses or premium categories unless on a course plan
+        const filtered = data.filter(c => {
+          const lowerId = c.id.toLowerCase();
+          return !lowerId.includes('course') && !lowerId.includes('curso');
+        });
+        setCategories(filtered);
+        if (filtered.length > 0 && !categoryId) {
+          setCategoryId(filtered[0].id);
         }
       }
     } catch (err) {
@@ -180,7 +193,15 @@ export function CollaboratorProductForm({
           setCategoryId(prod.category_id || '');
           setCoverUrl(prod.cover_url || '');
           setPreviewUrl(prod.preview_url || '');
-          setVideoUrl(prod.video_url || '');
+          
+          if (prod.video_url?.includes('youtube.com') || prod.video_url?.includes('youtu.be')) {
+            setYoutubeVideoUrl(prod.video_url);
+            setVideoUrl('');
+          } else {
+            setVideoUrl(prod.video_url || '');
+            setYoutubeVideoUrl('');
+          }
+          
           setStorageUrl(prod.storage_url || '');
           setTagsInput(prod.tags ? prod.tags.join(', ') : '');
           setCtaText(prod.cta_text || 'Comprar Agora');
@@ -323,10 +344,41 @@ export function CollaboratorProductForm({
     }
   };
 
+  const handleUpgradePlan = async () => {
+    setIsUpgrading(true);
+    setFormError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/upgrade-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        window.location.href = data.url;
+      } else {
+        setFormError(data.error || 'Erro ao iniciar checkout de upgrade.');
+      }
+    } catch (err) {
+      setFormError('Erro de conexão ao iniciar checkout.');
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitAttempted(true);
     setLoading(true);
     setFormError(null);
+
+    const finalVideoUrl = collaboratorPlan === 'course_creator' ? videoUrl : youtubeVideoUrl;
 
     if (!title || !description || !categoryId || !priceUSD || !priceAOA || !coverUrl || !storageUrl) {
       setFormError('Por favor preencha todos os campos obrigatórios (incluindo preço em Angola e Internacional) e envie os arquivos necessários.');
@@ -358,7 +410,7 @@ export function CollaboratorProductForm({
         aoaPrice: Number(priceAOA),
         coverUrl,
         previewUrl,
-        videoUrl: collaboratorPlan === 'course_creator' ? videoUrl : '',
+        videoUrl: finalVideoUrl,
         storageUrl,
         tags,
         ctaText,
@@ -554,8 +606,13 @@ export function CollaboratorProductForm({
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="Ex: Guia Completo de CSS Flexbox & Grid"
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                  className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                    submitAttempted && !title ? 'border-red-500/50' : 'border-white/10'
+                  }`}
                 />
+                {submitAttempted && !title && (
+                  <span className="text-[10px] text-red-400 mt-1 block">O título do produto é obrigatório.</span>
+                )}
               </div>
 
               <div>
@@ -566,8 +623,13 @@ export function CollaboratorProductForm({
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Descreva detalhadamente o conteúdo, o que o aluno irá aprender e os requisitos."
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-none"
+                  className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-none ${
+                    submitAttempted && !description ? 'border-red-500/50' : 'border-white/10'
+                  }`}
                 />
+                {submitAttempted && !description && (
+                  <span className="text-[10px] text-red-400 mt-1 block">A descrição do produto é obrigatória.</span>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -609,8 +671,13 @@ export function CollaboratorProductForm({
                     value={priceUSD}
                     onChange={e => setPriceUSD(e.target.value)}
                     placeholder="0.00"
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                    className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                      submitAttempted && !priceUSD ? 'border-red-500/50' : 'border-white/10'
+                    }`}
                   />
+                  {submitAttempted && !priceUSD && (
+                    <span className="text-[10px] text-red-400 mt-1 block">O preço em USD é obrigatório.</span>
+                  )}
                   {priceUSD && (
                     <span className="text-[10px] text-green-400 mt-1 block font-mono">
                       Retorno Líquido: ${(Number(priceUSD) * 0.85).toFixed(2)} (Taxa Stripe/Plataforma: -15%)
@@ -627,8 +694,13 @@ export function CollaboratorProductForm({
                     value={priceAOA}
                     onChange={e => setPriceAOA(e.target.value)}
                     placeholder="0"
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                    className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                      submitAttempted && !priceAOA ? 'border-red-500/50' : 'border-white/10'
+                    }`}
                   />
+                  {submitAttempted && !priceAOA && (
+                    <span className="text-[10px] text-red-400 mt-1 block">O preço em AOA é obrigatório.</span>
+                  )}
                   {priceAOA && (
                     <span className="text-[10px] text-green-400 mt-1 block font-mono">
                       Retorno Líquido: Kz {(Number(priceAOA) * 0.76).toFixed(0)} (IVA -14%, Plataforma -10%)
@@ -647,12 +719,35 @@ export function CollaboratorProductForm({
                   className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
                 />
               </div>
+
+              {/* Stripe Upgrade Widget inside the form */}
+              {collaboratorPlan !== 'course_creator' && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3 mt-4">
+                  <div className="flex items-start gap-2.5">
+                    <Award className="text-primary w-5 h-5 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-bold text-white">Publique cursos em vídeo por apenas $9/mês</h4>
+                      <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                        Faça o upgrade para o plano <strong>Course Creator</strong> para hospedar seus vídeos diretamente e desbloquear recursos premium de streaming na CodeEngine.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isUpgrading}
+                    onClick={handleUpgradePlan}
+                    className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors disabled:opacity-50"
+                  >
+                    {isUpgrading ? 'Processando...' : 'Fazer Upgrade para Premium via Stripe'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Lado Direito: Arquivos & Licenciamento */}
             <div className="space-y-5">
               {/* Upload Capa */}
-              <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
+              <div className="rounded-xl border border-dashed p-4 bg-white/5">
                 <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
                   <Image size={16} className="text-on-surface-variant" /> Imagem de Capa (PNG/JPG) *
                 </span>
@@ -660,8 +755,13 @@ export function CollaboratorProductForm({
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   onChange={e => handleFileUpload(e, 'product-covers', setCoverUrl)}
-                  className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
+                  className={`block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer ${
+                    submitAttempted && !coverUrl ? 'border border-red-500/50 p-2 rounded-xl' : ''
+                  }`}
                 />
+                {submitAttempted && !coverUrl && (
+                  <span className="text-[10px] text-red-400 mt-1 block">A imagem de capa é obrigatória.</span>
+                )}
                 {uploadProgress['product-covers'] && (
                   <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-covers']}</span>
                 )}
@@ -673,7 +773,7 @@ export function CollaboratorProductForm({
               </div>
 
               {/* Upload Ficheiro do Produto */}
-              <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
+              <div className="rounded-xl border border-dashed p-4 bg-white/5">
                 <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
                   <FileText size={16} className="text-on-surface-variant" /> Arquivo do Produto (Download Seguro) *
                 </span>
@@ -685,8 +785,13 @@ export function CollaboratorProductForm({
                 <input
                   type="file"
                   onChange={e => handleFileUpload(e, 'ebooks-private', setStorageUrl)}
-                  className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
+                  className={`block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer ${
+                    submitAttempted && !storageUrl ? 'border border-red-500/50 p-2 rounded-xl' : ''
+                  }`}
                 />
+                {submitAttempted && !storageUrl && (
+                  <span className="text-[10px] text-red-400 mt-1 block">O arquivo de download do produto é obrigatório.</span>
+                )}
                 {uploadProgress['ebooks-private'] && (
                   <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['ebooks-private']}</span>
                 )}
@@ -718,20 +823,26 @@ export function CollaboratorProductForm({
                 )}
               </div>
 
-              {/* Vídeo de Apresentação (Premium Apenas) */}
-              <div className={`rounded-xl border border-dashed p-4 ${
-                collaboratorPlan === 'course_creator' 
-                  ? 'border-white/10 bg-white/5' 
-                  : 'border-yellow-500/20 bg-yellow-500/5 opacity-75'
-              }`}>
+              {/* Vídeo de Apresentação (Premium Direct Upload vs Free Youtube Link) */}
+              <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
                 <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
-                  <Video size={16} className="text-on-surface-variant" /> Vídeo de Introdução (Opcional - Premium)
+                  <Video size={16} className="text-on-surface-variant" /> Vídeo de Introdução (Opcional)
                 </span>
                 {collaboratorPlan !== 'course_creator' ? (
-                  <div className="text-xs text-yellow-300 flex items-start gap-1 mt-1.5">
-                    <Info size={14} className="shrink-0 mt-0.5" />
-                    <span>
-                      Vídeos de introdução e streaming estão disponíveis apenas para criadores do plano <strong>Course Creator</strong>.
+                  <div className="space-y-2 mt-2">
+                    <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Link de Vídeo do YouTube (Plano Grátis)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        value={youtubeVideoUrl}
+                        onChange={e => setYoutubeVideoUrl(e.target.value)}
+                        className="flex-1 rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                      />
+                      <span className="flex items-center text-on-surface-variant"><PlayCircle size={18} /></span>
+                    </div>
+                    <span className="block text-[10px] text-primary">
+                      Como criador no plano gratuito, você pode vincular vídeos externos do YouTube. Para fazer upload direto, utilize o widget Stripe acima.
                     </span>
                   </div>
                 ) : (
@@ -1267,7 +1378,7 @@ export function CollaboratorProductForm({
                     })}
                     placeholder="Detailed explanation in French..."
                     rows={4}
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none resize-none"
+                    className="w-full rounded-xl bg-surface-high border border-white/15 px-4 py-2.5 text-sm text-white focus:outline-none resize-none"
                   />
                 </div>
 

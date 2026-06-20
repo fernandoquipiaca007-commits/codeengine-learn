@@ -315,9 +315,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             <span className="text-xs font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">Liberado</span>
           </div>
           <span className="block text-sm font-medium text-on-surface-variant">Saldo Disponível</span>
-          <span className="block mt-1 text-2xl font-bold text-white font-mono">
-            {formatMoney(balance?.available_balance)}
-          </span>
+          <div className="mt-2 space-y-1">
+            <span className="block text-xl font-bold text-white font-mono">
+              {(Number(balance?.available_balance_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
+            </span>
+            <span className="block text-sm text-primary font-bold font-mono">
+              {(Number(balance?.available_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </span>
+          </div>
         </div>
 
         {/* Card 2: Pendente */}
@@ -330,9 +335,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             <span className="text-xs font-semibold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">Carência</span>
           </div>
           <span className="block text-sm font-medium text-on-surface-variant">Saldo Pendente</span>
-          <span className="block mt-1 text-2xl font-bold text-white font-mono">
-            {formatMoney(balance?.pending_balance)}
-          </span>
+          <div className="mt-2 space-y-1">
+            <span className="block text-xl font-bold text-white font-mono">
+              {(Number(balance?.pending_balance_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
+            </span>
+            <span className="block text-sm text-primary font-bold font-mono">
+              {(Number(balance?.pending_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </span>
+          </div>
         </div>
 
         {/* Card 3: Acumulado Histórico */}
@@ -345,9 +355,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Histórico</span>
           </div>
           <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado</span>
-          <span className="block mt-1 text-2xl font-bold text-white font-mono">
-            {formatMoney(balance?.accumulated_earnings)}
-          </span>
+          <div className="mt-2 space-y-1">
+            <span className="block text-xl font-bold text-white font-mono">
+              {(Number(balance?.accumulated_earnings_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
+            </span>
+            <span className="block text-sm text-primary font-bold font-mono">
+              {(Number(balance?.accumulated_earnings) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </span>
+          </div>
         </div>
 
         {/* Card 4: Já Sacado */}
@@ -360,9 +375,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full border border-tertiary/20">Pago</span>
           </div>
           <span className="block text-sm font-medium text-on-surface-variant">Total Sacado</span>
-          <span className="block mt-1 text-2xl font-bold text-white font-mono">
-            {formatMoney(balance?.withdrawn_amount)}
-          </span>
+          <div className="mt-2 space-y-1">
+            <span className="block text-xl font-bold text-white font-mono">
+              {(Number(balance?.withdrawn_amount_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
+            </span>
+            <span className="block text-sm text-primary font-bold font-mono">
+              {(Number(balance?.withdrawn_amount) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </span>
+          </div>
         </div>
       </div>
 
