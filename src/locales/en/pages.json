@@ -113,7 +113,7 @@
     "appInstalledDesc": "You are already running the optimized version with offline support and instant loading.",
     "appInstallPromptDesc": "Install the platform on your device for a native full-screen experience, enhanced offline support, instant startup, and lower data consumption.",
     "alreadyLatestVersion": "You already have the latest version of the application!",
-    "avatarMaxSizeError": "The image must be a maximum of 2MB.",
+    "avatarMaxSizeError": "The image must be a maximum of 5MB.",
     "avatarInitProfileError": "Could not initialize profile data.",
     "avatarSuccess": "Profile picture updated successfully!",
     "avatarError": "Error loading image.",

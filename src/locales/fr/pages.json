@@ -113,7 +113,7 @@
     "appInstalledDesc": "Vous exécutez déjà la version optimisée avec support hors ligne et chargement instantané.",
     "appInstallPromptDesc": "Installez la plateforme sur votre appareil pour une expérience native plein écran, un support hors ligne amélioré, un démarrage instantané et une consommation de données réduite.",
     "alreadyLatestVersion": "Vous disposez déjà de la dernière version de l'application !",
-    "avatarMaxSizeError": "L'image ne doit pas dépasser 2 Mo.",
+    "avatarMaxSizeError": "L'image ne doit pas dépasser 5 Mo.",
     "avatarInitProfileError": "Impossible d'initialiser les données de profil.",
     "avatarSuccess": "Photo de profil mise à jour avec succès !",
     "avatarError": "Erreur lors du chargement de l'image.",

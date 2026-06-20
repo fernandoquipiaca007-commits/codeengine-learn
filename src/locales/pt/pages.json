@@ -118,7 +118,7 @@
     "appInstalledDesc": "Você já está rodando a versão otimizada com suporte a uso offline e carregamento instantâneo.",
     "appInstallPromptDesc": "Instale a plataforma em seu dispositivo para ter uma experiência nativa em tela cheia, suporte offline aprimorado, inicialização instantânea e menor consumo de dados.",
     "alreadyLatestVersion": "Você já possui a versão mais recente do aplicativo!",
-    "avatarMaxSizeError": "A imagem deve ter no máximo 2MB.",
+    "avatarMaxSizeError": "A imagem deve ter no máximo 5MB.",
     "avatarInitProfileError": "Não foi possível inicializar os dados de perfil.",
     "avatarSuccess": "Foto de perfil atualizada com sucesso!",
     "avatarError": "Erro ao carregar imagem.",

@@ -46,6 +46,11 @@ export function Settings({ setScreen }: SettingsProps) {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [avatarUrl]);
 
   useEffect(() => {
     loadUserData();
@@ -201,7 +206,7 @@ export function Settings({ setScreen }: SettingsProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       setMessage({ type: 'error', text: t('pages:settings.avatarMaxSizeError') });
       return;
     }
@@ -465,11 +470,16 @@ export function Settings({ setScreen }: SettingsProps) {
             <div className="flex flex-col items-center sm:flex-row gap-6 mb-8 p-4 rounded-xl bg-surface-container/30 border border-white/5">
               <div className="relative group">
                 <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30 flex items-center justify-center bg-surface-high relative shadow-[0_0_15px_rgba(192,193,255,0.1)]">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  {avatarUrl && !imgError ? (
+                    <img
+                      src={avatarUrl}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                      onError={() => setImgError(true)}
+                    />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-tr from-primary/20 to-secondary/20 flex items-center justify-center text-white text-3xl font-display font-bold">
-                      {name.charAt(0).toUpperCase()}
+                      {(name || '').charAt(0).toUpperCase()}
                     </div>
                   )}
                   {uploadingAvatar && (
