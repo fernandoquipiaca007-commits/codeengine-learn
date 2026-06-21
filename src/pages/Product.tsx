@@ -173,6 +173,7 @@ export function Product({ setScreen, productId }: ProductProps) {
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
+  const [collaboratorInfo, setCollaboratorInfo] = useState<any>(null);
   const prevLocaleRef = useRef(locale);
   const mainCtaRef = useRef<HTMLDivElement>(null);
   const promoVideoRef = useRef<HTMLVideoElement>(null);
@@ -313,12 +314,44 @@ export function Product({ setScreen, productId }: ProductProps) {
             ...trCustomCopy
           };
 
+          // Fetch collaborator details if present
+          let collaboratorInfo = null;
+          if ((localized as any).collaborator_id) {
+            try {
+              const { data: collab } = await supabase
+                .from('collaborators')
+                .select('id, display_name, member_id, bio, specialty')
+                .eq('id', (localized as any).collaborator_id)
+                .maybeSingle();
+              
+              if (collab) {
+                const { data: mem } = await supabase
+                  .from('members')
+                  .select('profile_data')
+                  .eq('id', collab.member_id)
+                  .maybeSingle();
+                
+                collaboratorInfo = {
+                  id: collab.id,
+                  display_name: collab.display_name,
+                  bio: collab.bio,
+                  specialty: collab.specialty,
+                  avatar_url: mem?.profile_data?.avatar_url || null,
+                  cover_url: mem?.profile_data?.cover_url || mem?.profile_data?.banner_url || null,
+                };
+              }
+            } catch (err) {
+              console.error('[ProductPage] Error fetching collaboratorInfo:', err);
+            }
+          }
+
           const row = localized as unknown as Record<string, unknown>;
           return {
             product: localized,
             pageLayout: parsePageLayoutConfig(row.page_layout_config),
             customCopy: mergedCustomCopy,
-            availableLanguages: Array.from(availLangs)
+            availableLanguages: Array.from(availLangs),
+            collaboratorInfo
           };
         };
 
@@ -331,6 +364,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           setPageLayout(cachedData.pageLayout);
           setCustomCopy(cachedData.customCopy);
           setAvailableLanguages(cachedData.availableLanguages || []);
+          setCollaboratorInfo(cachedData.collaboratorInfo || null);
         } else if (!silent) {
           console.log('[ProductPage] no product found, setting to null');
           setProduct(null);
@@ -875,6 +909,67 @@ export function Product({ setScreen, productId }: ProductProps) {
           </div>
         </div>
       </section>
+
+      {/* Creator Profile Section */}
+      {collaboratorInfo && (
+        <section className="mb-16 glass-panel rounded-3xl overflow-hidden border border-white/10 relative group">
+          {/* Creator Cover Banner */}
+          <div className="h-32 sm:h-40 w-full relative overflow-hidden bg-gradient-to-r from-primary/30 to-secondary/30">
+            {collaboratorInfo.cover_url ? (
+              <img 
+                src={collaboratorInfo.cover_url} 
+                alt="Creator Profile Cover" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/45 via-surface-high/60 to-surface-lowest"></div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-surface-lowest to-transparent"></div>
+          </div>
+          
+          {/* Creator Profile Info */}
+          <div className="px-6 pb-6 relative flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center -mt-10 sm:-mt-12">
+            {/* Avatar */}
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 border-surface-lowest bg-surface-high shadow-xl flex-shrink-0 relative z-10">
+              {collaboratorInfo.avatar_url ? (
+                <img 
+                  src={collaboratorInfo.avatar_url} 
+                  alt={collaboratorInfo.display_name} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold text-2xl font-display">
+                  {collaboratorInfo.display_name?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            
+            {/* Name / Specialty / Bio */}
+            <div className="space-y-1 relative z-10 pt-2 sm:pt-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">
+                  {collaboratorInfo.display_name}
+                </h3>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-semibold text-primary uppercase tracking-wider font-display">
+                  Criador Parceiro
+                </span>
+              </div>
+              
+              {collaboratorInfo.specialty && (
+                <p className="text-xs font-semibold text-primary/80 uppercase tracking-widest font-display">
+                  {collaboratorInfo.specialty}
+                </p>
+              )}
+              
+              {collaboratorInfo.bio && (
+                <p className="text-sm text-on-surface-variant font-sans max-w-2xl leading-relaxed pt-1">
+                  {collaboratorInfo.bio}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Mobile sticky CTA */}
       <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-surface/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out ${

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
-import { Plus, ArrowLeft, Edit2, ShieldAlert, CheckCircle, Clock, FileText, ExternalLink } from 'lucide-react';
+import { Plus, ArrowLeft, Edit2, ShieldAlert, CheckCircle, Clock, FileText, ExternalLink, Trash2 } from 'lucide-react';
 import { CollaboratorProductForm } from './CollaboratorProductForm';
 
 interface CollaboratorProductsProps {
@@ -117,6 +117,37 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
   const handleEdit = (id: string) => {
     setSelectedProductId(id);
     setIsFormOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Deseja realmente excluir este produto?')) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setScreen('auth');
+        return;
+      }
+
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        alert(data.message);
+        void loadProducts();
+      } else {
+        alert(data.error || 'Erro ao tentar apagar o produto.');
+      }
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('Erro de conexão ao tentar apagar o produto.');
+    }
   };
 
   const handleNewProduct = () => {
@@ -236,6 +267,14 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
                         >
                           <Edit2 size={13} className="text-primary" /> Editar
                         </button>
+                        
+                        <button
+                          onClick={() => handleDelete(prod.id)}
+                          className="flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                        >
+                          <Trash2 size={13} /> Excluir
+                        </button>
+                        
                         {prod.approval_status === 'approved' && prod.status === 'active' && (
                           <a
                             href={`/?screen=product&id=${prod.id}`}
