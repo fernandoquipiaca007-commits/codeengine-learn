@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowRight, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle } from 'lucide-react';
+import { ArrowRight, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle, ShieldCheck, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Product, Category } from '../types/store';
 import { useFavorites } from '../hooks/useFavorites';
@@ -377,6 +377,44 @@ export function Library({ setScreen, onProductClick }: {
 
                       {/* Product Info */}
                       <div className="px-4 pb-6 flex-grow flex flex-col z-10 relative">
+                        {/* Creator Row */}
+                        <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2.5">
+                          {product.collaborator ? (
+                            <>
+                              {product.collaborator.members?.profile_data?.avatar_url ? (
+                                <img
+                                  src={product.collaborator.members.profile_data.avatar_url}
+                                  alt={product.collaborator.display_name}
+                                  className="w-4 h-4 rounded-full object-cover border border-white/20"
+                                />
+                              ) : (
+                                <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
+                                  <User className="w-2.5 h-2.5 text-white" />
+                                </div>
+                              )}
+                              <span className="text-[10px] font-bold text-white tracking-wide truncate max-w-[120px]">
+                                {product.collaborator.display_name}
+                              </span>
+                              {product.collaborator.plan === 'course_creator' && (
+                                <span className="inline-flex items-center justify-center bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full p-0.5" title="Membro Pro">
+                                  <svg className="w-2 h-2 fill-current" viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                  </svg>
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                                <ShieldCheck className="w-2.5 h-2.5 text-primary" />
+                              </div>
+                              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                                Oficial CodeEngine
+                              </span>
+                            </>
+                          )}
+                        </div>
+
                         <h2 className="font-display text-lg sm:text-xl font-bold text-white mb-2 line-clamp-2 min-h-[2.75rem] group-hover:text-primary group-active:text-primary transition-colors break-words">
                           {product.title}
                         </h2>

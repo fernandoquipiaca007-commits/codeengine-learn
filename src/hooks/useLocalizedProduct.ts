@@ -83,7 +83,17 @@ export function useLocalizedProduct(productId: string | null) {
 
           const { data: base } = await supabase
             .from('products')
-            .select('*')
+            .select(`
+              *,
+              collaborator:collaborators (
+                id,
+                display_name,
+                plan,
+                members (
+                  profile_data
+                )
+              )
+            `)
             .eq('id', id)
             .single();
 
@@ -119,6 +129,7 @@ export function useLocalizedProduct(productId: string | null) {
             video_url: base.video_url,
             category_name: t?.category_name || null,
             updated_at: t?.cover_url ? t.updated_at : base.updated_at,
+            collaborator: base.collaborator,
           };
           console.log('[useLocalizedProduct] Client-resolved product:', {
             locale: lang,
@@ -162,7 +173,17 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
   const fetcher = async () => {
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, updated_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path')
+      .select(`
+        id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, updated_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path,
+        collaborator:collaborators (
+          id,
+          display_name,
+          plan,
+          members (
+            profile_data
+          )
+        )
+      `)
       .eq('status', status)
       .order('created_at', { ascending: false });
 
@@ -198,6 +219,7 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
         category_name: t?.category_name || fb?.category_name || null,
         language: lang,
         updated_at: (!shared && t?.cover_url) ? t.updated_at : p.updated_at,
+        collaborator: p.collaborator,
       };
 
       console.log(`[fetchLocalizedProducts] mapped product ${p.id}:`, {

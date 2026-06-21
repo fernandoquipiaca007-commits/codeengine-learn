@@ -377,8 +377,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       {/* Header */}
       <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em]">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em] flex flex-wrap items-center gap-3">
             Painel do Criador
+            {profile?.plan === 'course_creator' && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-xs font-bold text-blue-400 font-display shadow-lg shadow-blue-500/10">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                Membro Pro
+              </span>
+            )}
           </h1>
           <p className="mt-2 text-on-surface-variant font-sans text-sm sm:text-base">
             Olá, {profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.

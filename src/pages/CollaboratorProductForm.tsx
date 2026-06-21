@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle } from 'lucide-react';
+import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers } from 'lucide-react';
+import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
+import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 
 interface CollaboratorProductFormProps {
   productId?: string | null;
@@ -50,6 +52,7 @@ interface BonusState {
   description: string;
   original_value: string;
   display_order: number;
+  linked_product_id?: string | null;
 }
 
 interface BenefitState {
@@ -95,7 +98,7 @@ export function CollaboratorProductForm({
   const [ctaText, setCtaText] = useState('Comprar Agora');
 
   // Customizations
-  const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections'>('details');
 
   const [campaign, setCampaign] = useState<CampaignState>({
     banner_text: '',
@@ -110,6 +113,9 @@ export function CollaboratorProductForm({
   const [faqs, setFaqs] = useState<FAQState[]>([]);
   const [bonuses, setBonuses] = useState<BonusState[]>([]);
   const [benefits, setBenefits] = useState<BenefitState[]>([]);
+  const [customSections, setCustomSections] = useState<CustomSectionState[]>([]);
+  const [collaboratorProducts, setCollaboratorProducts] = useState<any[]>([]);
+  const [isFree, setIsFree] = useState(false);
 
   const [translations, setTranslations] = useState<{
     en: TranslationFieldState;
@@ -133,7 +139,7 @@ export function CollaboratorProductForm({
   });
 
   const [newFaq, setNewFaq] = useState({ question: '', answer: '' });
-  const [newBonus, setNewBonus] = useState({ title: '', description: '', original_value: '' });
+  const [newBonus, setNewBonus] = useState({ title: '', description: '', original_value: '', linked_product_id: '' });
   const [newBenefit, setNewBenefit] = useState({ title: '', description: '' });
 
   // Licensing state
@@ -154,6 +160,7 @@ export function CollaboratorProductForm({
 
   useEffect(() => {
     fetchCategories();
+    fetchCollaboratorProducts();
     if (productId) {
       fetchProductDetails(productId);
     }
@@ -168,6 +175,27 @@ export function CollaboratorProductForm({
       setSubcategoryId('');
     }
   }, [categoryId]);
+
+  async function fetchCollaboratorProducts() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/products`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success && data.products) {
+        // Exclude current product being edited
+        const filtered = data.products.filter((p: any) => p.id !== productId);
+        setCollaboratorProducts(filtered);
+      }
+    } catch (e) {
+      console.error('Error fetching collaborator products for linked bonuses:', e);
+    }
+  }
 
   async function fetchCategories() {
     try {
@@ -277,6 +305,7 @@ export function CollaboratorProductForm({
           // Dual Pricing Values
           setPriceUSD(prod.price ? String(prod.price) : '');
           setPriceAOA(prod.aoa_price ? String(prod.aoa_price) : '');
+          setIsFree(Boolean(prod.is_free));
 
           // Licensing
           const lic = prod.licensing_info || {};
@@ -321,7 +350,8 @@ export function CollaboratorProductForm({
               title: b.title || '',
               description: b.description || '',
               original_value: String(b.original_value || '0'),
-              display_order: b.display_order || 0
+              display_order: b.display_order || 0,
+              linked_product_id: b.linked_product_id || null,
             })).sort((a: any, b: any) => a.display_order - b.display_order));
           }
 
@@ -330,6 +360,17 @@ export function CollaboratorProductForm({
               title: b.title || '',
               description: b.description || '',
               display_order: b.display_order || 0
+            })).sort((a: any, b: any) => a.display_order - b.display_order));
+          }
+
+          if (prod.product_custom_sections) {
+            setCustomSections(prod.product_custom_sections.map((s: any) => ({
+              id: s.id,
+              section_type: s.section_type || 'text',
+              title: s.title || '',
+              content: s.content || '',
+              display_order: s.display_order || 0,
+              is_active: s.is_active !== false
             })).sort((a: any, b: any) => a.display_order - b.display_order));
           }
 
@@ -465,8 +506,10 @@ export function CollaboratorProductForm({
 
     const finalVideoUrl = collaboratorPlan === 'course_creator' ? videoUrl : youtubeVideoUrl;
 
-    if (!title || !description || !categoryId || !priceUSD || !priceAOA || !coverUrl || !storageUrl) {
-      setFormError('Por favor preencha todos os campos obrigatórios (incluindo preço em Angola e Internacional) e envie os arquivos necessários.');
+    const isPriceValid = isFree || (priceUSD && priceAOA);
+
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || !storageUrl) {
+      setFormError('Por favor preencha todos os campos obrigatórios (incluindo arquivos digitais) para salvar.');
       setLoading(false);
       return;
     }
@@ -492,8 +535,9 @@ export function CollaboratorProductForm({
         description,
         categoryId,
         subcategoryId: subcategoryId || null,
-        price: Number(priceUSD),
-        aoaPrice: Number(priceAOA),
+        price: isFree ? 0 : Number(priceUSD),
+        aoaPrice: isFree ? 0 : Number(priceAOA),
+        isFree,
         coverUrl,
         previewUrl,
         videoUrl: finalVideoUrl,
@@ -506,6 +550,7 @@ export function CollaboratorProductForm({
         faqs,
         bonuses,
         benefits,
+        customSections,
         translations
       };
 
@@ -623,6 +668,48 @@ export function CollaboratorProductForm({
         >
           <Info size={14} className="inline mr-1.5" /> Detalhes & Preços
         </button>
+
+        {(() => {
+          const selectedCategory = categories.find(c => c.id === categoryId);
+          const isCourse = selectedCategory ? (
+            selectedCategory.name.toLowerCase().includes('curso') ||
+            selectedCategory.name.toLowerCase().includes('course') ||
+            selectedCategory.name.toLowerCase().includes('série') ||
+            selectedCategory.name.toLowerCase().includes('serie') ||
+            selectedCategory.name.toLowerCase().includes('vídeo') ||
+            selectedCategory.name.toLowerCase().includes('video') ||
+            selectedCategory.name.toLowerCase().includes('tutorial')
+          ) : false;
+
+          return isCourse && (
+            <button
+              type="button"
+              onClick={() => {
+                if (productId) {
+                  setActiveTab('curriculum');
+                } else {
+                  alert('Por favor, salve os detalhes básicos do produto primeiro antes de editar a grade curricular.');
+                }
+              }}
+              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+                activeTab === 'curriculum' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
+              } ${!productId ? 'opacity-50' : ''}`}
+            >
+              <BookOpen size={14} className="inline mr-1.5" /> Grade Curricular {!productId && '(Salvar 1º)'}
+            </button>
+          );
+        })()}
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('sections')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+            activeTab === 'sections' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Layers size={14} className="inline mr-1.5" /> Seções Extras
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveTab('campaigns')}
@@ -763,25 +850,49 @@ export function CollaboratorProductForm({
                 />
               </div>
 
+              {/* Free Option */}
+              <div className="flex items-center gap-2 mb-4 bg-white/5 border border-white/10 rounded-xl p-4">
+                <input
+                  type="checkbox"
+                  id="isFree"
+                  checked={isFree}
+                  onChange={e => {
+                    setIsFree(e.target.checked);
+                    if (e.target.checked) {
+                      setPriceUSD('0');
+                      setPriceAOA('0');
+                    } else {
+                      setPriceUSD('');
+                      setPriceAOA('');
+                    }
+                  }}
+                  className="rounded border-white/10 bg-surface-high focus:ring-primary h-4 w-4"
+                />
+                <label htmlFor="isFree" className="text-sm font-semibold text-white cursor-pointer select-none">
+                  Tornar este produto grátis (free)
+                </label>
+              </div>
+
               {/* Dual Price Integration */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Internacional (USD) *</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Internacional (USD) {!isFree && '*'}</label>
                   <input
                     type="number"
                     step="0.01"
-                    required
-                    value={priceUSD}
+                    required={!isFree}
+                    disabled={isFree}
+                    value={isFree ? '0.00' : priceUSD}
                     onChange={e => setPriceUSD(e.target.value)}
                     placeholder="0.00"
                     className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                      submitAttempted && !priceUSD ? 'border-red-500/50' : 'border-white/10'
-                    }`}
+                      submitAttempted && !isFree && !priceUSD ? 'border-red-500/50' : 'border-white/10'
+                    } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
-                  {submitAttempted && !priceUSD && (
+                  {submitAttempted && !isFree && !priceUSD && (
                     <span className="text-[10px] text-red-400 mt-1 block">O preço em USD é obrigatório.</span>
                   )}
-                  {priceUSD && (
+                  {!isFree && priceUSD && (
                     <span className="text-[10px] text-green-400 mt-1 block font-mono">
                       Retorno Líquido: ${(Number(priceUSD) * 0.85).toFixed(2)} (Taxa Stripe/Plataforma: -15%)
                     </span>
@@ -789,22 +900,23 @@ export function CollaboratorProductForm({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Angola (AOA) *</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Angola (AOA) {!isFree && '*'}</label>
                   <input
                     type="number"
                     step="1"
-                    required
-                    value={priceAOA}
+                    required={!isFree}
+                    disabled={isFree}
+                    value={isFree ? '0' : priceAOA}
                     onChange={e => setPriceAOA(e.target.value)}
                     placeholder="0"
                     className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                      submitAttempted && !priceAOA ? 'border-red-500/50' : 'border-white/10'
-                    }`}
+                      submitAttempted && !isFree && !priceAOA ? 'border-red-500/50' : 'border-white/10'
+                    } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
-                  {submitAttempted && !priceAOA && (
+                  {submitAttempted && !isFree && !priceAOA && (
                     <span className="text-[10px] text-red-400 mt-1 block">O preço em AOA é obrigatório.</span>
                   )}
-                  {priceAOA && (
+                  {!isFree && priceAOA && (
                     <span className="text-[10px] text-green-400 mt-1 block font-mono">
                       Retorno Líquido: Kz {(Number(priceAOA) * 0.76).toFixed(0)} (IVA -14%, Plataforma -10%)
                     </span>
@@ -1317,6 +1429,32 @@ export function CollaboratorProductForm({
               <p className="text-xs text-on-surface-variant">Incentive a compra incluindo brindes ou recursos extras.</p>
 
               <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Vincular Produto Interno como Bônus (Opcional)</label>
+                <select
+                  value={newBonus.linked_product_id || ''}
+                  onChange={e => {
+                    const selectedProd = collaboratorProducts.find(p => p.id === e.target.value);
+                    setNewBonus({
+                      ...newBonus,
+                      linked_product_id: e.target.value,
+                      title: newBonus.title || (selectedProd ? `Acesso Bônus: ${selectedProd.title}` : ''),
+                      description: newBonus.description || (selectedProd ? `Libera acesso completo ao produto "${selectedProd.title}" gratuitamente.` : ''),
+                      original_value: newBonus.original_value || (selectedProd ? String(selectedProd.price) : '')
+                    });
+                  }}
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                >
+                  <option value="">-- Selecione um produto para vincular --</option>
+                  {collaboratorProducts.map(p => (
+                    <option key={p.id} value={p.id}>{p.title} (${p.price})</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-on-surface-variant mt-1">
+                  Selecione um produto. Ao comprar o produto atual, o cliente receberá acesso de download para este bônus automaticamente na sua biblioteca.
+                </p>
+              </div>
+
+              <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Título do Bônus</label>
                 <input
                   type="text"
@@ -1363,7 +1501,14 @@ export function CollaboratorProductForm({
                 {bonuses.map((b, i) => (
                   <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
                     <div>
-                      <h4 className="font-bold text-white mb-1">{b.title} <span className="text-[10px] text-green-400 font-mono">(${b.original_value})</span></h4>
+                      <h4 className="font-bold text-white mb-1">
+                        {b.title} <span className="text-[10px] text-green-400 font-mono">(${b.original_value})</span>
+                        {b.linked_product_id && (
+                          <span className="ml-2 text-[10px] bg-primary/20 text-primary border border-primary/30 rounded px-1.5 py-0.5 font-bold uppercase">
+                            Auto-Entrega Ativada
+                          </span>
+                        )}
+                      </h4>
                       <p className="text-on-surface-variant text-xs">{b.description}</p>
                     </div>
                     <button
@@ -1645,6 +1790,20 @@ export function CollaboratorProductForm({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Custom Sections tab */}
+        {activeTab === 'sections' && (
+          <div className="space-y-4">
+            <CustomSectionsLocalManager sections={customSections} onChange={setCustomSections} />
+          </div>
+        )}
+
+        {/* Curriculum Editor tab */}
+        {activeTab === 'curriculum' && productId && (
+          <div className="space-y-4">
+            <CurriculumEditor productId={productId} />
           </div>
         )}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Calendar, TrendingUp, Star, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, TrendingUp, Star, Clock, ArrowRight, ShieldCheck, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getProductCoverUrl } from '../lib/storage-path';
 import type { Product } from '../types/store';
@@ -213,12 +213,48 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
               
               {/* Content */}
               <div className="p-6">
-                {/* Date */}
-                <div className="flex items-center gap-2 mb-3">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  <span className="font-sans text-xs text-on-surface-variant">
-                    {getTimeAgo(product.created_at)}
-                  </span>
+                {/* Creator Row */}
+                <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                  <div className="flex items-center gap-2">
+                    {product.collaborator ? (
+                      <>
+                        {product.collaborator.members?.profile_data?.avatar_url ? (
+                          <img
+                            src={product.collaborator.members.profile_data.avatar_url}
+                            alt={product.collaborator.display_name}
+                            className="w-5 h-5 rounded-full object-cover border border-white/20"
+                          />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
+                            <User className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                        <span className="text-[11px] font-bold text-white tracking-wide truncate max-w-[100px] sm:max-w-[120px]">
+                          {product.collaborator.display_name}
+                        </span>
+                        {product.collaborator.plan === 'course_creator' && (
+                          <span className="inline-flex items-center justify-center bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full p-0.5" title="Membro Pro">
+                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                          <ShieldCheck className="w-3 h-3 text-primary" />
+                        </div>
+                        <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
+                          Oficial CodeEngine
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-on-surface-variant text-[11px]">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{getTimeAgo(product.created_at)}</span>
+                  </div>
                 </div>
                 
                 {/* Title */}

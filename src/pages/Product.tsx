@@ -828,13 +828,28 @@ export function Product({ setScreen, productId }: ProductProps) {
               </span>
             </div>
 
-            {(product as any).collaborator_id ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 border border-primary/25 text-xs font-semibold text-primary font-display">
-                <span className="text-[10px]">👤</span>
-                Criador Parceiro
+            {(product as any).collaborator_id && collaboratorInfo ? (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-white font-display">
+                {collaboratorInfo.avatar_url ? (
+                  <img
+                    src={collaboratorInfo.avatar_url}
+                    alt={collaboratorInfo.display_name}
+                    className="w-4.5 h-4.5 rounded-full object-cover border border-white/20"
+                  />
+                ) : (
+                  <span className="text-[10px]">👤</span>
+                )}
+                <span className="text-white">{collaboratorInfo.display_name}</span>
+                {collaboratorInfo.plan === 'course_creator' && (
+                  <span className="inline-flex items-center justify-center bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full p-0.5" title="Membro Pro">
+                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                  </span>
+                )}
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant font-display">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant font-display">
                 <span className="text-[10px]">⚙️</span>
                 Oficial CodeEngine
               </div>
