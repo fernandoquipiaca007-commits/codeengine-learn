@@ -21,6 +21,7 @@ interface Lesson {
 interface Module {
   id: string;
   title: string;
+  description?: string;
   display_order: number;
 }
 
@@ -134,8 +135,15 @@ export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculu
 
       <div className="space-y-6">
         {modules.map((mod) => (
-          <div key={mod.id}>
-            <h3 className="font-display text-lg font-semibold text-primary mb-3">{mod.title}</h3>
+          <div key={mod.id} className="space-y-3">
+            <div>
+              <h3 className="font-display text-lg font-semibold text-primary">{mod.title}</h3>
+              {mod.description && (
+                <p className="font-sans text-xs text-on-surface-variant mt-1.5 leading-relaxed">
+                  {mod.description}
+                </p>
+              )}
+            </div>
             <div className="space-y-2">{lessons.filter((l) => l.module_id === mod.id).map(renderLesson)}</div>
           </div>
         ))}

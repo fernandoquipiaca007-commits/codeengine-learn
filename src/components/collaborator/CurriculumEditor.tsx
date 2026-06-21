@@ -34,6 +34,7 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
   const [lessons, setLessons] = useState<CourseLesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingMessage, setSavingMessage] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
   }
 
   async function addModule() {
+    setSavingMessage('A criar módulo...');
     setSaving(true);
     try {
       const m = await saveModule(productId, {
@@ -62,12 +64,16 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
         display_order: modules.length,
       });
       setModules([...modules, m]);
+    } catch (err: any) {
+      setUploadError(err.message || 'Falha ao criar o módulo.');
     } finally {
       setSaving(false);
+      setSavingMessage(null);
     }
   }
 
   async function addLesson(moduleId?: string) {
+    setSavingMessage('A criar aula...');
     setSaving(true);
     try {
       const l = await saveLesson(productId, {
@@ -81,12 +87,16 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
       const updated = [...lessons, l];
       setLessons(updated);
       onChange?.(updated);
+    } catch (err: any) {
+      setUploadError(err.message || 'Falha ao criar a aula.');
     } finally {
       setSaving(false);
+      setSavingMessage(null);
     }
   }
 
   async function handleLessonFile(lessonId: string, file: File) {
+    setSavingMessage('A carregar ficheiro da aula...');
     setSaving(true);
     setUploadError(null);
     try {
@@ -102,6 +112,7 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
       console.error('Lesson upload error:', err);
     } finally {
       setSaving(false);
+      setSavingMessage(null);
     }
   }
 
@@ -303,6 +314,27 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
         </div>
       </div>
 
+      {/* Diretrizes de Estruturação */}
+      <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-sm text-on-surface-variant space-y-2 font-sans">
+        <h4 className="font-bold text-white flex items-center gap-1.5 font-display text-xs uppercase tracking-wider">
+          💡 Guia de Estruturação do Curso
+        </h4>
+        <p className="text-xs leading-relaxed">
+          Para garantir uma excelente experiência de aprendizagem para os alunos, siga estas boas práticas:
+        </p>
+        <ul className="list-disc pl-4 text-[11px] space-y-1 text-on-surface-variant/80">
+          <li>
+            <strong>Aula de Introdução:</strong> Adicione a primeira aula (geralmente uma introdução ou aula de boas-vindas) diretamente no início, fora de qualquer módulo ("Aulas sem módulo"), para que sirva de apresentação na página inicial do produto.
+          </li>
+          <li>
+            <strong>Módulos Estruturados:</strong> Divida o resto do conteúdo principal do seu curso em módulos organizados. Dê a cada módulo um título claro e uma descrição detalhada explicando o que será abordado.
+          </li>
+          <li>
+            <strong>Aulas com Detalhes:</strong> Adicione títulos e descrições explicativas para cada aula, e faça o upload do vídeo/áudio ou link correspondente de forma estruturada para o aluno assistir com coerência.
+          </li>
+        </ul>
+      </div>
+
       {uploadError && (
         <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-300">
           {uploadError}
@@ -310,22 +342,35 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
       )}
 
       {saving && (
-        <p className="text-xs text-primary animate-pulse font-medium">Enviando arquivos... Aguarde...</p>
+        <p className="text-xs text-primary animate-pulse font-medium">{savingMessage || 'A carregar...'}</p>
       )}
 
       {modules.map((mod) => (
-        <div key={mod.id} className="border border-white/10 rounded-xl p-4 bg-white/5">
-          <div className="flex items-center justify-between mb-4">
-            <input
-              type="text"
-              value={mod.title}
-              onChange={(e) =>
-                setModules(modules.map((m) => (m.id === mod.id ? { ...m, title: e.target.value } : m)))
-              }
-              onBlur={() => saveModule(productId, mod)}
-              className="font-semibold text-white bg-transparent border-b border-transparent focus:border-primary outline-none flex-1 font-display"
-            />
-            <div className="flex gap-2 items-center">
+        <div key={mod.id} className="border border-white/10 rounded-xl p-4 bg-white/5 space-y-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 space-y-2">
+              <input
+                type="text"
+                value={mod.title}
+                onChange={(e) =>
+                  setModules(modules.map((m) => (m.id === mod.id ? { ...m, title: e.target.value } : m)))
+                }
+                onBlur={() => saveModule(productId, mod)}
+                className="font-semibold text-white bg-transparent border-b border-white/10 focus:border-primary outline-none w-full font-display text-lg pb-1"
+                placeholder="Título do Módulo (ex: Módulo 1 - Introdução)"
+              />
+              <textarea
+                value={mod.description || ''}
+                onChange={(e) =>
+                  setModules(modules.map((m) => (m.id === mod.id ? { ...m, description: e.target.value } : m)))
+                }
+                onBlur={() => saveModule(productId, mod)}
+                className="w-full bg-surface-high border border-white/10 rounded-md px-3 py-2 text-xs text-white placeholder-on-surface-variant/50 focus:outline-none focus:border-primary transition-all"
+                rows={2}
+                placeholder="Escreva uma descrição detalhada sobre o que o aluno vai aprender neste módulo..."
+              />
+            </div>
+            <div className="flex gap-2 items-center flex-shrink-0 mt-1">
               <button type="button" onClick={() => addLesson(mod.id)} className="text-xs text-primary font-semibold hover:underline mr-2">
                 + Aula
               </button>
@@ -339,8 +384,8 @@ export function CurriculumEditor({ productId, onChange }: CurriculumEditorProps)
       ))}
 
       {unassignedLessons.length > 0 && (
-        <div>
-          <h4 className="text-sm font-medium text-white mb-3">Aulas sem módulo</h4>
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-white">Aulas sem módulo (Apresentação / Introdução)</h4>
           <div className="space-y-3">{unassignedLessons.map(renderLessonRow)}</div>
         </div>
       )}
