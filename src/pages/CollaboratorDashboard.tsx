@@ -26,6 +26,8 @@ interface CollaboratorProfile {
   };
   planExpiresAt?: string;
   upgradeMethod?: 'stripe' | 'fastpay';
+  upgradeStatus?: 'none' | 'pending_approval' | 'approved' | 'rejected';
+  upgradeReceiptUrl?: string;
 }
 
 export function CollaboratorDashboard({ setScreen, onGoToProducts }: CollaboratorDashboardProps) {
@@ -55,6 +57,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
   // Benefits & Pricing modal
   const [showPlanBenefitsModal, setShowPlanBenefitsModal] = useState(false);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [submittingStripe, setSubmittingStripe] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
+
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [fastpaySuccess, setFastpaySuccess] = useState<string | null>(null);
+  const [fastpayError, setFastpayError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -81,6 +91,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         setBalance(data.balance);
         setLedger(data.ledger);
         setWithdrawals(data.withdrawals);
+        setSettings(data.settings || {});
       } else {
         console.error('Error dashboard:', data.error);
         if (data.error?.includes('Access denied')) {
@@ -91,6 +102,97 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       console.error('Connection error:', err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleStripeUpgrade() {
+    setSubmittingStripe(true);
+    setStripeError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/upgrade-checkout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        window.location.href = data.url;
+      } else {
+        setStripeError(data.error || 'Erro ao iniciar Stripe Checkout.');
+      }
+    } catch (err) {
+      setStripeError('Erro de conexão ao iniciar Stripe.');
+    } finally {
+      setSubmittingStripe(false);
+    }
+  }
+
+  async function handleReceiptUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingReceipt(true);
+    setFastpayError(null);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Utilizador não autenticado.');
+
+      const fileExt = file.name.split('.').pop();
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${user.id}/receipt_${Date.now()}_${sanitizedName}`;
+
+      const { data, error } = await supabase.storage
+        .from('fastpay-proofs')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage.from('fastpay-proofs').getPublicUrl(data.path);
+      setReceiptUrl(urlData.publicUrl);
+    } catch (err: any) {
+      console.error('[receiptUpload] error:', err);
+      setFastpayError(`Erro no upload: ${err.message || err}`);
+    } finally {
+      setUploadingReceipt(false);
+    }
+  }
+
+  async function handleFastpaySubmit() {
+    if (!receiptUrl) {
+      setFastpayError('Faça o upload do comprovativo primeiro.');
+      return;
+    }
+
+    setFastpayError(null);
+    setFastpaySuccess(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/upgrade-fastpay`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ receiptUrl })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFastpaySuccess('Comprovativo enviado com sucesso! Aguarde aprovação.');
+        setTimeout(() => {
+          loadDashboardData();
+          setShowPlanBenefitsModal(false);
+        }, 2000);
+      } else {
+        setFastpayError(data.error || 'Erro ao enviar comprovativo.');
+      }
+    } catch (err) {
+      setFastpayError('Erro de conexão ao enviar.');
     }
   }
 
@@ -841,28 +943,82 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 </div>
               </div>
 
-              <div className="rounded-xl border border-dashed border-white/10 p-4 text-center space-y-3 bg-black/20">
-                <span className="block text-xs uppercase tracking-wider font-bold text-white">Investimento Mensal</span>
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-3xl font-extrabold text-white font-mono">$9.00 USD</span>
-                  <span className="text-sm text-on-surface-variant">ou</span>
-                  <span className="text-2xl font-bold text-primary font-mono">8.000 Kz AOA</span>
+              <div className="rounded-xl border border-dashed border-white/10 p-4 space-y-4 bg-black/20">
+                <span className="block text-xs uppercase tracking-wider font-bold text-white text-center">Opções de Assinatura</span>
+                
+                {/* Stripe Card/USD Option */}
+                <div className="bg-white/5 rounded-lg p-3 border border-white/5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-white">Opção 1: Cartão de Crédito / Stripe</span>
+                    <span className="text-sm font-bold text-primary font-mono">${settings.subscription_price_usd || '9.00'} USD/mês</span>
+                  </div>
+                  <p className="text-[11px] text-on-surface-variant">Cobrança recorrente automática. Liberação imediata.</p>
+                  <button
+                    type="button"
+                    disabled={submittingStripe}
+                    onClick={handleStripeUpgrade}
+                    className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors uppercase tracking-wider"
+                  >
+                    {submittingStripe ? 'A iniciar...' : 'Pagar via Stripe'}
+                  </button>
+                  {stripeError && <p className="text-red-500 text-[11px] mt-1">{stripeError}</p>}
                 </div>
-                <p className="text-[11px]">
-                  Faturamento mensal recorrente. Cancele quando quiser diretamente de suas configurações.
-                </p>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <button
-                  onClick={async () => {
-                    setShowPlanBenefitsModal(false);
-                    onGoToProducts(); // Direct them to add a product or upgrade widget
-                  }}
-                  className="flex-1 rounded-full bg-primary py-3 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors font-display uppercase tracking-widest"
-                >
-                  Fazer Upgrade Agora
-                </button>
+                {/* FastPay/Local AOA Option */}
+                <div className="bg-white/5 rounded-lg p-3 border border-white/5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-white">Opção 2: FastPay / Pagamento em Angola</span>
+                    <span className="text-sm font-bold text-primary font-mono">{(Number(settings.subscription_price_aoa) || 8000).toLocaleString('pt-AO')} Kz/mês</span>
+                  </div>
+                  <p className="text-[11px] text-on-surface-variant">Sem cobrança automática. Necessita de envio de comprovativo e aprovação do admin.</p>
+                  
+                  {profile?.upgradeStatus === 'pending_approval' ? (
+                    <div className="bg-orange-500/20 text-orange-400 p-2.5 rounded-lg text-xs border border-orange-500/30 text-center">
+                      ⏳ Seu comprovativo foi enviado e está em análise. O plano será liberado em breve!
+                    </div>
+                  ) : (
+                    <div className="space-y-3 pt-1 border-t border-white/5">
+                      {profile?.upgradeStatus === 'rejected' && (
+                        <div className="bg-red-500/20 text-red-400 p-2 rounded-lg text-xs border border-red-500/30 text-center font-semibold">
+                          ❌ Seu comprovativo anterior foi rejeitado. Envie um comprovativo válido para reanálise.
+                        </div>
+                      )}
+                      
+                      <a
+                        href={settings.fastpay_subscription_link || 'https://fastpay.co.ao/pay/codeengine-creator'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full text-center rounded-lg bg-green-600 hover:bg-green-700 py-2 text-xs font-bold text-white transition-colors uppercase tracking-wider"
+                      >
+                        1. Pagar no FastPay (Abrir Link)
+                      </a>
+                      
+                      <div className="space-y-1">
+                        <label className="block text-[11px] text-gray-400">2. Faça o upload do Comprovativo:</label>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handleReceiptUpload}
+                          className="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-high file:cursor-pointer"
+                        />
+                        {uploadingReceipt && <p className="text-primary text-[10px] animate-pulse">A carregar comprovativo...</p>}
+                        {receiptUrl && <p className="text-green-500 text-[10px]">✅ Comprovativo carregado com sucesso!</p>}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={!receiptUrl}
+                        onClick={handleFastpaySubmit}
+                        className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Enviar Comprovativo para Aprovação
+                      </button>
+                      
+                      {fastpaySuccess && <p className="text-green-500 text-xs text-center mt-1">{fastpaySuccess}</p>}
+                      {fastpayError && <p className="text-red-500 text-xs text-center mt-1">{fastpayError}</p>}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
