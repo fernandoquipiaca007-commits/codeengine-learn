@@ -87,7 +87,62 @@ export function CollaboratorProductForm({
   
   // Dual Pricing (USD and AOA simultaneously)
   const [priceUSD, setPriceUSD] = useState('');
+  const [profitUSD, setProfitUSD] = useState(''); // Two-way binding: desired profit
   const [priceAOA, setPriceAOA] = useState('');
+
+  // ============================================================
+  // USD PRICING: Two-Way Binding — 20% taxa, mín. $0.50
+  // ============================================================
+  const USD_FEE_RATE = 0.20;
+  const USD_FEE_MIN  = 0.50;
+
+  function calcUsdFeeAndProfit(price: number) {
+    const fee    = Math.max(price * USD_FEE_RATE, USD_FEE_MIN);
+    const profit = Math.max(0, price - fee);
+    return { fee, profit };
+  }
+
+  // Input A: produtor digita o Preço → calcula lucro
+  function handlePriceChange(val: string) {
+    setPriceUSD(val);
+    if (val && !isNaN(Number(val)) && Number(val) > 0) {
+      const { profit } = calcUsdFeeAndProfit(Number(val));
+      setProfitUSD(profit.toFixed(2));
+    } else {
+      setProfitUSD('');
+    }
+  }
+
+  // Input B: produtor digita o Lucro desejado → calcula preço inverso
+  function handleProfitChange(val: string) {
+    setProfitUSD(val);
+    const p = Number(val);
+    if (val && !isNaN(p) && p > 0) {
+      // Se taxa mínima ($0.50) é a taxa efectiva: preço = lucro + 0.50
+      // Se 20% é a taxa efectiva: preço = lucro / 0.80
+      // O ponto de mudança: lucro onde 20% = $0.50 → preço = $2.50 → lucro = $2.00
+      let newPrice: number;
+      if (p <= 2.00) {
+        newPrice = p + USD_FEE_MIN; // taxa plana $0.50
+      } else {
+        newPrice = p / (1 - USD_FEE_RATE); // taxa 20%
+      }
+      setPriceUSD(newPrice.toFixed(2));
+    } else {
+      setPriceUSD('');
+    }
+  }
+
+  // Resumo para exibir no card
+  const usdPriceSummary = (() => {
+    if (!priceUSD || isNaN(Number(priceUSD)) || Number(priceUSD) <= 0) return null;
+    const price = Number(priceUSD);
+    if (price < 1.00) return null;
+    const { fee, profit } = calcUsdFeeAndProfit(price);
+    const feePercent = ((fee / price) * 100).toFixed(0);
+    return { price, fee, profit, feePercent };
+  })();
+
 
   const [coverUrl, setCoverUrl] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
@@ -873,55 +928,105 @@ export function CollaboratorProductForm({
                 </label>
               </div>
 
-              {/* Dual Price Integration */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Internacional (USD) {!isFree && '*'}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required={!isFree}
-                    disabled={isFree}
-                    value={isFree ? '0.00' : priceUSD}
-                    onChange={e => setPriceUSD(e.target.value)}
-                    placeholder="0.00"
-                    className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                      submitAttempted && !isFree && !priceUSD ? 'border-red-500/50' : 'border-white/10'
-                    } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  {submitAttempted && !isFree && !priceUSD && (
-                    <span className="text-[10px] text-red-400 mt-1 block">O preço em USD é obrigatório.</span>
-                  )}
-                  {!isFree && priceUSD && (
-                    <span className="text-[10px] text-green-400 mt-1 block font-mono">
-                      Retorno Líquido: ${(Number(priceUSD) * 0.85).toFixed(2)} (Taxa Stripe/Plataforma: -15%)
-                    </span>
-                  )}
+              {/* USD Pricing: Two-Way Binding */}
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                  💵 Preço Internacional (USD) {!isFree && <span className="text-red-400">*</span>}
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Input A: Preço do Produto */}
+                  <div>
+                    <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Preço que o cliente paga</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-3 text-on-surface-variant text-sm font-mono">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="1"
+                        required={!isFree}
+                        disabled={isFree}
+                        value={isFree ? '0.00' : priceUSD}
+                        onChange={e => handlePriceChange(e.target.value)}
+                        placeholder="0.00"
+                        className={`w-full rounded-xl bg-surface-high border pl-8 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                          submitAttempted && !isFree && !priceUSD ? 'border-red-500/50' : 'border-white/10'
+                        } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant mt-1">Mínimo: $1.00</p>
+                  </div>
+
+                  {/* Input B: Lucro Desejado (inverso) */}
+                  <div>
+                    <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Quero lucrar (inverso)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-3 text-on-surface-variant text-sm font-mono">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        disabled={isFree}
+                        value={isFree ? '0.00' : profitUSD}
+                        onChange={e => handleProfitChange(e.target.value)}
+                        placeholder="0.00"
+                        className={`w-full rounded-xl bg-surface-high border border-white/10 pl-8 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                          isFree ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      />
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant mt-1">Digite o lucro → preço é calculado</p>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Angola (AOA) {!isFree && '*'}</label>
-                  <input
-                    type="number"
-                    step="1"
-                    required={!isFree}
-                    disabled={isFree}
-                    value={isFree ? '0' : priceAOA}
-                    onChange={e => setPriceAOA(e.target.value)}
-                    placeholder="0"
-                    className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                      submitAttempted && !isFree && !priceAOA ? 'border-red-500/50' : 'border-white/10'
-                    } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  {submitAttempted && !isFree && !priceAOA && (
-                    <span className="text-[10px] text-red-400 mt-1 block">O preço em AOA é obrigatório.</span>
-                  )}
-                  {!isFree && priceAOA && (
-                    <span className="text-[10px] text-green-400 mt-1 block font-mono">
-                      Retorno Líquido: Kz {(Number(priceAOA) * 0.76).toFixed(0)} (IVA -14%, Plataforma -10%)
-                    </span>
-                  )}
-                </div>
+                {/* Card de resumo em tempo real */}
+                {!isFree && usdPriceSummary && (
+                  <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 space-y-2">
+                    <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">📊 Resumo da Precificação</div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-on-surface-variant">Preço que o cliente paga:</span>
+                      <span className="font-mono font-bold text-white">${usdPriceSummary.price.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-on-surface-variant">Taxa da plataforma ({usdPriceSummary.feePercent}%, mín. $0.50):</span>
+                      <span className="font-mono font-semibold text-red-400">-${usdPriceSummary.fee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs border-t border-primary/20 pt-2">
+                      <span className="font-bold text-white">✅ Seu lucro estimado:</span>
+                      <span className="font-mono font-bold text-green-400">${usdPriceSummary.profit.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+                {!isFree && priceUSD && Number(priceUSD) < 1 && (
+                  <p className="text-[11px] text-red-400">⚠️ O preço mínimo do produto é $1.00.</p>
+                )}
+                {submitAttempted && !isFree && !priceUSD && (
+                  <p className="text-[11px] text-red-400">O preço em USD é obrigatório.</p>
+                )}
+              </div>
+
+              {/* Preço Angola (AOA) */}
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Angola (AOA) {!isFree && '*'}</label>
+                <input
+                  type="number"
+                  step="1"
+                  required={!isFree}
+                  disabled={isFree}
+                  value={isFree ? '0' : priceAOA}
+                  onChange={e => setPriceAOA(e.target.value)}
+                  placeholder="0"
+                  className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                    submitAttempted && !isFree && !priceAOA ? 'border-red-500/50' : 'border-white/10'
+                  } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
+                />
+                {submitAttempted && !isFree && !priceAOA && (
+                  <span className="text-[10px] text-red-400 mt-1 block">O preço em AOA é obrigatório.</span>
+                )}
+                {!isFree && priceAOA && (
+                  <span className="text-[10px] text-green-400 mt-1 block font-mono">
+                    Retorno Líquido: Kz {(Number(priceAOA) * 0.76).toFixed(0)} (IVA -14%, Plataforma -10%)
+                  </span>
+                )}
               </div>
 
               <div>

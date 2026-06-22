@@ -336,10 +336,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
   const getLedgerStatusBadge = (status: string) => {
     switch (status) {
+      case 'guarantee':
+        return <span className="rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">🔒 Garantia (D1-D3)</span>;
+      case 'processing':
+        return <span className="rounded bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300">⏳ Processando (D4-D6)</span>;
       case 'available':
-        return <span className="rounded bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Disponível</span>;
+        return <span className="rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-xs font-medium text-green-300">✅ Disponível</span>;
       case 'pending':
-        return <span className="rounded bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">Carência (D+7)</span>;
+        return <span className="rounded bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">Aguardando</span>;
       case 'refunded':
         return <span className="rounded bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">Reembolsado</span>;
       case 'withdrawn':
@@ -414,8 +418,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           </button>
           <button
             onClick={() => setShowWithdrawModal(true)}
-            disabled={(Number(balance?.available_balance) || 0) < 20}
-            className="flex items-center gap-2 rounded-full bg-on-surface px-5 py-2.5 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] disabled:opacity-50"
+            disabled={(Number(balance?.available_balance) || 0) < 50}
+            title={(Number(balance?.available_balance) || 0) < 50 ? 'Saldo mínimo de $50.00 necessário para sacar' : 'Solicitar saque'}
+            className="flex items-center gap-2 rounded-full bg-on-surface px-5 py-2.5 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <PlusCircle size={18} />
             Solicitar Saque
@@ -478,86 +483,98 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         return null;
       })()}
 
-      {/* Cards de Saldo */}
-      <div className="mb-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
-        {/* Card 1: Disponível */}
-        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
-          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/15">
-              <CheckCircle size={20} />
+      {/* Cards de Saldo USD — Ciclo de Vida de 6 Dias */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <DollarSign size={16} className="text-primary" />
+          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD · Stripe</span>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3 relative z-10">
+          {/* Estado 1: Em Garantia (D1-D3) */}
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
+            <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-lg">
+                🔒
+              </div>
+              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
             </div>
-            <span className="text-xs font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">Liberado</span>
-          </div>
-          <span className="block text-sm font-medium text-on-surface-variant">Saldo Disponível</span>
-          <div className="mt-2 space-y-1">
+            <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Garantia</span>
             <span className="block text-xl font-bold text-white font-mono">
-              {(Number(balance?.available_balance_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
+              {(Number(balance?.guarantee_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
             </span>
-            <span className="block text-sm text-primary font-bold font-mono">
+            <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Período de reembolso do cliente. Fundos bloqueados por segurança.</p>
+          </div>
+
+          {/* Estado 2: Em Processamento (D4-D6) */}
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
+            <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-lg">
+                ⏳
+              </div>
+              <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
+            </div>
+            <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Processamento</span>
+            <span className="block text-xl font-bold text-white font-mono">
+              {(Number(balance?.processing_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </span>
+            <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidação Stripe. Liberado em breve.</p>
+          </div>
+
+          {/* Estado 3: Disponível para Saque */}
+          <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
+            <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-lg">
+                ✅
+              </div>
+              <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
+            </div>
+            <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque</span>
+            <span className="block text-xl font-bold text-white font-mono">
               {(Number(balance?.available_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
             </span>
+            <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">
+              {(Number(balance?.available_balance) || 0) >= 50
+                ? '✓ Saldo suficiente para saque (mín. $50.00)'
+                : `Mínimo $50.00 para sacar. Faltam $${Math.max(0, 50 - (Number(balance?.available_balance) || 0)).toFixed(2)}`
+              }
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Card 2: Pendente */}
-        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
-          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/15">
-              <Clock size={20} />
-            </div>
-            <span className="text-xs font-semibold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">Carência</span>
-          </div>
-          <span className="block text-sm font-medium text-on-surface-variant">Saldo Pendente</span>
-          <div className="mt-2 space-y-1">
-            <span className="block text-xl font-bold text-white font-mono">
-              {(Number(balance?.pending_balance_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
-            </span>
-            <span className="block text-sm text-primary font-bold font-mono">
-              {(Number(balance?.pending_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Acumulado Histórico */}
-        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
-          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
-              <TrendingUp size={20} />
+      {/* Cards Resumo: Acumulado e Sacado */}
+      <div className="mb-10 grid gap-4 sm:grid-cols-2 relative z-10">
+        {/* Acumulado Histórico */}
+        <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
+              <TrendingUp size={18} />
             </div>
             <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Histórico</span>
           </div>
           <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado</span>
-          <div className="mt-2 space-y-1">
-            <span className="block text-xl font-bold text-white font-mono">
-              {(Number(balance?.accumulated_earnings_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
-            </span>
-            <span className="block text-sm text-primary font-bold font-mono">
-              {(Number(balance?.accumulated_earnings) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </span>
-          </div>
+          <span className="block text-xl font-bold text-white font-mono mt-1">
+            {(Number(balance?.accumulated_earnings) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+          </span>
         </div>
 
-        {/* Card 4: Já Sacado */}
-        <div className="glass-card glass-card-hover rounded-2xl p-6 relative overflow-hidden">
-          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-tertiary/10 text-tertiary border border-tertiary/15">
-              {profile?.payoutMethod === 'paypal' ? <Mail size={20} /> : <Landmark size={20} />}
+        {/* Já Sacado */}
+        <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-tertiary/10 text-tertiary border border-tertiary/15">
+              {profile?.payoutMethod === 'paypal' ? <Mail size={18} /> : <Landmark size={18} />}
             </div>
             <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full border border-tertiary/20">Pago</span>
           </div>
           <span className="block text-sm font-medium text-on-surface-variant">Total Sacado</span>
-          <div className="mt-2 space-y-1">
-            <span className="block text-xl font-bold text-white font-mono">
-              {(Number(balance?.withdrawn_amount_aoa) || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
-            </span>
-            <span className="block text-sm text-primary font-bold font-mono">
-              {(Number(balance?.withdrawn_amount) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </span>
-          </div>
+          <span className="block text-xl font-bold text-white font-mono mt-1">
+            {(Number(balance?.withdrawn_amount) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+          </span>
         </div>
       </div>
 
@@ -661,7 +678,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             className="w-full max-w-md rounded-2xl border border-white/15 bg-surface/95 backdrop-blur-xl p-6 shadow-2xl overlay-premium"
           >
             <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-lg font-bold text-white font-display">Solicitar Saque</h3>
+              <h3 className="text-lg font-bold text-white font-display">Solicitar Saque USD</h3>
               <button
                 onClick={() => {
                   setShowWithdrawModal(false);
@@ -691,18 +708,19 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             <form onSubmit={handleWithdrawSubmit} className="space-y-4 font-sans">
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Saldo Disponível para Saque</label>
-                <div className="text-2xl font-bold text-green-400 font-mono">{formatMoney(balance?.available_balance)}</div>
+                <div className="text-2xl font-bold text-green-400 font-mono">
+                  {(Number(balance?.available_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Valor do Saque</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Valor Bruto do Saque (USD)</label>
                 <div className="relative rounded-xl border border-white/10 bg-surface-high">
-                  <span className="absolute left-4 top-3.5 text-on-surface-variant text-sm font-bold font-mono">
-                    {profile?.payoutMethod === 'iban' ? 'Kz' : '$'}
-                  </span>
+                  <span className="absolute left-4 top-3.5 text-on-surface-variant text-sm font-bold font-mono">$</span>
                   <input
                     type="number"
                     step="0.01"
+                    min="50"
                     required
                     placeholder="0.00"
                     value={withdrawAmount as any}
@@ -710,10 +728,38 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     className="w-full rounded-xl border-none pl-10 pr-4 py-3 text-sm font-bold font-mono text-white focus:outline-none focus:ring-0 focus:border-none bg-transparent"
                   />
                 </div>
-                <span className="mt-1 block text-xs text-on-surface-variant">
-                  Limite mínimo de resgate: {profile?.payoutMethod === 'iban' ? '20.000 Kz' : '$20.00'}.
-                </span>
+                <span className="mt-1 block text-xs text-on-surface-variant">Mínimo: $50.00 USD.</span>
               </div>
+
+              {/* Prévia de taxas em tempo real */}
+              {withdrawAmount && Number(withdrawAmount) >= 50 && (() => {
+                const gross = Number(withdrawAmount);
+                const paypalFee = Number(settings?.PAYPAL_WITHDRAWAL_FEE_USD || '3.99');
+                const swiftFee  = Number(settings?.TAXA_TRANSFERENCIA_INTERNACIONAL_USD || '25.00');
+                const fee = profile?.payoutMethod === 'paypal' ? paypalFee : swiftFee;
+                const net = Math.max(0, gross - fee);
+                const feeLabel = profile?.payoutMethod === 'paypal'
+                  ? `Taxa PayPal: -$${paypalFee.toFixed(2)}`
+                  : `Taxa SWIFT (definida pelo admin): -$${swiftFee.toFixed(2)}`;
+
+                return (
+                  <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-xs space-y-2">
+                    <div className="font-bold text-white text-[11px] uppercase tracking-wider mb-2">📊 Resumo do Saque</div>
+                    <div className="flex justify-between text-on-surface-variant">
+                      <span>Valor bruto solicitado:</span>
+                      <span className="font-mono font-semibold text-white">${gross.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-on-surface-variant">
+                      <span>{feeLabel}</span>
+                      <span className="font-mono font-semibold text-red-400">-${fee.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-white/10 pt-2">
+                      <span className="font-bold text-white">Você receberá (estimativa):</span>
+                      <span className="font-mono font-bold text-green-400">${net.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-xs text-on-surface-variant space-y-1">
                 <div className="font-semibold text-white mb-1 uppercase tracking-wider">Dados de Destino:</div>
@@ -730,7 +776,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
               <button
                 type="submit"
-                disabled={submittingWithdraw || !withdrawAmount}
+                disabled={submittingWithdraw || !withdrawAmount || Number(withdrawAmount) < 50}
                 className="w-full flex items-center justify-center gap-2 rounded-full bg-on-surface py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm disabled:opacity-50 font-display uppercase tracking-widest text-xs"
               >
                 {submittingWithdraw ? (
