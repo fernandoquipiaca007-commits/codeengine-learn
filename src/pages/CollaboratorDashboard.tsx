@@ -420,11 +420,11 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const getLedgerStatusBadge = (status: string) => {
     switch (status) {
       case 'guarantee':
-        return <span className="rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">🔒 Garantia (D1-D3)</span>;
+        return <span className="inline-flex items-center gap-1 rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300"><ShieldCheck size={12} /> Garantia (D1-D3)</span>;
       case 'processing':
-        return <span className="rounded bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300">⏳ Processando (D4-D6)</span>;
+        return <span className="inline-flex items-center gap-1 rounded bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300"><Clock size={12} /> Processando (D4-D6)</span>;
       case 'available':
-        return <span className="rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-xs font-medium text-green-300">✅ Disponível</span>;
+        return <span className="inline-flex items-center gap-1 rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-xs font-medium text-green-300"><CheckCircle size={12} /> Disponível</span>;
       case 'pending':
         return <span className="rounded bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">Aguardando</span>;
       case 'refunded':
@@ -586,7 +586,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          🏦 AOA · FaciPay
+          <Landmark size={12} /> AOA · FaciPay
         </button>
       </div>
 
@@ -603,8 +603,8 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-lg">
-                    🔒
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <ShieldCheck size={18} />
                   </div>
                   <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
                 </div>
@@ -619,8 +619,8 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-lg">
-                    ⏳
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Clock size={18} />
                   </div>
                   <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
                 </div>
@@ -635,8 +635,8 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-lg">
-                    ✅
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                    <CheckCircle size={18} />
                   </div>
                   <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
                 </div>
@@ -718,7 +718,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-lg">🔒</div>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <ShieldCheck size={18} />
+                  </div>
                   <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Garantia (AOA)</span>
@@ -732,7 +734,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-lg">⏳</div>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Clock size={18} />
+                  </div>
                   <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Processamento (AOA)</span>
@@ -746,7 +750,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-lg">✅</div>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                    <CheckCircle size={18} />
+                  </div>
                   <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque (AOA)</span>
@@ -961,7 +967,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
                 return (
                   <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-xs space-y-2">
-                    <div className="font-bold text-white text-[11px] uppercase tracking-wider mb-2">📊 Resumo do Saque</div>
+                    <div className="font-bold text-white text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <FileText size={12} className="text-primary" /> Resumo do Saque
+                    </div>
                     <div className="flex justify-between text-on-surface-variant">
                       <span>Valor bruto solicitado:</span>
                       <span className="font-mono font-semibold text-white">${gross.toFixed(2)}</span>
@@ -1014,7 +1022,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             className="w-full max-w-md rounded-2xl border border-amber-500/20 bg-surface/95 backdrop-blur-xl p-6 shadow-2xl"
           >
             <div className="mb-4 flex items-center justify-between border-b border-amber-500/20 pb-3">
-              <h3 className="text-lg font-bold text-white font-display">🏦 Solicitar Saque AOA</h3>
+              <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
+                <Landmark size={18} className="text-amber-400" /> Solicitar Saque AOA
+              </h3>
               <button
                 onClick={() => { setShowWithdrawAoaModal(false); setAoaModalError(null); setAoaModalSuccess(null); }}
                 className="text-on-surface-variant hover:text-white text-sm font-medium transition-colors"
@@ -1097,7 +1107,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
                 return (
                   <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-4 text-xs space-y-2">
-                    <div className="font-bold text-amber-400 text-[11px] uppercase tracking-wider mb-2">📊 Resumo do Saque AOA</div>
+                    <div className="font-bold text-amber-400 text-[11px] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <FileText size={12} /> Resumo do Saque AOA
+                    </div>
                     <div className="flex justify-between text-on-surface-variant">
                       <span>Valor bruto solicitado:</span>
                       <span className="font-mono font-semibold text-white">Kz {gross.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
@@ -1248,7 +1260,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
               {/* FaciPay Account (para saques AOA via P2P) */}
               <div className="mt-2 pt-4 border-t border-white/10">
-                <label className="block text-xs font-semibold text-amber-400 mb-1 uppercase tracking-wider">🏦 Conta FaciPay (Opcional — para saques AOA)</label>
+                <label className="block text-xs font-semibold text-amber-400 mb-1 uppercase tracking-wider flex items-center gap-1.5">
+                  <Landmark size={12} /> Conta FaciPay (Opcional — para saques AOA)
+                </label>
                 <input
                   type="text"
                   placeholder="Nº da conta FaciPay"

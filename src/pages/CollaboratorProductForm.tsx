@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers } from 'lucide-react';
+import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 
@@ -1004,8 +1004,8 @@ export function CollaboratorProductForm({
 
               {/* USD Pricing: Two-Way Binding */}
               <div className="space-y-3">
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-                  💵 Preço Internacional (USD) {!isFree && <span className="text-red-400">*</span>}
+                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                  <DollarSign size={14} className="text-primary" /> Preço Internacional (USD) {!isFree && <span className="text-red-400">*</span>}
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -1055,7 +1055,9 @@ export function CollaboratorProductForm({
                 {/* Card de resumo em tempo real */}
                 {!isFree && usdPriceSummary && (
                   <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 space-y-2">
-                    <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">📊 Resumo da Precificação</div>
+                    <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                      <FileText size={12} /> Resumo da Precificação
+                    </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-on-surface-variant">Preço que o cliente paga:</span>
                       <span className="font-mono font-bold text-white">${usdPriceSummary.price.toFixed(2)}</span>
@@ -1064,14 +1066,18 @@ export function CollaboratorProductForm({
                       <span className="text-on-surface-variant">Taxa da plataforma ({usdPriceSummary.feePercent}%, mín. $0.50):</span>
                       <span className="font-mono font-semibold text-red-400">-${usdPriceSummary.fee.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-xs border-t border-primary/20 pt-2">
-                      <span className="font-bold text-white">✅ Seu lucro estimado:</span>
+                    <div className="flex justify-between text-xs border-t border-primary/20 pt-2 flex items-center">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <CheckCircle size={12} className="text-green-400" /> Seu lucro estimado:
+                      </span>
                       <span className="font-mono font-bold text-green-400">${usdPriceSummary.profit.toFixed(2)}</span>
                     </div>
                   </div>
                 )}
                 {!isFree && priceUSD && Number(priceUSD) < 1 && (
-                  <p className="text-[11px] text-red-400">⚠️ O preço mínimo do produto é $1.00.</p>
+                  <p className="text-[11px] text-red-400 flex items-center gap-1.5">
+                    <AlertTriangle size={12} /> O preço mínimo do produto é $1.00.
+                  </p>
                 )}
                 {submitAttempted && !isFree && !priceUSD && (
                   <p className="text-[11px] text-red-400">O preço em USD é obrigatório.</p>
@@ -1080,8 +1086,8 @@ export function CollaboratorProductForm({
 
               {/* AOA Pricing: Two-Way Binding */}
               <div className="space-y-3">
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-                  🏦 Preço Angola (AOA / Kwanza) {!isFree && <span className="text-red-400">*</span>}
+                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                  <Landmark size={14} className="text-amber-400" /> Preço Angola (AOA / Kwanza) {!isFree && <span className="text-red-400">*</span>}
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -1132,7 +1138,9 @@ export function CollaboratorProductForm({
                 {/* Card de resumo AOA em tempo real */}
                 {!isFree && aoaPriceSummary && (
                   <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-4 space-y-2">
-                    <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">📊 Resumo da Precificação AOA</div>
+                    <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                      <FileText size={12} /> Resumo da Precificação AOA
+                    </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-on-surface-variant">Preço que o cliente paga:</span>
                       <span className="font-mono font-bold text-white">Kz {aoaPriceSummary.price.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
@@ -1145,17 +1153,23 @@ export function CollaboratorProductForm({
                       <span className="text-on-surface-variant">Taxa FaciPay (Ref. Multicaixa + IVA):</span>
                       <span className="font-mono font-semibold text-red-400">-Kz {aoaPriceSummary.facipayFee.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between text-xs border-t border-amber-500/20 pt-2">
-                      <span className="font-bold text-white">✅ Seu lucro estimado:</span>
+                    <div className="flex justify-between text-xs border-t border-amber-500/20 pt-2 flex items-center">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <CheckCircle size={12} className="text-green-400" /> Seu lucro estimado:
+                      </span>
                       <span className="font-mono font-bold text-green-400">Kz {aoaPriceSummary.profit.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 )}
                 {!isFree && priceAOA && Number(priceAOA) > 0 && Number(priceAOA) < MIN_PRICE_AOA && (
-                  <p className="text-[11px] text-red-400">⚠️ O preço mínimo do produto é Kz {MIN_PRICE_AOA.toLocaleString('pt-AO')}.</p>
+                  <p className="text-[11px] text-red-400 flex items-center gap-1.5">
+                    <AlertTriangle size={12} /> O preço mínimo do produto é Kz {MIN_PRICE_AOA.toLocaleString('pt-AO')}.
+                  </p>
                 )}
                 {!isFree && priceAOA && Number(priceAOA) > MAX_PRICE_AOA && (
-                  <p className="text-[11px] text-red-400">⚠️ O preço máximo do produto é Kz {MAX_PRICE_AOA.toLocaleString('pt-AO')}.</p>
+                  <p className="text-[11px] text-red-400 flex items-center gap-1.5">
+                    <AlertTriangle size={12} /> O preço máximo do produto é Kz {MAX_PRICE_AOA.toLocaleString('pt-AO')}.
+                  </p>
                 )}
                 {submitAttempted && !isFree && !priceAOA && (
                   <p className="text-[11px] text-red-400">O preço em AOA é obrigatório.</p>
