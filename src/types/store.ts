@@ -24,6 +24,7 @@ export interface Product {
   product_type?: 'file' | 'course' | 'ebook';
   created_at: string;
   updated_at: string;
+  collaborator?: any;
 }
 
 export interface Category {

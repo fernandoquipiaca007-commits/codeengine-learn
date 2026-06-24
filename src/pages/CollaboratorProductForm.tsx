@@ -87,8 +87,16 @@ export function CollaboratorProductForm({
   
   // Dual Pricing (USD and AOA simultaneously)
   const [priceUSD, setPriceUSD] = useState('');
-  const [profitUSD, setProfitUSD] = useState(''); // Two-way binding: desired profit
+  const [profitUSD, setProfitUSD] = useState('');
   const [priceAOA, setPriceAOA] = useState('');
+  const [profitAOA, setProfitAOA] = useState('');
+
+  // ============================================================
+  // LIMITES DE PREÇO
+  // ============================================================
+  const MAX_PRICE_USD = 900000;    // $900.000
+  const MAX_PRICE_AOA = 9000000000000; // Kz 9.000.000.000.000
+  const MIN_PRICE_AOA = 10000;     // Kz 10.000
 
   // ============================================================
   // USD PRICING: Two-Way Binding — 20% taxa, mín. $0.50
@@ -102,10 +110,11 @@ export function CollaboratorProductForm({
     return { fee, profit };
   }
 
-  // Input A: produtor digita o Preço → calcula lucro
   function handlePriceChange(val: string) {
-    setPriceUSD(val);
-    if (val && !isNaN(Number(val)) && Number(val) > 0) {
+    const v = Number(val);
+    if (val && v > MAX_PRICE_USD) { setPriceUSD(String(MAX_PRICE_USD)); val = String(MAX_PRICE_USD); }
+    else { setPriceUSD(val); }
+    if (val && !isNaN(v) && v > 0) {
       const { profit } = calcUsdFeeAndProfit(Number(val));
       setProfitUSD(profit.toFixed(2));
     } else {
@@ -113,27 +122,23 @@ export function CollaboratorProductForm({
     }
   }
 
-  // Input B: produtor digita o Lucro desejado → calcula preço inverso
   function handleProfitChange(val: string) {
     setProfitUSD(val);
     const p = Number(val);
     if (val && !isNaN(p) && p > 0) {
-      // Se taxa mínima ($0.50) é a taxa efectiva: preço = lucro + 0.50
-      // Se 20% é a taxa efectiva: preço = lucro / 0.80
-      // O ponto de mudança: lucro onde 20% = $0.50 → preço = $2.50 → lucro = $2.00
       let newPrice: number;
       if (p <= 2.00) {
-        newPrice = p + USD_FEE_MIN; // taxa plana $0.50
+        newPrice = p + USD_FEE_MIN;
       } else {
-        newPrice = p / (1 - USD_FEE_RATE); // taxa 20%
+        newPrice = p / (1 - USD_FEE_RATE);
       }
+      if (newPrice > MAX_PRICE_USD) newPrice = MAX_PRICE_USD;
       setPriceUSD(newPrice.toFixed(2));
     } else {
       setPriceUSD('');
     }
   }
 
-  // Resumo para exibir no card
   const usdPriceSummary = (() => {
     if (!priceUSD || isNaN(Number(priceUSD)) || Number(priceUSD) <= 0) return null;
     const price = Number(priceUSD);
@@ -141,6 +146,62 @@ export function CollaboratorProductForm({
     const { fee, profit } = calcUsdFeeAndProfit(price);
     const feePercent = ((fee / price) * 100).toFixed(0);
     return { price, fee, profit, feePercent };
+  })();
+
+  // ============================================================
+  // AOA PRICING: Two-Way Binding — Taxa CE (10%/15%) + FaciPay
+  // ============================================================
+  const AOA_CE_RATE = collaboratorPlan === 'course_creator' ? 0.15 : 0.10;
+  const AOA_FACIPAY_RATE = 0.007;   // 0.7%
+  const AOA_FACIPAY_MIN  = 300;     // Kz 300 piso
+  const AOA_IVA          = 1.14;    // 14% IVA sobre FaciPay
+  const AOA_FACIPAY_FIXED = AOA_FACIPAY_MIN * AOA_IVA; // 342 AOA
+  const AOA_FACIPAY_PCTG  = AOA_FACIPAY_RATE * AOA_IVA; // 0.00798
+  const AOA_TURNOVER      = 42857.14; // Ponto de viragem
+
+  function calcAoaFees(price: number) {
+    const ceFee      = price * AOA_CE_RATE;
+    const facipayFee = Math.max(price * AOA_FACIPAY_RATE, AOA_FACIPAY_MIN) * AOA_IVA;
+    const profit     = Math.max(0, price - ceFee - facipayFee);
+    return { ceFee, facipayFee, profit };
+  }
+
+  function handlePriceAoaChange(val: string) {
+    const v = Number(val);
+    if (val && v > MAX_PRICE_AOA) { setPriceAOA(String(MAX_PRICE_AOA)); val = String(MAX_PRICE_AOA); }
+    else { setPriceAOA(val); }
+    if (val && !isNaN(v) && v > 0) {
+      const { profit } = calcAoaFees(v);
+      setProfitAOA(profit.toFixed(2));
+    } else {
+      setProfitAOA('');
+    }
+  }
+
+  function handleProfitAoaChange(val: string) {
+    setProfitAOA(val);
+    const L = Number(val);
+    if (val && !isNaN(L) && L > 0) {
+      // Cenário A: P = (L + 342) / (1 - C)
+      let P = (L + AOA_FACIPAY_FIXED) / (1 - AOA_CE_RATE);
+      // Se P > ponto de viragem, usar cenário B
+      if (P > AOA_TURNOVER) {
+        P = L / (1 - AOA_CE_RATE - AOA_FACIPAY_PCTG);
+      }
+      if (P > MAX_PRICE_AOA) P = MAX_PRICE_AOA;
+      setPriceAOA(Math.ceil(P).toString());
+    } else {
+      setPriceAOA('');
+    }
+  }
+
+  const aoaPriceSummary = (() => {
+    if (!priceAOA || isNaN(Number(priceAOA)) || Number(priceAOA) <= 0) return null;
+    const price = Number(priceAOA);
+    if (price < MIN_PRICE_AOA) return null;
+    const { ceFee, facipayFee, profit } = calcAoaFees(price);
+    const cePct = (AOA_CE_RATE * 100).toFixed(0);
+    return { price, ceFee, facipayFee, profit, cePct };
   })();
 
 
@@ -669,7 +730,7 @@ export function CollaboratorProductForm({
   const addBonus = () => {
     if (!newBonus.title || !newBonus.description) return;
     setBonuses(prev => [...prev, { ...newBonus, display_order: prev.length }]);
-    setNewBonus({ title: '', description: '', original_value: '' });
+    setNewBonus({ title: '', description: '', original_value: '', linked_product_id: '' });
   };
 
   const removeBonus = (index: number) => {
@@ -1004,28 +1065,87 @@ export function CollaboratorProductForm({
                 )}
               </div>
 
-              {/* Preço Angola (AOA) */}
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Angola (AOA) {!isFree && '*'}</label>
-                <input
-                  type="number"
-                  step="1"
-                  required={!isFree}
-                  disabled={isFree}
-                  value={isFree ? '0' : priceAOA}
-                  onChange={e => setPriceAOA(e.target.value)}
-                  placeholder="0"
-                  className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                    submitAttempted && !isFree && !priceAOA ? 'border-red-500/50' : 'border-white/10'
-                  } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
-                />
-                {submitAttempted && !isFree && !priceAOA && (
-                  <span className="text-[10px] text-red-400 mt-1 block">O preço em AOA é obrigatório.</span>
+              {/* AOA Pricing: Two-Way Binding */}
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                  🏦 Preço Angola (AOA / Kwanza) {!isFree && <span className="text-red-400">*</span>}
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Input A: Preço de Venda */}
+                  <div>
+                    <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Preço que o cliente paga</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-3 text-on-surface-variant text-[10px] font-mono">Kz</span>
+                      <input
+                        type="number"
+                        step="1"
+                        min={MIN_PRICE_AOA}
+                        max={MAX_PRICE_AOA}
+                        required={!isFree}
+                        disabled={isFree}
+                        value={isFree ? '0' : priceAOA}
+                        onChange={e => handlePriceAoaChange(e.target.value)}
+                        placeholder="0"
+                        className={`w-full rounded-xl bg-surface-high border pl-9 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                          submitAttempted && !isFree && !priceAOA ? 'border-red-500/50' : 'border-white/10'
+                        } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant mt-1">Mínimo: Kz {MIN_PRICE_AOA.toLocaleString('pt-AO')}</p>
+                  </div>
+
+                  {/* Input B: Lucro Desejado (inverso) */}
+                  <div>
+                    <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Quero lucrar (inverso)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-3 text-on-surface-variant text-[10px] font-mono">Kz</span>
+                      <input
+                        type="number"
+                        step="1"
+                        disabled={isFree}
+                        value={isFree ? '0' : profitAOA}
+                        onChange={e => handleProfitAoaChange(e.target.value)}
+                        placeholder="0"
+                        className={`w-full rounded-xl bg-surface-high border border-white/10 pl-9 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                          isFree ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      />
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant mt-1">Digite o lucro → preço é calculado</p>
+                  </div>
+                </div>
+
+                {/* Card de resumo AOA em tempo real */}
+                {!isFree && aoaPriceSummary && (
+                  <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-4 space-y-2">
+                    <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">📊 Resumo da Precificação AOA</div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-on-surface-variant">Preço que o cliente paga:</span>
+                      <span className="font-mono font-bold text-white">Kz {aoaPriceSummary.price.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-on-surface-variant">Taxa CodeEngine ({aoaPriceSummary.cePct}%):</span>
+                      <span className="font-mono font-semibold text-red-400">-Kz {aoaPriceSummary.ceFee.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-on-surface-variant">Taxa FaciPay (Ref. Multicaixa + IVA):</span>
+                      <span className="font-mono font-semibold text-red-400">-Kz {aoaPriceSummary.facipayFee.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-xs border-t border-amber-500/20 pt-2">
+                      <span className="font-bold text-white">✅ Seu lucro estimado:</span>
+                      <span className="font-mono font-bold text-green-400">Kz {aoaPriceSummary.profit.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
                 )}
-                {!isFree && priceAOA && (
-                  <span className="text-[10px] text-green-400 mt-1 block font-mono">
-                    Retorno Líquido: Kz {(Number(priceAOA) * 0.76).toFixed(0)} (IVA -14%, Plataforma -10%)
-                  </span>
+                {!isFree && priceAOA && Number(priceAOA) > 0 && Number(priceAOA) < MIN_PRICE_AOA && (
+                  <p className="text-[11px] text-red-400">⚠️ O preço mínimo do produto é Kz {MIN_PRICE_AOA.toLocaleString('pt-AO')}.</p>
+                )}
+                {!isFree && priceAOA && Number(priceAOA) > MAX_PRICE_AOA && (
+                  <p className="text-[11px] text-red-400">⚠️ O preço máximo do produto é Kz {MAX_PRICE_AOA.toLocaleString('pt-AO')}.</p>
+                )}
+                {submitAttempted && !isFree && !priceAOA && (
+                  <p className="text-[11px] text-red-400">O preço em AOA é obrigatório.</p>
                 )}
               </div>
 

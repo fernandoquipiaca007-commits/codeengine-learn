@@ -28,6 +28,7 @@ interface CollaboratorProfile {
   upgradeMethod?: 'stripe' | 'fastpay';
   upgradeStatus?: 'none' | 'pending_approval' | 'approved' | 'rejected';
   upgradeReceiptUrl?: string;
+  facipayAccount?: string;
 }
 
 export function CollaboratorDashboard({ setScreen, onGoToProducts }: CollaboratorDashboardProps) {
@@ -37,12 +38,23 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [ledger, setLedger] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   
-  // Withdrawal Request Modal / State
+  // Withdrawal Request Modal / State (USD)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
   const [submittingWithdraw, setSubmittingWithdraw] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSuccess, setModalSuccess] = useState<string | null>(null);
+
+  // AOA Withdrawal Modal / State
+  const [showWithdrawAoaModal, setShowWithdrawAoaModal] = useState(false);
+  const [withdrawAoaAmount, setWithdrawAoaAmount] = useState<string>('');
+  const [withdrawAoaMethod, setWithdrawAoaMethod] = useState<'iban_aoa' | 'facipay_p2p' | 'paypal_aoa'>('iban_aoa');
+  const [submittingWithdrawAoa, setSubmittingWithdrawAoa] = useState(false);
+  const [aoaModalError, setAoaModalError] = useState<string | null>(null);
+  const [aoaModalSuccess, setAoaModalSuccess] = useState<string | null>(null);
+
+  // Currency filter for dashboard view
+  const [walletView, setWalletView] = useState<'usd' | 'aoa'>('usd');
 
   // Wallet Settings Modal / State
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -51,6 +63,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [bankName, setBankName] = useState('');
   const [bankHolder, setBankHolder] = useState('');
   const [iban, setIban] = useState('');
+  const [facipayAccount, setFacipayAccount] = useState('');
   const [savingWallet, setSavingWallet] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [walletSuccess, setWalletSuccess] = useState<string | null>(null);
@@ -257,12 +270,70 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     }
   }
 
+  // AOA Withdrawal Handler
+  async function handleWithdrawAoaSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmittingWithdrawAoa(true);
+    setAoaModalError(null);
+    setAoaModalSuccess(null);
+
+    const minSaque = Number(settings['MINIMO_SAQUE_AOA'] || '20000');
+    const amountNum = Number(withdrawAoaAmount);
+
+    if (isNaN(amountNum) || amountNum < minSaque) {
+      setAoaModalError(`O valor mínimo de saque AOA é Kz ${minSaque.toLocaleString('pt-AO')}.`);
+      setSubmittingWithdrawAoa(false);
+      return;
+    }
+
+    if (amountNum > (Number(balance?.available_balance_aoa) || 0)) {
+      setAoaModalError('Saldo AOA disponível insuficiente.');
+      setSubmittingWithdrawAoa(false);
+      return;
+    }
+
+    if (withdrawAoaMethod === 'facipay_p2p' && !facipayAccount && !profile?.facipayAccount) {
+      setAoaModalError('Configure o número da conta FaciPay em "Configurar Carteira" antes de usar este método.');
+      setSubmittingWithdrawAoa(false);
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/withdraw-aoa`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ amount: amountNum, method: withdrawAoaMethod })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setAoaModalSuccess('Saque AOA solicitado com sucesso!');
+        setWithdrawAoaAmount('');
+        await loadDashboardData();
+        setTimeout(() => setShowWithdrawAoaModal(false), 2000);
+      } else {
+        setAoaModalError(data.error || 'Erro ao solicitar saque AOA.');
+      }
+    } catch (err) {
+      setAoaModalError('Erro de conexão.');
+    } finally {
+      setSubmittingWithdrawAoa(false);
+    }
+  }
+
   const openWalletModal = () => {
     setTempPayoutMethod(profile?.payoutMethod || 'paypal');
     setPaypalEmail(profile?.payoutInfo?.email || '');
     setBankName(profile?.payoutInfo?.bankName || '');
     setBankHolder(profile?.payoutInfo?.bankHolder || '');
     setIban(profile?.payoutInfo?.iban || '');
+    setFacipayAccount(profile?.facipayAccount || '');
     setWalletError(null);
     setWalletSuccess(null);
     setShowWalletModal(true);
@@ -311,8 +382,20 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       const data = await res.json();
 
       if (data.success) {
+        // Also save FaciPay account if provided
+        if (facipayAccount.trim()) {
+          await fetch(`${BACKEND_URL}/api/collaborators/facipay-account`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ facipayAccount: facipayAccount.trim() })
+          }).catch(() => {});
+        }
         setWalletSuccess('Carteira salva com sucesso!');
         setProfile(data.profile);
+        await loadDashboardData();
         setTimeout(() => setShowWalletModal(false), 1500);
       } else {
         setWalletError(data.error || 'Erro ao salvar configurações de carteira.');
@@ -483,100 +566,234 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         return null;
       })()}
 
-      {/* Cards de Saldo USD — Ciclo de Vida de 6 Dias */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <DollarSign size={16} className="text-primary" />
-          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD · Stripe</span>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3 relative z-10">
-          {/* Estado 1: Em Garantia (D1-D3) */}
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
-            <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-lg">
-                🔒
-              </div>
-              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
-            </div>
-            <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Garantia</span>
-            <span className="block text-xl font-bold text-white font-mono">
-              {(Number(balance?.guarantee_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </span>
-            <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Período de reembolso do cliente. Fundos bloqueados por segurança.</p>
-          </div>
-
-          {/* Estado 2: Em Processamento (D4-D6) */}
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
-            <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-lg">
-                ⏳
-              </div>
-              <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
-            </div>
-            <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Processamento</span>
-            <span className="block text-xl font-bold text-white font-mono">
-              {(Number(balance?.processing_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </span>
-            <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidação Stripe. Liberado em breve.</p>
-          </div>
-
-          {/* Estado 3: Disponível para Saque */}
-          <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
-            <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-lg">
-                ✅
-              </div>
-              <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
-            </div>
-            <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque</span>
-            <span className="block text-xl font-bold text-white font-mono">
-              {(Number(balance?.available_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </span>
-            <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">
-              {(Number(balance?.available_balance) || 0) >= 50
-                ? '✓ Saldo suficiente para saque (mín. $50.00)'
-                : `Mínimo $50.00 para sacar. Faltam $${Math.max(0, 50 - (Number(balance?.available_balance) || 0)).toFixed(2)}`
-              }
-            </p>
-          </div>
-        </div>
+      {/* Currency Filter Toggle */}
+      <div className="mb-6 flex items-center gap-1 p-1 bg-surface-high rounded-full w-fit border border-white/10">
+        <button
+          onClick={() => setWalletView('usd')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+            walletView === 'usd'
+              ? 'bg-primary text-background shadow-[0_0_15px_rgba(192,193,255,0.2)]'
+              : 'text-on-surface-variant hover:text-white'
+          }`}
+        >
+          <DollarSign size={14} /> USD · Stripe
+        </button>
+        <button
+          onClick={() => setWalletView('aoa')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+            walletView === 'aoa'
+              ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+              : 'text-on-surface-variant hover:text-white'
+          }`}
+        >
+          🏦 AOA · FaciPay
+        </button>
       </div>
 
-      {/* Cards Resumo: Acumulado e Sacado */}
-      <div className="mb-10 grid gap-4 sm:grid-cols-2 relative z-10">
-        {/* Acumulado Histórico */}
-        <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
-          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
-              <TrendingUp size={18} />
+      {/* ====== USD WALLET VIEW ====== */}
+      {walletView === 'usd' && (
+        <>
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <DollarSign size={16} className="text-primary" />
+              <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD · Stripe</span>
             </div>
-            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Histórico</span>
-          </div>
-          <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado</span>
-          <span className="block text-xl font-bold text-white font-mono mt-1">
-            {(Number(balance?.accumulated_earnings) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-          </span>
-        </div>
+            <div className="grid gap-4 sm:grid-cols-3 relative z-10">
+              {/* Estado 1: Em Garantia (D1-D3) */}
+              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
+                <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-lg">
+                    🔒
+                  </div>
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
+                </div>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Garantia</span>
+                <span className="block text-xl font-bold text-white font-mono">
+                  {(Number(balance?.guarantee_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                </span>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Período de reembolso do cliente. Fundos bloqueados por segurança.</p>
+              </div>
 
-        {/* Já Sacado */}
-        <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
-          <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-tertiary/10 text-tertiary border border-tertiary/15">
-              {profile?.payoutMethod === 'paypal' ? <Mail size={18} /> : <Landmark size={18} />}
+              {/* Estado 2: Em Processamento (D4-D6) */}
+              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
+                <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-lg">
+                    ⏳
+                  </div>
+                  <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
+                </div>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Processamento</span>
+                <span className="block text-xl font-bold text-white font-mono">
+                  {(Number(balance?.processing_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                </span>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidação Stripe. Liberado em breve.</p>
+              </div>
+
+              {/* Estado 3: Disponível para Saque */}
+              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
+                <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-lg">
+                    ✅
+                  </div>
+                  <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
+                </div>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque</span>
+                <span className="block text-xl font-bold text-white font-mono">
+                  {(Number(balance?.available_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                </span>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">
+                  {(Number(balance?.available_balance) || 0) >= 50
+                    ? '✓ Saldo suficiente para saque (mín. $50.00)'
+                    : `Mínimo $50.00 para sacar. Faltam $${Math.max(0, 50 - (Number(balance?.available_balance) || 0)).toFixed(2)}`
+                  }
+                </p>
+              </div>
             </div>
-            <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full border border-tertiary/20">Pago</span>
           </div>
-          <span className="block text-sm font-medium text-on-surface-variant">Total Sacado</span>
-          <span className="block text-xl font-bold text-white font-mono mt-1">
-            {(Number(balance?.withdrawn_amount) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-          </span>
-        </div>
-      </div>
+
+          {/* Cards Resumo USD */}
+          <div className="mb-10 grid gap-4 sm:grid-cols-2 relative z-10">
+            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+              <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
+                  <TrendingUp size={18} />
+                </div>
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Histórico</span>
+              </div>
+              <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado (USD)</span>
+              <span className="block text-xl font-bold text-white font-mono mt-1">
+                {(Number(balance?.accumulated_earnings) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+              </span>
+            </div>
+            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+              <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-tertiary/10 text-tertiary border border-tertiary/15">
+                  {profile?.payoutMethod === 'paypal' ? <Mail size={18} /> : <Landmark size={18} />}
+                </div>
+                <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full border border-tertiary/20">Pago</span>
+              </div>
+              <span className="block text-sm font-medium text-on-surface-variant">Total Sacado (USD)</span>
+              <span className="block text-xl font-bold text-white font-mono mt-1">
+                {(Number(balance?.withdrawn_amount) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ====== AOA WALLET VIEW ====== */}
+      {walletView === 'aoa' && (
+        <>
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🏦</span>
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema AOA · FaciPay (Kwanza)</span>
+              </div>
+              <button
+                onClick={() => {
+                  setAoaModalError(null);
+                  setAoaModalSuccess(null);
+                  setWithdrawAoaAmount('');
+                  setWithdrawAoaMethod('iban_aoa');
+                  setShowWithdrawAoaModal(true);
+                }}
+                disabled={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')}
+                title={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')
+                  ? `Saldo mínimo de Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} necessário`
+                  : 'Solicitar saque AOA'
+                }
+                className="flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2 font-bold text-black text-xs hover:bg-amber-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <PlusCircle size={14} /> Solicitar Saque AOA
+              </button>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3 relative z-10">
+              {/* AOA Estado 1: Em Garantia */}
+              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
+                <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-lg">🔒</div>
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
+                </div>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Garantia (AOA)</span>
+                <span className="block text-xl font-bold text-white font-mono">
+                  Kz {(Number(balance?.guarantee_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+                </span>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Período de reembolso. Fundos bloqueados por segurança.</p>
+              </div>
+
+              {/* AOA Estado 2: Em Processamento */}
+              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
+                <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-lg">⏳</div>
+                  <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
+                </div>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Processamento (AOA)</span>
+                <span className="block text-xl font-bold text-white font-mono">
+                  Kz {(Number(balance?.processing_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+                </span>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidação FaciPay.</p>
+              </div>
+
+              {/* AOA Estado 3: Disponível */}
+              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
+                <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20 text-lg">✅</div>
+                  <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
+                </div>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque (AOA)</span>
+                <span className="block text-xl font-bold text-white font-mono">
+                  Kz {(Number(balance?.available_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+                </span>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">
+                  {(Number(balance?.available_balance_aoa) || 0) >= Number(settings['MINIMO_SAQUE_AOA'] || '20000')
+                    ? `✓ Saldo suficiente para saque (mín. Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')})`
+                    : `Mínimo Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} para sacar.`
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Cards Resumo AOA */}
+          <div className="mb-10 grid gap-4 sm:grid-cols-2 relative z-10">
+            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+              <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(245,158,11,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/15">
+                  <TrendingUp size={18} />
+                </div>
+                <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Histórico</span>
+              </div>
+              <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado (AOA)</span>
+              <span className="block text-xl font-bold text-white font-mono mt-1">
+                Kz {(Number(balance?.accumulated_earnings_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+              <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(245,158,11,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/15">
+                  <Landmark size={18} />
+                </div>
+                <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Pago</span>
+              </div>
+              <span className="block text-sm font-medium text-on-surface-variant">Total Sacado (AOA)</span>
+              <span className="block text-xl font-bold text-white font-mono mt-1">
+                Kz {(Number(balance?.withdrawn_amount_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Main Grid: Extrato e Solicitações */}
       <div className="grid gap-6 lg:grid-cols-3 relative z-10">
@@ -788,6 +1005,129 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         </div>
       )}
 
+      {/* Modal: Solicitar Saque AOA */}
+      {showWithdrawAoaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md rounded-2xl border border-amber-500/20 bg-surface/95 backdrop-blur-xl p-6 shadow-2xl"
+          >
+            <div className="mb-4 flex items-center justify-between border-b border-amber-500/20 pb-3">
+              <h3 className="text-lg font-bold text-white font-display">🏦 Solicitar Saque AOA</h3>
+              <button
+                onClick={() => { setShowWithdrawAoaModal(false); setAoaModalError(null); setAoaModalSuccess(null); }}
+                className="text-on-surface-variant hover:text-white text-sm font-medium transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+
+            {aoaModalSuccess && (
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-green-500/10 border border-green-500/20 p-3 text-sm text-green-300">
+                <CheckCircle size={16} /><span>{aoaModalSuccess}</span>
+              </div>
+            )}
+            {aoaModalError && (
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-300">
+                <AlertCircle size={16} /><span>{aoaModalError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleWithdrawAoaSubmit} className="space-y-4 font-sans">
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Saldo Disponível AOA</label>
+                <div className="text-2xl font-bold text-amber-400 font-mono">
+                  Kz {(Number(balance?.available_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Método de Envio</label>
+                <select
+                  value={withdrawAoaMethod}
+                  onChange={(e) => setWithdrawAoaMethod(e.target.value as any)}
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                >
+                  <option value="iban_aoa">Conta Bancária (IBAN) — Taxa 1% + IVA</option>
+                  <option value="facipay_p2p">Conta FaciPay (P2P) — Isento</option>
+                  <option value="paypal_aoa">PayPal (Câmbio AOA→USD) — Taxa variável</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Valor do Saque (AOA)</label>
+                <div className="relative rounded-xl border border-white/10 bg-surface-high">
+                  <span className="absolute left-4 top-3.5 text-on-surface-variant text-sm font-bold font-mono">Kz</span>
+                  <input
+                    type="number"
+                    step="1"
+                    min={Number(settings['MINIMO_SAQUE_AOA'] || '20000')}
+                    required
+                    placeholder="0"
+                    value={withdrawAoaAmount}
+                    onChange={(e) => setWithdrawAoaAmount(e.target.value)}
+                    className="w-full rounded-xl border-none pl-12 pr-4 py-3 text-sm font-bold font-mono text-white focus:outline-none focus:ring-0 bg-transparent"
+                  />
+                </div>
+                <span className="mt-1 block text-xs text-on-surface-variant">Mínimo: Kz {Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')}</span>
+              </div>
+
+              {/* Prévia de taxas AOA em tempo real */}
+              {withdrawAoaAmount && Number(withdrawAoaAmount) >= Number(settings['MINIMO_SAQUE_AOA'] || '20000') && (() => {
+                const gross = Number(withdrawAoaAmount);
+                const ivaRate = Number(settings['TAXA_FACIPAY_IVA'] || '0.14');
+                let fee = 0;
+                let feeLabel = '';
+
+                if (withdrawAoaMethod === 'iban_aoa') {
+                  const ibanRate = Number(settings['TAXA_SAQUE_IBAN_AOA'] || '0.01');
+                  fee = gross * ibanRate * (1 + ivaRate);
+                  feeLabel = `Taxa IBAN (${(ibanRate*100).toFixed(0)}% + ${(ivaRate*100).toFixed(0)}% IVA)`;
+                } else if (withdrawAoaMethod === 'facipay_p2p') {
+                  fee = 0;
+                  feeLabel = 'FaciPay P2P (Isento)';
+                } else if (withdrawAoaMethod === 'paypal_aoa') {
+                  const paypalRate = Number(settings['TAXA_CAMBIO_PAYPAL_AOA'] || '0.05');
+                  fee = gross * paypalRate;
+                  feeLabel = `Taxa Câmbio PayPal (${(paypalRate*100).toFixed(0)}%)`;
+                }
+                fee = Math.round(fee * 100) / 100;
+                const net = Math.max(0, gross - fee);
+
+                return (
+                  <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-4 text-xs space-y-2">
+                    <div className="font-bold text-amber-400 text-[11px] uppercase tracking-wider mb-2">📊 Resumo do Saque AOA</div>
+                    <div className="flex justify-between text-on-surface-variant">
+                      <span>Valor bruto solicitado:</span>
+                      <span className="font-mono font-semibold text-white">Kz {gross.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between text-on-surface-variant">
+                      <span>{feeLabel}:</span>
+                      <span className="font-mono font-semibold text-red-400">-Kz {fee.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-amber-500/20 pt-2">
+                      <span className="font-bold text-white">Você receberá (estimativa):</span>
+                      <span className="font-mono font-bold text-green-400">Kz {net.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <button
+                type="submit"
+                disabled={submittingWithdrawAoa || !withdrawAoaAmount || Number(withdrawAoaAmount) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')}
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-amber-500 py-3 font-bold text-black hover:bg-amber-400 transition-all text-xs uppercase tracking-widest disabled:opacity-50"
+              >
+                {submittingWithdrawAoa ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+                ) : 'Confirmar Saque AOA'}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
       {/* Modal: Configurar Carteira */}
       {showWalletModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
@@ -905,6 +1245,19 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   </div>
                 </div>
               )}
+
+              {/* FaciPay Account (para saques AOA via P2P) */}
+              <div className="mt-2 pt-4 border-t border-white/10">
+                <label className="block text-xs font-semibold text-amber-400 mb-1 uppercase tracking-wider">🏦 Conta FaciPay (Opcional — para saques AOA)</label>
+                <input
+                  type="text"
+                  placeholder="Nº da conta FaciPay"
+                  value={facipayAccount}
+                  onChange={(e) => setFacipayAccount(e.target.value)}
+                  className="w-full rounded-xl bg-surface-high border border-amber-500/20 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/50 font-mono"
+                />
+                <p className="text-[10px] text-on-surface-variant mt-1">Se tiver conta FaciPay, pode sacar AOA via P2P sem taxas.</p>
+              </div>
 
               <button
                 type="submit"
