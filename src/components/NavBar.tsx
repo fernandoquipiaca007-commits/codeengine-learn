@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LucideSearch, Menu, User, LogOut, Heart, ShoppingBag, Bell, Settings, Briefcase } from 'lucide-react';
+import { LucideSearch, Menu, User, LogOut, Heart, ShoppingBag, Bell, Settings, Briefcase, Percent } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
@@ -477,6 +477,19 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
 
                     <button
                       onClick={() => {
+                        setScreen('afiliados');
+                        setShowProfileMenu(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all border-t border-white/5 pt-2"
+                    >
+                      <Percent className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0 text-primary" />
+                      <span className="truncate font-semibold">
+                        Programa de Afiliados
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => {
                         if (collabStatus === 'approved') {
                           setScreen('colaborador');
                         } else {
@@ -484,7 +497,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                         }
                         setShowProfileMenu(false);
                       }}
-                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all border-t border-white/5 pt-2"
+                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
                     >
                       <Briefcase className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0 text-primary" />
                       <span className="truncate font-semibold">

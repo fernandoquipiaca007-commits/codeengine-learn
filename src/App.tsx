@@ -40,6 +40,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword').then(m => ({ de
 const CollaboratorApply = lazy(() => import('./pages/CollaboratorApply').then(m => ({ default: m.CollaboratorApply })));
 const CollaboratorDashboard = lazy(() => import('./pages/CollaboratorDashboard').then(m => ({ default: m.CollaboratorDashboard })));
 const CollaboratorProducts = lazy(() => import('./pages/CollaboratorProducts').then(m => ({ default: m.CollaboratorProducts })));
+const AffiliatesDashboard = lazy(() => import('./pages/AffiliatesDashboard').then(m => ({ default: m.AffiliatesDashboard })));
 
 // ─── Page transition variants ─────────────────────────────────────────────────
 const pageVariants = {
@@ -138,6 +139,11 @@ const PageContent = memo(function PageContent({
           setScreen={navigateToScreen}
         />
       )}
+      {currentScreen === 'afiliados' && (
+        <AffiliatesDashboard
+          setScreen={navigateToScreen}
+        />
+      )}
     </Suspense>
   );
 });
@@ -162,7 +168,7 @@ function getInitialScreen(): string {
   const stored = sessionStorage.getItem('ce_last_screen');
   const valid = ['home','library','member','about','releases','contact',
     'favorites','news','settings','privacy','terms','licensing','support',
-    'rewards','product', 'colaborador-candidatura', 'colaborador', 'colaborador-produtos'];
+    'rewards','product', 'colaborador-candidatura', 'colaborador', 'colaborador-produtos', 'afiliados'];
   return (stored && valid.includes(stored)) ? stored : 'home';
 }
 
@@ -348,6 +354,13 @@ export default function App() {
     }
     if (pathname === '/colaborador/produtos' || pathname === '/colaborador/produtos/') {
       setScreen('colaborador-produtos');
+      window.history.replaceState({}, '', '/');
+      return;
+    }
+
+    // Handle affiliate pathnames
+    if (pathname === '/afiliados' || pathname === '/afiliados/' || pathname === '/afiliado' || pathname === '/afiliado/') {
+      setScreen('afiliados');
       window.history.replaceState({}, '', '/');
       return;
     }
