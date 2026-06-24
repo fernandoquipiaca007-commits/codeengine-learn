@@ -49,16 +49,29 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: b
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#0d0d0e] px-6 text-center text-on-surface">
           <div className="glass-panel max-w-md p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl">
-            <h1 className="font-display text-2xl font-bold text-white mb-4">Atualização Disponível</h1>
+            <h1 className="font-display text-2xl font-bold text-white mb-4">Ops! Algo correu mal</h1>
             <p className="font-sans text-sm text-on-surface-variant mb-6">
-              Houve uma alteração nos arquivos do aplicativo. Por favor, clique abaixo para recarregar e carregar a versão mais recente.
+              Ocorreu um erro inesperado ao carregar esta página.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-2.5 rounded-full bg-[#6366f1] text-white font-display text-sm font-semibold hover:scale-95 transition-transform shadow-lg shadow-indigo-500/20"
-            >
-              Recarregar Aplicativo
-            </button>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full px-6 py-2.5 rounded-full bg-white/10 text-white font-display text-sm font-semibold hover:bg-white/15 transition-colors"
+              >
+                Tentar Novamente
+              </button>
+              <button
+                onClick={() => {
+                  try {
+                    sessionStorage.removeItem('ce_last_screen');
+                  } catch {}
+                  window.location.href = '/';
+                }}
+                className="w-full px-6 py-2.5 rounded-full bg-[#6366f1] text-white font-display text-sm font-semibold hover:scale-95 transition-transform shadow-lg shadow-indigo-500/20"
+              >
+                Voltar para o Início
+              </button>
+            </div>
           </div>
         </div>
       );

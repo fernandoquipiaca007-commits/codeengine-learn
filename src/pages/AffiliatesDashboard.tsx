@@ -102,7 +102,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
       const walletData = await walletRes.json();
-      if (walletData.success) {
+      if (walletData.success && walletData.wallet) {
         setWallet(walletData.wallet);
         // Pre-fill payout settings if present
         if (walletData.wallet.payout_method) {
