@@ -216,6 +216,34 @@ export default function App() {
     }
   }, [currentScreen, currentProductId]);
 
+  // Real-time Traffic Tracking (Page Views & Active Users)
+  useEffect(() => {
+    let sessionId = sessionStorage.getItem('ce_session_id');
+    if (!sessionId) {
+      sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      sessionStorage.setItem('ce_session_id', sessionId);
+    }
+
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const path = currentScreen === 'product' && currentProductId
+      ? `/product/${currentProductId}`
+      : `/${currentScreen}`;
+
+    const sendPing = () => {
+      fetch(`${backendUrl}/api/analytics/ping`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, sessionId }),
+      }).catch((err) => console.warn('[tracking] failed to send ping:', err));
+    };
+
+    sendPing();
+
+    const interval = setInterval(sendPing, 30 * 1000);
+    return () => clearInterval(interval);
+  }, [currentScreen, currentProductId]);
+
+
   useEffect(() => {
     // Listen for PWA installation prompt globally
     const handleInstallPrompt = (e: Event) => {
