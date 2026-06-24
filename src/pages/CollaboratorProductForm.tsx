@@ -96,7 +96,7 @@ export function CollaboratorProductForm({
   // ============================================================
   const MAX_PRICE_USD = 900000;    // $900.000
   const MAX_PRICE_AOA = 9000000000000; // Kz 9.000.000.000.000
-  const MIN_PRICE_AOA = 10000;     // Kz 10.000
+  const MIN_PRICE_AOA = 1000;      // Kz 1.000
 
   // ============================================================
   // USD PRICING: Two-Way Binding — 20% taxa, mín. $0.50
@@ -628,6 +628,19 @@ export function CollaboratorProductForm({
       setFormError('Por favor preencha todos os campos obrigatórios (incluindo arquivos digitais) para salvar.');
       setLoading(false);
       return;
+    }
+
+    if (!isFree) {
+      if (Number(priceUSD) <= 0 || Number(priceUSD) > MAX_PRICE_USD) {
+        setFormError(`O preço em USD deve ser maior que $0 e menor ou igual a $${MAX_PRICE_USD.toLocaleString('pt-AO')}.`);
+        setLoading(false);
+        return;
+      }
+      if (Number(priceAOA) < MIN_PRICE_AOA || Number(priceAOA) > MAX_PRICE_AOA) {
+        setFormError(`O preço em AOA deve estar entre Kz ${MIN_PRICE_AOA.toLocaleString('pt-AO')} e Kz ${MAX_PRICE_AOA.toLocaleString('pt-AO')}.`);
+        setLoading(false);
+        return;
+      }
     }
 
     try {
