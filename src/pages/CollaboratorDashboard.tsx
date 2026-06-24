@@ -3,7 +3,8 @@ import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { 
   TrendingUp, Clock, CheckCircle, ArrowUpRight, ArrowDownRight, 
-  DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink, Award, ShieldCheck, Video, PlayCircle
+  DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink, Award, ShieldCheck, Video, PlayCircle,
+  Users, Percent, Search, Briefcase
 } from 'lucide-react';
 
 interface CollaboratorDashboardProps {
@@ -54,7 +55,8 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [aoaModalSuccess, setAoaModalSuccess] = useState<string | null>(null);
 
   // Currency filter for dashboard view
-  const [walletView, setWalletView] = useState<'usd' | 'aoa'>('usd');
+  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates'>('usd');
+  const [affiliates, setAffiliates] = useState<any[]>([]);
 
   // Wallet Settings Modal / State
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -105,6 +107,21 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         setLedger(data.ledger);
         setWithdrawals(data.withdrawals);
         setSettings(data.settings || {});
+
+        // Fetch affiliates
+        try {
+          const resAff = await fetch(`${BACKEND_URL}/api/collaborators/affiliates`, {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
+          const dataAff = await resAff.json();
+          if (dataAff.success) {
+            setAffiliates(dataAff.affiliates || []);
+          }
+        } catch (errAff) {
+          console.error('Error loading affiliates:', errAff);
+        }
       } else {
         console.error('Error dashboard:', data.error);
         if (data.error?.includes('Access denied')) {
@@ -588,6 +605,16 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         >
           <Landmark size={12} /> AOA · FaciPay
         </button>
+        <button
+          onClick={() => setWalletView('affiliates')}
+          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+            walletView === 'affiliates'
+              ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.2)]'
+              : 'text-on-surface-variant hover:text-white'
+          }`}
+        >
+          <Users size={14} /> Meus Afiliados
+        </button>
       </div>
 
       {/* ====== USD WALLET VIEW ====== */}
@@ -801,8 +828,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         </>
       )}
 
+      {/* ====== MEUS AFILIADOS VIEW ====== */}
+      {walletView === 'affiliates' && (
+        <CollaboratorAffiliatesPanel affiliates={affiliates} />
+      )}
+
       {/* Main Grid: Extrato e Solicitações */}
-      <div className="grid gap-6 lg:grid-cols-3 relative z-10">
+      {walletView !== 'affiliates' && (
+        <div className="grid gap-6 lg:grid-cols-3 relative z-10">
         {/* Ledger Extrato */}
         <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-white/10">
           <h3 className="mb-6 text-lg font-bold text-white font-display">Extrato Contábil Recente</h3>
@@ -891,6 +924,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           )}
         </div>
       </div>
+      )}
 
       {/* Modal: Solicitar Saque */}
       {showWithdrawModal && (
@@ -1443,6 +1477,192 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           </motion.div>
         </div>
       )}
+    </div>
+  );
+}
+
+function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
+  const [search, setSearch] = useState('');
+
+  // Filter
+  const filtered = affiliates.filter(aff => 
+    aff.product_title?.toLowerCase().includes(search.toLowerCase()) ||
+    aff.affiliate_name?.toLowerCase().includes(search.toLowerCase()) ||
+    aff.affiliate_email?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Totals
+  const totalAffiliates = affiliates.length;
+  const totalClicks = affiliates.reduce((sum, a) => sum + (a.clicks || 0), 0);
+  const totalConversions = affiliates.reduce((sum, a) => sum + (a.totalConversions || 0), 0);
+  const avgCR = totalClicks > 0 ? (totalConversions / totalClicks * 100).toFixed(1) : '0.0';
+
+  const totalSalesUSD = affiliates.reduce((sum, a) => sum + (a.salesUSD || 0), 0);
+  const totalSalesAOA = affiliates.reduce((sum, a) => sum + (a.salesAOA || 0), 0);
+  const totalCommUSD = affiliates.reduce((sum, a) => sum + (a.commissionUSD || 0), 0);
+  const totalCommAOA = affiliates.reduce((sum, a) => sum + (a.commissionAOA || 0), 0);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Overview Cards */}
+      <div className="grid gap-4 sm:grid-cols-4 relative z-10">
+        <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-purple-500/15">
+          <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(168,85,247,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <Users size={18} />
+            </div>
+            <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20 uppercase tracking-wider">Afiliados</span>
+          </div>
+          <span className="block text-xs font-semibold text-on-surface-variant mb-1">Afiliados Ativos</span>
+          <span className="block text-xl font-bold text-white font-mono">{totalAffiliates}</span>
+          <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Membros que criaram links para seus produtos.</p>
+        </div>
+
+        <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
+          <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <TrendingUp size={18} />
+            </div>
+            <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Desempenho</span>
+          </div>
+          <span className="block text-xs font-semibold text-on-surface-variant mb-1">Cliques / Vendas</span>
+          <span className="block text-xl font-bold text-white font-mono">
+            {totalClicks} <span className="text-xs text-on-surface-variant">/</span> {totalConversions}
+          </span>
+          <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Conversão Média: <strong className="text-blue-400 font-mono">{avgCR}%</strong></p>
+        </div>
+
+        <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
+          <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+              <CheckCircle size={18} />
+            </div>
+            <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Volume</span>
+          </div>
+          <span className="block text-xs font-semibold text-on-surface-variant mb-1">Vendas Geradas</span>
+          <div className="space-y-0.5 font-mono">
+            <span className="block text-sm font-bold text-white">${totalSalesUSD.toFixed(2)}</span>
+            <span className="block text-xs font-semibold text-green-400">Kz {totalSalesAOA.toLocaleString('pt-AO')}</span>
+          </div>
+          <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Faturamento bruto total gerado por terceiros.</p>
+        </div>
+
+        <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
+          <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Percent size={18} />
+            </div>
+            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Comissões</span>
+          </div>
+          <span className="block text-xs font-semibold text-on-surface-variant mb-1">Comissões de Afiliados</span>
+          <div className="space-y-0.5 font-mono">
+            <span className="block text-sm font-bold text-white">${totalCommUSD.toFixed(2)}</span>
+            <span className="block text-xs font-semibold text-amber-400">Kz {totalCommAOA.toLocaleString('pt-AO')}</span>
+          </div>
+          <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Repasses gerados aos seus afiliados.</p>
+        </div>
+      </div>
+
+      {/* List Table */}
+      <div className="glass-panel rounded-2xl p-6 border border-white/10 relative z-10 w-full">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-white font-display">Afiliados dos Meus Produtos</h3>
+            <p className="text-xs text-on-surface-variant mt-0.5">Veja quem está a vender seus produtos e o desempenho individual.</p>
+          </div>
+          
+          <div className="relative w-full md:max-w-xs">
+            <Search size={14} className="absolute left-3.5 top-3.5 text-on-surface-variant" />
+            <input
+              type="text"
+              placeholder="Buscar por produto ou afiliado..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-high border border-white/10 text-xs font-semibold text-white placeholder-on-surface-variant focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all bg-transparent"
+            />
+          </div>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="py-12 text-center text-on-surface-variant text-sm font-sans">
+            Nenhum afiliado encontrado. Certifique-se de habilitar o programa de afiliados nas configurações do seu produto!
+          </div>
+        ) : (
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr className="text-on-surface-variant font-semibold border-b border-white/10">
+                  <th className="pb-3 text-xs uppercase tracking-wider">Produto</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider">Afiliado</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider">Cliques / Vendas</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider">Taxa CR %</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider text-right">Volume Vendido</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider text-right">Comissão Afiliado</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider text-right">Data Início</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filtered.map((item) => {
+                  const cr = item.clicks > 0 ? (item.totalConversions / item.clicks * 100).toFixed(1) : '0.0';
+                  return (
+                    <tr key={item.id} className="hover:bg-white/5 transition-all duration-150">
+                      <td className="py-4 font-bold text-white flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shrink-0" />
+                        <span className="line-clamp-1">{item.product_title}</span>
+                      </td>
+                      <td className="py-4">
+                        <div className="font-semibold text-white text-xs">{item.affiliate_name}</div>
+                        <div className="text-[10px] text-on-surface-variant font-mono">{item.affiliate_email}</div>
+                      </td>
+                      <td className="py-4 text-xs font-mono font-semibold text-on-surface-variant">
+                        {item.clicks} clicks <span className="text-[10px] text-white/20">/</span> <span className="text-white">{item.totalConversions} vendas</span>
+                      </td>
+                      <td className="py-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                          Number(cr) >= 5 ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                          Number(cr) > 0 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                          'bg-white/5 text-on-surface-variant'
+                        }`}>
+                          {cr}%
+                        </span>
+                      </td>
+                      <td className="py-4 text-right">
+                        <div className="font-mono font-bold text-xs text-white">
+                          {item.salesUSD > 0 && `$${item.salesUSD.toFixed(2)}`}
+                        </div>
+                        <div className="font-mono font-semibold text-[10px] text-green-400 mt-0.5">
+                          {item.salesAOA > 0 && `Kz ${item.salesAOA.toLocaleString('pt-AO')}`}
+                        </div>
+                        {item.salesUSD === 0 && item.salesAOA === 0 && (
+                          <span className="text-[10px] text-on-surface-variant font-mono">-</span>
+                        )}
+                      </td>
+                      <td className="py-4 text-right">
+                        <div className="font-mono font-bold text-xs text-purple-300">
+                          {item.commissionUSD > 0 && `$${item.commissionUSD.toFixed(2)}`}
+                        </div>
+                        <div className="font-mono font-semibold text-[10px] text-amber-400 mt-0.5">
+                          {item.commissionAOA > 0 && `Kz ${item.commissionAOA.toLocaleString('pt-AO')}`}
+                        </div>
+                        {item.commissionUSD === 0 && item.commissionAOA === 0 && (
+                          <span className="text-[10px] text-on-surface-variant font-mono">-</span>
+                        )}
+                      </td>
+                      <td className="py-4 text-right text-xs text-on-surface-variant font-mono">
+                        {new Date(item.created_at).toLocaleDateString('pt-PT')}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

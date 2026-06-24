@@ -90,6 +90,8 @@ export function CollaboratorProductForm({
   const [profitUSD, setProfitUSD] = useState('');
   const [priceAOA, setPriceAOA] = useState('');
   const [profitAOA, setProfitAOA] = useState('');
+  const [affiliateEnabled, setAffiliateEnabled] = useState(false);
+  const [affiliateCommissionPct, setAffiliateCommissionPct] = useState('0');
 
   // ============================================================
   // LIMITES DE PREÇO
@@ -422,6 +424,8 @@ export function CollaboratorProductForm({
           setPriceUSD(prod.price ? String(prod.price) : '');
           setPriceAOA(prod.aoa_price ? String(prod.aoa_price) : '');
           setIsFree(Boolean(prod.is_free));
+          setAffiliateEnabled(Boolean(prod.affiliate_enabled));
+          setAffiliateCommissionPct(prod.affiliate_commission_pct ? String(prod.affiliate_commission_pct) : '0');
 
           // Licensing
           const lic = prod.licensing_info || {};
@@ -680,7 +684,9 @@ export function CollaboratorProductForm({
         bonuses,
         benefits,
         customSections,
-        translations
+        translations,
+        affiliateEnabled,
+        affiliateCommissionPct: Number(affiliateCommissionPct) || 0
       };
 
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -1173,6 +1179,118 @@ export function CollaboratorProductForm({
                 )}
                 {submitAttempted && !isFree && !priceAOA && (
                   <p className="text-[11px] text-red-400">O preço em AOA é obrigatório.</p>
+                )}
+              </div>
+
+              {/* Affiliate Program Settings */}
+              <div className="space-y-4 border-t border-white/10 pt-4 mt-6">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="affiliateEnabled"
+                    checked={affiliateEnabled}
+                    onChange={e => {
+                      setAffiliateEnabled(e.target.checked);
+                      if (!e.target.checked) setAffiliateCommissionPct('0');
+                    }}
+                    className="rounded border-white/10 bg-surface-high focus:ring-primary h-4 w-4"
+                  />
+                  <label htmlFor="affiliateEnabled" className="text-sm font-semibold text-white cursor-pointer select-none flex items-center gap-1.5">
+                    <Percent size={14} className="text-primary" /> Habilitar Programa de Afiliados para este produto
+                  </label>
+                </div>
+
+                {affiliateEnabled && (
+                  <div className="space-y-3 pl-6 border-l border-white/10 ml-2 animate-in fade-in slide-in-from-left-2 duration-200">
+                    <div>
+                      <label className="block text-xs text-on-surface-variant mb-1 uppercase tracking-wider">Comissão do Afiliado (%)</label>
+                      <div className="relative max-w-[200px]">
+                        <input
+                          type="number"
+                          min="0"
+                          max="80"
+                          value={affiliateCommissionPct}
+                          onChange={e => {
+                            let val = parseInt(e.target.value) || 0;
+                            if (val > 80) val = 80;
+                            if (val < 0) val = 0;
+                            setAffiliateCommissionPct(String(val));
+                          }}
+                          placeholder="0"
+                          className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                        />
+                        <span className="absolute right-3 top-2.5 text-on-surface-variant text-sm font-bold">%</span>
+                      </div>
+                      <p className="text-[10px] text-on-surface-variant mt-1">Defina entre 0% e 80% do valor de venda.</p>
+                    </div>
+
+                    {/* Live payout breakdown calculations */}
+                    {!isFree && (priceUSD || priceAOA) && (
+                      <div className="rounded-xl bg-surface-high border border-white/10 p-4 space-y-3 max-w-xl text-xs">
+                        <div className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                          <FileText size={12} className="text-primary" /> Divisão Estimada de Ganhos por Venda
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* USD Breakdown */}
+                          {priceUSD && Number(priceUSD) > 0 && (
+                            <div className="space-y-1.5 border-r border-white/5 pr-2">
+                              <span className="text-[10px] font-bold text-white block">Divisão USD:</span>
+                              <div className="flex justify-between text-on-surface-variant">
+                                <span>Preço de Venda:</span>
+                                <span className="font-mono text-white">${Number(priceUSD).toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-on-surface-variant">
+                                <span>Comissão Afiliado ({affiliateCommissionPct}%):</span>
+                                <span className="font-mono text-amber-400">-${(Number(priceUSD) * (Number(affiliateCommissionPct) / 100)).toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-on-surface-variant">
+                                <span>Taxa CodeEngine Learn (10%):</span>
+                                <span className="font-mono text-red-400">-${Math.max(Number(priceUSD) * 0.1, 0.5).toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between font-semibold text-green-400 border-t border-white/5 pt-1.5">
+                                <span>Líquido Produtor:</span>
+                                <span className="font-mono">${
+                                  Math.max(0, Number(priceUSD) - (Number(priceUSD) * (Number(affiliateCommissionPct) / 100)) - Math.max(Number(priceUSD) * 0.1, 0.5)).toFixed(2)
+                                }</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* AOA Breakdown */}
+                          {priceAOA && Number(priceAOA) > 0 && (
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-bold text-white block">Divisão AOA:</span>
+                              <div className="flex justify-between text-on-surface-variant">
+                                <span>Preço de Venda:</span>
+                                <span className="font-mono text-white">Kz {Number(priceAOA).toLocaleString('pt-AO')}</span>
+                              </div>
+                              <div className="flex justify-between text-on-surface-variant">
+                                <span>Comissão Afiliado ({affiliateCommissionPct}%):</span>
+                                <span className="font-mono text-amber-400">-Kz {Math.floor(Number(priceAOA) * (Number(affiliateCommissionPct) / 100)).toLocaleString('pt-AO')}</span>
+                              </div>
+                              <div className="flex justify-between text-on-surface-variant">
+                                <span>Taxas da Plataforma (CE+FP):</span>
+                                <span className="font-mono text-red-400">-Kz {
+                                  Math.floor((Number(priceAOA) * 0.08) + (Math.max(Number(priceAOA) * 0.02, 100) * 1.14)).toLocaleString('pt-AO')
+                                }</span>
+                              </div>
+                              <div className="flex justify-between font-semibold text-green-400 border-t border-white/5 pt-1.5">
+                                <span>Líquido Produtor:</span>
+                                <span className="font-mono">Kz {
+                                  Math.max(0, 
+                                    Number(priceAOA) - 
+                                    Math.floor(Number(priceAOA) * (Number(affiliateCommissionPct) / 100)) - 
+                                    Math.floor((Number(priceAOA) * 0.08) + (Math.max(Number(priceAOA) * 0.02, 100) * 1.14))
+                                  ).toLocaleString('pt-AO')
+                                }</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
