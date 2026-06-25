@@ -111,168 +111,215 @@ const BRAND_LOGOS = [
 ];
 
 /* -----------------------------------------------------------------------------
- * SILENT PRECISION BACKGROUND COMPONENT
- * Implements a deep black base, a dense micro-dot grid pattern, subtle 
- * floating stars/particles, and soft ambient blur blooms.
+ * CANVAS STAGGERED PHYSICS ENGINE
+ * Calibrated outward expansion ripple: extremely smooth and slightly relaxed 
+ * to feel cohesive, satisfyingly responsive, and visually distinct.
  * -------------------------------------------------------------------------- */
 
-export function SilentPrecisionBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+type Pixel = {
+  x: number;
+  y: number;
+  color: string;
+  ctx: CanvasRenderingContext2D;
+  speed: number;
+  size: number;
+  sizeStep: number;
+  minSize: number;
+  maxSizeInt: number;
+  maxSize: number;
+  delay: number;
+  counter: number;
+  counterStep: number;
+  isIdle: boolean;
+  isReverse: boolean;
+  isShimmer: boolean;
+  draw: () => void;
+  appear: () => void;
+  disappear: () => void;
+  shimmer: () => void;
+};
 
-  useEffect(() => {
+function createPixel(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  x: number,
+  y: number,
+  color: string,
+  baseSpeed: number,
+  delay: number
+): Pixel {
+  const rand = (min: number, max: number) => Math.random() * (max - min) + min;
+
+  const p: Pixel = {
+    x, y, color, ctx,
+    speed: rand(0.08, 0.4) * baseSpeed,
+    size: 0,
+    sizeStep: rand(0.12, 0.28),
+    minSize: 0.5,
+    maxSizeInt: 2,
+    maxSize: rand(0.5, 2),
+    delay,
+    counter: 0,
+    counterStep: rand(1.8, 3.2) + (canvas.width + canvas.height) * 0.008,
+    isIdle: false,
+    isReverse: false,
+    isShimmer: false,
+    draw() {
+      const offset = p.maxSizeInt * 0.5 - p.size * 0.5;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x + offset, p.y + offset, p.size, p.size);
+    },
+    appear() {
+      p.isIdle = false;
+      if (p.counter <= p.delay) {
+        p.counter += p.counterStep;
+        return;
+      }
+      if (p.size >= p.maxSize) p.isShimmer = true;
+      if (p.isShimmer) p.shimmer();
+      else p.size += p.sizeStep;
+      p.draw();
+    },
+    disappear() {
+      p.isShimmer = false;
+      p.counter = 0;
+      if (p.size <= 0) {
+        p.isIdle = true;
+        return;
+      }
+      p.size -= 0.1;
+      p.draw();
+    },
+    shimmer() {
+      if (p.size >= p.maxSize) p.isReverse = true;
+      else if (p.size <= p.minSize) p.isReverse = false;
+      if (p.isReverse) p.size -= p.speed;
+      else p.size += p.speed;
+    },
+  };
+
+  return p;
+}
+
+type PixelCanvasProps = {
+  colors: string[];
+  gap?: number;
+  speed?: number;
+};
+
+function PixelCanvas({ colors, gap = 5, speed = 30 }: PixelCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const pixelsRef = useRef<Pixel[]>([]);
+  const animationRef = useRef<number>(0);
+  const lastFrameRef = useRef(performance.now());
+  const reducedMotionRef = useRef(false);
+
+  const init = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap || colors.length === 0) return;
+
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    const { width, height } = wrap.getBoundingClientRect();
+    const w = Math.floor(width);
+    const h = Math.floor(height);
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
 
-    // Handle resize
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
+    const effectiveSpeed = reducedMotionRef.current ? 0 : Math.min(speed, 100) * 0.001;
+    const pixels: Pixel[] = [];
 
-    // Particle class
-    class Particle {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      opacity: number;
-      fadeSpeed: number;
-      fadingIn: boolean;
-      color: string;
-
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        // Layered sizes for depth: mostly small, a few larger out-of-focus ones
-        const rand = Math.random();
-        if (rand > 0.9) {
-          this.size = Math.random() * 2.5 + 1.5; // larger blurred particles (1.5px to 4px)
-        } else {
-          this.size = Math.random() * 1.0 + 0.5; // small sharp particles (0.5px to 1.5px)
-        }
-        
-        this.speedX = (Math.random() - 0.5) * 0.08; // slow horizontal drift
-        this.speedY = -Math.random() * 0.12 - 0.03; // slow upward drift
-        this.opacity = Math.random() * 0.3 + 0.1; // slightly higher opacity for visibility
-        this.fadeSpeed = Math.random() * 0.0015 + 0.0005;
-        this.fadingIn = Math.random() > 0.5;
-
-        // Shades of elegant tech-grey and silver
-        const greyShade = Math.floor(Math.random() * 40) + 160; // 160 to 200 (light grey)
-        this.color = `rgba(${greyShade}, ${greyShade}, ${greyShade}, `;
-      }
-
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        // Wrap around top/bottom edges
-        if (this.y < 0) {
-          this.y = height;
-          this.x = Math.random() * width;
-        }
-
-        // Wrap around left/right edges
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-
-        // Slow opacity pulse (glowing fade in/out)
-        if (this.fadingIn) {
-          this.opacity += this.fadeSpeed;
-          if (this.opacity >= 0.5) {
-            this.opacity = 0.5;
-            this.fadingIn = false;
-          }
-        } else {
-          this.opacity -= this.fadeSpeed;
-          if (this.opacity <= 0.05) {
-            this.opacity = 0.05;
-            this.fadingIn = true;
-          }
-        }
-      }
-
-      draw() {
-        if (!ctx) return;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        // Apply slight blur to larger particles to simulate depth of field
-        if (this.size > 2) {
-          ctx.shadowBlur = 4;
-          ctx.shadowColor = 'rgba(255, 255, 255, 0.15)';
-        } else {
-          ctx.shadowBlur = 0;
-        }
-        ctx.fillStyle = `${this.color}${this.opacity})`;
-        ctx.fill();
+    for (let x = 0; x < w; x += gap) {
+      for (let y = 0; y < h; y += gap) {
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const dx = x - w / 2;
+        const dy = y - h / 2;
+        const delay = reducedMotionRef.current ? 0 : Math.sqrt(dx * dx + dy * dy) * 0.65;
+        pixels.push(createPixel(ctx, canvas, x, y, color, effectiveSpeed, delay));
       }
     }
 
-    // Reset shadow values after drawing
-    const resetShadows = () => {
-      if (!ctx) return;
-      ctx.shadowBlur = 0;
-      ctx.shadowColor = 'transparent';
+    pixelsRef.current = pixels;
+  }, [colors, gap, speed]);
+
+  const animate = useCallback((mode: "appear" | "disappear") => {
+    cancelAnimationFrame(animationRef.current);
+    const frameInterval = 1000 / 60;
+
+    const loop = () => {
+      animationRef.current = requestAnimationFrame(loop);
+
+      const now = performance.now();
+      const elapsed = now - lastFrameRef.current;
+      if (elapsed < frameInterval) return;
+      lastFrameRef.current = now - (elapsed % frameInterval);
+
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext("2d");
+      if (!canvas || !ctx) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const pixels = pixelsRef.current;
+      for (const pixel of pixels) pixel[mode]();
+
+      if (pixels.every((p) => p.isIdle)) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
 
-    // Create particle array
-    const particleCount = Math.floor((width * height) / 14000); // slightly denser
-    const particles: Particle[] = [];
-    for (let i = 0; i < Math.min(particleCount, 160); i++) {
-      particles.push(new Particle());
-    }
-
-    // Loop
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      particles.forEach((p) => {
-        p.update();
-        p.draw();
-      });
-      resetShadows();
-
-      animationId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationId);
-    };
+    animationRef.current = requestAnimationFrame(loop);
   }, []);
 
+  useEffect(() => {
+    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    init();
+
+    const resizeObserver = new ResizeObserver(() => init());
+    if (wrapRef.current) resizeObserver.observe(wrapRef.current);
+
+    animate("appear");
+
+    return () => {
+      resizeObserver.disconnect();
+      cancelAnimationFrame(animationRef.current);
+    };
+  }, [init, animate]);
+
+  return (
+    <div ref={wrapRef} className="absolute inset-0 overflow-hidden">
+      <canvas ref={canvasRef} className="block w-full h-full" />
+    </div>
+  );
+}
+
+/* -----------------------------------------------------------------------------
+ * SILENT PRECISION BACKGROUND COMPONENT
+ * Implements a deep black base, the PixelCanvas staggered loading dot grid,
+ * and soft ambient blur blooms.
+ * -------------------------------------------------------------------------- */
+
+export function SilentPrecisionBackground({ colors }: { colors: string[] }) {
   return (
     <div className="absolute inset-0 z-0 bg-[#050505] overflow-hidden pointer-events-none select-none">
-      {/* Dense micro-dot grid pattern */}
-      <div 
-        className="absolute inset-0 opacity-15"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-        }}
-      />
+      {/* Dense micro-dot grid pattern with outward expansion ripple */}
+      {colors.length > 0 && <PixelCanvas colors={colors} gap={6} speed={30} />}
 
-      {/* Floating Canvas particles */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full mix-blend-screen opacity-45" />
+      {/* Radial gradient overlay to fade edges smoothly */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#050505_100%)] opacity-85 pointer-events-none" />
 
       {/* Ambient Blur/Light Blooms */}
       {/* Bloom 1 (top left) */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[130px] mix-blend-screen opacity-40" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[130px] mix-blend-screen opacity-40 pointer-events-none" />
       {/* Bloom 2 (bottom right) */}
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/3 blur-[150px] mix-blend-screen opacity-30" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/3 blur-[150px] mix-blend-screen opacity-30 pointer-events-none" />
       {/* Bloom 3 (center subtle ambient light) */}
-      <div className="absolute top-[25%] left-[25%] w-[50%] h-[50%] rounded-full bg-white/1 blur-[160px] mix-blend-screen opacity-20" />
+      <div className="absolute top-[25%] left-[25%] w-[50%] h-[50%] rounded-full bg-white/1 blur-[160px] mix-blend-screen opacity-20 pointer-events-none" />
     </div>
   );
 }
@@ -379,7 +426,7 @@ export function Home({ setScreen }: HomeProps) {
       `}</style>
 
       {/* Silent Precision Background */}
-      <SilentPrecisionBackground />
+      <SilentPrecisionBackground colors={themeColors} />
 
       {/* Single unified content column — everything fits in one viewport */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-5xl gap-5 md:gap-6 pt-20 pb-6">
