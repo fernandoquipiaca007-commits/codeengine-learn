@@ -768,21 +768,35 @@ export function CollaboratorProductForm({
 
   return (
     <div className="text-white font-sans w-full h-full flex flex-col overflow-hidden">
-      <div className="p-6 shrink-0 flex items-center justify-between border-b border-white/10">
+      <div className="p-4 sm:p-6 shrink-0 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/10">
         <div>
-          <h2 className="text-xl font-bold text-white font-display">
+          <h2 className="text-lg sm:text-xl font-bold text-white font-display">
             {productId ? 'Editar Produto' : 'Adicionar Novo Produto'}
           </h2>
-          <p className="text-xs text-on-surface-variant mt-1">
+          <p className="text-[10px] sm:text-xs text-on-surface-variant mt-0.5 sm:mt-1">
             Os produtos salvos serão enviados como rascunhos para aprovação da administração.
           </p>
         </div>
-        <button
-          onClick={onClose}
-          className="rounded-full p-2 text-on-surface-variant hover:bg-white/5 hover:text-white transition-all"
-        >
-          <X size={20} />
-        </button>
+        <div className="flex items-center gap-2.5 sm:gap-3 self-end sm:self-center">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-on-surface transition-all cursor-pointer whitespace-nowrap"
+          >
+            Sair sem Salvar
+          </button>
+          <button
+            type="submit"
+            form="product-form"
+            disabled={loading}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
+          >
+            {loading ? (
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+            ) : <Save size={13} />}
+            <span>Salvar Rascunho</span>
+          </button>
+        </div>
       </div>
 
       {formError && (
@@ -793,7 +807,10 @@ export function CollaboratorProductForm({
       )}
 
       {/* Tabs navigation */}
-      <div className="px-6 py-3.5 shrink-0 border-b border-white/10 flex flex-wrap gap-1 bg-surface-container/20">
+      <div 
+        className="px-4 py-2 shrink-0 border-b border-white/10 flex flex-row overflow-x-auto whitespace-nowrap bg-surface-container/10 gap-1.5 scrollbar-none flex-nowrap"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         <button
           type="button"
           onClick={() => setActiveTab('details')}
@@ -901,8 +918,8 @@ export function CollaboratorProductForm({
         </button>
       </div>
 
-      <form onSubmit={handleSave} className="flex-grow flex flex-col overflow-hidden min-h-0">
-        <div className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6">
+      <form id="product-form" onSubmit={handleSave} className="flex-grow flex flex-col overflow-hidden min-h-0">
+        <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           {activeTab === 'details' && (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Lado Esquerdo: Metadados */}
@@ -2252,25 +2269,6 @@ export function CollaboratorProductForm({
 
         </div>
 
-        <div className="shrink-0 p-6 border-t border-white/10 flex items-center justify-end gap-3 bg-surface-container/40 backdrop-blur-sm">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-white/10 bg-white/5 px-6 py-3 font-semibold text-on-surface hover:bg-white/10 transition-all text-xs font-display uppercase tracking-widest"
-          >
-            Sair sem Salvar
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 rounded-full bg-on-surface px-6 py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-xs disabled:opacity-50 font-display uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)]"
-          >
-            {loading ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
-            ) : <Save size={18} />}
-            Salvar como Rascunho
-          </button>
-        </div>
       </form>
     </div>
   );
