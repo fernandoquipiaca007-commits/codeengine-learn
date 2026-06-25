@@ -482,7 +482,7 @@ export default function App() {
       }>
         <Background3D isImmersive={isImmersive} />
       </Suspense>
-      {!isImmersive && (
+      {!isImmersive && !['auth', 'signup'].includes(currentScreen) && (
         <NavBar
           currentScreen={currentScreen}
           setScreen={navigateToScreen}
