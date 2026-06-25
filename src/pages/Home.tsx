@@ -184,60 +184,60 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   };
 
   return (
-    <div className="pt-28 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
-      <header className="relative flex flex-col items-center justify-center text-center overflow-hidden mb-24 sm:mb-28">
-        <div className="max-w-3xl z-10 space-y-6">
+    <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto min-h-screen overflow-x-hidden">
+      <header className="relative flex flex-col items-center justify-center text-center overflow-hidden mb-16 sm:mb-20">
+        <div className="max-w-2xl z-10 space-y-5">
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="animate__animated animate__fadeInDown font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary pb-2"
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.08] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary pb-2"
           >
             CodeEngine 1
           </motion.h1>
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
-            className="animate__animated animate__fadeInUp font-sans text-sm sm:text-base md:text-lg text-on-surface-variant max-w-xl mx-auto"
+            transition={{ duration: 0.55, delay: 0.09, ease: [0.16, 1, 0.3, 1] }}
+            className="font-sans text-sm sm:text-base text-on-surface-variant max-w-lg mx-auto leading-relaxed"
           >
             {t('home.heroSubtitle')}
           </motion.p>
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-            className="pt-6"
+            transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="pt-5"
           >
             <button
               onClick={() => setScreen('library')}
-              className="animate__animated animate__pulse bg-on-surface text-background font-display text-base sm:text-lg md:text-xl font-semibold px-5 sm:px-7 md:px-10 py-3 sm:py-4 rounded-full transition-transform hover:scale-[0.98] duration-200 inline-flex items-center justify-center gap-2 w-full sm:w-auto"
+              className="primary-btn text-sm sm:text-base font-semibold px-6 sm:px-9 py-2.5 sm:py-3 inline-flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               {t('home.exploreVault')}
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
         </div>
-        <div className="absolute inset-0 z-0 hidden sm:flex items-center justify-center opacity-30 pointer-events-none hero-abstract">
-          <div className="w-[800px] h-[800px] bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-[100px] mix-blend-screen"></div>
+        <div className="absolute inset-0 z-0 hidden sm:flex items-center justify-center opacity-25 pointer-events-none hero-abstract">
+          <div className="w-[700px] h-[700px] bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-[100px] mix-blend-screen"></div>
         </div>
       </header>
 
       <section className="relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-            className="animate__animated animate__slideInDown font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-on-surface mb-4"
+            transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-3"
           >
             {t('home.featuredTitle')}
           </motion.h2>
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-            className="animate__animated animate__fadeInUp font-sans text-sm sm:text-base text-on-surface-variant max-w-xl mx-auto"
+            transition={{ duration: 0.5, delay: 0.23, ease: [0.16, 1, 0.3, 1] }}
+            className="font-sans text-sm text-on-surface-variant max-w-md mx-auto"
           >
             {t('home.featuredSubtitle')}
           </motion.p>
@@ -262,9 +262,10 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                   key={item.id}
                   onClick={() => onProductClick?.(item.product_id)}
                   onMouseEnter={() => prefetchProduct(item.product_id, locale)}
-                  whileTap={{ scale: 0.95, rotateY: 0, rotateX: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  className={`glass-card rounded-xl p-1 mockup-rotate group cursor-pointer ${offsetClass}`}
+                  whileHover={{ y: -5 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                  className={`glass-card rounded-xl p-1 group cursor-pointer ${offsetClass}`}
                 >
                   <div className="bg-surface-container-low rounded-lg p-4 sm:p-6 h-full border border-white/5 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3 sm:p-4 opacity-50 group-hover:opacity-100 transition-opacity">
@@ -307,12 +308,12 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
       {/* Últimas Notícias Section */}
       {latestNews.length > 0 && (
-        <section className="relative z-10 mt-28 sm:mt-32">
-          <div className="text-center mb-16">
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-on-surface mb-4">
+        <section className="relative z-10 mt-20 sm:mt-24">
+          <div className="text-center mb-10">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-3">
               {locale === 'pt' ? 'Últimas Notícias' : locale === 'fr' ? 'Dernières Actualités' : 'Latest News'}
             </h2>
-            <p className="font-sans text-sm sm:text-base text-on-surface-variant max-w-xl mx-auto">
+            <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">
               {locale === 'pt' ? 'Fique por dentro das novidades sobre tecnologia, automação e inteligência artificial.' : locale === 'fr' ? 'Restez au courant des nouveautés sur la technologie, l\'automatisation et l\'intelligence artificielle.' : 'Stay up to date with the latest insights on technology, automation and artificial intelligence.'}
             </p>
           </div>

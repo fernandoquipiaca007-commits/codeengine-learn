@@ -180,13 +180,13 @@ export function Library({ setScreen, onProductClick }: {
   }
 
   return (
-    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+    <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto min-h-screen overflow-x-hidden">
       {/* Header Section */}
-      <header className="mb-12 sm:mb-16 md:mb-24 flex flex-col items-start max-w-full">
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">
+      <header className="mb-10 sm:mb-14 flex flex-col items-start max-w-full">
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.08] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-3">
           {t('library.heading')}
         </h1>
-        <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant max-w-2xl">
+        <p className="font-sans text-sm sm:text-base text-on-surface-variant max-w-xl">
           {t('library.subtitle')}
         </p>
       </header>
@@ -209,14 +209,14 @@ export function Library({ setScreen, onProductClick }: {
 
       {/* Content */}
       {!loading && (
-        <div className="flex flex-col lg:flex-row gap-10 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-6 relative z-10">
           {/* Sidebar */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <div className="glass-panel rounded-xl p-6 mb-6 lg:mb-0 lg:sticky lg:top-28">
-              <h3 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant mb-4 pb-4 border-b border-white/10">
+          <aside className="lg:w-52 flex-shrink-0">
+            <div className="glass-panel rounded-xl p-4 mb-4 lg:mb-0 lg:sticky lg:top-20">
+              <h3 className="font-display text-[10px] font-semibold tracking-widest uppercase text-on-surface-variant mb-3 pb-3 border-b border-white/8">
                 {t('library.categories')}
               </h3>
-              <ul className="flex flex-wrap gap-2 sm:flex-col sm:gap-1">
+              <ul className="flex flex-wrap gap-1.5 sm:flex-col sm:gap-0.5">
                 {/* All Categories */}
                 <li>
                   <button
@@ -225,13 +225,13 @@ export function Library({ setScreen, onProductClick }: {
                       e.preventDefault();
                       setSelectedCategory(null);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-sans text-base font-semibold transition-all ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-sans text-sm font-medium transition-all ${
                       selectedCategory === null
-                        ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                        ? 'bg-primary/10 text-primary border border-primary/20'
                         : 'text-on-surface-variant hover:bg-white/5 hover:text-on-surface'
                     }`}
                   >
-                    <LayoutDashboard className="w-5 h-5" /> {t('library.all')} ({products.length})
+                    <LayoutDashboard className="w-4 h-4 flex-shrink-0" /> {t('library.all')} ({products.length})
                   </button>
                 </li>
 
@@ -250,13 +250,13 @@ export function Library({ setScreen, onProductClick }: {
                           e.preventDefault();
                           setSelectedCategory(category.id);
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-sans text-base transition-all ${
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-sans text-sm transition-all ${
                           selectedCategory === category.id
-                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(192,193,255,0.1)] font-semibold'
+                            ? 'bg-primary/10 text-primary border border-primary/20 font-semibold'
                             : 'text-on-surface-variant hover:bg-white/5 hover:text-on-surface'
                         }`}
                       >
-                        <Icon className="w-5 h-5" /> {displayCategoryName} ({count})
+                        <Icon className="w-4 h-4 flex-shrink-0" /> {displayCategoryName} ({count})
                       </button>
                     </li>
                   );
@@ -266,22 +266,21 @@ export function Library({ setScreen, onProductClick }: {
           </aside>
 
           {/* Product Grid */}
-          <div className="flex-grow animate__animated animate__fadeIn">
+          <div className="flex-grow">
             {/* Subcategories Filter Bar */}
             {subcategories.length > 0 && (
-              <div className="glass-panel rounded-xl p-3 mb-8 flex flex-wrap gap-2 items-center border border-white/5 shadow-[0_0_20px_rgba(0,0,0,0.3)] relative overflow-hidden backdrop-blur-md">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-50 z-0 pointer-events-none"></div>
-                <span className="font-display text-[10px] font-bold tracking-widest uppercase text-on-surface-variant/60 px-3 py-1 relative z-10">
-                  Subcategoria:
+              <div className="rounded-xl p-2.5 mb-5 flex flex-wrap gap-1.5 items-center border border-white/8 bg-surface-container/50 backdrop-blur-sm">
+                <span className="font-display text-[9px] font-bold tracking-widest uppercase text-on-surface-variant/50 px-2 py-1">
+                  Filtrar:
                 </span>
-                <div className="flex flex-wrap gap-2 relative z-10">
+                <div className="flex flex-wrap gap-1.5">
                   <button
                     type="button"
-                    onClick={() => setSelectedSubcategory(null)}
-                    className={`px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider transition-all duration-300 border ${
+                  onClick={() => setSelectedSubcategory(null)}
+                    className={`px-3 py-1.5 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all duration-200 border ${
                       selectedSubcategory === null
-                        ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_15px_rgba(192,193,255,0.15)] font-bold'
-                        : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface hover:border-white/10'
+                        ? 'bg-primary/15 text-primary border-primary/25'
+                        : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface'
                     }`}
                   >
                     Todas
@@ -291,10 +290,10 @@ export function Library({ setScreen, onProductClick }: {
                       key={sub.id}
                       type="button"
                       onClick={() => setSelectedSubcategory(sub.id)}
-                      className={`px-4 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-wider transition-all duration-300 border ${
+                      className={`px-3 py-1.5 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all duration-200 border ${
                         selectedSubcategory === sub.id
-                          ? 'bg-primary/20 text-primary border-primary/30 shadow-[0_0_15px_rgba(192,193,255,0.15)] font-bold'
-                          : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface hover:border-white/10'
+                          ? 'bg-primary/15 text-primary border-primary/25'
+                          : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface'
                       }`}
                     >
                       {sub.name}
@@ -316,7 +315,7 @@ export function Library({ setScreen, onProductClick }: {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredProducts.map((product) => {
                   const category = categories.find((c) => c.id === product.category_id);
                   

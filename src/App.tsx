@@ -44,15 +44,15 @@ const AffiliatesDashboard = lazy(() => import('./pages/AffiliatesDashboard').the
 
 // ─── Page transition variants ─────────────────────────────────────────────────
 const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 },
+  initial: { opacity: 0, y: 6 },
+  in:      { opacity: 1, y: 0 },
+  out:     { opacity: 0, y: -4 },
 };
 
 const pageTransition: any = {
   type: 'tween',
-  ease: 'easeInOut',
-  duration: 0.3,
+  ease: [0.16, 1, 0.3, 1],
+  duration: 0.22,
 };
 
 // ─── Page loader skeleton ─────────────────────────────────────────────────────
@@ -502,7 +502,7 @@ export default function App() {
         }}
       />
 
-      <main className={`flex-grow flex flex-col ${isImmersive ? 'pt-0' : 'pt-8'}`}>
+      <main className="flex-grow flex flex-col pt-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={
@@ -529,7 +529,9 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {!isImmersive && <Footer setScreen={navigateToScreen} />}
+      {!isImmersive && !['member','colaborador','colaborador-candidatura','colaborador-produtos','afiliados','settings'].includes(currentScreen) && (
+        <Footer setScreen={navigateToScreen} />
+      )}
       <PwaInstallBanner />
       <UpdatePrompt />
       <PushPermissionPrompt />
