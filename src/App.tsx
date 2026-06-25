@@ -137,6 +137,7 @@ const PageContent = memo(function PageContent({
       {currentScreen === 'colaborador-produtos' && (
         <CollaboratorProducts
           setScreen={navigateToScreen}
+          setIsImmersive={setIsImmersive}
         />
       )}
       {currentScreen === 'afiliados' && (

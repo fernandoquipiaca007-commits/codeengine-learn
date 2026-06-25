@@ -745,15 +745,15 @@ export function News({ setScreen }: NewsProps) {
 
 
   return (
-    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
+    <div className="pt-24 pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       
       {/* Header */}
-      <header className="mb-12 md:mb-16 flex flex-col items-start max-w-3xl">
+      <header className="mb-6 md:mb-8 flex flex-col items-start max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex items-center gap-3 mb-6"
+          className="flex items-center gap-2 mb-4"
         >
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
             <Newspaper className="w-6 h-6 text-primary" />

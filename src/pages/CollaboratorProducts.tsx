@@ -12,9 +12,10 @@ interface CollaboratorProductsProps {
     plan: 'ebook_creator' | 'course_creator';
     payoutMethod: 'paypal' | 'iban';
   } | null;
+  setIsImmersive?: (v: boolean) => void;
 }
 
-export function CollaboratorProducts({ setScreen, collaboratorProfile }: CollaboratorProductsProps) {
+export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImmersive }: CollaboratorProductsProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,10 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
 
   useEffect(() => {
     loadProducts();
-  }, []);
+    return () => {
+      setIsImmersive?.(false);
+    };
+  }, [setIsImmersive]);
 
   async function loadProducts() {
     setLoading(true);
@@ -117,6 +121,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
   const handleEdit = (id: string) => {
     setSelectedProductId(id);
     setIsFormOpen(true);
+    setIsImmersive?.(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -153,11 +158,13 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
   const handleNewProduct = () => {
     setSelectedProductId(null);
     setIsFormOpen(true);
+    setIsImmersive?.(true);
   };
 
   const handleFormSaveSuccess = () => {
     setIsFormOpen(false);
     setSelectedProductId(null);
+    setIsImmersive?.(false);
     void loadProducts();
   };
 
@@ -298,7 +305,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
       {/* Form Page-like Overlay (Fills the screen) */}
       <AnimatePresence>
         {isFormOpen && (
-          <div className="fixed inset-0 z-40 bg-[#050505] pt-24 pb-6 px-4 md:px-8 w-full h-full flex flex-col">
+          <div className="fixed inset-0 z-40 bg-[#050505] pt-0 pb-6 px-4 md:px-8 w-full h-full flex flex-col">
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -308,7 +315,10 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
               <CollaboratorProductForm
                 productId={selectedProductId}
                 collaboratorPlan={profile?.plan || 'ebook_creator'}
-                onClose={() => setIsFormOpen(false)}
+                onClose={() => {
+                  setIsFormOpen(false);
+                  setIsImmersive?.(false);
+                }}
                 onSaveSuccess={handleFormSaveSuccess}
               />
             </motion.div>

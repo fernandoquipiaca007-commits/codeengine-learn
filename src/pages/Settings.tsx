@@ -410,18 +410,18 @@ export function Settings({ setScreen }: SettingsProps) {
   }
 
   return (
-    <div className="pt-28 pb-24 px-4 sm:px-6 md:px-8 max-w-[1200px] w-full mx-auto min-h-screen overflow-x-hidden">
+    <div className="pt-20 pb-16 px-4 sm:px-6 md:px-8 max-w-[1200px] w-full mx-auto min-h-screen overflow-x-hidden">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="mb-12"
+        className="mb-6"
       >
-        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+        <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">
           {t('pages:settings.title')}
         </h1>
-        <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant">
+        <p className="font-sans text-xs sm:text-sm text-on-surface-variant">
           {t('pages:settings.subtitle')}
         </p>
       </motion.header>
@@ -458,20 +458,20 @@ export function Settings({ setScreen }: SettingsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="glass-panel rounded-2xl p-8 border border-white/10"
+          className="glass-panel rounded-2xl p-5 border border-white/10"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <User className="w-6 h-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <User className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-lg font-bold text-white">
               {t('pages:settings.personalInfo')}
             </h2>
           </div>
 
           <div className="space-y-4">
             {/* Avatar Picker Widget */}
-            <div className="flex flex-col items-center sm:flex-row gap-6 mb-8 p-4 rounded-xl bg-surface-container/30 border border-white/5">
+            <div className="flex flex-col items-center sm:flex-row gap-4 mb-4 p-3 rounded-xl bg-surface-container/30 border border-white/5">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30 flex items-center justify-center bg-surface-high relative shadow-[0_0_15px_rgba(192,193,255,0.1)]">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/30 flex items-center justify-center bg-surface-high relative shadow-[0_0_10px_rgba(192,193,255,0.1)]">
                   {avatarUrl && !imgError ? (
                     <img
                       src={avatarUrl}
@@ -480,18 +480,18 @@ export function Settings({ setScreen }: SettingsProps) {
                       onError={() => setImgError(true)}
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-tr from-primary/20 to-secondary/20 flex items-center justify-center text-white text-3xl font-display font-bold">
+                    <div className="w-full h-full bg-gradient-to-tr from-primary/20 to-secondary/20 flex items-center justify-center text-white text-2xl font-display font-bold">
                       {(name || '').charAt(0).toUpperCase()}
                     </div>
                   )}
                   {uploadingAvatar && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary"></div>
                     </div>
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center cursor-pointer hover:bg-primary/95 transition-colors shadow-lg border border-surface-high group-hover:scale-105 transform duration-200">
-                  <Camera className="w-4 h-4" />
+                <label className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center cursor-pointer hover:bg-primary/95 transition-colors shadow-lg border border-surface-high group-hover:scale-105 transform duration-200">
+                  <Camera className="w-3.5 h-3.5" />
                   <input
                     type="file"
                     accept="image/*"
@@ -501,38 +501,38 @@ export function Settings({ setScreen }: SettingsProps) {
                   />
                 </label>
               </div>
-              <div className="text-center sm:text-left space-y-1">
-                <h3 className="font-display text-base font-semibold text-white">{t('pages:settings.profilePicture')}</h3>
-                <p className="font-sans text-xs text-on-surface-variant max-w-[280px]">
+              <div className="text-center sm:text-left">
+                <h3 className="font-display text-sm font-semibold text-white">{t('pages:settings.profilePicture')}</h3>
+                <p className="font-sans text-[11px] text-on-surface-variant max-w-[280px] mt-0.5">
                   {t('pages:settings.acceptedFormats')}
                 </p>
               </div>
             </div>
 
             <div>
-              <label className="block font-display text-sm font-semibold text-on-surface mb-2">
+              <label className="block font-display text-xs font-semibold text-on-surface mb-1.5">
                 {t('pages:settings.name')}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-surface-container border border-white/10 text-white font-sans text-sm focus:outline-none focus:border-primary transition-colors"
+                className="w-full px-3 py-2 rounded-lg bg-surface-container border border-white/10 text-white font-sans text-xs focus:outline-none focus:border-primary transition-colors"
                 placeholder={t('pages:contact.namePlaceholder')}
               />
             </div>
 
             <div>
-              <label className="block font-display text-sm font-semibold text-on-surface mb-2">
+              <label className="block font-display text-xs font-semibold text-on-surface mb-1.5">
                 {t('pages:settings.email')}
               </label>
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-container/50 border border-white/10">
-                <Mail className="w-5 h-5 text-on-surface-variant" />
-                <span className="font-sans text-sm text-on-surface-variant">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container/50 border border-white/10">
+                <Mail className="w-4 h-4 text-on-surface-variant" />
+                <span className="font-sans text-xs text-on-surface-variant">
                   {user?.email}
                 </span>
               </div>
-              <p className="font-sans text-xs text-on-surface-variant mt-2">
+              <p className="font-sans text-[11px] text-on-surface-variant mt-1.5">
                 {t('pages:settings.emailNote')}
               </p>
             </div>
@@ -540,9 +540,9 @@ export function Settings({ setScreen }: SettingsProps) {
             <button
               onClick={handleSaveProfile}
               disabled={saving}
-              className="w-full md:w-auto px-6 py-3 rounded-full bg-primary text-on-primary font-display text-sm font-semibold tracking-widest uppercase hover:shadow-[0_0_20px_rgba(192,193,255,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-4 py-2 rounded-full bg-primary text-on-primary font-display text-xs font-semibold tracking-widest uppercase hover:shadow-[0_0_15px_rgba(192,193,255,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-3.5 h-3.5" />
               {saving ? t('common:loading.pleaseWait') : t('pages:settings.saveChanges')}
             </button>
           </div>
@@ -553,18 +553,18 @@ export function Settings({ setScreen }: SettingsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="glass-panel rounded-2xl p-8 border border-white/10"
+          className="glass-panel rounded-2xl p-5 border border-white/10"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <Lock className="w-6 h-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <Lock className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-lg font-bold text-white">
               {t('pages:settings.changePassword')}
             </h2>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block font-display text-sm font-semibold text-on-surface mb-2">
+              <label className="block font-display text-xs font-semibold text-on-surface mb-1.5">
                 {t('pages:settings.newPassword')}
               </label>
               <div className="relative">
@@ -572,7 +572,7 @@ export function Settings({ setScreen }: SettingsProps) {
                   type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 rounded-lg bg-surface-container border border-white/10 text-white font-sans text-sm focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-3 py-2 pr-10 rounded-lg bg-surface-container border border-white/10 text-white font-sans text-xs focus:outline-none focus:border-primary transition-colors"
                   placeholder={t('pages:settings.newPasswordPlaceholder')}
                 />
                 <button
@@ -580,20 +580,20 @@ export function Settings({ setScreen }: SettingsProps) {
                   onClick={() => setShowNewPassword(!showNewPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors"
                 >
-                  {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block font-display text-sm font-semibold text-on-surface mb-2">
+              <label className="block font-display text-xs font-semibold text-on-surface mb-1.5">
                 {t('pages:settings.confirmPassword')}
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg bg-surface-container border border-white/10 text-white font-sans text-sm focus:outline-none focus:border-primary transition-colors"
+                className="w-full px-3 py-2 rounded-lg bg-surface-container border border-white/10 text-white font-sans text-xs focus:outline-none focus:border-primary transition-colors"
                 placeholder={t('pages:settings.confirmPasswordPlaceholder')}
               />
             </div>
@@ -601,9 +601,9 @@ export function Settings({ setScreen }: SettingsProps) {
             <button
               onClick={handleChangePassword}
               disabled={saving || !newPassword || !confirmPassword}
-              className="w-full md:w-auto px-6 py-3 rounded-full bg-primary text-on-primary font-display text-sm font-semibold tracking-widest uppercase hover:shadow-[0_0_20px_rgba(192,193,255,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-4 py-2 rounded-full bg-primary text-on-primary font-display text-xs font-semibold tracking-widest uppercase hover:shadow-[0_0_15px_rgba(192,193,255,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <Lock className="w-4 h-4" />
+              <Lock className="w-3.5 h-3.5" />
               {saving ? t('common:loading.pleaseWait') : t('pages:settings.updatePassword')}
             </button>
           </div>
@@ -618,20 +618,20 @@ export function Settings({ setScreen }: SettingsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
-          className="glass-panel rounded-2xl p-8 border border-white/10"
+          className="glass-panel rounded-2xl p-5 border border-white/10"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <Globe className="w-6 h-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold text-white">{t('common:settings.language')}</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Globe className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-lg font-bold text-white">{t('common:settings.language')}</h2>
           </div>
-          <p className="font-sans text-sm text-on-surface-variant mb-4">{t('common:settings.languageDesc')}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <p className="font-sans text-xs text-on-surface-variant mb-3">{t('common:settings.languageDesc')}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {SUPPORTED_LOCALES.map((lang) => (
               <button
                 key={lang}
                 type="button"
                 onClick={() => void setLocale(lang)}
-                className={`px-4 py-3 rounded-lg font-display text-sm font-semibold transition-all ${
+                className={`px-3 py-2 rounded-lg font-display text-xs font-semibold transition-all ${
                   locale === lang ? 'bg-primary text-on-primary' : 'bg-surface-container border border-white/10 text-on-surface'
                 }`}
               >
@@ -646,11 +646,11 @@ export function Settings({ setScreen }: SettingsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="glass-panel rounded-2xl p-8 border border-white/10"
+          className="glass-panel rounded-2xl p-5 border border-white/10"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <Bell className="w-6 h-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <Bell className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-lg font-bold text-white">
               {t('pages:settings.emailNotifications')}
             </h2>
           </div>
@@ -658,10 +658,10 @@ export function Settings({ setScreen }: SettingsProps) {
           <div className="space-y-4">
             <label className="flex items-center justify-between cursor-pointer group">
               <div>
-                <p className="font-display text-sm font-semibold text-white group-hover:text-primary transition-colors">
+                <p className="font-display text-xs font-semibold text-white group-hover:text-primary transition-colors">
                   {t('pages:settings.emailNotifications')}
                 </p>
-                <p className="font-sans text-xs text-on-surface-variant mt-1">
+                <p className="font-sans text-[11px] text-on-surface-variant mt-0.5">
                   {t('pages:settings.emailNotificationsDesc')}
                 </p>
               </div>
@@ -684,19 +684,19 @@ export function Settings({ setScreen }: SettingsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
-          className="glass-panel rounded-2xl p-8 border border-white/10"
+          className="glass-panel rounded-2xl p-5 border border-white/10"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <RefreshCw className="w-6 h-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <RefreshCw className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-lg font-bold text-white">
               {t('pages:settings.appVersionSection')}
             </h2>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-surface-container/30 border border-white/5">
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 rounded-xl bg-surface-container/30 border border-white/5">
               <div>
-                <p className="font-display text-sm font-semibold text-white">{t('pages:settings.currentVersion')}</p>
+                <p className="font-display text-xs font-semibold text-white">{t('pages:settings.currentVersion')}</p>
                 <p className="font-mono text-xs text-on-surface-variant mt-1">
                   v{BUILD_VERSION}
                 </p>
@@ -713,9 +713,9 @@ export function Settings({ setScreen }: SettingsProps) {
                 type="button"
                 onClick={() => checkAppVersion(true)}
                 disabled={checkingVersion || saving}
-                className="px-6 py-3 rounded-full border border-white/10 text-on-surface font-display text-sm font-semibold hover:bg-white/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 rounded-full border border-white/10 text-on-surface font-display text-xs font-semibold hover:bg-white/5 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {checkingVersion && <RefreshCw className="w-4 h-4 animate-spin text-primary" />}
+                {checkingVersion && <RefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />}
                 {t('pages:settings.checkUpdates')}
               </button>
 
@@ -724,9 +724,9 @@ export function Settings({ setScreen }: SettingsProps) {
                   type="button"
                   onClick={handleAppUpdate}
                   disabled={saving}
-                  className="px-6 py-3 rounded-full bg-primary text-on-primary font-display text-sm font-semibold hover:shadow-[0_0_20px_rgba(192,193,255,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2 rounded-full bg-primary text-on-primary font-display text-xs font-semibold hover:shadow-[0_0_15px_rgba(192,193,255,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <RefreshCw className="w-4 h-4 text-on-primary animate-[spin_3s_linear_infinite]" />
+                  <RefreshCw className="w-3.5 h-3.5 text-on-primary animate-[spin_3s_linear_infinite]" />
                   {t('pages:settings.updateApp')}
                 </button>
               )}
@@ -739,26 +739,26 @@ export function Settings({ setScreen }: SettingsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="glass-panel rounded-2xl p-8 border border-white/10"
+          className="glass-panel rounded-2xl p-5 border border-white/10"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <Download className="w-6 h-6 text-primary" />
-            <h2 className="font-display text-2xl font-bold text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <Download className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-lg font-bold text-white">
               {t('pages:settings.appInstallation')}
             </h2>
           </div>
 
-          <div className="space-y-6">
-            <p className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+          <div className="space-y-4">
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
               {t('pages:settings.appInstallPromptDesc')}
             </p>
 
             {isStandalone && (
-              <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-sans flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-sans flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
                 <div>
                   <p className="font-bold">{t('pages:settings.appInstalledTitle')}</p>
-                  <p className="text-xs text-green-400/80">{t('pages:settings.appInstalledDesc')}</p>
+                  <p className="text-[11px] text-green-400/80">{t('pages:settings.appInstalledDesc')}</p>
                 </div>
               </div>
             )}
@@ -767,9 +767,9 @@ export function Settings({ setScreen }: SettingsProps) {
               <button
                 type="button"
                 onClick={handleInstallApp}
-                className="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-on-primary font-display text-sm font-semibold hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-[0.98]"
+                className="px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-on-primary font-display text-xs font-semibold hover:shadow-[0_0_20px_rgba(192,193,255,0.4)] transition-all flex items-center justify-center gap-2 uppercase tracking-wider active:scale-[0.98]"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
                 {t('common:actions.installApp')}
               </button>
             </div>

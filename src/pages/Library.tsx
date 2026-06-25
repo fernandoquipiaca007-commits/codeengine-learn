@@ -180,13 +180,13 @@ export function Library({ setScreen, onProductClick }: {
   }
 
   return (
-    <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto min-h-screen overflow-x-hidden">
+    <div className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto min-h-screen overflow-x-hidden">
       {/* Header Section */}
-      <header className="mb-10 sm:mb-14 flex flex-col items-start max-w-full">
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.08] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-3">
+      <header className="mb-6 sm:mb-8 flex flex-col items-start max-w-full">
+        <h1 className="font-display text-2xl sm:text-3xl md:text-4xl leading-[1.08] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-2">
           {t('library.heading')}
         </h1>
-        <p className="font-sans text-sm sm:text-base text-on-surface-variant max-w-xl">
+        <p className="font-sans text-xs sm:text-sm text-on-surface-variant max-w-xl">
           {t('library.subtitle')}
         </p>
       </header>
@@ -329,7 +329,7 @@ export function Library({ setScreen, onProductClick }: {
                       <div className="absolute w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
                       
                       {/* Product Image */}
-                      <div className="aspect-[4/3] rounded-xl mb-4 overflow-hidden relative bg-surface-highest">
+                      <div className="aspect-[4/3] rounded-xl mb-2 overflow-hidden relative bg-surface-highest">
                         <LazyImage
                           src={getProductCoverUrl(product)}
                           alt={product.title}
@@ -375,7 +375,7 @@ export function Library({ setScreen, onProductClick }: {
                       </div>
 
                       {/* Product Info */}
-                      <div className="px-4 pb-6 flex-grow flex flex-col z-10 relative">
+                      <div className="px-3 pb-3 flex-grow flex flex-col z-10 relative">
                         {/* Creator Row */}
                         <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2.5">
                           {product.collaborator ? (

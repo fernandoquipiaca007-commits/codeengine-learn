@@ -518,52 +518,52 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }
 
   return (
-    <div className="pt-28 pb-32 px-4 md:px-8 w-full min-h-screen page-wrapper">
+    <div className="pt-20 pb-16 px-4 md:px-8 w-full min-h-screen page-wrapper">
       {/* Header */}
-      <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em] flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em] flex flex-wrap items-center gap-2">
             Painel do Criador
             {profile?.plan === 'course_creator' && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-xs font-bold text-blue-400 font-display shadow-lg shadow-blue-500/10">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-[10px] font-bold text-blue-400 font-display shadow-lg shadow-blue-500/10">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
                 Membro Pro
               </span>
             )}
           </h1>
-          <p className="mt-2 text-on-surface-variant font-sans text-sm sm:text-base">
+          <p className="mt-1 text-on-surface-variant font-sans text-xs sm:text-sm">
             Olá, {profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.
           </p>
         </div>
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-center">
           <button
             onClick={() => setShowPlanBenefitsModal(true)}
-            className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2.5 font-semibold text-white hover:bg-primary/20 transition-all text-sm shadow-[0_0_15px_rgba(192,193,255,0.1)]"
+            className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 font-semibold text-white hover:bg-primary/20 transition-all text-xs shadow-[0_0_10px_rgba(192,193,255,0.1)]"
           >
-            <Award size={18} className="text-primary animate-pulse" />
+            <Award size={15} className="text-primary animate-pulse" />
             Benefícios do Plano Premium
           </button>
           <button
             onClick={openWalletModal}
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 font-semibold text-on-surface hover:bg-white/10 transition-all text-sm"
+            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-semibold text-on-surface hover:bg-white/10 transition-all text-xs"
           >
-            <Landmark size={18} className="text-primary" />
+            <Landmark size={15} className="text-primary" />
             Configurar Carteira
           </button>
           <button
             onClick={onGoToProducts}
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 font-semibold text-on-surface hover:bg-white/10 transition-all text-sm"
+            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-semibold text-on-surface hover:bg-white/10 transition-all text-xs"
           >
-            <FileText size={18} className="text-primary" />
+            <FileText size={15} className="text-primary" />
             Meus Produtos
           </button>
           <button
             onClick={() => setShowWithdrawModal(true)}
             disabled={(Number(balance?.available_balance) || 0) < 50}
             title={(Number(balance?.available_balance) || 0) < 50 ? 'Saldo mínimo de $50.00 necessário para sacar' : 'Solicitar saque'}
-            className="flex items-center gap-2 rounded-full bg-on-surface px-5 py-2.5 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 rounded-full bg-on-surface px-4 py-2 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-xs shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(192,193,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <PlusCircle size={18} />
+            <PlusCircle size={15} />
             Solicitar Saque
           </button>
         </div>
@@ -625,66 +625,66 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       })()}
 
       {/* Currency Filter Toggle */}
-      <div className="mb-6 flex items-center gap-1 p-1 bg-surface-high rounded-full w-fit border border-white/10">
+      <div className="mb-4 flex items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10">
         <button
           onClick={() => setWalletView('usd')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
             walletView === 'usd'
-              ? 'bg-primary text-background shadow-[0_0_15px_rgba(192,193,255,0.2)]'
+              ? 'bg-primary text-background shadow-[0_0_10px_rgba(192,193,255,0.2)]'
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <DollarSign size={14} /> USD · Stripe
+          <DollarSign size={12} /> USD · Stripe
         </button>
         <button
           onClick={() => setWalletView('aoa')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
             walletView === 'aoa'
-              ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+              ? 'bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.2)]'
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Landmark size={12} /> AOA · FaciPay
+          <Landmark size={10} /> AOA · FaciPay
         </button>
         <button
           onClick={() => setWalletView('affiliates')}
-          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
             walletView === 'affiliates'
-              ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(147,51,234,0.2)]'
+              ? 'bg-purple-600 text-white shadow-[0_0_10px_rgba(147,51,234,0.2)]'
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Users size={14} /> Meus Afiliados
+          <Users size={12} /> Meus Afiliados
         </button>
         <button
           onClick={() => { setWalletView('founder'); loadFounderStats(); }}
-          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
             walletView === 'founder'
-              ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.25)]'
+              ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.25)]'
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Award size={14} /> Membro Fundador
+          <Award size={12} /> Membro Fundador
         </button>
       </div>
 
       {/* ====== USD WALLET VIEW ====== */}
       {walletView === 'usd' && (
         <>
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <DollarSign size={16} className="text-primary" />
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2.5">
+              <DollarSign size={14} className="text-primary" />
               <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD · Stripe</span>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3 relative z-10">
+            <div className="grid gap-3 sm:grid-cols-3 relative z-10">
               {/* Estado 1: Em Garantia (D1-D3) */}
-              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
+              <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-amber-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    <ShieldCheck size={18} />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <ShieldCheck size={16} />
                   </div>
-                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
+                  <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Garantia</span>
                 <span className="block text-xl font-bold text-white font-mono">
@@ -694,13 +694,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               </div>
 
               {/* Estado 2: Em Processamento (D4-D6) */}
-              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
+              <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-blue-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    <Clock size={18} />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Clock size={16} />
                   </div>
-                  <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
+                  <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Processamento</span>
                 <span className="block text-xl font-bold text-white font-mono">
@@ -710,13 +710,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               </div>
 
               {/* Estado 3: Disponível para Saque */}
-              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
+              <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-green-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                    <CheckCircle size={18} />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                    <CheckCircle size={16} />
                   </div>
-                  <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
+                  <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque</span>
                 <span className="block text-xl font-bold text-white font-mono">
@@ -733,12 +733,12 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           </div>
 
           {/* Cards Resumo USD */}
-          <div className="mb-10 grid gap-4 sm:grid-cols-2 relative z-10">
-            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div className="mb-6 grid gap-3 sm:grid-cols-2 relative z-10">
+            <div className="glass-card glass-card-hover rounded-2xl p-4 relative overflow-hidden">
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
-                  <TrendingUp size={18} />
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
+                  <TrendingUp size={16} />
                 </div>
                 <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Histórico</span>
               </div>
@@ -747,11 +747,11 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 {(Number(balance?.accumulated_earnings) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
               </span>
             </div>
-            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+            <div className="glass-card glass-card-hover rounded-2xl p-4 relative overflow-hidden">
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-tertiary/10 text-tertiary border border-tertiary/15">
-                  {profile?.payoutMethod === 'paypal' ? <Mail size={18} /> : <Landmark size={18} />}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tertiary/10 text-tertiary border border-tertiary/15">
+                  {profile?.payoutMethod === 'paypal' ? <Mail size={16} /> : <Landmark size={16} />}
                 </div>
                 <span className="text-xs font-semibold text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full border border-tertiary/20">Pago</span>
               </div>
@@ -767,10 +767,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       {/* ====== AOA WALLET VIEW ====== */}
       {walletView === 'aoa' && (
         <>
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-2">
-                <span className="text-lg">🏦</span>
+                <span className="text-base">🏦</span>
                 <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema AOA · FaciPay (Kwanza)</span>
               </div>
               <button
@@ -786,20 +786,20 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   ? `Saldo mínimo de Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} necessário`
                   : 'Solicitar saque AOA'
                 }
-                className="flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2 font-bold text-black text-xs hover:bg-amber-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 font-bold text-black text-xs hover:bg-amber-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <PlusCircle size={14} /> Solicitar Saque AOA
+                <PlusCircle size={13} /> Solicitar Saque AOA
               </button>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3 relative z-10">
+            <div className="grid gap-3 sm:grid-cols-3 relative z-10">
               {/* AOA Estado 1: Em Garantia */}
-              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-amber-500/15">
+              <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-amber-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    <ShieldCheck size={18} />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <ShieldCheck size={16} />
                   </div>
-                  <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
+                  <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Dias 1-3</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Garantia (AOA)</span>
                 <span className="block text-xl font-bold text-white font-mono">
@@ -809,13 +809,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               </div>
 
               {/* AOA Estado 2: Em Processamento */}
-              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-blue-500/15">
+              <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-blue-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    <Clock size={18} />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Clock size={16} />
                   </div>
-                  <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
+                  <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">Dias 4-6</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Em Processamento (AOA)</span>
                 <span className="block text-xl font-bold text-white font-mono">
@@ -825,13 +825,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               </div>
 
               {/* AOA Estado 3: Disponível */}
-              <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
+              <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-green-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                    <CheckCircle size={18} />
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                    <CheckCircle size={16} />
                   </div>
-                  <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
+                  <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
                 </div>
                 <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque (AOA)</span>
                 <span className="block text-xl font-bold text-white font-mono">
@@ -848,12 +848,12 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           </div>
 
           {/* Cards Resumo AOA */}
-          <div className="mb-10 grid gap-4 sm:grid-cols-2 relative z-10">
-            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+          <div className="mb-6 grid gap-3 sm:grid-cols-2 relative z-10">
+            <div className="glass-card glass-card-hover rounded-2xl p-4 relative overflow-hidden">
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(245,158,11,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/15">
-                  <TrendingUp size={18} />
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/15">
+                  <TrendingUp size={16} />
                 </div>
                 <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Histórico</span>
               </div>
@@ -862,11 +862,11 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 Kz {(Number(balance?.accumulated_earnings_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="glass-card glass-card-hover rounded-2xl p-5 relative overflow-hidden">
+            <div className="glass-card glass-card-hover rounded-2xl p-4 relative overflow-hidden">
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(245,158,11,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/15">
-                  <Landmark size={18} />
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/15">
+                  <Landmark size={16} />
                 </div>
                 <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Pago</span>
               </div>
@@ -1024,46 +1024,46 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
       {/* Main Grid: Extrato e Solicitações */}
       {walletView !== 'affiliates' && walletView !== 'founder' && (
-        <div className="grid gap-6 lg:grid-cols-3 relative z-10">
+        <div className="grid gap-4 lg:grid-cols-3 relative z-10">
         {/* Ledger Extrato */}
-        <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-white/10">
-          <h3 className="mb-6 text-lg font-bold text-white font-display">Extrato Contábil Recente</h3>
+        <div className="lg:col-span-2 glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
+          <h3 className="mb-4 text-base font-bold text-white font-display">Extrato Contábil Recente</h3>
           {ledger.length === 0 ? (
-            <div className="py-8 text-center text-on-surface-variant text-sm font-sans">Nenhum lançamento contábil registrado ainda.</div>
+            <div className="py-6 text-center text-on-surface-variant text-xs font-sans">Nenhum lançamento contábil registrado ainda.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="text-on-surface-variant font-semibold border-b border-white/10">
-                    <th className="pb-3 text-xs uppercase tracking-wider">Data</th>
-                    <th className="pb-3 text-xs uppercase tracking-wider">Descrição</th>
-                    <th className="pb-3 text-xs uppercase tracking-wider">Tipo</th>
-                    <th className="pb-3 text-xs uppercase tracking-wider text-right">Valor</th>
-                    <th className="pb-3 text-xs uppercase tracking-wider text-right">Status</th>
+                    <th className="pb-2 text-[10px] uppercase tracking-wider">Data</th>
+                    <th className="pb-2 text-[10px] uppercase tracking-wider">Descrição</th>
+                    <th className="pb-2 text-[10px] uppercase tracking-wider">Tipo</th>
+                    <th className="pb-2 text-[10px] uppercase tracking-wider text-right">Valor</th>
+                    <th className="pb-2 text-[10px] uppercase tracking-wider text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {ledger.map((item) => (
                     <tr key={item.id} className="text-on-surface">
-                      <td className="py-4 text-on-surface-variant text-xs font-mono">
+                      <td className="py-2.5 text-on-surface-variant text-xs font-mono">
                         {new Date(item.created_at).toLocaleDateString('pt-BR')}
                       </td>
-                      <td className="py-4 font-medium text-white">{item.description}</td>
-                      <td className="py-4">
+                      <td className="py-2.5 font-medium text-white text-xs">{item.description}</td>
+                      <td className="py-2.5">
                         {item.type === 'credit' ? (
                           <span className="flex items-center gap-1 text-green-400 text-xs font-semibold">
-                            <ArrowUpRight size={14} /> Entrada
+                            <ArrowUpRight size={13} /> Entrada
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-red-400 text-xs font-semibold">
-                            <ArrowDownRight size={14} /> Saída
+                            <ArrowDownRight size={13} /> Saída
                           </span>
                         )}
                       </td>
-                      <td className={`py-4 text-right font-mono font-semibold ${item.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
+                      <td className={`py-2.5 text-right font-mono font-semibold text-xs ${item.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
                         {item.type === 'credit' ? '+' : '-'}{formatMoney(item.amount)}
                       </td>
-                      <td className="py-4 text-right">
+                      <td className="py-2.5 text-right">
                         {getLedgerStatusBadge(item.status)}
                       </td>
                     </tr>
@@ -1075,10 +1075,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         </div>
 
         {/* Fila de Retiradas */}
-        <div className="glass-panel rounded-2xl p-6 border border-white/10">
-          <h3 className="mb-6 text-lg font-bold text-white font-display">Solicitações de Saque</h3>
+        <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
+          <h3 className="mb-4 text-base font-bold text-white font-display">Solicitações de Saque</h3>
           {withdrawals.length === 0 ? (
-            <div className="py-8 text-center text-on-surface-variant text-sm font-sans">Nenhuma solicitação de saque enviada.</div>
+            <div className="py-6 text-center text-on-surface-variant text-xs font-sans">Nenhuma solicitação de saque enviada.</div>
           ) : (
             <div className="space-y-4">
               {withdrawals.map((w) => (

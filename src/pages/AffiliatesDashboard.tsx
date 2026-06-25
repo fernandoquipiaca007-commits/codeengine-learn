@@ -18,7 +18,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [seenExplainer, setSeenExplainer] = useState<boolean>(() => {
-    return localStorage.getItem('ce_affiliate_intro_accepted') === 'true';
+    return localStorage.getItem('ce_affiliate_intro_seen') === 'true';
   });
 
   // Core data states
@@ -67,9 +67,9 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
       }
       setUser(session.user);
       
-      // Check if they accepted in localStorage for this specific user
-      const storedAccept = localStorage.getItem(`ce_affiliate_accepted_${session.user.id}`);
-      if (storedAccept === 'true') {
+      // Check if they visited/seen in localStorage for this specific user
+      const storedSeen = localStorage.getItem(`ce_affiliate_intro_seen_${session.user.id}`);
+      if (storedSeen === 'true') {
         setSeenExplainer(true);
       }
 
@@ -282,8 +282,10 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
   function handleAcceptProgram() {
     if (user?.id) {
+      localStorage.setItem(`ce_affiliate_intro_seen_${user.id}`, 'true');
       localStorage.setItem(`ce_affiliate_accepted_${user.id}`, 'true');
     }
+    localStorage.setItem('ce_affiliate_intro_seen', 'true');
     localStorage.setItem('ce_affiliate_intro_accepted', 'true');
     setSeenExplainer(true);
   }
@@ -394,7 +396,13 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <button
-                onClick={() => setScreen('member', 'inicio')}
+                onClick={() => {
+                  if (user?.id) {
+                    localStorage.setItem(`ce_affiliate_intro_seen_${user.id}`, 'true');
+                  }
+                  localStorage.setItem('ce_affiliate_intro_seen', 'true');
+                  setScreen('member', 'inicio');
+                }}
                 className="px-6 py-3 rounded-xl border border-white/15 hover:bg-white/5 transition-all text-xs font-display uppercase tracking-widest text-on-surface-variant font-bold hover:text-white"
               >
                 Voltar à Área de Membro
@@ -416,9 +424,9 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
   // ─── DASHBOARD CORE SCREEN ────────────────────────────────────────────────
   return (
-    <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-8 pt-28 pb-12">
+    <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-8 pt-20 pb-8">
       {/* Top Banner Row - 100% full width */}
-      <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-6 mb-6">
+      <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-4 mb-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-primary font-display uppercase tracking-wider mb-1 font-bold">
             <Percent className="w-3.5 h-3.5" />
@@ -451,7 +459,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
       </div>
 
       {/* 1. KPIs Row (Full Width, 3-Column layout) */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* Card 1: Wallet Balance */}
         <div className="bg-surface/30 backdrop-blur-md border border-white/10 rounded-xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[140px]">
           <div className="flex items-start justify-between mb-2">
@@ -570,7 +578,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
       <div className="w-full flex-grow">
         {/* ==================== TAB: OVERVIEW (MY LINKS) ==================== */}
         {activeTab === 'overview' && (
-          <div className="w-full space-y-6">
+          <div className="w-full space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="font-display text-lg font-bold text-white mb-1">Seus Links de Afiliado</h2>
@@ -605,7 +613,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                 </button>
               </div>
             ) : (
-              <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {myLinks.map((link: any) => {
                   const productUrl = `${window.location.origin}/?screen=product&id=${link.product.id}&ref=${link.tracking_code}`;
                   const generalUrl = `${window.location.origin}/?ref=${link.tracking_code}`;
@@ -613,10 +621,10 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                   return (
                     <div
                       key={link.id}
-                      className="bg-surface/30 border border-white/15 rounded-xl p-5 hover:border-primary/30 transition-all flex flex-col md:flex-row gap-5"
+                      className="bg-surface/30 border border-white/10 rounded-xl p-3 hover:border-primary/30 transition-all flex flex-row gap-3.5 items-center"
                     >
                       {/* Product Thumbnail */}
-                      <div className="w-full md:w-32 h-32 md:h-auto rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/40 relative">
+                      <div className="w-16 h-20 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/40 relative">
                         {link.product.cover_url ? (
                           <img
                             src={link.product.cover_url}
@@ -625,56 +633,50 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-[10px] text-on-surface-variant font-sans uppercase">
-                            Sem Imagem
+                            Sem Capa
                           </div>
                         )}
-                        <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-primary/20 backdrop-blur-md border border-primary/20 text-[9px] text-primary font-display font-extrabold uppercase">
-                          {link.commission_pct}% comissão
+                        <div className="absolute top-1 left-1 px-1 py-0.5 rounded bg-primary/20 backdrop-blur-md border border-primary/20 text-[8px] text-primary font-display font-extrabold uppercase">
+                          {link.commission_pct}%
                         </div>
                       </div>
 
                       {/* Info & Links inputs */}
-                      <div className="flex-grow flex flex-col justify-between">
+                      <div className="flex-grow flex flex-col justify-between min-w-0">
                         <div>
-                          <h3 className="font-display text-sm font-bold text-white mb-1 line-clamp-1">
+                          <h3 className="font-display text-sm font-bold text-white mb-0.5 line-clamp-1">
                             {link.product.title}
                           </h3>
-                          <div className="flex items-center gap-4 text-xs font-sans text-on-surface-variant mb-2">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] font-sans text-on-surface-variant">
                             <span>Preço: <strong className="text-white">{link.product.price ? `$${link.product.price}` : `${link.product.aoa_price} AOA`}</strong></span>
                             <span>Cliques: <strong className="text-white">{link.clicks || 0}</strong></span>
                             <span>Vendas: <strong className="text-white">{link.totalConversions || 0}</strong></span>
                           </div>
                         </div>
                         
-                        {/* Compact Link Copy Inputs */}
-                        <div className="space-y-1.5 mt-2">
-                          <div className="flex items-center justify-between gap-3 bg-black/35 border border-white/5 rounded-lg px-2.5 py-1">
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-[8px] font-sans font-bold uppercase tracking-wider text-primary">Link Direto</span>
-                              <span className="text-[11px] text-on-surface-variant truncate font-sans max-w-[130px] sm:max-w-[240px] md:max-w-[320px]">{productUrl}</span>
+                        {/* Compact Link Actions */}
+                        <div className="flex flex-row items-center gap-2 mt-2">
+                          <button
+                            onClick={() => copyToClipboard(productUrl, `${link.id}-prod`)}
+                            className="flex-1 flex items-center justify-between gap-1 px-2.5 py-1.5 rounded bg-black/40 border border-white/5 hover:bg-white/5 text-[10px] text-white font-sans font-semibold transition-all cursor-pointer min-w-0"
+                          >
+                            <span className="text-on-surface-variant truncate mr-1">Link Direto</span>
+                            <div className="flex items-center gap-1 text-primary shrink-0">
+                              <Copy className="w-3 h-3" />
+                              <span className="text-[9px]">{copiedLinkId === `${link.id}-prod` ? 'Copiado' : 'Copiar'}</span>
                             </div>
-                            <button
-                              onClick={() => copyToClipboard(productUrl, `${link.id}-prod`)}
-                              className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white font-sans font-semibold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
-                            >
-                              <Copy className="w-3.5 h-3.5 text-primary" />
-                              <span>{copiedLinkId === `${link.id}-prod` ? 'Copiado' : 'Copiar'}</span>
-                            </button>
-                          </div>
+                          </button>
 
-                          <div className="flex items-center justify-between gap-3 bg-black/35 border border-white/5 rounded-lg px-2.5 py-1">
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-[8px] font-sans font-bold uppercase tracking-wider text-primary">Link da Loja</span>
-                              <span className="text-[11px] text-on-surface-variant truncate font-sans max-w-[130px] sm:max-w-[240px] md:max-w-[320px]">{generalUrl}</span>
+                          <button
+                            onClick={() => copyToClipboard(generalUrl, `${link.id}-gen`)}
+                            className="flex-1 flex items-center justify-between gap-1 px-2.5 py-1.5 rounded bg-black/40 border border-white/5 hover:bg-white/5 text-[10px] text-white font-sans font-semibold transition-all cursor-pointer min-w-0"
+                          >
+                            <span className="text-on-surface-variant truncate mr-1">Link Loja</span>
+                            <div className="flex items-center gap-1 text-primary shrink-0">
+                              <Copy className="w-3 h-3" />
+                              <span className="text-[9px]">{copiedLinkId === `${link.id}-gen` ? 'Copiado' : 'Copiar'}</span>
                             </div>
-                            <button
-                              onClick={() => copyToClipboard(generalUrl, `${link.id}-gen`)}
-                              className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white font-sans font-semibold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
-                            >
-                              <Copy className="w-3.5 h-3.5 text-primary" />
-                              <span>{copiedLinkId === `${link.id}-gen` ? 'Copiado' : 'Copiar'}</span>
-                            </button>
-                          </div>
+                          </button>
                         </div>
                       </div>
                     </div>
