@@ -301,10 +301,14 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         className={cn(
           'fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center w-full rounded-none',
           'transition-[padding,box-shadow,background,border-color] duration-300',
-          'border-b border-white/5 px-6 md:px-12 shadow-none',
-          scrolled
-            ? 'py-3.5 bg-black/95 backdrop-blur-md'
-            : 'py-5 bg-black/90 backdrop-blur-md'
+          'px-6 md:px-12 shadow-none',
+          currentScreen === 'home'
+            ? scrolled
+              ? 'py-3.5 bg-[#050505]/75 backdrop-blur-[3px] border-b border-white/5'
+              : 'py-5 bg-transparent border-b border-transparent'
+            : scrolled
+              ? 'py-3.5 bg-black/95 backdrop-blur-md border-b border-white/5'
+              : 'py-5 bg-black/90 backdrop-blur-md border-b border-white/5'
         )}
       >
         <div className="nav-beam" />

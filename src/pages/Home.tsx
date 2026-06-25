@@ -111,189 +111,141 @@ const BRAND_LOGOS = [
 ];
 
 /* -----------------------------------------------------------------------------
- * CANVAS STAGGERED PHYSICS ENGINE
- * Calibrated outward expansion ripple: extremely smooth and slightly relaxed 
- * to feel cohesive, satisfyingly responsive, and visually distinct.
+ * SILENT PRECISION BACKGROUND COMPONENT
+ * Implements a deep black base, a dense micro-dot grid pattern, subtle 
+ * floating stars/particles, and soft ambient blur blooms.
  * -------------------------------------------------------------------------- */
 
-type Pixel = {
-  x: number;
-  y: number;
-  color: string;
-  ctx: CanvasRenderingContext2D;
-  speed: number;
-  size: number;
-  sizeStep: number;
-  minSize: number;
-  maxSizeInt: number;
-  maxSize: number;
-  delay: number;
-  counter: number;
-  counterStep: number;
-  isIdle: boolean;
-  isReverse: boolean;
-  isShimmer: boolean;
-  draw: () => void;
-  appear: () => void;
-  disappear: () => void;
-  shimmer: () => void;
-};
-
-function createPixel(
-  ctx: CanvasRenderingContext2D,
-  canvas: HTMLCanvasElement,
-  x: number,
-  y: number,
-  color: string,
-  baseSpeed: number,
-  delay: number
-): Pixel {
-  const rand = (min: number, max: number) => Math.random() * (max - min) + min;
-
-  const p: Pixel = {
-    x, y, color, ctx,
-    speed: rand(0.08, 0.4) * baseSpeed,
-    size: 0,
-    sizeStep: rand(0.12, 0.28),
-    minSize: 0.5,
-    maxSizeInt: 2,
-    maxSize: rand(0.5, 2),
-    delay,
-    counter: 0,
-    counterStep: rand(1.8, 3.2) + (canvas.width + canvas.height) * 0.008,
-    isIdle: false,
-    isReverse: false,
-    isShimmer: false,
-    draw() {
-      const offset = p.maxSizeInt * 0.5 - p.size * 0.5;
-      ctx.fillStyle = p.color;
-      ctx.fillRect(p.x + offset, p.y + offset, p.size, p.size);
-    },
-    appear() {
-      p.isIdle = false;
-      if (p.counter <= p.delay) {
-        p.counter += p.counterStep;
-        return;
-      }
-      if (p.size >= p.maxSize) p.isShimmer = true;
-      if (p.isShimmer) p.shimmer();
-      else p.size += p.sizeStep;
-      p.draw();
-    },
-    disappear() {
-      p.isShimmer = false;
-      p.counter = 0;
-      if (p.size <= 0) {
-        p.isIdle = true;
-        return;
-      }
-      p.size -= 0.1;
-      p.draw();
-    },
-    shimmer() {
-      if (p.size >= p.maxSize) p.isReverse = true;
-      else if (p.size <= p.minSize) p.isReverse = false;
-      if (p.isReverse) p.size -= p.speed;
-      else p.size += p.speed;
-    },
-  };
-
-  return p;
-}
-
-type PixelCanvasProps = {
-  colors: string[];
-  gap?: number;
-  speed?: number;
-};
-
-function PixelCanvas({ colors, gap = 5, speed = 30 }: PixelCanvasProps) {
+export function SilentPrecisionBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const pixelsRef = useRef<Pixel[]>([]);
-  const animationRef = useRef<number>(0);
-  const lastFrameRef = useRef(performance.now());
-  const reducedMotionRef = useRef(false);
 
-  const init = useCallback(() => {
+  useEffect(() => {
     const canvas = canvasRef.current;
-    const wrap = wrapRef.current;
-    if (!canvas || !wrap || colors.length === 0) return;
-
-    const ctx = canvas.getContext("2d");
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const { width, height } = wrap.getBoundingClientRect();
-    const w = Math.floor(width);
-    const h = Math.floor(height);
-    canvas.width = w;
-    canvas.height = h;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
+    let animationId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
 
-    const effectiveSpeed = reducedMotionRef.current ? 0 : Math.min(speed, 100) * 0.001;
-    const pixels: Pixel[] = [];
+    // Handle resize
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
 
-    for (let x = 0; x < w; x += gap) {
-      for (let y = 0; y < h; y += gap) {
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const dx = x - w / 2;
-        const dy = y - h / 2;
-        const delay = reducedMotionRef.current ? 0 : Math.sqrt(dx * dx + dy * dy) * 0.65;
-        pixels.push(createPixel(ctx, canvas, x, y, color, effectiveSpeed, delay));
+    // Particle class
+    class Particle {
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+      opacity: number;
+      fadeSpeed: number;
+      fadingIn: boolean;
+
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.size = Math.random() * 1.2 + 0.4; // very small dots (0.4px to 1.6px)
+        this.speedX = (Math.random() - 0.5) * 0.04; // extremely slow horizontal motion
+        this.speedY = -Math.random() * 0.06 - 0.01; // slow floating upward motion
+        this.opacity = Math.random() * 0.2 + 0.05;
+        this.fadeSpeed = Math.random() * 0.002 + 0.0005;
+        this.fadingIn = Math.random() > 0.5;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // Wrap around top/bottom edges
+        if (this.y < 0) {
+          this.y = height;
+          this.x = Math.random() * width;
+        }
+
+        // Wrap around left/right edges
+        if (this.x < 0) this.x = width;
+        if (this.x > width) this.x = 0;
+
+        // Slow opacity pulse (glowing fade in/out)
+        if (this.fadingIn) {
+          this.opacity += this.fadeSpeed;
+          if (this.opacity >= 0.35) {
+            this.opacity = 0.35;
+            this.fadingIn = false;
+          }
+        } else {
+          this.opacity -= this.fadeSpeed;
+          if (this.opacity <= 0.02) {
+            this.opacity = 0.02;
+            this.fadingIn = true;
+          }
+        }
+      }
+
+      draw() {
+        if (!ctx) return;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.fill();
       }
     }
 
-    pixelsRef.current = pixels;
-  }, [colors, gap, speed]);
+    // Create particle array
+    const particleCount = Math.floor((width * height) / 22000); // density relative to screen size
+    const particles: Particle[] = [];
+    for (let i = 0; i < Math.min(particleCount, 120); i++) {
+      particles.push(new Particle());
+    }
 
-  const animate = useCallback((mode: "appear" | "disappear") => {
-    cancelAnimationFrame(animationRef.current);
-    const frameInterval = 1000 / 60;
+    // Loop
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
 
-    const loop = () => {
-      animationRef.current = requestAnimationFrame(loop);
+      particles.forEach((p) => {
+        p.update();
+        p.draw();
+      });
 
-      const now = performance.now();
-      const elapsed = now - lastFrameRef.current;
-      if (elapsed < frameInterval) return;
-      lastFrameRef.current = now - (elapsed % frameInterval);
-
-      const canvas = canvasRef.current;
-      const ctx = canvas?.getContext("2d");
-      if (!canvas || !ctx) return;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const pixels = pixelsRef.current;
-      for (const pixel of pixels) pixel[mode]();
-
-      if (pixels.every((p) => p.isIdle)) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      animationId = requestAnimationFrame(render);
     };
 
-    animationRef.current = requestAnimationFrame(loop);
-  }, []);
-
-  useEffect(() => {
-    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    init();
-
-    const resizeObserver = new ResizeObserver(() => init());
-    if (wrapRef.current) resizeObserver.observe(wrapRef.current);
-
-    animate("appear");
+    render();
 
     return () => {
-      resizeObserver.disconnect();
-      cancelAnimationFrame(animationRef.current);
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationId);
     };
-  }, [init, animate]);
+  }, []);
 
   return (
-    <div ref={wrapRef} className="absolute inset-0 overflow-hidden">
-      <canvas ref={canvasRef} className="block w-full h-full" />
+    <div className="absolute inset-0 z-0 bg-[#050505] overflow-hidden pointer-events-none select-none">
+      {/* Dense micro-dot grid pattern */}
+      <div 
+        className="absolute inset-0 opacity-15"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      {/* Floating Canvas particles */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full mix-blend-screen opacity-45" />
+
+      {/* Ambient Blur/Light Blooms */}
+      {/* Bloom 1 (top left) */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[130px] mix-blend-screen opacity-40" />
+      {/* Bloom 2 (bottom right) */}
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/3 blur-[150px] mix-blend-screen opacity-30" />
+      {/* Bloom 3 (center subtle ambient light) */}
+      <div className="absolute top-[25%] left-[25%] w-[50%] h-[50%] rounded-full bg-white/1 blur-[160px] mix-blend-screen opacity-20" />
     </div>
   );
 }
@@ -399,10 +351,8 @@ export function Home({ setScreen }: HomeProps) {
         }
       `}</style>
 
-      {/* Permanent background layer (transparent, allowing Background3D to show through) */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-black/45">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_100%)] pointer-events-none opacity-80" />
-      </div>
+      {/* Silent Precision Background */}
+      <SilentPrecisionBackground />
 
       {/* Top Container: Tahoe Glass Header */}
       <div className="flex flex-col items-center justify-center text-center order-1 md:order-1 mt-28 sm:mt-0 pointer-events-none w-full">
