@@ -305,14 +305,17 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
   }
 
   const inputClass =
-    'w-full pl-11 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/25 focus:outline-none focus:border-primary/60 focus:bg-white/8 transition-all duration-200 text-sm font-sans';
+    'w-full pl-11 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/25 focus:outline-none focus:border-primary/60 focus:bg-white/8 transition-all duration-200 text-sm font-sans';
 
-  const labelClass = 'block text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-1.5 font-display';
+  const labelClass = 'block text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-1 font-display';
+
+  // Compact spacing in signup to avoid scroll
+  const isSignup = mode === 'signup';
 
   return (
     <div className="fixed inset-0 z-[100] flex bg-[#050505] overflow-hidden">
       {/* ── LEFT: Form Panel ─────────────────────────────────────────────── */}
-      <div className="relative flex w-full md:w-[46%] lg:w-[42%] flex-col items-center justify-center px-8 py-10 overflow-y-auto">
+      <div className="relative flex w-full md:w-[46%] lg:w-[42%] flex-col items-center justify-center px-8 py-6 overflow-y-auto">
         {/* Subtle ambient glow */}
         <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-96 h-72 bg-primary/10 rounded-full blur-[100px]" />
 
@@ -323,15 +326,17 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           transition={{ duration: 0.38, ease: 'easeOut' }}
           className="relative z-10 w-full max-w-[360px]"
         >
-          {/* Logo */}
-          <div className="mb-8">
+          {/* Logo — real CodeEngine icon */}
+          <div className={isSignup ? 'mb-4' : 'mb-6'}>
             <button
               onClick={() => setScreen('home')}
-              className="flex items-center gap-2 group"
+              className="flex items-center gap-2.5 group"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-                <span className="text-primary font-bold text-sm">CE</span>
-              </div>
+              <img
+                src="/icons/icon-512.png"
+                alt="CodeEngine"
+                className="w-9 h-9 rounded-xl object-cover group-hover:opacity-90 transition-opacity"
+              />
               <span className="font-display text-sm font-semibold text-white/60 group-hover:text-white/90 transition-colors">
                 CodeEngine
               </span>
@@ -339,8 +344,8 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           </div>
 
           {/* Heading */}
-          <div className="mb-7">
-            <h1 className="font-display text-2xl font-bold text-white mb-1 leading-tight">
+          <div className={isSignup ? 'mb-4' : 'mb-6'}>
+            <h1 className="font-display text-2xl font-bold text-white mb-0.5 leading-tight">
               {mode === 'login' && t('welcomeTitleLogin')}
               {mode === 'signup' && t('welcomeTitleSignup')}
               {mode === 'reset' && t('resetPasswordTitle')}
@@ -379,7 +384,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           </AnimatePresence>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className={isSignup ? 'space-y-2.5' : 'space-y-3.5'}>
             {/* Full Name — signup only */}
             {mode === 'signup' && (
               <div>
@@ -533,7 +538,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-on-primary font-display text-sm font-bold px-6 py-3 rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(192,193,255,0.25)] hover:shadow-[0_0_36px_rgba(192,193,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed group mt-1"
+              className="w-full bg-primary text-on-primary font-display text-sm font-bold px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(192,193,255,0.25)] hover:shadow-[0_0_36px_rgba(192,193,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed group mt-0.5"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-on-primary" />
@@ -551,7 +556,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           {/* Google + OR separator */}
           {mode !== 'reset' && (
             <>
-              <div className="flex items-center my-5">
+              <div className="flex items-center my-3">
                 <div className="flex-grow border-t border-white/8" />
                 <span className="px-3 text-[10px] font-sans font-semibold uppercase tracking-widest text-white/25">
                   {t('orContinueWith')}
@@ -563,7 +568,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2.5 rounded-lg border border-white/10 bg-white/4 py-2.5 px-4 font-sans text-sm font-medium text-white/80 transition-all hover:bg-white/8 hover:border-white/18 hover:text-white disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2.5 rounded-lg border border-white/10 bg-white/4 py-2 px-4 font-sans text-sm font-medium text-white/80 transition-all hover:bg-white/8 hover:border-white/18 hover:text-white disabled:opacity-50"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <g transform="matrix(1, 0, 0, 1, 0, 0)">
@@ -579,7 +584,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           )}
 
           {/* Mode switcher */}
-          <div className="mt-5 text-center space-y-2.5">
+          <div className="mt-3 text-center space-y-2">
             {mode === 'login' && (
               <>
                 <button onClick={() => setMode('reset')}
@@ -639,9 +644,9 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         {/* Illustration image — full fill */}
         <div className="absolute inset-0">
           <img
-            src="/auth-illustration.png"
+            src="/login.png"
             alt="CodeEngine illustration"
-            className="w-full h-full object-cover object-center opacity-85"
+            className="w-full h-full object-cover object-center opacity-90"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         </div>
