@@ -767,7 +767,7 @@ export function CollaboratorProductForm({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-xl shadow-2xl overlay-premium text-white font-sans w-full max-w-[1700px] h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+    <div className="text-white font-sans w-full h-full flex flex-col overflow-hidden">
       <div className="p-6 shrink-0 flex items-center justify-between border-b border-white/10">
         <div>
           <h2 className="text-xl font-bold text-white font-display">
@@ -2256,19 +2256,19 @@ export function CollaboratorProductForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-white/10 bg-white/5 px-6 py-3 font-semibold text-on-surface hover:bg-white/10 transition-all text-sm font-display uppercase tracking-widest text-xs"
+            className="rounded-full border border-white/10 bg-white/5 px-6 py-3 font-semibold text-on-surface hover:bg-white/10 transition-all text-xs font-display uppercase tracking-widest"
           >
-            Cancelar
+            Sair sem Salvar
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 rounded-full bg-on-surface px-6 py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-sm disabled:opacity-50 font-display uppercase tracking-widest text-xs shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)]"
+            className="flex items-center gap-2 rounded-full bg-on-surface px-6 py-3 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-xs disabled:opacity-50 font-display uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)]"
           >
             {loading ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
             ) : <Save size={18} />}
-            Guardar Rascunho
+            Salvar como Rascunho
           </button>
         </div>
       </form>

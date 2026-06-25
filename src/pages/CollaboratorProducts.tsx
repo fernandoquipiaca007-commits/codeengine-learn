@@ -162,7 +162,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
   };
 
   return (
-    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-12 w-full max-w-[1750px] mx-auto min-h-screen page-wrapper">
+    <div className="pt-28 pb-32 px-4 md:px-8 w-full min-h-screen page-wrapper">
       {/* Header */}
       <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
@@ -295,15 +295,15 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
         </div>
       )}
 
-      {/* Form Modal overlay */}
+      {/* Form Page-like Overlay (Fills the screen) */}
       <AnimatePresence>
         {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 md:p-6 backdrop-blur-sm">
+          <div className="fixed inset-0 z-40 bg-[#050505] pt-24 pb-6 px-4 md:px-8 w-full h-full flex flex-col">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="w-full max-w-[1700px] my-4 bg-transparent"
+              exit={{ opacity: 0, y: 15 }}
+              className="w-full h-full flex flex-col flex-grow bg-transparent"
             >
               <CollaboratorProductForm
                 productId={selectedProductId}

@@ -454,10 +454,10 @@ export function Home({ setScreen }: HomeProps) {
         >
           <button
             onClick={() => setScreen('library')}
-            className="relative inline-flex h-10 md:h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-primary/90 to-primary px-5 md:px-8 text-xs md:text-sm font-semibold text-primary-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.15),0_12px_24px_rgba(0,0,0,0.15)] ring-1 ring-primary/20 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="relative inline-flex h-10 md:h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] px-6 md:px-8 text-xs md:text-sm font-bold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
           >
             {primaryCta}
-            <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" />
           </button>
           <button
             onClick={handleSecondaryCtaClick}

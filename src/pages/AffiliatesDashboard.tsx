@@ -639,51 +639,41 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                           <h3 className="font-display text-sm font-bold text-white mb-1 line-clamp-1">
                             {link.product.title}
                           </h3>
-                          <div className="flex items-center gap-4 text-xs font-sans text-on-surface-variant mb-4">
+                          <div className="flex items-center gap-4 text-xs font-sans text-on-surface-variant mb-2">
                             <span>Preço: <strong className="text-white">{link.product.price ? `$${link.product.price}` : `${link.product.aoa_price} AOA`}</strong></span>
                             <span>Cliques: <strong className="text-white">{link.clicks || 0}</strong></span>
                             <span>Vendas: <strong className="text-white">{link.totalConversions || 0}</strong></span>
                           </div>
                         </div>
-
-                        {/* Link Copy Inputs */}
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Link Direto do Produto:</span>
-                            <div className="flex items-center gap-1.5 mt-1 bg-black/40 border border-white/10 rounded-lg p-1.5">
-                              <input
-                                type="text"
-                                readOnly
-                                value={productUrl}
-                                className="bg-transparent border-none outline-none text-xs text-on-surface-variant flex-grow select-all px-1 font-sans"
-                              />
-                              <button
-                                onClick={() => copyToClipboard(productUrl, `${link.id}-prod`)}
-                                className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white font-sans font-bold flex items-center gap-1 transition-all"
-                              >
-                                <Copy className="w-3 h-3" />
-                                <span>{copiedLinkId === `${link.id}-prod` ? 'Copiado' : 'Copiar'}</span>
-                              </button>
+                        
+                        {/* Compact Link Copy Inputs */}
+                        <div className="space-y-1.5 mt-2">
+                          <div className="flex items-center justify-between gap-3 bg-black/35 border border-white/5 rounded-lg px-2.5 py-1">
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[8px] font-sans font-bold uppercase tracking-wider text-primary">Link Direto</span>
+                              <span className="text-[11px] text-on-surface-variant truncate font-sans max-w-[130px] sm:max-w-[240px] md:max-w-[320px]">{productUrl}</span>
                             </div>
+                            <button
+                              onClick={() => copyToClipboard(productUrl, `${link.id}-prod`)}
+                              className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white font-sans font-semibold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
+                            >
+                              <Copy className="w-3.5 h-3.5 text-primary" />
+                              <span>{copiedLinkId === `${link.id}-prod` ? 'Copiado' : 'Copiar'}</span>
+                            </button>
                           </div>
 
-                          <div>
-                            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Link Alternativo da Loja:</span>
-                            <div className="flex items-center gap-1.5 mt-1 bg-black/40 border border-white/10 rounded-lg p-1.5">
-                              <input
-                                type="text"
-                                readOnly
-                                value={generalUrl}
-                                className="bg-transparent border-none outline-none text-xs text-on-surface-variant flex-grow select-all px-1 font-sans"
-                              />
-                              <button
-                                onClick={() => copyToClipboard(generalUrl, `${link.id}-gen`)}
-                                className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white font-sans font-bold flex items-center gap-1 transition-all"
-                              >
-                                <Copy className="w-3 h-3" />
-                                <span>{copiedLinkId === `${link.id}-gen` ? 'Copiado' : 'Copiar'}</span>
-                              </button>
+                          <div className="flex items-center justify-between gap-3 bg-black/35 border border-white/5 rounded-lg px-2.5 py-1">
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[8px] font-sans font-bold uppercase tracking-wider text-primary">Link da Loja</span>
+                              <span className="text-[11px] text-on-surface-variant truncate font-sans max-w-[130px] sm:max-w-[240px] md:max-w-[320px]">{generalUrl}</span>
                             </div>
+                            <button
+                              onClick={() => copyToClipboard(generalUrl, `${link.id}-gen`)}
+                              className="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white font-sans font-semibold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
+                            >
+                              <Copy className="w-3.5 h-3.5 text-primary" />
+                              <span>{copiedLinkId === `${link.id}-gen` ? 'Copiado' : 'Copiar'}</span>
+                            </button>
                           </div>
                         </div>
                       </div>
