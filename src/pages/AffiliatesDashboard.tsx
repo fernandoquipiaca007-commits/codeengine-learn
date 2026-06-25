@@ -7,6 +7,9 @@ import {
   ExternalLink, Settings, Wallet, ArrowRight, RefreshCw, Search,
   Award
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useUserCountry } from '../contexts/UserCountryContext';
+import { CountryRequiredModal } from '../components/CountryRequiredModal';
 
 interface AffiliatesDashboardProps {
   setScreen: (screen: string, section?: string) => void;
@@ -15,6 +18,8 @@ interface AffiliatesDashboardProps {
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
+  const { t } = useTranslation('pages');
+  const { country, isAngola, isLoading: countryLoading } = useUserCountry();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [seenExplainer, setSeenExplainer] = useState<boolean>(() => {
@@ -49,6 +54,15 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
   // Withdraw request form
   const [withdrawCurrency, setWithdrawCurrency] = useState<'usd' | 'aoa'>('usd');
+  const [hasDefaultedCurrency, setHasDefaultedCurrency] = useState(false);
+
+  useEffect(() => {
+    if (!hasDefaultedCurrency && !countryLoading) {
+      setWithdrawCurrency(isAngola ? 'aoa' : 'usd');
+      setHasDefaultedCurrency(true);
+    }
+  }, [isAngola, countryLoading, hasDefaultedCurrency]);
+
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawMessage, setWithdrawMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -311,7 +325,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
     p.collaboratorName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
+  if (loading || countryLoading) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center">
         <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin mb-4" />
@@ -324,6 +338,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
   if (!seenExplainer) {
     return (
       <div className="w-full flex-grow flex flex-col items-center justify-center px-4 md:px-8 py-10 bg-background text-on-surface">
+        <CountryRequiredModal />
         <div className="w-full max-w-4xl bg-surface/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-10 shadow-[0_0_50px_rgba(0,0,0,0.3)] relative overflow-hidden">
           {/* Subtle decoration glows */}
           <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-primary/20 blur-[120px]" />
@@ -425,6 +440,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
   // ─── DASHBOARD CORE SCREEN ────────────────────────────────────────────────
   return (
     <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-8 pt-20 pb-8">
+      <CountryRequiredModal />
       {/* Top Banner Row - 100% full width */}
       <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-4 mb-4">
         <div>
@@ -466,12 +482,25 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             <div>
               <p className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Saldos Disponíveis</p>
               <div className="mt-2 space-y-1">
-                <h3 className="font-display text-xl font-extrabold text-white">
-                  {formatCurrency(wallet?.balance_usd || 0, 'usd')}
-                </h3>
-                <h3 className="font-display text-xl font-extrabold text-primary">
-                  {formatCurrency(wallet?.balance_aoa || 0, 'aoa')}
-                </h3>
+                {isAngola ? (
+                  <>
+                    <h3 className="font-display text-xl font-extrabold text-white">
+                      {formatCurrency(wallet?.balance_aoa || 0, 'aoa')}
+                    </h3>
+                    <h3 className="font-display text-sm font-semibold text-primary/80">
+                      {formatCurrency(wallet?.balance_usd || 0, 'usd')}
+                    </h3>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-display text-xl font-extrabold text-white">
+                      {formatCurrency(wallet?.balance_usd || 0, 'usd')}
+                    </h3>
+                    <h3 className="font-display text-sm font-semibold text-primary/80">
+                      {formatCurrency(wallet?.balance_aoa || 0, 'aoa')}
+                    </h3>
+                  </>
+                )}
               </div>
             </div>
             <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
@@ -526,12 +555,25 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             <div>
               <p className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Total Sacado</p>
               <div className="mt-2 space-y-1">
-                <h3 className="font-display text-lg font-bold text-white">
-                  {formatCurrency(wallet?.total_withdrawn_usd || 0, 'usd')}
-                </h3>
-                <h3 className="font-display text-lg font-bold text-on-surface-variant">
-                  {formatCurrency(wallet?.total_withdrawn_aoa || 0, 'aoa')}
-                </h3>
+                {isAngola ? (
+                  <>
+                    <h3 className="font-display text-lg font-bold text-white">
+                      {formatCurrency(wallet?.total_withdrawn_aoa || 0, 'aoa')}
+                    </h3>
+                    <h3 className="font-display text-xs font-semibold text-on-surface-variant">
+                      {formatCurrency(wallet?.total_withdrawn_usd || 0, 'usd')}
+                    </h3>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-display text-lg font-bold text-white">
+                      {formatCurrency(wallet?.total_withdrawn_usd || 0, 'usd')}
+                    </h3>
+                    <h3 className="font-display text-xs font-semibold text-on-surface-variant">
+                      {formatCurrency(wallet?.total_withdrawn_aoa || 0, 'aoa')}
+                    </h3>
+                  </>
+                )}
               </div>
             </div>
             <div className="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400">
@@ -541,7 +583,10 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
           <div className="border-t border-white/5 pt-2 mt-2 flex items-center justify-between text-[11px] text-on-surface-variant">
             <span>Ganhos Totais acumulados:</span>
             <span className="font-bold text-white">
-              {formatCurrency((wallet?.total_earned_usd || 0), 'usd')}
+              {isAngola
+                ? formatCurrency((wallet?.total_earned_aoa || 0), 'aoa')
+                : formatCurrency((wallet?.total_earned_usd || 0), 'usd')
+              }
             </span>
           </div>
         </div>

@@ -26,6 +26,7 @@ interface ProductActionButtonProps {
   /** Called when user tries to buy/claim without being authenticated.
    *  The caller should navigate to the signup/login screen. */
   onRequireAuth?: () => void;
+  preferAoa?: boolean;
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -45,6 +46,7 @@ export function ProductActionButton({
   onStartLearning,
   ctaText,
   onRequireAuth,
+  preferAoa = false,
 }: ProductActionButtonProps) {
   const { locale } = useLocale();
   const { t } = useTranslation(['common', 'checkout'], { lng: locale });
@@ -100,13 +102,18 @@ export function ProductActionButton({
             const intent = JSON.parse(raw) as {
               productId: string;
               hasMultiPayment: boolean;
+              preferAoa?: boolean;
             };
             if (intent.productId === productId) {
               sessionStorage.removeItem('pendingCheckout');
               // Small delay so component state settles before triggering checkout
               setTimeout(() => {
                 if (intent.hasMultiPayment) {
-                  setShowPaymentSelector(true);
+                  if (intent.preferAoa) {
+                    setShowFastPayFlow(true);
+                  } else {
+                    setShowPaymentSelector(true);
+                  }
                 } else {
                   void handlePaidCheckout(u);
                 }
@@ -134,6 +141,7 @@ export function ProductActionButton({
         aoaPrice: aoaPrice ?? null,
         price,
         productTitle,
+        preferAoa,
       }));
       onRequireAuth?.();
       return;
@@ -141,7 +149,11 @@ export function ProductActionButton({
 
     // Logged in — proceed normally
     if (fastpayLink) {
-      setShowPaymentSelector(true);
+      if (preferAoa) {
+        setShowFastPayFlow(true);
+      } else {
+        setShowPaymentSelector(true);
+      }
     } else {
       void handlePaidCheckout();
     }
@@ -166,6 +178,7 @@ export function ProductActionButton({
           aoaPrice: aoaPrice ?? null,
           price,
           productTitle,
+          preferAoa,
         }));
         onRequireAuth?.();
         return;

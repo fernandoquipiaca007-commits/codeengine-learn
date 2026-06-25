@@ -542,5 +542,12 @@
       "loading": "Carregando dados de análise...",
       "noData": "Nenhum dado encontrado para este período."
     }
+  },
+  "countryModal": {
+    "title": "Selecione o seu País",
+    "description": "Para aceder às funcionalidades de monetização, precisamos saber em que país está registado.",
+    "confirm": "Confirmar País",
+    "selectPlaceholder": "Selecione o seu país...",
+    "errorSave": "Erro ao guardar o país. Tente novamente."
   }
 }

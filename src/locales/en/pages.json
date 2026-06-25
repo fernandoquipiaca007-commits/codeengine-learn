@@ -538,5 +538,12 @@
       "loading": "Loading analytics data...",
       "noData": "No data found for this period."
     }
+  },
+  "countryModal": {
+    "title": "Select Your Country",
+    "description": "To access monetization features, we need to know which country you are registered in.",
+    "confirm": "Confirm Country",
+    "selectPlaceholder": "Select your country...",
+    "errorSave": "Error saving country. Please try again."
   }
 }

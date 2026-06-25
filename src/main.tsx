@@ -4,6 +4,7 @@ import App from './App.tsx';
 import './index.css';
 import './lib/i18n';
 import { LocaleProvider } from './contexts/LocaleContext';
+import { UserCountryProvider } from './contexts/UserCountryContext';
 
 // NOTE: The controllerchange → reload pattern was REMOVED.
 // It caused the page to auto-reload every ~15s after first SW activation.
@@ -63,7 +64,7 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: b
               <button
                 onClick={() => {
                   try {
-                    sessionStorage.removeItem('ce_last_screen');
+                     sessionStorage.removeItem('ce_last_screen');
                   } catch {}
                   window.location.href = '/';
                 }}
@@ -84,7 +85,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RootErrorBoundary>
       <LocaleProvider>
-        <App />
+        <UserCountryProvider>
+          <App />
+        </UserCountryProvider>
       </LocaleProvider>
     </RootErrorBoundary>
   </StrictMode>,

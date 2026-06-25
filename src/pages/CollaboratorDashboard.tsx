@@ -7,6 +7,8 @@ import {
   DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink, Award, ShieldCheck, Video, PlayCircle,
   Users, Percent, Search, Briefcase, Eye
 } from 'lucide-react';
+import { useUserCountry } from '../contexts/UserCountryContext';
+import { CountryRequiredModal } from '../components/CountryRequiredModal';
 
 interface CollaboratorDashboardProps {
   setScreen: (screen: string) => void;
@@ -35,6 +37,7 @@ interface CollaboratorProfile {
 
 export function CollaboratorDashboard({ setScreen, onGoToProducts }: CollaboratorDashboardProps) {
   const { t } = useTranslation('pages');
+  const { country, isAngola, isLoading: countryLoading } = useUserCountry();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
   const [balance, setBalance] = useState<any>(null);
@@ -58,6 +61,15 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
   // Currency filter for dashboard view
   const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder' | 'analytics'>('usd');
+  const [hasDefaultedView, setHasDefaultedView] = useState(false);
+
+  useEffect(() => {
+    if (!hasDefaultedView && !countryLoading) {
+      setWalletView(isAngola ? 'aoa' : 'usd');
+      setHasDefaultedView(true);
+    }
+  }, [isAngola, countryLoading, hasDefaultedView]);
+
   const [affiliates, setAffiliates] = useState<any[]>([]);
 
   // Membro Fundador state
@@ -511,7 +523,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     }
   };
 
-  if (loading) {
+  if (loading || countryLoading) {
     return (
       <div className="flex min-h-[500px] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -521,6 +533,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
   return (
     <div className="pt-20 pb-16 px-4 md:px-8 w-full min-h-screen page-wrapper">
+      <CountryRequiredModal />
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -627,27 +640,54 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       })()}
 
       {/* Currency Filter Toggle */}
-      <div className="mb-4 flex items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10">
-        <button
-          onClick={() => setWalletView('usd')}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-            walletView === 'usd'
-              ? 'bg-primary text-background shadow-[0_0_10px_rgba(192,193,255,0.2)]'
-              : 'text-on-surface-variant hover:text-white'
-          }`}
-        >
-          <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
-        </button>
-        <button
-          onClick={() => setWalletView('aoa')}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-            walletView === 'aoa'
-              ? 'bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-              : 'text-on-surface-variant hover:text-white'
-          }`}
-        >
-          <Landmark size={10} /> {t('collaborator.tabWalletAoa', 'AOA · FaciPay')}
-        </button>
+      <div className="mb-4 flex items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10 flex-wrap sm:flex-nowrap">
+        {isAngola ? (
+          <>
+            <button
+              onClick={() => setWalletView('aoa')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                walletView === 'aoa'
+                  ? 'bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                  : 'text-on-surface-variant hover:text-white'
+              }`}
+            >
+              <Landmark size={10} /> {t('collaborator.tabWalletAoa', 'AOA · FaciPay')}
+            </button>
+            <button
+              onClick={() => setWalletView('usd')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                walletView === 'usd'
+                  ? 'bg-primary text-background shadow-[0_0_10px_rgba(192,193,255,0.2)]'
+                  : 'text-on-surface-variant hover:text-white'
+              }`}
+            >
+              <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setWalletView('usd')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                walletView === 'usd'
+                  ? 'bg-primary text-background shadow-[0_0_10px_rgba(192,193,255,0.2)]'
+                  : 'text-on-surface-variant hover:text-white'
+              }`}
+            >
+              <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
+            </button>
+            <button
+              onClick={() => setWalletView('aoa')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                walletView === 'aoa'
+                  ? 'bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                  : 'text-on-surface-variant hover:text-white'
+              }`}
+            >
+              <Landmark size={10} /> {t('collaborator.tabWalletAoa', 'AOA · FaciPay')}
+            </button>
+          </>
+        )}
         <button
           onClick={() => setWalletView('affiliates')}
           className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
@@ -684,9 +724,16 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       {walletView === 'usd' && (
         <>
           <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2.5">
-              <DollarSign size={14} className="text-primary" />
-              <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD · Stripe</span>
+            <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <DollarSign size={14} className="text-primary" />
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD · Stripe</span>
+              </div>
+              {country && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-semibold text-on-surface-variant">
+                  País Registado: <span className="text-white font-bold">{country === 'AO' ? '🇦🇴 AO' : country === 'PT' ? '🇵🇹 PT' : country === 'BR' ? '🇧🇷 BR' : country === 'FR' ? '🇫🇷 FR' : country === 'US' ? '🇺🇸 US' : `🌐 ${country}`}</span>
+                </span>
+              )}
             </div>
             <div className="grid gap-3 sm:grid-cols-3 relative z-10">
               {/* Estado 1: Em Garantia (D1-D3) */}
@@ -780,28 +827,35 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       {walletView === 'aoa' && (
         <>
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-base">🏦</span>
                 <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema AOA · FaciPay (Kwanza)</span>
               </div>
-              <button
-                onClick={() => {
-                  setAoaModalError(null);
-                  setAoaModalSuccess(null);
-                  setWithdrawAoaAmount('');
-                  setWithdrawAoaMethod('iban_aoa');
-                  setShowWithdrawAoaModal(true);
-                }}
-                disabled={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')}
-                title={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')
-                  ? `Saldo mínimo de Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} necessário`
-                  : 'Solicitar saque AOA'
-                }
-                className="flex items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 font-bold text-black text-xs hover:bg-amber-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <PlusCircle size={13} /> Solicitar Saque AOA
-              </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                {country && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-semibold text-on-surface-variant">
+                    País Registado: <span className="text-white font-bold">{country === 'AO' ? '🇦🇴 AO' : country === 'PT' ? '🇵🇹 PT' : country === 'BR' ? '🇧🇷 BR' : country === 'FR' ? '🇫🇷 FR' : country === 'US' ? '🇺🇸 US' : `🌐 ${country}`}</span>
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    setAoaModalError(null);
+                    setAoaModalSuccess(null);
+                    setWithdrawAoaAmount('');
+                    setWithdrawAoaMethod('iban_aoa');
+                    setShowWithdrawAoaModal(true);
+                  }}
+                  disabled={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')}
+                  title={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')
+                    ? `Saldo mínimo de Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} necessário`
+                    : 'Solicitar saque AOA'
+                  }
+                  className="flex items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 font-bold text-black text-xs hover:bg-amber-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <PlusCircle size={13} /> Solicitar Saque AOA
+                </button>
+              </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3 relative z-10">
               {/* AOA Estado 1: Em Garantia */}

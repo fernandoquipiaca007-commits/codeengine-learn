@@ -513,5 +513,12 @@
       "loading": "Chargement des données d'analyse...",
       "noData": "Aucune donnée trouvée pour cette période."
     }
+  },
+  "countryModal": {
+    "title": "Sélectionnez votre Pays",
+    "description": "Pour accéder aux fonctionnalités de monétisation, nous devons savoir dans quel pays vous êtes enregistré.",
+    "confirm": "Confirmer le Pays",
+    "selectPlaceholder": "Sélectionnez votre pays...",
+    "errorSave": "Erreur lors de l'enregistrement du pays. Veuillez réessayer."
   }
 }

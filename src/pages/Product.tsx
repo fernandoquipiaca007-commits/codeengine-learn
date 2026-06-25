@@ -22,6 +22,7 @@ import { resolveContentLocale } from '../lib/content-locale';
 import { useLocale } from '../contexts/LocaleContext';
 import { ProductPurchaseProvider, useProductPurchaseOptional } from '../contexts/ProductPurchaseContext';
 import { getProductCoverUrl } from '../lib/storage-path';
+import { useUserCountry } from '../contexts/UserCountryContext';
 import { ReferralProgress } from '../components/referral/ReferralProgress';
 import { ReferralShareCard } from '../components/referral/ReferralShareCard';
 import { useAuthSession } from '../hooks/useAuthSession';
@@ -122,6 +123,7 @@ function ProductCouponSection({ productId, originalPrice, onCouponApplied }: Pro
 
 export function Product({ setScreen, productId }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
+  const { isAngola } = useUserCountry();
   const { t } = useTranslation(['pages', 'common'], { lng: locale });
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
@@ -995,7 +997,16 @@ export function Product({ setScreen, productId }: ProductProps) {
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
             <p className="font-sans text-xs text-on-surface-variant">{t('product.finalPrice')}</p>
-            <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
+            {isAngola && (product as any).aoa_price > 0 ? (
+              <>
+                <p className="font-mono text-base font-bold text-amber-500">
+                  Kz {Number((product as any).aoa_price).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
+                </p>
+                <p className="text-[9px] text-on-surface-variant/80">ou $ {getFinalPrice()}</p>
+              </>
+            ) : (
+              <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
+            )}
           </div>
           <ProductActionButton
             productId={product.id}
@@ -1011,6 +1022,7 @@ export function Product({ setScreen, productId }: ProductProps) {
             onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
             onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
             onRequireAuth={() => setScreen && setScreen('signup')}
+            preferAoa={isAngola}
           />
         </div>
       </div>
@@ -1104,21 +1116,34 @@ export function Product({ setScreen, productId }: ProductProps) {
           </div>
           
           <div className="flex flex-col gap-4">
-            <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
-              {(campaignPrice || discount > 0) ? (
-                <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
-                  <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/50 line-through">
-                    {tDict.before} ${listPrice}
+            <div className="flex flex-col items-center justify-center gap-1.5 w-full">
+              {isAngola && (product as any).aoa_price > 0 ? (
+                <>
+                  <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-amber-500 tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
+                    Kz {Number((product as any).aoa_price).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
                   </span>
-                  <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/30">|</span>
-                  <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                    {tDict.now} ${getFinalPrice()}
+                  <span className="font-sans text-xs text-on-surface-variant">
+                    Equivalente a $ {getFinalPrice()} USD
                   </span>
-                </div>
+                </>
               ) : (
-                <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                  $ {getFinalPrice()}
-                </span>
+                <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
+                  {(campaignPrice || discount > 0) ? (
+                    <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
+                      <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/50 line-through">
+                        {tDict.before} ${listPrice}
+                      </span>
+                      <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/30">|</span>
+                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                        {tDict.now} ${getFinalPrice()}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                      $ {getFinalPrice()}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
             
@@ -1206,6 +1231,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                 onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
                 onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
                 onRequireAuth={() => setScreen && setScreen('signup')}
+                preferAoa={isAngola}
               />
             </div>
 
