@@ -147,16 +147,28 @@ export function SilentPrecisionBackground() {
       opacity: number;
       fadeSpeed: number;
       fadingIn: boolean;
+      color: string;
 
       constructor() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.size = Math.random() * 1.2 + 0.4; // very small dots (0.4px to 1.6px)
-        this.speedX = (Math.random() - 0.5) * 0.04; // extremely slow horizontal motion
-        this.speedY = -Math.random() * 0.06 - 0.01; // slow floating upward motion
-        this.opacity = Math.random() * 0.2 + 0.05;
-        this.fadeSpeed = Math.random() * 0.002 + 0.0005;
+        // Layered sizes for depth: mostly small, a few larger out-of-focus ones
+        const rand = Math.random();
+        if (rand > 0.9) {
+          this.size = Math.random() * 2.5 + 1.5; // larger blurred particles (1.5px to 4px)
+        } else {
+          this.size = Math.random() * 1.0 + 0.5; // small sharp particles (0.5px to 1.5px)
+        }
+        
+        this.speedX = (Math.random() - 0.5) * 0.08; // slow horizontal drift
+        this.speedY = -Math.random() * 0.12 - 0.03; // slow upward drift
+        this.opacity = Math.random() * 0.3 + 0.1; // slightly higher opacity for visibility
+        this.fadeSpeed = Math.random() * 0.0015 + 0.0005;
         this.fadingIn = Math.random() > 0.5;
+
+        // Shades of elegant tech-grey and silver
+        const greyShade = Math.floor(Math.random() * 40) + 160; // 160 to 200 (light grey)
+        this.color = `rgba(${greyShade}, ${greyShade}, ${greyShade}, `;
       }
 
       update() {
@@ -176,14 +188,14 @@ export function SilentPrecisionBackground() {
         // Slow opacity pulse (glowing fade in/out)
         if (this.fadingIn) {
           this.opacity += this.fadeSpeed;
-          if (this.opacity >= 0.35) {
-            this.opacity = 0.35;
+          if (this.opacity >= 0.5) {
+            this.opacity = 0.5;
             this.fadingIn = false;
           }
         } else {
           this.opacity -= this.fadeSpeed;
-          if (this.opacity <= 0.02) {
-            this.opacity = 0.02;
+          if (this.opacity <= 0.05) {
+            this.opacity = 0.05;
             this.fadingIn = true;
           }
         }
@@ -193,15 +205,29 @@ export function SilentPrecisionBackground() {
         if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        // Apply slight blur to larger particles to simulate depth of field
+        if (this.size > 2) {
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.15)';
+        } else {
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillStyle = `${this.color}${this.opacity})`;
         ctx.fill();
       }
     }
 
+    // Reset shadow values after drawing
+    const resetShadows = () => {
+      if (!ctx) return;
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
+    };
+
     // Create particle array
-    const particleCount = Math.floor((width * height) / 22000); // density relative to screen size
+    const particleCount = Math.floor((width * height) / 14000); // slightly denser
     const particles: Particle[] = [];
-    for (let i = 0; i < Math.min(particleCount, 120); i++) {
+    for (let i = 0; i < Math.min(particleCount, 160); i++) {
       particles.push(new Particle());
     }
 
@@ -213,6 +239,7 @@ export function SilentPrecisionBackground() {
         p.update();
         p.draw();
       });
+      resetShadows();
 
       animationId = requestAnimationFrame(render);
     };
