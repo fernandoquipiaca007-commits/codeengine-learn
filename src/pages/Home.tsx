@@ -326,7 +326,7 @@ export function Home({ setScreen }: HomeProps) {
       : "Core Knowledge Areas";
 
   return (
-    <div className="relative w-full min-h-[100dvh] flex flex-col justify-between md:justify-center md:gap-6 py-8 md:py-0 px-2 sm:px-6 overflow-hidden select-none isolate">
+    <div className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center px-4 sm:px-6 overflow-hidden select-none isolate">
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0%); }
@@ -341,8 +341,8 @@ export function Home({ setScreen }: HomeProps) {
             background-size: 200% auto;
             -webkit-background-clip: text;
             background-clip: text;
-            -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.3);
-            filter: drop-shadow(0 15px 35px rgba(0,0,0,0.4)) drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.25);
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.5)) drop-shadow(0 2px 6px rgba(0,0,0,0.3));
             animation: shimmer 8s linear infinite;
         }
         @keyframes shimmer {
@@ -354,100 +354,64 @@ export function Home({ setScreen }: HomeProps) {
       {/* Silent Precision Background */}
       <SilentPrecisionBackground />
 
-      {/* Top Container: Tahoe Glass Header */}
-      <div className="flex flex-col items-center justify-center text-center order-1 md:order-1 mt-28 sm:mt-0 pointer-events-none w-full">
-        <h1 className="tahoe-glass-text flex flex-row items-center justify-center gap-1.5 sm:gap-4 lg:gap-6 px-1 w-full flex-wrap text-[2.8rem] xs:text-[3.2rem] sm:text-6xl md:text-8xl lg:text-9xl leading-none">
+      {/* Single unified content column — everything fits in one viewport */}
+      <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-5xl gap-5 md:gap-6 pt-20 pb-6">
+
+        {/* ── Hero Title ── */}
+        <h1 className="tahoe-glass-text flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-2 w-full flex-wrap text-[2rem] xs:text-[2.4rem] sm:text-5xl md:text-6xl lg:text-7xl leading-tight pointer-events-none">
           <span className="font-serif italic font-medium">{word1}</span>
           <span className="font-sans font-extrabold tracking-tighter">{word2}</span>
         </h1>
-      </div>
 
-      {/* Center Container: Description & Mobile Vector Marquee */}
-      <div className="flex flex-col items-center justify-center text-center my-auto md:my-0 order-2 md:order-2 px-1 w-full pointer-events-none gap-4">
-        <p className="text-base sm:text-xl md:text-2xl font-bold tracking-tight text-white max-w-[95%] sm:max-w-lg md:max-w-3xl px-1 leading-snug">
+        {/* ── Subtitle ── */}
+        <p className="text-sm sm:text-lg md:text-xl font-bold tracking-tight text-white max-w-[92%] sm:max-w-xl md:max-w-2xl leading-snug pointer-events-none">
           {subtitle}
         </p>
-        <p className="text-xs sm:text-sm md:text-base font-normal text-muted-foreground/90 max-w-[90%] sm:max-w-md md:max-w-xl px-1 leading-relaxed">
+
+        {/* ── Description ── */}
+        <p className="text-xs sm:text-sm md:text-base font-normal text-muted-foreground/90 max-w-[85%] sm:max-w-md md:max-w-lg leading-relaxed pointer-events-none">
           {description}
         </p>
 
-        <div className="block md:hidden w-full mt-14 pointer-events-auto">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground/80 font-medium mb-5">
+        {/* ── CTA Buttons ── */}
+        <div
+          className={cn("flex flex-row items-center justify-center gap-3 pointer-events-auto transition-all duration-1000 transform", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6")}
+          style={{ transitionDelay: "350ms" }}
+        >
+          <button
+            onClick={() => setScreen('library')}
+            className="relative inline-flex h-10 md:h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-primary/90 to-primary px-5 md:px-8 text-xs md:text-sm font-semibold text-primary-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.15),0_12px_24px_rgba(0,0,0,0.15)] ring-1 ring-primary/20 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          >
+            {primaryCta}
+            <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          </button>
+          <button
+            onClick={handleSecondaryCtaClick}
+            className="relative inline-flex h-10 md:h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-5 md:px-8 text-xs md:text-sm font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary animate-pulse" />
+            {secondaryCta}
+          </button>
+        </div>
+
+        {/* ── Knowledge Areas Marquee ── */}
+        <div
+          className={cn("w-full flex flex-col items-center gap-3 pointer-events-auto transition-all duration-1000 transform mt-2", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6")}
+          style={{ transitionDelay: "500ms" }}
+        >
+          <span className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground/70 font-medium select-none">
             {marqueeLabel}
-          </div>
-          <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]">
-            <div className="flex w-max gap-8 py-1 animate-marquee">
-              <div className="flex gap-8 items-center">
-                {topics.map((topic, i) => {
-                  const Icon = topic.icon;
-                  return (
-                    <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
-                      <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                      <span className="opacity-80">{topic.text}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex gap-8 items-center" aria-hidden="true">
-                {topics.map((topic, i) => {
-                  const Icon = topic.icon;
-                  return (
-                    <div key={`m-c-${i}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
-                      <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                      <span className="opacity-80">{topic.text}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Container: CTA Row */}
-      <div
-        className={cn("pointer-events-auto flex flex-row items-center justify-center gap-3 mt-4 md:mt-10 mb-4 md:mb-0 order-4 md:order-3 transition-all duration-1000 transform px-1", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8")}
-        style={{ transitionDelay: "450ms" }}
-      >
-        <button onClick={() => setScreen('library')} className="relative inline-flex h-10 md:h-12 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-primary/90 to-primary px-4 md:px-8 text-xs md:text-sm font-semibold text-primary-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.15),0_12px_24px_rgba(0,0,0,0.15)] ring-1 ring-primary/20 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-          <span className="inline md:hidden">{primaryCtaMobile}</span>
-          <span className="hidden md:inline">{primaryCta}</span>
-          <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
-        </button>
-        <button onClick={handleSecondaryCtaClick} className="relative inline-flex h-10 md:h-12 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-4 md:px-8 text-xs md:text-sm font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-          <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary animate-pulse" />
-          <span className="inline md:hidden">{secondaryCtaMobile}</span>
-          <span className="hidden md:inline">{secondaryCta}</span>
-        </button>
-      </div>
-
-      {/* Desktop-only Marquee Block */}
-      <div
-        className={cn("hidden md:flex w-full z-10 pointer-events-auto flex-col items-center justify-center gap-4 transition-all duration-1000 transform order-3 md:order-4 mt-12 md:mt-16 pb-8", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8")}
-        style={{ transitionDelay: "600ms" }}
-      >
-        <span className="text-xs uppercase tracking-wider text-muted-foreground/80 font-medium select-none">
-          {marqueeLabel}
-        </span>
-        <div className="relative w-full max-w-5xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]">
-          <div className="flex w-max gap-16 py-3 animate-marquee">
-            <div className="flex gap-16 items-center">
-              {topics.map((topic, i) => {
+          </span>
+          <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
+            <div className="flex w-max gap-6 sm:gap-10 py-1.5 animate-marquee">
+              {[...topics, ...topics].map((topic, i) => {
                 const Icon = topic.icon;
                 return (
-                  <div key={i} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
-                    <Icon className="w-4 h-4 text-primary flex-shrink-0" />
-                    <span className="opacity-80 tracking-wide">{topic.text}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex gap-16 items-center" aria-hidden="true">
-              {topics.map((topic, i) => {
-                const Icon = topic.icon;
-                return (
-                  <div key={`d-c-${i}`} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
-                    <Icon className="w-4 h-4 text-primary flex-shrink-0" />
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/5 border border-white/10 text-white font-sans text-[10px] sm:text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors"
+                  >
+                    <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary flex-shrink-0" />
                     <span className="opacity-80 tracking-wide">{topic.text}</span>
                   </div>
                 );
@@ -455,6 +419,7 @@ export function Home({ setScreen }: HomeProps) {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
