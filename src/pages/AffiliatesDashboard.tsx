@@ -416,7 +416,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
   // ─── DASHBOARD CORE SCREEN ────────────────────────────────────────────────
   return (
-    <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-8 py-6">
+    <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-8 pt-28 pb-12">
       {/* Top Banner Row - 100% full width */}
       <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-6 mb-6">
         <div>

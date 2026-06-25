@@ -290,7 +290,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
 
   return (
     <>
-      {/* ── Floating Navbar ──────────────────────────────────── */}
+      {/* ── Docked Header Navbar ────────────────────────────────── */}
       <motion.nav
         initial={{ y: 0, opacity: 1 }}
         animate={{
@@ -299,24 +299,19 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          'fixed left-0 right-0 z-50 flex flex-nowrap justify-between items-center',
-          'mx-auto rounded-full border border-white/10',
-          'transition-[padding,box-shadow,background,max-width] duration-300',
-          // Adaptive sizing
+          'fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center w-full rounded-none',
+          'border-b border-white/10',
+          'transition-[padding,box-shadow,background] duration-300',
+          // Adaptive layout spacing
           scrolled
             ? [
-                'px-3 sm:px-4 py-1.5',
-                'w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] md:w-[88%] lg:w-[80%] max-w-[900px]',
-                'mt-2 sm:mt-2.5',
-                'bg-surface/92 backdrop-blur-2xl',
-                'shadow-[0_4px_32px_rgba(0,0,0,0.6),0_1px_0_rgba(192,193,255,0.08)]',
+                'px-6 md:px-12 py-2.5',
+                'bg-background/95 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.6)]',
               ]
             : [
-                'px-4 sm:px-5 py-2',
-                'w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[93%] lg:w-[88%] max-w-[1060px]',
-                'mt-2.5 sm:mt-3',
-                'bg-surface/75 backdrop-blur-xl',
-                'shadow-[0_0_40px_rgba(0,0,0,0.35),0_1px_0_rgba(192,193,255,0.06)]',
+                'px-6 md:px-12 py-4',
+                'bg-background/80 backdrop-blur-xl',
+                'shadow-none',
               ]
         )}
       >

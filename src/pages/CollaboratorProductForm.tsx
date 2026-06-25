@@ -767,8 +767,8 @@ export function CollaboratorProductForm({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-xl p-8 max-w-4xl mx-auto shadow-2xl overlay-premium text-white font-sans max-h-[calc(100vh-4rem)] overflow-y-auto">
-      <div className="mb-6 flex items-center justify-between border-b border-white/10 pb-4">
+    <div className="rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-xl shadow-2xl overlay-premium text-white font-sans w-full max-w-[1300px] h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+      <div className="p-6 shrink-0 flex items-center justify-between border-b border-white/10">
         <div>
           <h2 className="text-xl font-bold text-white font-display">
             {productId ? 'Editar Produto' : 'Adicionar Novo Produto'}
@@ -793,7 +793,7 @@ export function CollaboratorProductForm({
       )}
 
       {/* Tabs navigation */}
-      <div className="flex flex-wrap gap-1 border-b border-white/10 pb-4 mb-6">
+      <div className="px-6 py-3.5 shrink-0 border-b border-white/10 flex flex-wrap gap-1 bg-surface-container/20">
         <button
           type="button"
           onClick={() => setActiveTab('details')}
@@ -901,8 +901,9 @@ export function CollaboratorProductForm({
         </button>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        {activeTab === 'details' && (
+      <form onSubmit={handleSave} className="flex-grow flex flex-col overflow-hidden min-h-0">
+        <div className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6">
+          {activeTab === 'details' && (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Lado Esquerdo: Metadados */}
             <div className="space-y-4">
@@ -2177,7 +2178,9 @@ export function CollaboratorProductForm({
           </div>
         )}
 
-        <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
+        </div>
+
+        <div className="shrink-0 p-6 border-t border-white/10 flex items-center justify-end gap-3 bg-surface-container/40 backdrop-blur-sm">
           <button
             type="button"
             onClick={onClose}

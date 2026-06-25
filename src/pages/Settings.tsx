@@ -410,7 +410,7 @@ export function Settings({ setScreen }: SettingsProps) {
   }
 
   return (
-    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-10 max-w-[min(100%,720px)] mx-auto min-h-screen overflow-x-hidden">
+    <div className="pt-28 pb-24 px-4 sm:px-6 md:px-8 max-w-[1200px] w-full mx-auto min-h-screen overflow-x-hidden">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: 20 }}
@@ -450,7 +450,9 @@ export function Settings({ setScreen }: SettingsProps) {
         </motion.div>
       )}
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Coluna Esquerda: Perfil e Senha */}
+        <div className="space-y-6">
         {/* Profile Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -606,6 +608,10 @@ export function Settings({ setScreen }: SettingsProps) {
             </button>
           </div>
         </motion.section>
+        </div>
+
+        {/* Coluna Direita: Preferências, Sistema e PWA */}
+        <div className="space-y-6">
 
         {/* Language Section */}
         <motion.section
@@ -769,6 +775,8 @@ export function Settings({ setScreen }: SettingsProps) {
             </div>
           </div>
         </motion.section>
+        </div>
+      </div>
 
         {/* Immersive Walkthrough/Installation Guide Modal Overlay */}
         {showInstallGuideModal && (
@@ -836,6 +844,5 @@ export function Settings({ setScreen }: SettingsProps) {
           </div>
         )}
       </div>
-    </div>
   );
 }

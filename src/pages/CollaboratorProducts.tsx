@@ -298,12 +298,12 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
       {/* Form Modal overlay */}
       <AnimatePresence>
         {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 overflow-y-auto backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 md:p-6 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="w-full max-w-4xl my-8 bg-transparent"
+              className="w-full max-w-[1300px] my-4 bg-transparent"
             >
               <CollaboratorProductForm
                 productId={selectedProductId}
