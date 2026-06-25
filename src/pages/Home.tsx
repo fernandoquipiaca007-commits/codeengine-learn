@@ -1,7 +1,50 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowRight, Github } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
+
+/* -----------------------------------------------------------------------------
+ * TECH/AI/LEARNING KNOWLEDGE TOPICS
+ * Translated topics that loop continuously in the marquee
+ * -------------------------------------------------------------------------- */
+
+const getTopics = (lang: string) => {
+  const topics = {
+    pt: [
+      { text: "Inteligência Artificial", icon: "🧠" },
+      { text: "Desenvolvimento Fullstack", icon: "💻" },
+      { text: "Infraestrutura SaaS", icon: "⚡" },
+      { text: "Automação de APIs", icon: "🔌" },
+      { text: "Machine Learning", icon: "🤖" },
+      { text: "Design de Interface Premium", icon: "✨" },
+      { text: "Cursos & E-books Exclusivos", icon: "📚" },
+      { text: "Arquitetura Cloud", icon: "☁️" }
+    ],
+    fr: [
+      { text: "Intelligence Artificielle", icon: "🧠" },
+      { text: "Développement Fullstack", icon: "💻" },
+      { text: "Infrastructure SaaS", icon: "⚡" },
+      { text: "Automatisation d'APIs", icon: "🔌" },
+      { text: "Machine Learning", icon: "🤖" },
+      { text: "Design d'Interface Premium", icon: "✨" },
+      { text: "Cours & E-books Exclusifs", icon: "📚" },
+      { text: "Architecture Cloud", icon: "☁️" }
+    ],
+    en: [
+      { text: "Artificial Intelligence", icon: "🧠" },
+      { text: "Fullstack Development", icon: "💻" },
+      { text: "SaaS Infrastructure", icon: "⚡" },
+      { text: "API Automation", icon: "🔌" },
+      { text: "Machine Learning", icon: "🤖" },
+      { text: "Premium Interface Design", icon: "✨" },
+      { text: "Exclusive Courses & E-books", icon: "📚" },
+      { text: "Cloud Architecture", icon: "☁️" }
+    ]
+  };
+  const currentLang = lang.startsWith('pt') ? 'pt' : lang.startsWith('fr') ? 'fr' : 'en';
+  return topics[currentLang];
+};
 
 /* -----------------------------------------------------------------------------
  * VECTOR BRAND LOGO COMPONENTS
@@ -266,11 +309,20 @@ interface HomeProps {
 }
 
 export function Home({ setScreen }: HomeProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const [isLoaded, setIsLoaded] = useState(false);
   const [themeColors, setThemeColors] = useState<string[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
     if (typeof document === "undefined") return;
 
     const div = document.createElement("div");
@@ -291,17 +343,34 @@ export function Home({ setScreen }: HomeProps) {
     setThemeColors([muted, muted, muted, muted, primary]);
 
     const loadTimer = setTimeout(() => setIsLoaded(true), 50);
-    return () => clearTimeout(loadTimer);
+    return () => {
+      clearTimeout(loadTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const word1 = t('home.pixelWord1', { defaultValue: 'Silent' });
-  const word2 = t('home.pixelWord2', { defaultValue: 'Precision.' });
-  const description = t('home.pixelDesc', { defaultValue: 'Minimalist interfaces driven by refined motion. Every calculated detail delivers an elevated digital experience.' });
-  const primaryCta = t('home.pixelCta', { defaultValue: 'Explore Design' });
+  const word1 = t('home.pixelWord1', { defaultValue: 'Welcome to' });
+  const word2 = t('home.pixelWord2', { defaultValue: 'CodeEngine.' });
+  const description = t('home.pixelDesc', { defaultValue: 'The ultimate code library for high-performing developers. Master automation, artificial intelligence, and build high-performance systems with speed and elegance.' });
+  const primaryCta = t('home.pixelCta', { defaultValue: 'Explore' });
   const primaryCtaMobile = t('home.pixelCtaMobile', { defaultValue: 'Explore' });
-  const secondaryCta = t('home.pixelGithub', { defaultValue: 'View GitHub' });
-  const secondaryCtaMobile = t('home.pixelGithub', { defaultValue: 'GitHub' });
-  const githubUrl = "https://github.com/fernandoquipiaca007-commits/codeengine-learn";
+  const secondaryCta = t('home.pixelGithub', { defaultValue: 'Get Started' });
+  const secondaryCtaMobile = t('home.pixelGithub', { defaultValue: 'Get Started' });
+
+  const handleSecondaryCtaClick = () => {
+    if (isLoggedIn) {
+      setScreen('library');
+    } else {
+      setScreen('auth');
+    }
+  };
+
+  const topics = getTopics(i18n.language);
+  const marqueeLabel = i18n.language.startsWith('pt') 
+    ? "Áreas de Conhecimento" 
+    : i18n.language.startsWith('fr') 
+      ? "Domaines de Compétences" 
+      : "Core Knowledge Areas";
 
   return (
     <div className="relative w-full min-h-[100dvh] flex flex-col justify-between md:justify-center md:gap-6 py-8 md:py-0 px-2 sm:px-6 overflow-hidden select-none isolate">
@@ -351,12 +420,26 @@ export function Home({ setScreen }: HomeProps) {
 
         <div className="block md:hidden w-full mt-14 pointer-events-auto">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground/80 font-medium mb-5">
-            Trusted by industry leaders
+            {marqueeLabel}
           </div>
           <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]">
-            <div className="flex w-max gap-12 py-1 animate-marquee">
-              <div className="flex gap-12 items-center">{BRAND_LOGOS.map((Logo, i) => <Logo key={i} />)}</div>
-              <div className="flex gap-12 items-center" aria-hidden="true">{BRAND_LOGOS.map((Logo, i) => <Logo key={`c-${i}`} />)}</div>
+            <div className="flex w-max gap-8 py-1 animate-marquee">
+              <div className="flex gap-8 items-center">
+                {topics.map((topic, i) => (
+                  <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
+                    <span>{topic.icon}</span>
+                    <span className="opacity-80">{topic.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-8 items-center" aria-hidden="true">
+                {topics.map((topic, i) => (
+                  <div key={`m-c-${i}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
+                    <span>{topic.icon}</span>
+                    <span className="opacity-80">{topic.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -372,11 +455,11 @@ export function Home({ setScreen }: HomeProps) {
           <span className="hidden md:inline">{primaryCta}</span>
           <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
         </button>
-        <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="relative inline-flex h-10 md:h-12 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-4 md:px-8 text-xs md:text-sm font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-          <Github className="w-3.5 h-3.5 md:w-4 md:h-4" />
+        <button onClick={handleSecondaryCtaClick} className="relative inline-flex h-10 md:h-12 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-4 md:px-8 text-xs md:text-sm font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+          <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary animate-pulse" />
           <span className="inline md:hidden">{secondaryCtaMobile}</span>
           <span className="hidden md:inline">{secondaryCta}</span>
-        </a>
+        </button>
       </div>
 
       {/* Desktop-only Marquee Block */}
@@ -385,15 +468,29 @@ export function Home({ setScreen }: HomeProps) {
         style={{ transitionDelay: "600ms" }}
       >
         <span className="text-xs uppercase tracking-wider text-muted-foreground/80 font-medium select-none">
-          Trusted by industry leaders
+          {marqueeLabel}
         </span>
         <div className="relative w-full max-w-5xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]">
           <div className="flex w-max gap-16 py-3 animate-marquee">
-            <div className="flex gap-16 items-center">{BRAND_LOGOS.map((Logo, i) => <Logo key={i} />)}</div>
-            <div className="flex gap-16 items-center" aria-hidden="true">{BRAND_LOGOS.map((Logo, i) => <Logo key={`c-${i}`} />)}</div>
-          </div>
+            <div className="flex gap-16 items-center">
+              {topics.map((topic, i) => (
+                <div key={i} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
+                  <span className="text-sm md:text-base">{topic.icon}</span>
+                  <span className="opacity-80 tracking-wide">{topic.text}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-16 items-center" aria-hidden="true">
+              {topics.map((topic, i) => (
+                <div key={`d-c-${i}`} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
+                  <span className="text-sm md:text-base">{topic.icon}</span>
+                  <span className="opacity-80 tracking-wide">{topic.text}</span>
+                </div>
+              ))}
+            </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

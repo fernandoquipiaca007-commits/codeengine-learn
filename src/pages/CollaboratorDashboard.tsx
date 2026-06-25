@@ -518,7 +518,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }
 
   return (
-    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen page-wrapper">
+    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-12 w-full max-w-[1750px] mx-auto min-h-screen page-wrapper">
       {/* Header */}
       <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>

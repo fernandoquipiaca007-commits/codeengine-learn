@@ -162,7 +162,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
   };
 
   return (
-    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-16 max-w-[1280px] mx-auto min-h-screen page-wrapper">
+    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-12 w-full max-w-[1750px] mx-auto min-h-screen page-wrapper">
       {/* Header */}
       <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
@@ -303,7 +303,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile }: Collabo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="w-full max-w-[1300px] my-4 bg-transparent"
+              className="w-full max-w-[1700px] my-4 bg-transparent"
             >
               <CollaboratorProductForm
                 productId={selectedProductId}

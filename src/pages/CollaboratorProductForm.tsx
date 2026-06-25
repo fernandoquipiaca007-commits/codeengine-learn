@@ -767,7 +767,7 @@ export function CollaboratorProductForm({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-xl shadow-2xl overlay-premium text-white font-sans w-full max-w-[1300px] h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+    <div className="rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-xl shadow-2xl overlay-premium text-white font-sans w-full max-w-[1700px] h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
       <div className="p-6 shrink-0 flex items-center justify-between border-b border-white/10">
         <div>
           <h2 className="text-xl font-bold text-white font-display">
@@ -1564,78 +1564,117 @@ export function CollaboratorProductForm({
 
         {/* Campaign Customization Section */}
         {activeTab === 'campaigns' && (
-          <div className="space-y-4 max-w-xl">
-            <h3 className="text-lg font-bold font-display">Campanha Promocional</h3>
-            <p className="text-xs text-on-surface-variant">Configure um desconto temporário com um banner na página do produto.</p>
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold font-display">Campanha Promocional</h3>
+              <p className="text-xs text-on-surface-variant">Configure um desconto temporário com um banner na página do produto.</p>
 
-            <div>
-              <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Texto do Banner / Badge</label>
-              <input
-                type="text"
-                value={campaign.banner_text}
-                onChange={e => setCampaign({ ...campaign, banner_text: e.target.value })}
-                placeholder="Ex: 50% de Desconto de Lançamento!"
-                className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Promocional Internacional (USD)</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Texto do Banner / Badge</label>
                 <input
-                  type="number"
-                  step="0.01"
-                  value={campaign.special_price}
-                  onChange={e => setCampaign({ ...campaign, special_price: e.target.value })}
-                  placeholder="0.00"
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  type="text"
+                  value={campaign.banner_text}
+                  onChange={e => setCampaign({ ...campaign, banner_text: e.target.value })}
+                  placeholder="Ex: 50% de Desconto de Lançamento!"
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Promocional Angola (AOA)</label>
-                <input
-                  type="number"
-                  step="1"
-                  value={campaign.special_price_aoa}
-                  onChange={e => setCampaign({ ...campaign, special_price_aoa: e.target.value })}
-                  placeholder="0"
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Promocional Internacional (USD)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={campaign.special_price}
+                    onChange={e => setCampaign({ ...campaign, special_price: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Promocional Angola (AOA)</label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={campaign.special_price_aoa}
+                    onChange={e => setCampaign({ ...campaign, special_price_aoa: e.target.value })}
+                    placeholder="0"
+                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  />
+                </div>
               </div>
+
+              <div className="flex items-center gap-3 py-2">
+                <input
+                  type="checkbox"
+                  id="show_countdown"
+                  checked={campaign.show_countdown}
+                  onChange={e => setCampaign({ ...campaign, show_countdown: e.target.checked })}
+                  className="w-4 h-4 rounded border-white/10 bg-surface-high focus:ring-primary"
+                />
+                <label htmlFor="show_countdown" className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider cursor-pointer">
+                  Ativar contador regressivo (Cronômetro)
+                </label>
+              </div>
+
+              {campaign.show_countdown && (
+                <div>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Data de Encerramento</label>
+                  <input
+                    type="datetime-local"
+                    value={campaign.end_date}
+                    onChange={e => setCampaign({ ...campaign, end_date: e.target.value })}
+                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-3 py-2">
-              <input
-                type="checkbox"
-                id="show_countdown"
-                checked={campaign.show_countdown}
-                onChange={e => setCampaign({ ...campaign, show_countdown: e.target.checked })}
-                className="w-4 h-4 rounded border-white/10 bg-surface-high focus:ring-primary"
-              />
-              <label htmlFor="show_countdown" className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider cursor-pointer">
-                Ativar contador regressivo (Cronômetro)
-              </label>
-            </div>
-
-            {campaign.show_countdown && (
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Data de Encerramento</label>
-                <input
-                  type="datetime-local"
-                  value={campaign.end_date}
-                  onChange={e => setCampaign({ ...campaign, end_date: e.target.value })}
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
-                />
+            {/* Campaign Preview Column */}
+            <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6 flex flex-col justify-center">
+              <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Visualização da Campanha na Loja</h4>
+              <div className="rounded-xl border border-white/10 bg-surface-high p-4 space-y-3 relative overflow-hidden shadow-lg">
+                <div className="absolute top-0 right-0 h-16 w-16 bg-gradient-to-br from-primary/20 to-transparent blur-md pointer-events-none" />
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-background uppercase tracking-wider">
+                    {campaign.banner_text || 'EXEMPLO DE CAMPANHA'}
+                  </span>
+                </div>
+                <div>
+                  <h5 className="font-bold text-white text-sm truncate">{title || 'Título do Produto'}</h5>
+                  <p className="text-[10px] text-on-surface-variant line-clamp-2 mt-1">Sua oferta promocional será exibida em destaque com tags exclusivas.</p>
+                </div>
+                <div className="flex gap-4 items-baseline pt-1">
+                  {campaign.special_price ? (
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-on-surface-variant line-through">${priceUSD || '0.00'}</span>
+                      <span className="text-sm font-bold text-green-400 font-mono">${campaign.special_price}</span>
+                    </div>
+                  ) : null}
+                  {campaign.special_price_aoa ? (
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-on-surface-variant line-through">Kz {priceAOA || '0'}</span>
+                      <span className="text-sm font-bold text-green-400 font-mono">Kz {campaign.special_price_aoa}</span>
+                    </div>
+                  ) : null}
+                </div>
+                {campaign.show_countdown && (
+                  <div className="text-[10px] text-primary font-mono border-t border-white/5 pt-2 flex items-center gap-1.5 mt-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <span>Expira em: {campaign.end_date ? new Date(campaign.end_date).toLocaleString() : 'Data e Hora'}</span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
 
         {/* Coupons Customization Section */}
         {activeTab === 'coupons' && (
-          <div className="space-y-6">
-            <div className="max-w-xl space-y-4">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
               <h3 className="text-lg font-bold font-display">Cupons de Desconto</h3>
               <p className="text-xs text-on-surface-variant">Crie cupons personalizados para seus compradores.</p>
 
@@ -1691,51 +1730,59 @@ export function CollaboratorProductForm({
               <button
                 type="button"
                 onClick={addCoupon}
-                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-semibold transition-all"
+                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2.5 text-xs font-semibold transition-all"
               >
                 <Plus size={14} /> Adicionar Cupom
               </button>
             </div>
 
-            {coupons.length > 0 && (
-              <div className="border border-white/10 rounded-xl overflow-hidden bg-white/5">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/10 bg-white/5 text-on-surface-variant font-bold uppercase">
-                      <th className="px-4 py-3">Código</th>
-                      <th className="px-4 py-3">Desconto</th>
-                      <th className="px-4 py-3">Limite</th>
-                      <th className="px-4 py-3 text-right">Ação</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 font-mono">
-                    {coupons.map((c, i) => (
-                      <tr key={i} className="text-white hover:bg-white/5">
-                        <td className="px-4 py-3 font-bold">{c.code}</td>
-                        <td className="px-4 py-3">{c.discount_value}{c.discount_type === 'percent' ? '%' : ' Fixo'}</td>
-                        <td className="px-4 py-3">{c.max_uses || 'Ilimitado'}</td>
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => removeCoupon(i)}
-                            className="p-1 text-red-400 hover:text-red-300 hover:bg-white/5 rounded"
-                          >
-                            <Trash size={14} />
-                          </button>
-                        </td>
+            <div>
+              {coupons.length > 0 ? (
+                <div className="border border-white/10 rounded-xl overflow-hidden bg-white/5 shadow-lg">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/10 bg-white/5 text-on-surface-variant font-bold uppercase">
+                        <th className="px-4 py-3">Código</th>
+                        <th className="px-4 py-3">Desconto</th>
+                        <th className="px-4 py-3">Limite</th>
+                        <th className="px-4 py-3 text-right">Ação</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody className="divide-y divide-white/5 font-mono">
+                      {coupons.map((c, i) => (
+                        <tr key={i} className="text-white hover:bg-white/5">
+                          <td className="px-4 py-3 font-bold text-primary">{c.code}</td>
+                          <td className="px-4 py-3">{c.discount_value}{c.discount_type === 'percent' ? '%' : ' Fixo'}</td>
+                          <td className="px-4 py-3">{c.max_uses || 'Ilimitado'}</td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => removeCoupon(i)}
+                              className="p-1 text-red-400 hover:text-red-300 hover:bg-white/5 rounded"
+                            >
+                              <Trash size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center bg-white/5 flex flex-col items-center justify-center h-full min-h-[220px]">
+                  <Percent className="w-8 h-8 text-on-surface-variant mb-3 opacity-60" />
+                  <h4 className="text-sm font-semibold text-white">Nenhum cupom ativo</h4>
+                  <p className="text-xs text-on-surface-variant mt-1 max-w-[280px]">Preencha o formulário ao lado e clique em "Adicionar Cupom" para criar descontos exclusivos.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {/* FAQs Customization Section */}
         {activeTab === 'faqs' && (
-          <div className="space-y-6">
-            <div className="max-w-xl space-y-4">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
               <h3 className="text-lg font-bold font-display">Perguntas Frequentes</h3>
               <p className="text-xs text-on-surface-variant">Esclareça dúvidas comuns dos compradores potenciais.</p>
 
@@ -1764,38 +1811,46 @@ export function CollaboratorProductForm({
               <button
                 type="button"
                 onClick={addFaq}
-                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-semibold transition-all"
+                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2.5 text-xs font-semibold transition-all"
               >
                 <Plus size={14} /> Adicionar FAQ
               </button>
             </div>
 
-            {faqs.length > 0 && (
-              <div className="space-y-3">
-                {faqs.map((f, i) => (
-                  <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
-                    <div>
-                      <h4 className="font-bold text-white mb-1">Q: {f.question}</h4>
-                      <p className="text-on-surface-variant text-xs">A: {f.answer}</p>
+            <div>
+              {faqs.length > 0 ? (
+                <div className="space-y-3">
+                  {faqs.map((f, i) => (
+                    <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
+                      <div>
+                        <h4 className="font-bold text-white mb-1">Q: {f.question}</h4>
+                        <p className="text-on-surface-variant text-xs">A: {f.answer}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFaq(i)}
+                        className="p-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 rounded shrink-0"
+                      >
+                        <Trash size={14} />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFaq(i)}
-                      className="p-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 rounded"
-                    >
-                      <Trash size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center bg-white/5 flex flex-col items-center justify-center h-full min-h-[220px]">
+                  <Info className="w-8 h-8 text-on-surface-variant mb-3 opacity-60" />
+                  <h4 className="text-sm font-semibold text-white">Nenhum FAQ cadastrado</h4>
+                  <p className="text-xs text-on-surface-variant mt-1 max-w-[280px]">Dúvidas frequentes ajudam a aumentar a conversão. Adicione perguntas e respostas ao lado.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {/* Bonuses Customization Section */}
         {activeTab === 'bonuses' && (
-          <div className="space-y-6">
-            <div className="max-w-xl space-y-4">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
               <h3 className="text-lg font-bold font-display">Bônus Exclusivos</h3>
               <p className="text-xs text-on-surface-variant">Incentive a compra incluindo brindes ou recursos extras.</p>
 
@@ -1861,45 +1916,54 @@ export function CollaboratorProductForm({
               <button
                 type="button"
                 onClick={addBonus}
-                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-semibold transition-all"
+                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2.5 text-xs font-semibold transition-all"
               >
                 <Plus size={14} /> Adicionar Bônus
               </button>
             </div>
 
-            {bonuses.length > 0 && (
-              <div className="space-y-3">
-                {bonuses.map((b, i) => (
-                  <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
-                    <div>
-                      <h4 className="font-bold text-white mb-1">
-                        {b.title} <span className="text-[10px] text-green-400 font-mono">(${b.original_value})</span>
-                        {b.linked_product_id && (
-                          <span className="ml-2 text-[10px] bg-primary/20 text-primary border border-primary/30 rounded px-1.5 py-0.5 font-bold uppercase">
-                            Auto-Entrega Ativada
-                          </span>
-                        )}
-                      </h4>
-                      <p className="text-on-surface-variant text-xs">{b.description}</p>
+            <div>
+              {bonuses.length > 0 ? (
+                <div className="space-y-3">
+                  {bonuses.map((b, i) => (
+                    <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
+                      <div>
+                        <h4 className="font-bold text-white mb-1 flex flex-wrap items-center gap-1.5">
+                          <span>{b.title}</span>
+                          <span className="text-[10px] text-green-400 font-mono">(${b.original_value})</span>
+                          {b.linked_product_id && (
+                            <span className="text-[9px] bg-primary/20 text-primary border border-primary/30 rounded px-1 py-0.5 font-bold uppercase">
+                              Auto-Entrega
+                            </span>
+                          )}
+                        </h4>
+                        <p className="text-on-surface-variant text-xs mt-1">{b.description}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeBonus(i)}
+                        className="p-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 rounded shrink-0"
+                      >
+                        <Trash size={14} />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeBonus(i)}
-                      className="p-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 rounded"
-                    >
-                      <Trash size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center bg-white/5 flex flex-col items-center justify-center h-full min-h-[220px]">
+                  <Gift className="w-8 h-8 text-on-surface-variant mb-3 opacity-60" />
+                  <h4 className="text-sm font-semibold text-white">Nenhum bônus configurado</h4>
+                  <p className="text-xs text-on-surface-variant mt-1 max-w-[280px]">Brindes e bônus aumentam o valor percebido do produto e aceleram a decisão de compra. Adicione um bônus ao lado.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {/* Benefits Customization Section */}
         {activeTab === 'benefits' && (
-          <div className="space-y-6">
-            <div className="max-w-xl space-y-4">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
               <h3 className="text-lg font-bold font-display">Vantagens & Benefícios</h3>
               <p className="text-xs text-on-surface-variant">Liste as principais qualidades ou entregáveis do seu produto.</p>
 
@@ -1910,7 +1974,7 @@ export function CollaboratorProductForm({
                   value={newBenefit.title}
                   onChange={e => setNewBenefit({ ...newBenefit, title: e.target.value })}
                   placeholder="Ex: Acesso Vitalício com Atualizações Gratuitas"
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
 
@@ -1921,38 +1985,46 @@ export function CollaboratorProductForm({
                   onChange={e => setNewBenefit({ ...newBenefit, description: e.target.value })}
                   placeholder="Ex: Estude no seu próprio ritmo, sem prazos de validade ou expirações."
                   rows={2}
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none resize-none"
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none resize-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={addBenefit}
-                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-semibold transition-all"
+                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2.5 text-xs font-semibold transition-all"
               >
                 <Plus size={14} /> Adicionar Vantagem
               </button>
             </div>
 
-            {benefits.length > 0 && (
-              <div className="space-y-3">
-                {benefits.map((b, i) => (
-                  <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
-                    <div>
-                      <h4 className="font-bold text-white mb-1">{b.title}</h4>
-                      <p className="text-on-surface-variant text-xs">{b.description}</p>
+            <div>
+              {benefits.length > 0 ? (
+                <div className="space-y-3">
+                  {benefits.map((b, i) => (
+                    <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
+                      <div>
+                        <h4 className="font-bold text-white mb-1">{b.title}</h4>
+                        <p className="text-on-surface-variant text-xs">{b.description}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeBenefit(i)}
+                        className="p-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 rounded"
+                      >
+                        <Trash size={14} />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeBenefit(i)}
-                      className="p-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 rounded"
-                    >
-                      <Trash size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center bg-white/5 flex flex-col items-center justify-center h-full min-h-[220px]">
+                  <Award className="w-8 h-8 text-on-surface-variant mb-3 opacity-60" />
+                  <h4 className="text-sm font-semibold text-white">Nenhuma vantagem adicionada</h4>
+                  <p className="text-xs text-on-surface-variant mt-1 max-w-[280px]">Preencha o formulário ao lado e clique em "Adicionar Vantagem" para destacar os benefícios do produto.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

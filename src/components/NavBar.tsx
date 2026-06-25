@@ -294,8 +294,8 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
       <motion.nav
         initial={{ y: 0, opacity: 1 }}
         animate={{
-          y: visible ? 0 : -90,
-          opacity: visible ? 1 : 0,
+          y: 0,
+          opacity: 1,
         }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
@@ -304,9 +304,9 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           // Adaptive layout spacing
           scrolled
             ? [
-                'border-b border-white/10',
-                'px-6 md:px-12 py-2.5',
-                'bg-background/95 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.6)]',
+                'border-b border-white/5',
+                'px-6 md:px-12 py-3.5',
+                'bg-background/80 backdrop-blur-md shadow-none',
               ]
             : [
                 'border-b border-transparent',

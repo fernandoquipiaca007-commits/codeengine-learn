@@ -529,7 +529,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {!isImmersive && !['member','colaborador','colaborador-candidatura','colaborador-produtos','afiliados','settings'].includes(currentScreen) && (
+      {!isImmersive && !['home', 'member','colaborador','colaborador-candidatura','colaborador-produtos','afiliados','settings'].includes(currentScreen) && (
         <Footer setScreen={navigateToScreen} />
       )}
       <PwaInstallBanner />
