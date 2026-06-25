@@ -50,13 +50,25 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
         return;
       }
 
+      // Read referral code from localStorage
+      let referralCode = '';
+      try {
+        const stored = JSON.parse(localStorage.getItem('ce_referral_code') || 'null');
+        if (stored && stored.expiry > Date.now()) {
+          referralCode = stored.code;
+        }
+      } catch (e) {}
+
       const res = await fetch(`${BACKEND_URL}/api/fastpay/create-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ product_id: product.id }),
+        body: JSON.stringify({ 
+          product_id: product.id,
+          referral_code: referralCode || undefined
+        }),
       });
 
       const data = await res.json();

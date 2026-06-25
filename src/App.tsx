@@ -311,6 +311,20 @@ export default function App() {
       localStorage.setItem('ce_referral_code', JSON.stringify({ code: ref, expiry }));
     }
 
+    // Save founder invitation link if present (?invite=AUTH_USER_ID)
+    // This is separate from ?ref= which is for product affiliate tracking
+    const invite = params.get('invite');
+    if (invite) {
+      const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: invite, expiry }));
+      // Clean the invite param from URL to avoid leaking auth IDs in browser history
+      params.delete('invite');
+      const cleanUrl = params.toString()
+        ? `${window.location.pathname}?${params}`
+        : window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+    }
+
     // Handle ?screen=success or ?screen=cancel
     if (screen === 'success' || screen === 'cancel') {
       setScreen(screen);

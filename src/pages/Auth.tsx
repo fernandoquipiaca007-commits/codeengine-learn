@@ -64,6 +64,17 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
     try {
       if (mode === 'signup') {
+        // Read founder referral from localStorage if present
+        let referredByUserId: string | null = null;
+        try {
+          const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
+          if (stored && stored.expiry > Date.now()) {
+            referredByUserId = stored.userId;
+          } else {
+            localStorage.removeItem('ce_founder_ref');
+          }
+        } catch { /* ignore */ }
+
         // Sign up
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
@@ -72,11 +83,17 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
             data: {
               name: name,
               country: country,
+              ...(referredByUserId ? { referred_by: referredByUserId } : {}),
             },
           },
         });
 
         if (signUpError) throw signUpError;
+
+        // Clear founder ref after successful signup
+        if (!signUpError && referredByUserId) {
+          localStorage.removeItem('ce_founder_ref');
+        }
 
         // Send welcome email (non-blocking)
         if (data.session?.access_token) {

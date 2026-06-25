@@ -55,8 +55,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [aoaModalSuccess, setAoaModalSuccess] = useState<string | null>(null);
 
   // Currency filter for dashboard view
-  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates'>('usd');
+  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder'>('usd');
   const [affiliates, setAffiliates] = useState<any[]>([]);
+
+  // Membro Fundador state
+  const [founderStats, setFounderStats] = useState<any>(null);
+  const [founderLoading, setFounderLoading] = useState(false);
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
 
   // Wallet Settings Modal / State
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -84,6 +89,42 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  async function loadFounderStats() {
+    setFounderLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/founder-stats`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      const data = await res.json();
+      if (data.success) setFounderStats(data);
+    } catch (err) {
+      console.error('Error loading founder stats:', err);
+    } finally {
+      setFounderLoading(false);
+    }
+  }
+
+  async function copyInviteLink() {
+    if (!founderStats?.authUserId) return;
+    const link = `${window.location.origin}/?invite=${founderStats.authUserId}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setInviteLinkCopied(true);
+      setTimeout(() => setInviteLinkCopied(false), 2500);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = link;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setInviteLinkCopied(true);
+      setTimeout(() => setInviteLinkCopied(false), 2500);
+    }
+  }
 
   async function loadDashboardData() {
     setLoading(true);
@@ -615,6 +656,16 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         >
           <Users size={14} /> Meus Afiliados
         </button>
+        <button
+          onClick={() => { setWalletView('founder'); loadFounderStats(); }}
+          className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+            walletView === 'founder'
+              ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.25)]'
+              : 'text-on-surface-variant hover:text-white'
+          }`}
+        >
+          <Award size={14} /> Membro Fundador
+        </button>
       </div>
 
       {/* ====== USD WALLET VIEW ====== */}
@@ -833,8 +884,146 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         <CollaboratorAffiliatesPanel affiliates={affiliates} />
       )}
 
+      {/* ====== MEMBRO FUNDADOR VIEW ====== */}
+      {walletView === 'founder' && (
+        <div className="w-full">
+          {founderLoading ? (
+            <div className="flex items-center justify-center py-16 text-on-surface-variant">
+              <RefreshCw size={20} className="animate-spin mr-2" /> Carregando...
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Header explainer */}
+              <div className="glass-panel rounded-2xl p-6 border border-yellow-500/20 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 pointer-events-none" />
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                    <Award size={22} className="text-yellow-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white font-display">Programa Membro Fundador</h3>
+                    <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">
+                      Convide novos criadores de conteúdo para a plataforma. Quando eles fizerem vendas, você ganha
+                      <span className="text-yellow-400 font-bold"> 1% do valor bruto </span>
+                      diretamente no seu saldo disponível — sem tocar na margem deles.
+                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-on-surface-variant">
+                      <span className="inline-flex items-center gap-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2 py-0.5">
+                        <CheckCircle size={10} /> Crédito imediato no saldo disponível
+                      </span>
+                      <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2 py-0.5">
+                        <DollarSign size={10} /> Sai da margem da CodeEngine
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invite Link */}
+              <div className="glass-panel rounded-2xl p-6 border border-white/10">
+                <h4 className="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Seu Link de Convite</h4>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 flex items-center gap-2 bg-surface-high rounded-xl px-4 py-3 border border-white/10 font-mono text-xs text-on-surface-variant overflow-hidden">
+                    <ExternalLink size={13} className="text-yellow-400 flex-shrink-0" />
+                    <span className="truncate">
+                      {founderStats?.authUserId
+                        ? `${window.location.origin}/?invite=${founderStats.authUserId}`
+                        : 'Carregando...'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={copyInviteLink}
+                    disabled={!founderStats?.authUserId}
+                    className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${
+                      inviteLinkCopied
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black hover:opacity-90'
+                    }`}
+                  >
+                    {inviteLinkCopied ? <CheckCircle size={15} /> : <ChevronRight size={15} />}
+                    {inviteLinkCopied ? 'Copiado!' : 'Copiar Link'}
+                  </button>
+                </div>
+                <p className="mt-3 text-xs text-on-surface-variant">
+                  Partilhe este link com criadores de conteúdo. Quando se registarem através dele e obtiverem aprovação como colaboradores, você começa a ganhar automaticamente.
+                </p>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="glass-card rounded-2xl p-5 border border-white/10 text-center">
+                  <div className="text-2xl font-bold text-white font-mono">{founderStats?.totalInvited ?? 0}</div>
+                  <div className="text-xs text-on-surface-variant mt-1">Membros Convidados</div>
+                </div>
+                <div className="glass-card rounded-2xl p-5 border border-white/10 text-center">
+                  <div className="text-2xl font-bold text-white font-mono">{founderStats?.totalInvitedCollaborators ?? 0}</div>
+                  <div className="text-xs text-on-surface-variant mt-1">Viraram Colaboradores</div>
+                </div>
+                <div className="glass-card rounded-2xl p-5 border border-green-500/20 text-center">
+                  <div className="text-2xl font-bold text-green-400 font-mono">
+                    {(founderStats?.totalEarnedUsd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                  </div>
+                  <div className="text-xs text-on-surface-variant mt-1">Ganho como Fundador (USD)</div>
+                </div>
+                <div className="glass-card rounded-2xl p-5 border border-amber-500/20 text-center">
+                  <div className="text-2xl font-bold text-amber-400 font-mono">
+                    {(founderStats?.totalEarnedAoa || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })}
+                  </div>
+                  <div className="text-xs text-on-surface-variant mt-1">Ganho como Fundador (AOA)</div>
+                </div>
+              </div>
+
+              {/* Recent founder commissions */}
+              <div className="glass-panel rounded-2xl p-6 border border-white/10">
+                <h4 className="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Comissões Recentes de Fundador</h4>
+                {!founderStats?.recentCommissions?.length ? (
+                  <div className="py-8 text-center text-on-surface-variant text-sm">
+                    Nenhuma comissão de fundador recebida ainda. Convide colaboradores para começar!
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm border-collapse">
+                      <thead>
+                        <tr className="text-on-surface-variant font-semibold border-b border-white/10">
+                          <th className="pb-3 text-xs uppercase tracking-wider">Data</th>
+                          <th className="pb-3 text-xs uppercase tracking-wider">Descrição</th>
+                          <th className="pb-3 text-xs uppercase tracking-wider text-right">Valor</th>
+                          <th className="pb-3 text-xs uppercase tracking-wider text-right">Moeda</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {founderStats.recentCommissions.map((item: any) => (
+                          <tr key={item.id} className="text-on-surface">
+                            <td className="py-3 text-on-surface-variant text-xs font-mono">
+                              {new Date(item.created_at).toLocaleDateString('pt-BR')}
+                            </td>
+                            <td className="py-3 text-white text-sm">{item.description}</td>
+                            <td className="py-3 text-right font-mono font-semibold text-yellow-400">
+                              +{Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-3 text-right">
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
+                                item.currency === 'USD'
+                                  ? 'text-green-400 bg-green-500/10 border-green-500/20'
+                                  : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                              }`}>
+                                {item.currency}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Grid: Extrato e Solicitações */}
-      {walletView !== 'affiliates' && (
+      {walletView !== 'affiliates' && walletView !== 'founder' && (
         <div className="grid gap-6 lg:grid-cols-3 relative z-10">
         {/* Ledger Extrato */}
         <div className="lg:col-span-2 glass-panel rounded-2xl p-6 border border-white/10">
