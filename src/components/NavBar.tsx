@@ -300,17 +300,18 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
           'fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center w-full rounded-none',
-          'border-b border-white/10',
-          'transition-[padding,box-shadow,background] duration-300',
+          'transition-[padding,box-shadow,background,border-color] duration-300',
           // Adaptive layout spacing
           scrolled
             ? [
+                'border-b border-white/10',
                 'px-6 md:px-12 py-2.5',
                 'bg-background/95 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.6)]',
               ]
             : [
-                'px-6 md:px-12 py-4',
-                'bg-background/80 backdrop-blur-xl',
+                'border-b border-transparent',
+                'px-6 md:px-12 py-5',
+                'bg-transparent backdrop-blur-[2px]',
                 'shadow-none',
               ]
         )}
