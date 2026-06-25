@@ -515,5 +515,32 @@
     "lessons": "aulas",
     "afterPurchase": "Após compra",
     "lessonsTitle": "Aulas"
+  },
+  "collaborator": {
+    "dashboardTitle": "Painel do Criador",
+    "dashboardSubtitle": "Olá, {{name}}! Gerencie seu saldo e acompanhe seu extrato.",
+    "tabWalletUsd": "USD · Stripe",
+    "tabWalletAoa": "AOA · FaciPay",
+    "tabAffiliates": "Meus Afiliados",
+    "tabFounder": "Membro Fundador",
+    "tabAnalytics": "Análise",
+    "analytics": {
+      "title": "Análise de Tráfego e Vendas",
+      "description": "Monitore as visitas, conversões e o faturamento total gerado pelas páginas de seus produtos.",
+      "allProducts": "Todos os Produtos",
+      "productSelector": "Filtrar por Produto",
+      "periodSelector": "Período",
+      "days7": "Últimos 7 dias",
+      "days30": "Últimos 30 dias",
+      "days90": "Últimos 90 dias",
+      "views": "Visualizações",
+      "conversions": "Conversões (Vendas)",
+      "conversionRate": "Taxa de Conversão",
+      "revenueUsd": "Faturamento USD",
+      "revenueAoa": "Faturamento AOA",
+      "chartTitle": "Tendência de Visitas e Conversões",
+      "loading": "Carregando dados de análise...",
+      "noData": "Nenhum dado encontrado para este período."
+    }
   }
 }

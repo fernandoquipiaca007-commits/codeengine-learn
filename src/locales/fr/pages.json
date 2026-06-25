@@ -486,5 +486,32 @@
     "lessons": "leçons",
     "afterPurchase": "Après l'achat",
     "lessonsTitle": "Leçons"
+  },
+  "collaborator": {
+    "dashboardTitle": "Tableau de Bord du Créateur",
+    "dashboardSubtitle": "Bonjour, {{name}} ! Gérez votre solde et suivez votre extrait.",
+    "tabWalletUsd": "USD · Stripe",
+    "tabWalletAoa": "AOA · FaciPay",
+    "tabAffiliates": "Mes Affiliés",
+    "tabFounder": "Membre Fondateur",
+    "tabAnalytics": "Analyses",
+    "analytics": {
+      "title": "Analyses de Trafic & Ventes",
+      "description": "Suivez les visites, les conversions et le chiffre d'affaires total généré par vos pages produits.",
+      "allProducts": "Tous les Produits",
+      "productSelector": "Filtrer par Produit",
+      "periodSelector": "Période",
+      "days7": "7 derniers jours",
+      "days30": "30 derniers jours",
+      "days90": "90 derniers jours",
+      "views": "Vues de Page",
+      "conversions": "Conversions (Ventes)",
+      "conversionRate": "Taux de Conversion",
+      "revenueUsd": "Revenu USD",
+      "revenueAoa": "Revenu AOA",
+      "chartTitle": "Tendance des Visites & Conversions",
+      "loading": "Chargement des données d'analyse...",
+      "noData": "Aucune donnée trouvée pour cette période."
+    }
   }
 }

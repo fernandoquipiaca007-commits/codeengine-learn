@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from 'react-i18next';
 import { 
   TrendingUp, Clock, CheckCircle, ArrowUpRight, ArrowDownRight, 
   DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink, Award, ShieldCheck, Video, PlayCircle,
-  Users, Percent, Search, Briefcase
+  Users, Percent, Search, Briefcase, Eye
 } from 'lucide-react';
 
 interface CollaboratorDashboardProps {
@@ -33,6 +34,7 @@ interface CollaboratorProfile {
 }
 
 export function CollaboratorDashboard({ setScreen, onGoToProducts }: CollaboratorDashboardProps) {
+  const { t } = useTranslation('pages');
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<CollaboratorProfile | null>(null);
   const [balance, setBalance] = useState<any>(null);
@@ -55,7 +57,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [aoaModalSuccess, setAoaModalSuccess] = useState<string | null>(null);
 
   // Currency filter for dashboard view
-  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder'>('usd');
+  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder' | 'analytics'>('usd');
   const [affiliates, setAffiliates] = useState<any[]>([]);
 
   // Membro Fundador state
@@ -523,7 +525,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em] flex flex-wrap items-center gap-2">
-            Painel do Criador
+            {t('collaborator.dashboardTitle', 'Painel do Criador')}
             {profile?.plan === 'course_creator' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-[10px] font-bold text-blue-400 font-display shadow-lg shadow-blue-500/10">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
@@ -532,7 +534,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             )}
           </h1>
           <p className="mt-1 text-on-surface-variant font-sans text-xs sm:text-sm">
-            Olá, {profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.
+            {t('collaborator.dashboardSubtitle', { name: profile?.displayName, defaultValue: `Olá, ${profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.` })}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap items-center">
@@ -634,7 +636,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <DollarSign size={12} /> USD · Stripe
+          <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
         </button>
         <button
           onClick={() => setWalletView('aoa')}
@@ -644,7 +646,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Landmark size={10} /> AOA · FaciPay
+          <Landmark size={10} /> {t('collaborator.tabWalletAoa', 'AOA · FaciPay')}
         </button>
         <button
           onClick={() => setWalletView('affiliates')}
@@ -654,7 +656,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Users size={12} /> Meus Afiliados
+          <Users size={12} /> {t('collaborator.tabAffiliates', 'Meus Afiliados')}
         </button>
         <button
           onClick={() => { setWalletView('founder'); loadFounderStats(); }}
@@ -664,7 +666,17 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Award size={12} /> Membro Fundador
+          <Award size={12} /> {t('collaborator.tabFounder', 'Membro Fundador')}
+        </button>
+        <button
+          onClick={() => setWalletView('analytics')}
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+            walletView === 'analytics'
+              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.25)]'
+              : 'text-on-surface-variant hover:text-white'
+          }`}
+        >
+          <TrendingUp size={12} /> {t('collaborator.tabAnalytics', 'Análise')}
         </button>
       </div>
 
@@ -879,6 +891,11 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         </>
       )}
 
+      {/* ====== ANALYTICS VIEW ====== */}
+      {walletView === 'analytics' && (
+        <CollaboratorAnalyticsPanel t={t} />
+      )}
+
       {/* ====== MEUS AFILIADOS VIEW ====== */}
       {walletView === 'affiliates' && (
         <CollaboratorAffiliatesPanel affiliates={affiliates} />
@@ -1023,7 +1040,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       )}
 
       {/* Main Grid: Extrato e Solicitações */}
-      {walletView !== 'affiliates' && walletView !== 'founder' && (
+      {walletView !== 'affiliates' && walletView !== 'founder' && walletView !== 'analytics' && (
         <div className="grid gap-4 lg:grid-cols-3 relative z-10">
         {/* Ledger Extrato */}
         <div className="lg:col-span-2 glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
@@ -1852,6 +1869,409 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: number; conversions: number; revenueUsd: number; revenueAoa: number }> }) {
+  // SVG dimensions
+  const width = 500;
+  const height = 200;
+  const paddingLeft = 40;
+  const paddingRight = 20;
+  const paddingTop = 20;
+  const paddingBottom = 30;
+
+  const chartWidth = width - paddingLeft - paddingRight;
+  const chartHeight = height - paddingTop - paddingBottom;
+
+  const maxViews = Math.max(...data.map(d => d.views), 1);
+  const maxConversions = Math.max(...data.map(d => d.conversions), 1);
+  const maxVal = Math.max(maxViews, maxConversions);
+
+  // Generate points
+  const pointsViews = data.map((d, index) => {
+    const x = paddingLeft + (index / (data.length - 1 || 1)) * chartWidth;
+    const y = paddingTop + chartHeight - (d.views / maxVal) * chartHeight;
+    return { x, y, data: d };
+  });
+
+  const pointsConvs = data.map((d, index) => {
+    const x = paddingLeft + (index / (data.length - 1 || 1)) * chartWidth;
+    const y = paddingTop + chartHeight - (d.conversions / maxVal) * chartHeight;
+    return { x, y, data: d };
+  });
+
+  // SVG paths
+  const viewsPath = pointsViews.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const viewsAreaPath = data.length > 0 
+    ? `${viewsPath} L ${pointsViews[pointsViews.length - 1].x} ${height - paddingBottom} L ${pointsViews[0].x} ${height - paddingBottom} Z` 
+    : '';
+
+  const convsPath = pointsConvs.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+  // Hover state
+  const [hoveredPoint, setHoveredPoint] = useState<any>(null);
+
+  return (
+    <div className="relative w-full">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible select-none">
+        {/* Horizontal grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+          const y = paddingTop + chartHeight * ratio;
+          const val = Math.round(maxVal * (1 - ratio));
+          return (
+            <g key={i} className="opacity-10">
+              <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="white" strokeWidth="0.5" strokeDasharray="3 3" />
+              <text x={paddingLeft - 8} y={y + 4} fill="white" fontSize="9" textAnchor="end" className="font-mono">{val}</text>
+            </g>
+          );
+        })}
+
+        {/* X Axis dates (only show 6 dates to avoid crowding) */}
+        {data.map((d, i) => {
+          const step = Math.ceil(data.length / 6) || 1;
+          if (i % step !== 0 && i !== data.length - 1) return null;
+          const x = paddingLeft + (i / (data.length - 1 || 1)) * chartWidth;
+          return (
+            <text key={i} x={x} y={height - 8} fill="white" fontSize="9" textAnchor="middle" className="opacity-40 font-semibold font-mono">
+              {d.displayDate}
+            </text>
+          );
+        })}
+
+        {/* Views Area & Line */}
+        {viewsAreaPath && (
+          <path d={viewsAreaPath} fill="url(#viewsAreaGrad)" className="transition-all duration-300" />
+        )}
+        {viewsPath && (
+          <path d={viewsPath} fill="none" stroke="#3b82f6" strokeWidth="2" className="transition-all duration-300" />
+        )}
+
+        {/* Conversions Line */}
+        {convsPath && (
+          <path d={convsPath} fill="none" stroke="#22c55e" strokeWidth="2" className="transition-all duration-300" />
+        )}
+
+        {/* Interactive hover overlays / pings */}
+        {pointsViews.map((pv, i) => {
+          const pc = pointsConvs[i];
+          const isHovered = hoveredPoint && hoveredPoint.index === i;
+          return (
+            <g key={i}>
+              {/* Invisible touch/hover columns */}
+              <rect
+                x={pv.x - (chartWidth / (data.length - 1 || 1)) / 2}
+                y={paddingTop}
+                width={chartWidth / (data.length - 1 || 1)}
+                height={chartHeight}
+                fill="transparent"
+                onMouseEnter={() => setHoveredPoint({ index: i, x: pv.x, data: pv.data, yViews: pv.y, yConvs: pc.y })}
+                onMouseLeave={() => setHoveredPoint(null)}
+                className="cursor-crosshair"
+              />
+              
+              {/* Highlight line on hover */}
+              {isHovered && (
+                <line x1={pv.x} y1={paddingTop} x2={pv.x} y2={height - paddingBottom} stroke="white" strokeWidth="0.5" className="opacity-30 pointer-events-none" />
+              )}
+
+              {/* Data dots on hover */}
+              {isHovered && (
+                <>
+                  <circle cx={pv.x} cy={pv.y} r="4" fill="#3b82f6" stroke="white" strokeWidth="1.5" className="pointer-events-none shadow" />
+                  <circle cx={pc.x} cy={pc.y} r="4" fill="#22c55e" stroke="white" strokeWidth="1.5" className="pointer-events-none shadow" />
+                </>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Gradients */}
+        <defs>
+          <linearGradient id="viewsAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      {/* Tooltip Overlay */}
+      {hoveredPoint && (
+        <div 
+          className="absolute z-30 pointer-events-none bg-surface-high border border-white/10 rounded-xl p-3 shadow-2xl text-[11px] min-w-[120px] transition-all"
+          style={{ 
+            left: `${Math.min(80, Math.max(5, (hoveredPoint.x / width) * 100))}%`, 
+            top: `-20px` 
+          }}
+        >
+          <div className="font-bold text-white mb-1.5 border-b border-white/5 pb-1 font-mono">{hoveredPoint.data.displayDate}</div>
+          <div className="flex justify-between gap-4 text-on-surface-variant font-sans">
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Views:</span>
+            <span className="font-mono font-bold text-white">{hoveredPoint.data.views}</span>
+          </div>
+          <div className="flex justify-between gap-4 text-on-surface-variant font-sans">
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Vendas:</span>
+            <span className="font-mono font-bold text-white">{hoveredPoint.data.conversions}</span>
+          </div>
+          {(hoveredPoint.data.revenueUsd > 0 || hoveredPoint.data.revenueAoa > 0) && (
+            <div className="mt-1.5 border-t border-white/5 pt-1.5 space-y-0.5">
+              <span className="block text-[9px] uppercase tracking-wider text-gray-400 font-semibold">Receita Bruta:</span>
+              {hoveredPoint.data.revenueUsd > 0 && (
+                <div className="flex justify-between text-white font-mono font-bold text-[10px]">
+                  <span>USD:</span>
+                  <span>${hoveredPoint.data.revenueUsd.toFixed(2)}</span>
+                </div>
+              )}
+              {hoveredPoint.data.revenueAoa > 0 && (
+                <div className="flex justify-between text-green-400 font-mono font-bold text-[10px]">
+                  <span>AOA:</span>
+                  <span>Kz {hoveredPoint.data.revenueAoa.toLocaleString('pt-AO')}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CollaboratorAnalyticsPanel({ t }: { t: any }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [summary, setSummary] = useState<any>(null);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  
+  const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [period, setPeriod] = useState<string>('30d');
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [selectedProduct, period]);
+
+  async function fetchAnalytics() {
+    setLoading(true);
+    setError(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      let url = `${BACKEND_URL}/api/collaborators/analytics?period=${period}`;
+      if (selectedProduct) {
+        url += `&productId=${selectedProduct}`;
+      }
+
+      const res = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSummary(data.summary);
+        setChartData(data.chartData);
+        setProducts(data.products || []);
+      } else {
+        setError(true);
+      }
+    } catch (err) {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Filters panel */}
+      <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+        <div>
+          <h3 className="text-base font-bold text-white font-display">
+            {t('collaborator.analytics.title', 'Análise de Tráfego e Vendas')}
+          </h3>
+          <p className="text-xs text-on-surface-variant mt-0.5">
+            {t('collaborator.analytics.description', 'Monitore as visitas, conversões e o faturamento total gerado pelas páginas de seus produtos.')}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Product selector dropdown */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+              {t('collaborator.analytics.productSelector', 'Filtrar por Produto')}
+            </span>
+            <select
+              value={selectedProduct}
+              onChange={(e) => setSelectedProduct(e.target.value)}
+              className="rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/50 font-sans"
+            >
+              <option value="">{t('collaborator.analytics.allProducts', 'Todos os Produtos')}</option>
+              {products.map(p => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Period selector */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+              {t('collaborator.analytics.periodSelector', 'Período')}
+            </span>
+            <div className="flex items-center gap-1 p-0.5 bg-surface-high rounded-xl border border-white/10">
+              {(['7d', '30d', '90d'] as const).map(p => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    period === p
+                      ? 'bg-primary text-background'
+                      : 'text-on-surface-variant hover:text-white'
+                  }`}
+                >
+                  {p === '7d' ? t('collaborator.analytics.days7', '7D') : p === '90d' ? t('collaborator.analytics.days90', '90D') : t('collaborator.analytics.days30', '30D')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {loading && !summary ? (
+        <div className="flex justify-center items-center py-16 text-on-surface-variant">
+          <RefreshCw size={20} className="animate-spin mr-2" /> {t('collaborator.analytics.loading', 'Carregando dados de análise...')}
+        </div>
+      ) : error ? (
+        <div className="glass-panel rounded-2xl p-6 border border-red-500/20 text-center text-red-400 text-sm">
+          {t('collaborator.analytics.errorLoading', 'Erro ao carregar análise. Tente novamente.')}
+        </div>
+      ) : (
+        <>
+          {/* Summary Cards */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 relative z-10">
+            {/* Card 1: Views */}
+            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-blue-500/15">
+              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  <Eye size={15} />
+                </div>
+                <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">
+                  {t('collaborator.tabAnalytics', 'Análise')}
+                </span>
+              </div>
+              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+                {t('collaborator.analytics.views', 'Visualizações')}
+              </span>
+              <span className="block text-xl font-bold text-white font-mono">{summary?.totalViews ?? 0}</span>
+            </div>
+
+            {/* Card 2: Conversions */}
+            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-green-500/15">
+              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                  <CheckCircle size={15} />
+                </div>
+                <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">
+                  {t('collaborator.analytics.conversions', 'Conversões (Vendas)')}
+                </span>
+              </div>
+              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+                {t('collaborator.analytics.conversions', 'Conversões (Vendas)')}
+              </span>
+              <span className="block text-xl font-bold text-white font-mono">{summary?.totalConversions ?? 0}</span>
+            </div>
+
+            {/* Card 3: CR% */}
+            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-purple-500/15">
+              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(168,85,247,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  <ArrowUpRight size={15} />
+                </div>
+                <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20 uppercase tracking-wider">
+                  CR %
+                </span>
+              </div>
+              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+                {t('collaborator.analytics.conversionRate', 'Taxa de Conversão')}
+              </span>
+              <span className="block text-xl font-bold text-white font-mono">
+                {Number(summary?.conversionRate || 0).toFixed(1)}%
+              </span>
+            </div>
+
+            {/* Card 4: Revenue USD */}
+            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-primary/15">
+              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
+                  <DollarSign size={15} />
+                </div>
+                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-wider">
+                  USD
+                </span>
+              </div>
+              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+                {t('collaborator.analytics.revenueUsd', 'Faturamento USD')}
+              </span>
+              <span className="block text-xl font-bold text-white font-mono">
+                {Number(summary?.totalRevenueUsd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+              </span>
+            </div>
+
+            {/* Card 5: Revenue AOA */}
+            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-amber-500/15">
+              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <Landmark size={15} />
+                </div>
+                <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">
+                  AOA
+                </span>
+              </div>
+              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+                {t('collaborator.analytics.revenueAoa', 'Faturamento AOA')}
+              </span>
+              <span className="block text-xl font-bold text-white font-mono">
+                {Number(summary?.totalRevenueAoa || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })}
+              </span>
+            </div>
+          </div>
+
+          {/* Chart Container */}
+          <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10 relative z-10">
+            <h4 className="text-sm font-bold text-white font-display mb-4">
+              {t('collaborator.analytics.chartTitle', 'Tendência de Visitas e Conversões')}
+            </h4>
+            
+            {chartData.length === 0 ? (
+              <div className="py-12 text-center text-on-surface-variant text-sm font-sans">
+                {t('collaborator.analytics.noData', 'Nenhum dado encontrado para este período.')}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <PureSvgChart data={chartData} />
+                
+                {/* Custom chart legend */}
+                <div className="flex justify-center gap-6 pt-2 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 text-blue-400">
+                    <span className="w-3 h-1.5 rounded-full bg-blue-500" />
+                    <span>{t('collaborator.analytics.views', 'Visualizações')}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-green-400">
+                    <span className="w-3 h-1.5 rounded-full bg-green-500" />
+                    <span>{t('collaborator.analytics.conversions', 'Conversões (Vendas)')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
