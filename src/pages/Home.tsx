@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Brain, Code2, Zap, Plug, Cpu, Layout, BookOpen, Cloud } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
@@ -12,34 +12,34 @@ import { supabase } from '../lib/supabase';
 const getTopics = (lang: string) => {
   const topics = {
     pt: [
-      { text: "Inteligência Artificial", icon: "🧠" },
-      { text: "Desenvolvimento Fullstack", icon: "💻" },
-      { text: "Infraestrutura SaaS", icon: "⚡" },
-      { text: "Automação de APIs", icon: "🔌" },
-      { text: "Machine Learning", icon: "🤖" },
-      { text: "Design de Interface Premium", icon: "✨" },
-      { text: "Cursos & E-books Exclusivos", icon: "📚" },
-      { text: "Arquitetura Cloud", icon: "☁️" }
+      { text: "Inteligência Artificial", icon: Brain },
+      { text: "Desenvolvimento Fullstack", icon: Code2 },
+      { text: "Infraestrutura SaaS", icon: Zap },
+      { text: "Automação de APIs", icon: Plug },
+      { text: "Machine Learning", icon: Cpu },
+      { text: "Design de Interface Premium", icon: Layout },
+      { text: "Cursos & E-books Exclusivos", icon: BookOpen },
+      { text: "Arquitetura Cloud", icon: Cloud }
     ],
     fr: [
-      { text: "Intelligence Artificielle", icon: "🧠" },
-      { text: "Développement Fullstack", icon: "💻" },
-      { text: "Infrastructure SaaS", icon: "⚡" },
-      { text: "Automatisation d'APIs", icon: "🔌" },
-      { text: "Machine Learning", icon: "🤖" },
-      { text: "Design d'Interface Premium", icon: "✨" },
-      { text: "Cours & E-books Exclusifs", icon: "📚" },
-      { text: "Architecture Cloud", icon: "☁️" }
+      { text: "Intelligence Artificielle", icon: Brain },
+      { text: "Développement Fullstack", icon: Code2 },
+      { text: "Infrastructure SaaS", icon: Zap },
+      { text: "Automatisation d'APIs", icon: Plug },
+      { text: "Machine Learning", icon: Cpu },
+      { text: "Design d'Interface Premium", icon: Layout },
+      { text: "Cours & E-books Exclusifs", icon: BookOpen },
+      { text: "Architecture Cloud", icon: Cloud }
     ],
     en: [
-      { text: "Artificial Intelligence", icon: "🧠" },
-      { text: "Fullstack Development", icon: "💻" },
-      { text: "SaaS Infrastructure", icon: "⚡" },
-      { text: "API Automation", icon: "🔌" },
-      { text: "Machine Learning", icon: "🤖" },
-      { text: "Premium Interface Design", icon: "✨" },
-      { text: "Exclusive Courses & E-books", icon: "📚" },
-      { text: "Cloud Architecture", icon: "☁️" }
+      { text: "Artificial Intelligence", icon: Brain },
+      { text: "Fullstack Development", icon: Code2 },
+      { text: "SaaS Infrastructure", icon: Zap },
+      { text: "API Automation", icon: Plug },
+      { text: "Machine Learning", icon: Cpu },
+      { text: "Premium Interface Design", icon: Layout },
+      { text: "Exclusive Courses & E-books", icon: BookOpen },
+      { text: "Cloud Architecture", icon: Cloud }
     ]
   };
   const currentLang = lang.startsWith('pt') ? 'pt' : lang.startsWith('fr') ? 'fr' : 'en';
@@ -351,7 +351,8 @@ export function Home({ setScreen }: HomeProps) {
 
   const word1 = t('home.pixelWord1', { defaultValue: 'Welcome to' });
   const word2 = t('home.pixelWord2', { defaultValue: 'CodeEngine.' });
-  const description = t('home.pixelDesc', { defaultValue: 'The ultimate code library for high-performing developers. Master automation, artificial intelligence, and build high-performance systems with speed and elegance.' });
+  const subtitle = t('home.pixelSubtitle', { defaultValue: 'A sua evolução começa no momento em que o conhecimento certo encontra a execução certa.' });
+  const description = t('home.pixelDesc', { defaultValue: 'Explore cursos, e-books, ferramentas e IA projetados para transformar aprendizado em resultados reais.' });
   const primaryCta = t('home.pixelCta', { defaultValue: 'Explore' });
   const primaryCtaMobile = t('home.pixelCtaMobile', { defaultValue: 'Explore' });
   const secondaryCta = t('home.pixelGithub', { defaultValue: 'Get Started' });
@@ -398,10 +399,9 @@ export function Home({ setScreen }: HomeProps) {
         }
       `}</style>
 
-      {/* Permanent canvas background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        {themeColors.length > 0 && <PixelCanvas colors={themeColors} gap={6} speed={30} />}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,var(--background)_100%)] pointer-events-none opacity-80" />
+      {/* Permanent background layer (transparent, allowing Background3D to show through) */}
+      <div className="absolute inset-0 z-0 pointer-events-none bg-black/45">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_100%)] pointer-events-none opacity-80" />
       </div>
 
       {/* Top Container: Tahoe Glass Header */}
@@ -413,8 +413,11 @@ export function Home({ setScreen }: HomeProps) {
       </div>
 
       {/* Center Container: Description & Mobile Vector Marquee */}
-      <div className="flex flex-col items-center justify-center text-center my-auto md:my-0 order-2 md:order-2 px-1 w-full pointer-events-none">
-        <p className="text-sm sm:text-lg md:text-xl font-light text-foreground/85 max-w-[95%] sm:max-w-md md:max-w-xl px-1 leading-relaxed">
+      <div className="flex flex-col items-center justify-center text-center my-auto md:my-0 order-2 md:order-2 px-1 w-full pointer-events-none gap-4">
+        <p className="text-base sm:text-xl md:text-2xl font-bold tracking-tight text-white max-w-[95%] sm:max-w-lg md:max-w-3xl px-1 leading-snug">
+          {subtitle}
+        </p>
+        <p className="text-xs sm:text-sm md:text-base font-normal text-muted-foreground/90 max-w-[90%] sm:max-w-md md:max-w-xl px-1 leading-relaxed">
           {description}
         </p>
 
@@ -425,20 +428,26 @@ export function Home({ setScreen }: HomeProps) {
           <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]">
             <div className="flex w-max gap-8 py-1 animate-marquee">
               <div className="flex gap-8 items-center">
-                {topics.map((topic, i) => (
-                  <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
-                    <span>{topic.icon}</span>
-                    <span className="opacity-80">{topic.text}</span>
-                  </div>
-                ))}
+                {topics.map((topic, i) => {
+                  const Icon = topic.icon;
+                  return (
+                    <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
+                      <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                      <span className="opacity-80">{topic.text}</span>
+                    </div>
+                  );
+                })}
               </div>
               <div className="flex gap-8 items-center" aria-hidden="true">
-                {topics.map((topic, i) => (
-                  <div key={`m-c-${i}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
-                    <span>{topic.icon}</span>
-                    <span className="opacity-80">{topic.text}</span>
-                  </div>
-                ))}
+                {topics.map((topic, i) => {
+                  const Icon = topic.icon;
+                  return (
+                    <div key={`m-c-${i}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-sans text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap">
+                      <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                      <span className="opacity-80">{topic.text}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -464,7 +473,7 @@ export function Home({ setScreen }: HomeProps) {
 
       {/* Desktop-only Marquee Block */}
       <div
-        className={cn("hidden md:flex absolute bottom-8 left-0 right-0 w-full z-10 pointer-events-auto flex-col items-center justify-center gap-4 transition-all duration-1000 transform order-3 md:order-4", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8")}
+        className={cn("hidden md:flex w-full z-10 pointer-events-auto flex-col items-center justify-center gap-4 transition-all duration-1000 transform order-3 md:order-4 mt-12 md:mt-16 pb-8", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8")}
         style={{ transitionDelay: "600ms" }}
       >
         <span className="text-xs uppercase tracking-wider text-muted-foreground/80 font-medium select-none">
@@ -473,24 +482,30 @@ export function Home({ setScreen }: HomeProps) {
         <div className="relative w-full max-w-5xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]">
           <div className="flex w-max gap-16 py-3 animate-marquee">
             <div className="flex gap-16 items-center">
-              {topics.map((topic, i) => (
-                <div key={i} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
-                  <span className="text-sm md:text-base">{topic.icon}</span>
-                  <span className="opacity-80 tracking-wide">{topic.text}</span>
-                </div>
-              ))}
+              {topics.map((topic, i) => {
+                const Icon = topic.icon;
+                return (
+                  <div key={i} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
+                    <Icon className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="opacity-80 tracking-wide">{topic.text}</span>
+                  </div>
+                );
+              })}
             </div>
             <div className="flex gap-16 items-center" aria-hidden="true">
-              {topics.map((topic, i) => (
-                <div key={`d-c-${i}`} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
-                  <span className="text-sm md:text-base">{topic.icon}</span>
-                  <span className="opacity-80 tracking-wide">{topic.text}</span>
-                </div>
-              ))}
+              {topics.map((topic, i) => {
+                const Icon = topic.icon;
+                return (
+                  <div key={`d-c-${i}`} className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs md:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors">
+                    <Icon className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span className="opacity-80 tracking-wide">{topic.text}</span>
+                  </div>
+                );
+              })}
             </div>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }
