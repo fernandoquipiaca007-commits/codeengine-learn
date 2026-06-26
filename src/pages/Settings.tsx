@@ -411,7 +411,7 @@ export function Settings({ setScreen }: SettingsProps) {
 
   if (loading) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
+      <div className="pt-24 pb-12 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="font-sans text-lg text-on-surface-variant">{t('common:loading.default')}</p>

@@ -366,7 +366,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
   if (loading) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
+      <div className="pt-24 pb-12 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mx-auto mb-4" />
           <p className="font-sans text-lg text-on-surface-variant">{t('member:loading')}</p>
@@ -377,7 +377,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
   if (!memberData) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
+      <div className="pt-24 pb-12 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
           <p className="font-sans text-base text-on-surface-variant">{t('member:errorLoadingData')}</p>
           <button
@@ -424,7 +424,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   ];
 
   return (
-    <div className="pt-28 pb-32 px-4 sm:px-6 md:px-10 max-w-[min(100%,900px)] mx-auto min-h-screen page-wrapper">
+    <div className="pt-20 pb-16 px-4 sm:px-6 md:px-10 max-w-7xl mx-auto min-h-screen page-wrapper">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="font-display text-2xl font-bold text-white">{t('member.title')}</h1>

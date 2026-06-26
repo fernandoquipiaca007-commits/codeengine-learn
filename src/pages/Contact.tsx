@@ -72,9 +72,9 @@ export function Contact({ setScreen }: ContactProps) {
   };
 
   return (
-    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden">
+    <div className="pt-24 pb-12 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden">
       {/* Hero Section */}
-      <header className="mb-24 flex flex-col items-start max-w-4xl">
+      <header className="mb-10 flex flex-col items-start max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

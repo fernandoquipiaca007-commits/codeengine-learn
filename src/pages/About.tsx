@@ -53,9 +53,9 @@ export function About({ setScreen }: AboutProps) {
   ];
 
   return (
-    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden">
+    <div className="pt-24 pb-12 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden">
       {/* Hero Section */}
-      <header className="mb-24 flex flex-col items-start max-w-4xl">
+      <header className="mb-10 flex flex-col items-start max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -75,7 +75,7 @@ export function About({ setScreen }: AboutProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="mb-32"
+        className="mb-16"
       >
         <motion.div 
           className="grid grid-cols-2 md:grid-cols-4 gap-6"
@@ -119,7 +119,7 @@ export function About({ setScreen }: AboutProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="mb-32"
+        className="mb-16"
       >
         <h2 className="animate__animated animate__slideInLeft font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-16">
           {t('about.whatMovesUs')}
@@ -153,7 +153,7 @@ export function About({ setScreen }: AboutProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="mb-32"
+        className="mb-16"
       >
         <h2 className="animate__animated animate__slideInRight font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-16">
           {t('about.whyChoose')}
@@ -187,7 +187,7 @@ export function About({ setScreen }: AboutProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
-        className="mb-32"
+        className="mb-16"
       >
         <div className="glass-panel rounded-3xl p-12 md:p-16 relative overflow-hidden">
           <div className="absolute w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(192,193,255,0.2)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>

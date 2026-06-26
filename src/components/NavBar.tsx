@@ -303,8 +303,8 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           'transition-[padding,box-shadow,background,border-color] duration-300',
           'px-6 md:px-12 shadow-none',
           scrolled
-            ? 'py-3.5 bg-[#050505]/75 backdrop-blur-[6px] border-b border-white/5'
-            : 'py-5 bg-transparent border-b border-transparent'
+            ? 'py-2 bg-[#050505]/75 backdrop-blur-[6px] border-b border-white/5'
+            : 'py-3.5 bg-transparent border-b border-transparent'
         )}
       >
         <div className="nav-beam" />
@@ -319,13 +319,13 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
             alt="Logo"
             className={cn(
               'w-auto object-contain flex-shrink-0 transition-all duration-300',
-              scrolled ? 'h-5 sm:h-6' : 'h-6 sm:h-7'
+              scrolled ? 'h-4 sm:h-5' : 'h-5 sm:h-6'
             )}
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
           <span className={cn(
             'hidden md:inline font-display font-bold tracking-tighter text-on-surface whitespace-nowrap transition-all duration-300',
-            scrolled ? 'text-sm' : 'text-base'
+            scrolled ? 'text-xs' : 'text-sm'
           )}>
             CodeEngine 1
           </span>

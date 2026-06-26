@@ -42,16 +42,16 @@
 
   /* ── Type Scale (optimized for 1366×768+) ── */
   --font-size-xs:   0.69rem;
-  --font-size-sm:   0.8rem;
-  --font-size-base: 0.9rem;
-  --font-size-lg:   1rem;
-  --font-size-xl:   1.1rem;
-  --font-size-2xl:  1.3rem;
-  --font-size-3xl:  1.55rem;
-  --font-size-4xl:  1.9rem;
-  --font-size-5xl:  2.35rem;
-  --font-size-6xl:  3rem;
-  --font-size-7xl:  3.6rem;
+  --font-size-sm:   0.77rem;
+  --font-size-base: 0.85rem;
+  --font-size-lg:   0.92rem;
+  --font-size-xl:   0.98rem;
+  --font-size-2xl:  1.1rem;
+  --font-size-3xl:  1.25rem;
+  --font-size-4xl:  1.45rem;
+  --font-size-5xl:  1.75rem;
+  --font-size-6xl:  2.1rem;
+  --font-size-7xl:  2.5rem;
 
   /* ── Spacing base (4px grid) ── */
   --spacing: 0.25rem;
@@ -142,16 +142,16 @@
     }
   }
 
-  /* ── Large viewport: cap at 1440px ── */
+  /* ── Large viewport: cap ── */
   @media (min-width: 1440px) {
     .page-wrapper {
-      max-width: 1280px;
+      max-width: 1380px;
     }
   }
 
   @media (min-width: 1920px) {
     .page-wrapper {
-      max-width: 1440px;
+      max-width: 1760px;
     }
   }
 
@@ -287,12 +287,12 @@
 
   /* Standard vertical rhythm between page sections */
   .section-gap {
-    @apply py-14 sm:py-16 lg:py-20;
+    @apply py-8 sm:py-10 lg:py-12;
   }
 
   /* Uniform section title block */
   .section-heading {
-    @apply text-center mb-10 sm:mb-12;
+    @apply text-center mb-5 sm:mb-6;
   }
 
   /* ── Perspective / 3D (subtle only on hero) ── */
