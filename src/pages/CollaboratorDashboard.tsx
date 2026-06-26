@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { 
   TrendingUp, Clock, CheckCircle, ArrowUpRight, ArrowDownRight, 
   DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink, Award, ShieldCheck, Video, PlayCircle,
-  Users, Percent, Search, Briefcase, Eye
+  Users, Percent, Search, Briefcase, Eye, Check, ArrowLeft
 } from 'lucide-react';
 import { useUserCountry } from '../contexts/UserCountryContext';
 import { CountryRequiredModal } from '../components/CountryRequiredModal';
@@ -97,6 +97,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
   // Benefits & Pricing modal
   const [showPlanBenefitsModal, setShowPlanBenefitsModal] = useState(false);
+  const [pricingModalStep, setPricingModalStep] = useState<'plans' | 'select_method' | 'fastpay_upload'>('plans');
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [submittingStripe, setSubmittingStripe] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
@@ -558,11 +559,18 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         </div>
         <div className="flex gap-1.5 flex-wrap items-center">
           <button
-            onClick={() => setShowPlanBenefitsModal(true)}
+            onClick={() => {
+              setPricingModalStep('plans');
+              setStripeError(null);
+              setFastpayError(null);
+              setFastpaySuccess(null);
+              setReceiptUrl(null);
+              setShowPlanBenefitsModal(true);
+            }}
             className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 font-semibold text-white hover:bg-primary/20 transition-all text-[11px] shadow-[0_0_10px_rgba(192,193,255,0.1)]"
           >
             <Award size={13} className="text-primary animate-pulse" />
-            Benefícios do Plano Premium
+            Plano Premium
           </button>
           <button
             onClick={openWalletModal}
@@ -608,7 +616,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <div>
                   <h4 className="text-sm font-bold text-white">Período de Tolerância Ativo (Expiração Crítica)</h4>
                   <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                    Sua assinatura do plano <strong>Course Creator</strong> via {profile.upgradeMethod === 'fastpay' ? 'FastPay' : 'Stripe'} expirou em {expiresAt.toLocaleDateString()}. 
+                    Sua assinatura do plano <strong>Course Creator</strong> via {profile.upgradeMethod === 'fastpay' ? 'Facipay' : 'Stripe'} expirou em {expiresAt.toLocaleDateString()}. 
                     Você tem um prazo limite de tolerância de até 2 dias para regularizar seu pagamento. 
                     Se não realizar a renovação hoje, seus cursos e hospedagens de vídeos serão desativados.
                   </p>
@@ -636,7 +644,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div>
                 <h4 className="text-sm font-bold text-white">Sua Assinatura Expira em {daysDiff} {daysDiff === 1 ? 'dia' : 'dias'}</h4>
                 <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                  Lembrete: Como seu plano foi ativado via {profile.upgradeMethod === 'fastpay' ? 'FastPay (Manual)' : 'Stripe'}, certifique-se de regularizar a renovação antes de {expiresAt.toLocaleDateString()} para que não ocorra a suspensão de uploads de vídeos dos seus produtos.
+                  Lembrete: Como seu plano foi ativado via {profile.upgradeMethod === 'fastpay' ? 'Facipay (Manual)' : 'Stripe'}, certifique-se de regularizar a renovação antes de {expiresAt.toLocaleDateString()} para que não ocorra a suspensão de uploads de vídeos dos seus produtos.
                 </p>
               </div>
             </div>
@@ -1592,152 +1600,283 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-2xl rounded-2xl border border-white/10 bg-surface p-6 shadow-2xl relative overflow-hidden"
+            className={`w-full ${pricingModalStep === 'plans' ? 'max-w-3xl' : 'max-w-lg'} rounded-2xl border border-white/10 bg-surface p-6 shadow-2xl relative overflow-hidden transition-all duration-300`}
           >
             <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] -top-10 -right-10"></div>
             
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
               <div className="flex items-center gap-2">
-                <Award className="text-primary w-6 h-6" />
-                <h3 className="font-display text-lg font-bold text-white">Programa Course Creator - CodeEngine</h3>
+                {pricingModalStep !== 'plans' && (
+                  <button
+                    onClick={() => {
+                      if (pricingModalStep === 'select_method') setPricingModalStep('plans');
+                      else if (pricingModalStep === 'fastpay_upload') setPricingModalStep('select_method');
+                    }}
+                    className="mr-1 text-on-surface-variant hover:text-white transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft size={16} />
+                  </button>
+                )}
+                <Award className="text-primary w-5 h-5 animate-pulse" />
+                <h3 className="font-display text-sm font-bold text-white">
+                  {pricingModalStep === 'plans' && 'Plano de Criador CodeEngine'}
+                  {pricingModalStep === 'select_method' && 'Método de Pagamento'}
+                  {pricingModalStep === 'fastpay_upload' && 'Pagamento via Facipay'}
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPlanBenefitsModal(false)}
-                className="text-on-surface-variant hover:text-white text-sm font-medium transition-colors"
+                className="text-on-surface-variant hover:text-white text-xs font-semibold transition-colors"
               >
                 Fechar
               </button>
             </div>
 
-            <div className="space-y-6 font-sans text-sm text-on-surface-variant overflow-y-auto max-h-[70vh] pr-2">
-              <div className="bg-primary/5 rounded-xl border border-primary/20 p-4">
-                <h4 className="text-white font-bold mb-1">Por que fazer o upgrade para o Course Creator?</h4>
-                <p className="text-xs leading-relaxed">
-                  O plano grátis (Ebook Creator) é excelente para iniciar com arquivos simples, mas os criadores profissionais necessitam de recursos avançados para reter seus alunos e construir cursos em vídeo profissionais com segurança.
-                </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <Video className="text-primary w-4 h-4" />
-                    <span>Hospedagem de Vídeos</span>
-                  </div>
-                  <p className="text-xs leading-relaxed text-on-surface-variant">
-                    Hospede seus arquivos de vídeo diretamente na infraestrutura segura da CodeEngine. Esqueça links de terceiros e proteja suas aulas contra pirataria.
+            {/* Content STEP 1: PLANS COMPARISON */}
+            {pricingModalStep === 'plans' && (
+              <div className="space-y-6">
+                <div className="text-center max-w-xl mx-auto space-y-1.5 mb-6">
+                  <h2 className="font-display text-xl font-bold text-white">Preços Simples que Acompanham Seu Sucesso</h2>
+                  <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
+                    Comece grátis promovendo e vendendo e-books. Faça upgrade para o plano Pro para hospedar e comercializar cursos em vídeo na CodeEngine.
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <CheckCircle className="text-primary w-4 h-4" />
-                    <span>Taxas de Comissão Menores</span>
-                  </div>
-                  <p className="text-xs leading-relaxed text-on-surface-variant">
-                    Colaboradores no plano premium desfrutam de taxas administrativas reduzidas em suas vendas na plataforma, maximizando seus lucros.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <TrendingUp className="text-primary w-4 h-4" />
-                    <span>Destaque na Biblioteca</span>
-                  </div>
-                  <p className="text-xs leading-relaxed text-on-surface-variant">
-                    Seus cursos ganham selo verificado e prioridade de busca na vitrine principal da CodeEngine para os membros da comunidade.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-white/5 bg-white/5 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <ShieldCheck className="text-primary w-4 h-4" />
-                    <span>Sem Limite de Upload</span>
-                  </div>
-                  <p className="text-xs leading-relaxed text-on-surface-variant">
-                    Faça upload de arquivos maiores de até 2GB por curso ou e-book de forma segura e totalmente otimizada para download rápido.
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-dashed border-white/10 p-4 space-y-4 bg-black/20">
-                <span className="block text-xs uppercase tracking-wider font-bold text-white text-center">Opções de Assinatura</span>
-                
-                {/* Stripe Card/USD Option */}
-                <div className="bg-white/5 rounded-lg p-3 border border-white/5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-white">Opção 1: Cartão de Crédito / Stripe</span>
-                    <span className="text-sm font-bold text-primary font-mono">${settings.subscription_price_usd || '9.00'} USD/mês</span>
-                  </div>
-                  <p className="text-[11px] text-on-surface-variant">Cobrança recorrente automática. Liberação imediata.</p>
-                  <button
-                    type="button"
-                    disabled={submittingStripe}
-                    onClick={handleStripeUpgrade}
-                    className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors uppercase tracking-wider"
-                  >
-                    {submittingStripe ? 'A iniciar...' : 'Pagar via Stripe'}
-                  </button>
-                  {stripeError && <p className="text-red-500 text-[11px] mt-1">{stripeError}</p>}
-                </div>
-
-                {/* FastPay/Local AOA Option */}
-                <div className="bg-white/5 rounded-lg p-3 border border-white/5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-white">Opção 2: FastPay / Pagamento em Angola</span>
-                    <span className="text-sm font-bold text-primary font-mono">{(Number(settings.subscription_price_aoa) || 8000).toLocaleString('pt-AO')} Kz/mês</span>
-                  </div>
-                  <p className="text-[11px] text-on-surface-variant">Sem cobrança automática. Necessita de envio de comprovativo e aprovação do admin.</p>
-                  
-                  {profile?.upgradeStatus === 'pending_approval' ? (
-                    <div className="bg-orange-500/20 text-orange-400 p-2.5 rounded-lg text-xs border border-orange-500/30 text-center">
-                      ⏳ Seu comprovativo foi enviado e está em análise. O plano será liberado em breve!
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Free Plan Card */}
+                  <div className="rounded-xl border border-white/5 bg-white/5 p-4 flex flex-col justify-between min-h-[380px]">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-white font-display">Grátis</span>
+                        {profile?.plan !== 'course_creator' && (
+                          <span className="px-2 py-0.5 rounded bg-primary/20 border border-primary/20 text-[9px] text-primary font-bold">Ativo</span>
+                        )}
+                      </div>
+                      <span className="my-3 block text-2xl font-black text-white font-display">$0 <span className="text-xs text-on-surface-variant font-medium">/ mês</span></span>
+                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para começar a vender arquivos de e-book.</p>
+                      <hr className="border-dashed border-white/10 my-3" />
+                      <ul className="space-y-2.5 text-xs text-on-surface-variant font-sans">
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Painel de Análise Básico</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>5GB de Armazenamento em Nuvem</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Suporte por E-mail e Chat</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Upload de E-books e Scripts</span>
+                        </li>
+                      </ul>
                     </div>
-                  ) : (
-                    <div className="space-y-3 pt-1 border-t border-white/5">
-                      {profile?.upgradeStatus === 'rejected' && (
-                        <div className="bg-red-500/20 text-red-400 p-2 rounded-lg text-xs border border-red-500/30 text-center font-semibold">
-                          ❌ Seu comprovativo anterior foi rejeitado. Envie um comprovativo válido para reanálise.
+
+                    <div className="mt-6">
+                      {profile?.plan !== 'course_creator' ? (
+                        <div className="w-full text-center py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant cursor-default">
+                          Seu Plano Atual
+                        </div>
+                      ) : (
+                        <div className="w-full text-center py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant cursor-default">
+                          Plano Base Grátis
                         </div>
                       )}
-                      
-                      <a
-                        href={settings.fastpay_subscription_link || 'https://fastpay.co.ao/pay/codeengine-creator'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full text-center rounded-lg bg-green-600 hover:bg-green-700 py-2 text-xs font-bold text-white transition-colors uppercase tracking-wider"
-                      >
-                        1. Pagar no FastPay (Abrir Link)
-                      </a>
-                      
-                      <div className="space-y-1">
-                        <label className="block text-[11px] text-gray-400">2. Faça o upload do Comprovativo:</label>
-                        <input
-                          type="file"
-                          accept="image/*,application/pdf"
-                          onChange={handleReceiptUpload}
-                          className="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-high file:cursor-pointer"
-                        />
-                        {uploadingReceipt && <p className="text-primary text-[10px] animate-pulse">A carregar comprovativo...</p>}
-                        {receiptUrl && <p className="text-green-500 text-[10px]">✅ Comprovativo carregado com sucesso!</p>}
-                      </div>
-
-                      <button
-                        type="button"
-                        disabled={!receiptUrl}
-                        onClick={handleFastpaySubmit}
-                        className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Enviar Comprovativo para Aprovação
-                      </button>
-                      
-                      {fastpaySuccess && <p className="text-green-500 text-xs text-center mt-1">{fastpaySuccess}</p>}
-                      {fastpayError && <p className="text-red-500 text-xs text-center mt-1">{fastpayError}</p>}
                     </div>
-                  )}
+                  </div>
+
+                  {/* Pro Plan Card */}
+                  <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 flex flex-col justify-between min-h-[380px] relative">
+                    <span className="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-primary to-secondary text-[9px] text-background font-extrabold uppercase tracking-wider">Popular</span>
+                    
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-white font-display">Pro (Course Creator)</span>
+                        {profile?.plan === 'course_creator' && (
+                          <span className="px-2 py-0.5 rounded bg-primary/20 border border-primary/20 text-[9px] text-primary font-bold">Ativo</span>
+                        )}
+                      </div>
+                      <span className="my-3 block text-2xl font-black text-white font-display">
+                        {isAngola ? (
+                          <>8.000 Kz <span className="text-xs text-on-surface-variant font-medium">/ mês</span></>
+                        ) : (
+                          <>$9 <span className="text-xs text-on-surface-variant font-medium">/ mês</span></>
+                        )}
+                      </span>
+                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para criadores profissionais de cursos e vídeos.</p>
+                      <hr className="border-dashed border-white/10 my-3" />
+                      <ul className="space-y-2.5 text-xs text-on-surface-variant font-sans">
+                        <li className="block font-bold text-white text-[10px] uppercase tracking-wider mb-1">Tudo no Grátis, mais:</li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Hospedagem de Vídeos Nativa e Segura</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Taxas de Comissão Menores (Lucro Extra)</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Destaque na Biblioteca Principal</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Sem limite de tamanho de upload (até 2GB)</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Suporte VIP via WhatsApp/Chat</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="mt-6">
+                      {profile?.plan === 'course_creator' ? (
+                        <div className="w-full text-center py-2 rounded-lg bg-primary/20 border border-primary/20 text-xs font-semibold text-primary cursor-default">
+                          Seu Plano Atual
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPricingModalStep('select_method')}
+                          className="w-full rounded-lg bg-primary hover:bg-primary-high py-2 text-center text-xs font-bold text-white transition-colors uppercase tracking-wider"
+                        >
+                          Fazer Upgrade
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Content STEP 2: SELECT METHOD */}
+            {pricingModalStep === 'select_method' && (
+              <div className="space-y-4">
+                <div className="text-center space-y-1 mb-2">
+                  <h2 className="font-display text-base font-bold text-white">Escolha a Opção de Upgrade</h2>
+                  <p className="font-sans text-xs text-on-surface-variant">Selecione o seu meio de pagamento para ativar o plano Pro.</p>
+                </div>
+
+                <div className="space-y-3">
+                  {/* Stripe Card */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-primary/30 transition-all flex flex-col justify-between space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">Opção 1: Cartão de Crédito / Stripe (Cobrança em Dólar)</h4>
+                        <p className="text-xs text-on-surface-variant mt-1 leading-normal">
+                          Pague de forma segura com qualquer cartão internacional. Ativação instantânea na conta.
+                        </p>
+                      </div>
+                      <span className="text-sm font-black text-primary font-mono shrink-0">$9.00 USD/mês</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={submittingStripe}
+                      onClick={handleStripeUpgrade}
+                      className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors uppercase tracking-wider disabled:opacity-50"
+                    >
+                      {submittingStripe ? 'Conectando...' : 'Pagar via Stripe'}
+                    </button>
+                    {stripeError && <p className="text-red-400 text-xs mt-1 text-center font-semibold">{stripeError}</p>}
+                  </div>
+
+                  {/* Facipay Card (Always show it, but customize for Angolans) */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-green-600/30 transition-all flex flex-col justify-between space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">Opção 2: Facipay / Transferência (Cobrança em Kwanza)</h4>
+                        <p className="text-xs text-on-surface-variant mt-1 leading-normal">
+                          Método preferencial para Angola. Transferência ou depósito manual. Liberação após validação.
+                        </p>
+                      </div>
+                      <span className="text-sm font-black text-green-400 font-mono shrink-0">8.000 Kz/mês</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setPricingModalStep('fastpay_upload')}
+                      className="w-full rounded-lg bg-green-600 hover:bg-green-700 py-2 text-center text-xs font-bold text-white transition-colors uppercase tracking-wider"
+                    >
+                      Pagar via Facipay
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Content STEP 3: FASTPAY UPLOAD */}
+            {pricingModalStep === 'fastpay_upload' && (
+              <div className="space-y-4">
+                <div className="text-center space-y-1 mb-2">
+                  <h2 className="font-display text-base font-bold text-white">Coordenadas e Envio de Comprovativo</h2>
+                  <p className="font-sans text-xs text-on-surface-variant">Realize a transferência bancária e anexe a foto ou PDF do comprovativo.</p>
+                </div>
+
+                <div className="rounded-xl bg-black/30 p-3 text-[11px] text-on-surface-variant space-y-1.5 font-sans border border-white/5">
+                  <p className="font-bold text-white">Coordenadas Bancárias para Depósito (CodeEngine):</p>
+                  <p>Banco: <strong className="text-white">BAI</strong></p>
+                  <p>IBAN: <strong className="text-white">AO06.0040.0000.1234.5678.9012.3</strong></p>
+                  <p>Valor da Assinatura: <strong className="text-white">8.000 Kz / mês</strong></p>
+                  <p className="text-yellow-400/90 text-[10px] mt-1 font-semibold leading-normal">
+                    * Atenção: A validação e ativação manual é feita pela nossa equipe e pode levar até 24 horas úteis.
+                  </p>
+                </div>
+
+                {profile?.upgradeStatus === 'pending_approval' ? (
+                  <div className="bg-orange-500/20 text-orange-400 p-3 rounded-lg text-xs border border-orange-500/30 text-center font-medium font-sans">
+                    Seu comprovativo já foi enviado e está em análise. O plano Pro será ativado em breve!
+                  </div>
+                ) : (
+                  <div className="space-y-4 pt-1 border-t border-white/5">
+                    {profile?.upgradeStatus === 'rejected' && (
+                      <div className="bg-red-500/20 text-red-400 p-2 rounded-lg text-xs border border-red-500/30 text-center font-semibold font-sans">
+                        Seu comprovativo anterior foi rejeitado. Envie um novo comprovativo válido.
+                      </div>
+                    )}
+                    
+                    <a
+                      href={settings.fastpay_subscription_link || 'https://fastpay.co.ao/pay/codeengine-creator'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full text-center rounded-lg bg-green-600 hover:bg-green-700 py-2 text-xs font-bold text-white transition-colors uppercase tracking-wider"
+                    >
+                      1. Pagar no Facipay (Link Direto)
+                    </a>
+                    
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] text-gray-400 font-sans">2. Faça o upload do Comprovativo:</label>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={handleReceiptUpload}
+                        className="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-high file:cursor-pointer"
+                      />
+                      {uploadingReceipt && <p className="text-primary text-[10px] animate-pulse">A carregar comprovativo...</p>}
+                      {receiptUrl && <p className="text-green-500 text-[10px]">Comprovativo carregado com sucesso!</p>}
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!receiptUrl}
+                      onClick={handleFastpaySubmit}
+                      className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Enviar Comprovativo para Validação
+                    </button>
+                    
+                    {fastpaySuccess && <p className="text-green-500 text-xs text-center mt-1 font-semibold">{fastpaySuccess}</p>}
+                    {fastpayError && <p className="text-red-500 text-xs text-center mt-1 font-semibold">{fastpayError}</p>}
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         </div>
       )}

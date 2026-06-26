@@ -15,6 +15,7 @@ interface CollaboratorProductFormProps {
 interface Category {
   id: string;
   name: string;
+  isPremiumLocked?: boolean;
 }
 
 interface Subcategory {
@@ -95,6 +96,12 @@ export function CollaboratorProductForm({
   const [affiliateEnabled, setAffiliateEnabled] = useState(false);
   const [affiliateCommissionPct, setAffiliateCommissionPct] = useState('0');
 
+  // Currency Conversion States
+  const [baseCurrency, setBaseCurrency] = useState<'USD' | 'AOA'>('USD');
+  const [basePrice, setBasePrice] = useState('');
+  const [usdToAoaRate, setUsdToAoaRate] = useState<number>(920);
+  const [loadingRate, setLoadingRate] = useState(false);
+
   // ============================================================
   // LIMITES DE PREÇO
   // ============================================================
@@ -116,10 +123,16 @@ export function CollaboratorProductForm({
 
   function handlePriceChange(val: string) {
     const v = Number(val);
-    if (val && v > MAX_PRICE_USD) { setPriceUSD(String(MAX_PRICE_USD)); val = String(MAX_PRICE_USD); }
-    else { setPriceUSD(val); }
-    if (val && !isNaN(v) && v > 0) {
-      const { profit } = calcUsdFeeAndProfit(Number(val));
+    let finalVal = val;
+    if (val && v > MAX_PRICE_USD) { 
+      setPriceUSD(String(MAX_PRICE_USD)); 
+      finalVal = String(MAX_PRICE_USD); 
+    } else { 
+      setPriceUSD(val); 
+    }
+    setBasePrice(finalVal);
+    if (finalVal && !isNaN(Number(finalVal)) && Number(finalVal) > 0) {
+      const { profit } = calcUsdFeeAndProfit(Number(finalVal));
       setProfitUSD(profit.toFixed(2));
     } else {
       setProfitUSD('');
@@ -137,9 +150,12 @@ export function CollaboratorProductForm({
         newPrice = p / (1 - USD_FEE_RATE);
       }
       if (newPrice > MAX_PRICE_USD) newPrice = MAX_PRICE_USD;
-      setPriceUSD(newPrice.toFixed(2));
+      const formatted = newPrice.toFixed(2);
+      setPriceUSD(formatted);
+      setBasePrice(formatted);
     } else {
       setPriceUSD('');
+      setBasePrice('');
     }
   }
 
@@ -207,6 +223,70 @@ export function CollaboratorProductForm({
     const cePct = (AOA_CE_RATE * 100).toFixed(0);
     return { price, ceFee, facipayFee, profit, cePct };
   })();
+  // Currency Conversion hook & helper
+  useEffect(() => {
+    async function fetchExchangeRate() {
+      setLoadingRate(true);
+      try {
+        const cached = localStorage.getItem('codeengine_usd_aoa_rate');
+        if (cached) {
+          setUsdToAoaRate(Number(cached));
+        }
+        
+        const res = await fetch('https://latest.currency-api.pages.dev/v1/currencies/usd.json');
+        if (!res.ok) throw new Error('API response not ok');
+        const data = await res.json();
+        const rate = data.usd?.aoa;
+        if (rate && !isNaN(rate) && rate > 0) {
+          setUsdToAoaRate(rate);
+          localStorage.setItem('codeengine_usd_aoa_rate', String(rate));
+          console.log(`Loaded exchange rate: 1 USD = ${rate} AOA`);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch latest exchange rate, using cached/fallback:', err);
+      } finally {
+        setLoadingRate(false);
+      }
+    }
+    fetchExchangeRate();
+  }, []);
+
+  function syncPrices(amount: string, currency: 'USD' | 'AOA', rateToUse = usdToAoaRate) {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      setPriceUSD('');
+      setPriceAOA('');
+      setProfitUSD('');
+      setProfitAOA('');
+      return;
+    }
+    
+    const val = Number(amount);
+    if (currency === 'USD') {
+      const usdVal = val > MAX_PRICE_USD ? MAX_PRICE_USD : val;
+      const aoaVal = Math.round(usdVal * rateToUse);
+      
+      setPriceUSD(usdVal.toFixed(2));
+      setPriceAOA(aoaVal.toString());
+      
+      const { profit: profUSD } = calcUsdFeeAndProfit(usdVal);
+      setProfitUSD(profUSD.toFixed(2));
+      
+      const { profit: profAOA } = calcAoaFees(aoaVal);
+      setProfitAOA(profAOA.toFixed(2));
+    } else {
+      const aoaVal = val > MAX_PRICE_AOA ? MAX_PRICE_AOA : val;
+      const usdVal = Number((aoaVal / rateToUse).toFixed(2));
+      
+      setPriceUSD(usdVal.toFixed(2));
+      setPriceAOA(aoaVal.toString());
+      
+      const { profit: profUSD } = calcUsdFeeAndProfit(usdVal);
+      setProfitUSD(profUSD.toFixed(2));
+      
+      const { profit: profAOA } = calcAoaFees(aoaVal);
+      setProfitAOA(profAOA.toFixed(2));
+    }
+  }
 
 
   const [coverUrl, setCoverUrl] = useState('');
@@ -325,18 +405,29 @@ export function CollaboratorProductForm({
         .order('display_order', { ascending: true });
 
       if (!error && data) {
-        // Filter categories: Only templates, ebooks, libraries, etc.
-        // Prevent courses or premium categories unless on a course plan
-        const filtered = data.filter(c => {
-          if (collaboratorPlan === 'ebook_creator') {
-            const lowerName = (c.name || '').toLowerCase();
-            return !lowerName.includes('course') && !lowerName.includes('curso');
+        // Map categories and flag course-related ones as locked for free users
+        const mapped = data.map(c => {
+          const lowerName = (c.name || '').toLowerCase();
+          const isCourse = lowerName.includes('course') || lowerName.includes('curso');
+          if (isCourse && collaboratorPlan === 'ebook_creator') {
+            return {
+              ...c,
+              name: `${c.name} (Premium)`,
+              isPremiumLocked: true
+            };
           }
-          return true;
+          return {
+            ...c,
+            isPremiumLocked: false
+          };
         });
-        setCategories(filtered);
-        if (filtered.length > 0 && !categoryId) {
-          setCategoryId(filtered[0].id);
+        
+        setCategories(mapped);
+        
+        // Find first unlocked category as default if categoryId is empty
+        if (mapped.length > 0 && !categoryId) {
+          const firstUnlocked = mapped.find(c => !c.isPremiumLocked) || mapped[0];
+          setCategoryId(firstUnlocked.id);
         }
       }
     } catch (err) {
@@ -425,6 +516,14 @@ export function CollaboratorProductForm({
           // Dual Pricing Values
           setPriceUSD(prod.price ? String(prod.price) : '');
           setPriceAOA(prod.aoa_price ? String(prod.aoa_price) : '');
+          const loadedBaseCurrency = prod.base_currency || (isAngola && prod.aoa_price ? 'AOA' : 'USD');
+          setBaseCurrency(loadedBaseCurrency);
+          if (prod.is_free) {
+            setBasePrice('0');
+          } else {
+            const loadedBasePrice = loadedBaseCurrency === 'USD' ? (prod.price ? String(prod.price) : '') : (prod.aoa_price ? String(prod.aoa_price) : '');
+            setBasePrice(loadedBasePrice);
+          }
           setIsFree(Boolean(prod.is_free));
           setAffiliateEnabled(Boolean(prod.affiliate_enabled));
           setAffiliateCommissionPct(prod.affiliate_commission_pct ? String(prod.affiliate_commission_pct) : '0');
@@ -674,6 +773,10 @@ export function CollaboratorProductForm({
         subcategoryId: subcategoryId || null,
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
+        basePrice: isFree ? 0 : Number(basePrice),
+        baseCurrency,
+        convertedPrice: isFree ? 0 : (baseCurrency === 'USD' ? Number(priceAOA) : Number(priceUSD)),
+        exchangeRateUsed: usdToAoaRate,
         isFree,
         coverUrl,
         previewUrl,
@@ -967,7 +1070,14 @@ export function CollaboratorProductForm({
                   <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Categoria *</label>
                   <select
                     value={categoryId}
-                    onChange={e => setCategoryId(e.target.value)}
+                    onChange={e => {
+                      const selected = categories.find(c => c.id === e.target.value);
+                      if (selected?.isPremiumLocked) {
+                        alert("Esta categoria requer o Plano Premium (Course Creator). Por favor, ative a sua assinatura premium no painel para publicar Cursos Online.");
+                      } else {
+                        setCategoryId(e.target.value);
+                      }
+                    }}
                     className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
                   >
                     {categories.map(c => (
@@ -1030,178 +1140,243 @@ export function CollaboratorProductForm({
                 </label>
               </div>
 
-              {/* USD Pricing: Two-Way Binding */}
-              <div className="space-y-3">
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
-                  <DollarSign size={14} className="text-primary" /> Preço Internacional (USD) {!isFree && <span className="text-red-400">*</span>}
-                </label>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Input A: Preço do Produto */}
-                  <div>
-                    <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Preço que o cliente paga</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-3 text-on-surface-variant text-sm font-mono">$</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="1"
-                        required={!isFree}
-                        disabled={isFree}
-                        value={isFree ? '0.00' : priceUSD}
-                        onChange={e => handlePriceChange(e.target.value)}
-                        placeholder="0.00"
-                        className={`w-full rounded-xl bg-surface-high border pl-8 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                          submitAttempted && !isFree && !priceUSD ? 'border-red-500/50' : 'border-white/10'
-                        } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                    </div>
-                    <p className="text-[10px] text-on-surface-variant mt-1">Mínimo: $1.00</p>
-                  </div>
-
-                  {/* Input B: Lucro Desejado (inverso) */}
-                  <div>
-                    <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Quero lucrar (inverso)</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-3 text-on-surface-variant text-sm font-mono">$</span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        disabled={isFree}
-                        value={isFree ? '0.00' : profitUSD}
-                        onChange={e => handleProfitChange(e.target.value)}
-                        placeholder="0.00"
-                        className={`w-full rounded-xl bg-surface-high border border-white/10 pl-8 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                          isFree ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      />
-                    </div>
-                    <p className="text-[10px] text-on-surface-variant mt-1">Digite o lucro → preço é calculado</p>
-                  </div>
-                </div>
-
-                {/* Card de resumo em tempo real */}
-                {!isFree && usdPriceSummary && (
-                  <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 space-y-2">
-                    <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                      <FileText size={12} /> Resumo da Precificação
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-on-surface-variant">Preço que o cliente paga:</span>
-                      <span className="font-mono font-bold text-white">${usdPriceSummary.price.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-on-surface-variant">Taxa da plataforma ({usdPriceSummary.feePercent}%, mín. $0.50):</span>
-                      <span className="font-mono font-semibold text-red-400">-${usdPriceSummary.fee.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs border-t border-primary/20 pt-2 flex items-center">
-                      <span className="font-bold text-white flex items-center gap-1.5">
-                        <CheckCircle size={12} className="text-green-400" /> Seu lucro estimado:
-                      </span>
-                      <span className="font-mono font-bold text-green-400">${usdPriceSummary.profit.toFixed(2)}</span>
-                    </div>
-                  </div>
-                )}
-                {!isFree && priceUSD && Number(priceUSD) < 1 && (
-                  <p className="text-[11px] text-red-400 flex items-center gap-1.5">
-                    <AlertTriangle size={12} /> O preço mínimo do produto é $1.00.
-                  </p>
-                )}
-                {submitAttempted && !isFree && !priceUSD && (
-                  <p className="text-[11px] text-red-400">O preço em USD é obrigatório.</p>
-                )}
-              </div>
-
-              {/* AOA Pricing: Two-Way Binding */}
-              {isAngola && (
-                <div className="space-y-3">
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
-                    <Landmark size={14} className="text-amber-400" /> Preço Angola (AOA / Kwanza) {!isFree && <span className="text-red-400">*</span>}
-                  </label>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Input A: Preço de Venda */}
+              {/* USD and AOA Pricing Section */}
+              {isAngola ? (
+                <div className="space-y-4 bg-white/5 border border-white/10 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-white">Configuração de Preços</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Base Currency Selection */}
                     <div>
-                      <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Preço que o cliente paga</label>
+                      <label htmlFor="base_currency" className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                        Moeda Base {!isFree && <span className="text-red-400">*</span>}
+                      </label>
+                      <select
+                        id="base_currency"
+                        value={baseCurrency}
+                        disabled={isFree}
+                        onChange={(e) => {
+                          const newCurr = e.target.value as 'USD' | 'AOA';
+                          setBaseCurrency(newCurr);
+                          syncPrices(basePrice, newCurr);
+                        }}
+                        className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="USD" className="bg-surface-high text-white">USD (Dólar)</option>
+                        <option value="AOA" className="bg-surface-high text-white">AOA (Kwanza)</option>
+                      </select>
+                    </div>
+
+                    {/* Base Price Input */}
+                    <div>
+                      <label htmlFor="base_price" className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                        Preço Principal ({baseCurrency}) {!isFree && <span className="text-red-400">*</span>}
+                      </label>
                       <div className="relative">
-                        <span className="absolute left-3 top-3 text-on-surface-variant text-[10px] font-mono">Kz</span>
+                        <span className="absolute left-3 top-3 text-on-surface-variant text-sm font-mono">
+                          {baseCurrency === 'USD' ? '$' : 'Kz'}
+                        </span>
                         <input
                           type="number"
-                          step="1"
-                          min={MIN_PRICE_AOA}
-                          max={MAX_PRICE_AOA}
+                          id="base_price"
+                          step={baseCurrency === 'USD' ? '0.01' : '1'}
+                          min="0"
                           required={!isFree}
                           disabled={isFree}
-                          value={isFree ? '0' : priceAOA}
-                          onChange={e => handlePriceAoaChange(e.target.value)}
-                          placeholder="0"
-                          className={`w-full rounded-xl bg-surface-high border pl-9 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
-                            submitAttempted && !isFree && !priceAOA ? 'border-red-500/50' : 'border-white/10'
+                          value={isFree ? '0.00' : basePrice}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setBasePrice(val);
+                            syncPrices(val, baseCurrency);
+                          }}
+                          placeholder="0.00"
+                          className={`w-full rounded-xl bg-surface-high border pl-8 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                            submitAttempted && !isFree && !basePrice ? 'border-red-500/50' : 'border-white/10'
                           } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
                         />
                       </div>
-                      <p className="text-[10px] text-on-surface-variant mt-1">Mínimo: Kz {MIN_PRICE_AOA.toLocaleString('pt-AO')}</p>
+                    </div>
+                  </div>
+
+                  {/* Converted Price Display */}
+                  {!isFree && (
+                    <div>
+                      <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                        Preço Convertido ({baseCurrency === 'USD' ? 'AOA' : 'USD'})
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-3 text-on-surface-variant/70 text-sm font-mono">
+                          {baseCurrency === 'USD' ? 'Kz' : '$'}
+                        </span>
+                        <input
+                          type="text"
+                          readOnly
+                          value={
+                            baseCurrency === 'USD'
+                              ? priceAOA
+                                ? Number(priceAOA).toLocaleString('pt-AO')
+                                : '0'
+                              : priceUSD
+                              ? Number(priceUSD).toFixed(2)
+                              : '0.00'
+                          }
+                          className="w-full rounded-xl bg-surface-high/50 border border-white/5 pl-8 pr-4 py-3 text-sm text-white/50 font-bold font-mono cursor-not-allowed"
+                        />
+                      </div>
+                      <p className="text-[10px] text-on-surface-variant/70 mt-1">
+                        Taxa de câmbio usada: 1 USD = {usdToAoaRate.toLocaleString('pt-AO')} AOA
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Pricing Summaries */}
+                  {!isFree && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                      {/* USD Summary Card */}
+                      {usdPriceSummary && (
+                        <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 space-y-2">
+                          <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <FileText size={12} /> Resumo Internacional (USD)
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-on-surface-variant">Preço cobrado:</span>
+                            <span className="font-mono font-bold text-white">${usdPriceSummary.price.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-on-surface-variant">Taxa plataforma ({usdPriceSummary.feePercent}%, min. $0.50):</span>
+                            <span className="font-mono font-semibold text-red-400">-${usdPriceSummary.fee.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs border-t border-primary/20 pt-2 flex items-center">
+                            <span className="font-bold text-white flex items-center gap-1.5">
+                              <CheckCircle size={12} className="text-green-400" /> Lucro estimado:
+                            </span>
+                            <span className="font-mono font-bold text-green-400">${usdPriceSummary.profit.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* AOA Summary Card */}
+                      {aoaPriceSummary && (
+                        <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-4 space-y-2">
+                          <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <FileText size={12} /> Resumo Nacional (AOA)
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-on-surface-variant">Preço cobrado:</span>
+                            <span className="font-mono font-bold text-white">Kz {aoaPriceSummary.price.toLocaleString('pt-AO')}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-on-surface-variant">Taxa CodeEngine ({aoaPriceSummary.cePct}%):</span>
+                            <span className="font-mono font-semibold text-red-400">-Kz {aoaPriceSummary.ceFee.toLocaleString('pt-AO')}</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-on-surface-variant">Taxa Facipay:</span>
+                            <span className="font-mono font-semibold text-red-400">-Kz {aoaPriceSummary.facipayFee.toLocaleString('pt-AO')}</span>
+                          </div>
+                          <div className="flex justify-between text-xs border-t border-amber-500/20 pt-2 flex items-center">
+                            <span className="font-bold text-white flex items-center gap-1.5">
+                              <CheckCircle size={12} className="text-green-400" /> Lucro estimado:
+                            </span>
+                            <span className="font-mono font-bold text-green-400">Kz {aoaPriceSummary.profit.toLocaleString('pt-AO')}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {!isFree && priceUSD && Number(priceUSD) < 1 && (
+                    <p className="text-[11px] text-red-400 flex items-center gap-1.5">
+                      <AlertTriangle size={12} /> O preço mínimo internacional é $1.00.
+                    </p>
+                  )}
+                  {!isFree && priceAOA && Number(priceAOA) < MIN_PRICE_AOA && (
+                    <p className="text-[11px] text-red-400 flex items-center gap-1.5">
+                      <AlertTriangle size={12} /> O preço mínimo nacional é Kz {MIN_PRICE_AOA.toLocaleString('pt-AO')}.
+                    </p>
+                  )}
+                  {submitAttempted && !isFree && !basePrice && (
+                    <p className="text-[11px] text-red-400">O preço principal é obrigatório.</p>
+                  )}
+                </div>
+              ) : (
+                /* Original USD-only UI for international creators */
+                <div className="space-y-3">
+                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                    <DollarSign size={14} className="text-primary" /> Preço Internacional (USD) {!isFree && <span className="text-red-400">*</span>}
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Input A: Preço do Produto */}
+                    <div>
+                      <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Preço que o cliente paga</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-3 text-on-surface-variant text-sm font-mono">$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          required={!isFree}
+                          disabled={isFree}
+                          value={isFree ? '0.00' : priceUSD}
+                          onChange={e => handlePriceChange(e.target.value)}
+                          placeholder="0.00"
+                          className={`w-full rounded-xl bg-surface-high border pl-8 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                            submitAttempted && !isFree && !priceUSD ? 'border-red-500/50' : 'border-white/10'
+                          } ${isFree ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        />
+                      </div>
+                      <p className="text-[10px] text-on-surface-variant mt-1">Mínimo: $1.00</p>
                     </div>
 
                     {/* Input B: Lucro Desejado (inverso) */}
                     <div>
                       <label className="block text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Quero lucrar (inverso)</label>
                       <div className="relative">
-                        <span className="absolute left-3 top-3 text-on-surface-variant text-[10px] font-mono">Kz</span>
+                        <span className="absolute left-3 top-3 text-on-surface-variant text-sm font-mono">$</span>
                         <input
                           type="number"
-                          step="1"
+                          step="0.01"
                           disabled={isFree}
-                          value={isFree ? '0' : profitAOA}
-                          onChange={e => handleProfitAoaChange(e.target.value)}
-                          placeholder="0"
-                          className={`w-full rounded-xl bg-surface-high border border-white/10 pl-9 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                          value={isFree ? '0.00' : profitUSD}
+                          onChange={e => handleProfitChange(e.target.value)}
+                          placeholder="0.00"
+                          className={`w-full rounded-xl bg-surface-high border border-white/10 pl-8 pr-4 py-3 text-sm text-white font-bold font-mono focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
                             isFree ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                         />
                       </div>
-                      <p className="text-[10px] text-on-surface-variant mt-1">Digite o lucro → preço é calculated</p>
+                      <p className="text-[10px] text-on-surface-variant mt-1">Digite o lucro → preço é calculado</p>
                     </div>
                   </div>
 
-                  {/* Card de resumo AOA em tempo real */}
-                  {!isFree && aoaPriceSummary && (
-                    <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-4 space-y-2">
-                      <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                        <FileText size={12} /> Resumo da Precificação AOA
+                  {/* Card de resumo em tempo real */}
+                  {!isFree && usdPriceSummary && (
+                    <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 space-y-2">
+                      <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <FileText size={12} /> Resumo da Precificação
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-on-surface-variant">Preço que o cliente paga:</span>
-                        <span className="font-mono font-bold text-white">Kz {aoaPriceSummary.price.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                        <span className="font-mono font-bold text-white">${usdPriceSummary.price.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-on-surface-variant">Taxa CodeEngine ({aoaPriceSummary.cePct}%):</span>
-                        <span className="font-mono font-semibold text-red-400">-Kz {aoaPriceSummary.ceFee.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                        <span className="text-on-surface-variant">Taxa da plataforma ({usdPriceSummary.feePercent}%, mín. $0.50):</span>
+                        <span className="font-mono font-semibold text-red-400">-${usdPriceSummary.fee.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-xs">
-                        <span className="text-on-surface-variant">Taxa FaciPay (Ref. Multicaixa + IVA):</span>
-                        <span className="font-mono font-semibold text-red-400">-Kz {aoaPriceSummary.facipayFee.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
-                      </div>
-                      <div className="flex justify-between text-xs border-t border-amber-500/20 pt-2 flex items-center">
+                      <div className="flex justify-between text-xs border-t border-primary/20 pt-2 flex items-center">
                         <span className="font-bold text-white flex items-center gap-1.5">
                           <CheckCircle size={12} className="text-green-400" /> Seu lucro estimado:
                         </span>
-                        <span className="font-mono font-bold text-green-400">Kz {aoaPriceSummary.profit.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
+                        <span className="font-mono font-bold text-green-400">${usdPriceSummary.profit.toFixed(2)}</span>
                       </div>
                     </div>
                   )}
-                  {!isFree && priceAOA && Number(priceAOA) > 0 && Number(priceAOA) < MIN_PRICE_AOA && (
+                  {!isFree && priceUSD && Number(priceUSD) < 1 && (
                     <p className="text-[11px] text-red-400 flex items-center gap-1.5">
-                      <AlertTriangle size={12} /> O preço mínimo do produto é Kz {MIN_PRICE_AOA.toLocaleString('pt-AO')}.
+                      <AlertTriangle size={12} /> O preço mínimo do produto é $1.00.
                     </p>
                   )}
-                  {!isFree && priceAOA && Number(priceAOA) > MAX_PRICE_AOA && (
-                    <p className="text-[11px] text-red-400 flex items-center gap-1.5">
-                      <AlertTriangle size={12} /> O preço máximo do produto é Kz {MAX_PRICE_AOA.toLocaleString('pt-AO')}.
-                    </p>
-                  )}
-                  {submitAttempted && !isFree && !priceAOA && (
-                    <p className="text-[11px] text-red-400">O preço em AOA é obrigatório.</p>
+                  {submitAttempted && !isFree && !priceUSD && (
+                    <p className="text-[11px] text-red-400">O preço em USD é obrigatório.</p>
                   )}
                 </div>
               )}
@@ -1328,56 +1503,6 @@ export function CollaboratorProductForm({
                   className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
                 />
               </div>
-
-              {/* Stripe & FastPay Upgrade Widget inside the form */}
-              {collaboratorPlan !== 'course_creator' && (
-                <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-4 mt-4">
-                  <div className="flex items-start gap-2.5">
-                    <Award className="text-primary w-5 h-5 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-sm font-bold text-white">Publique cursos em vídeo por apenas $9/mês (Aprox. 8.000 Kz)</h4>
-                      <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                        Faça o upgrade para o plano <strong>Course Creator</strong> para hospedar seus vídeos e cursos diretamente, obtendo taxa reduzida e outras vantagens exclusivas.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Option A: Stripe */}
-                  <div className="border-t border-white/5 pt-3">
-                    <span className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Opção 1: Cartão de Crédito / Stripe (Cobrança Automática)</span>
-                    <button
-                      type="button"
-                      disabled={isUpgrading}
-                      onClick={handleUpgradePlan}
-                      className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors disabled:opacity-50"
-                    >
-                      {isUpgrading ? 'Processando...' : 'Fazer Upgrade via Stripe ($9/mês)'}
-                    </button>
-                  </div>
-
-                  {/* Option B: FastPay */}
-                  <div className="border-t border-white/5 pt-3 space-y-2">
-                    <span className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Opção 2: FastPay / IBAN Local (Sem Débito Automático)</span>
-                    <div className="rounded-lg bg-black/30 p-2.5 text-[11px] text-on-surface-variant space-y-1 font-sans">
-                      <p className="font-bold text-white">Coordenadas Bancárias (CodeEngine):</p>
-                      <p>Banco: <strong className="text-white">BAI</strong></p>
-                      <p>IBAN: <strong className="text-white">AO06.0040.0000.1234.5678.9012.3</strong></p>
-                      <p>Valor: <strong className="text-white">8.000 Kz / mês</strong></p>
-                      <p className="text-yellow-400/90 text-[10px] mt-1.5 font-semibold">
-                        * Atenção: Pagamentos manuais via FastPay expiram a cada 30 dias. Um alerta vermelho será exibido antes do encerramento do plano para você reenviar o comprovativo.
-                      </p>
-                    </div>
-                    <a
-                      href="https://wa.me/244900000000?text=Olá,%20gostaria%20de%20ativar%20o%20plano%20Course%20Creator%20via%20FastPay"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full text-center rounded-lg bg-green-600/95 py-2 text-xs font-bold text-white hover:bg-green-700 transition-colors"
-                    >
-                      Enviar Comprovativo FastPay via WhatsApp
-                    </a>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Lado Direito: Arquivos & Licenciamento */}
@@ -1491,7 +1616,7 @@ export function CollaboratorProductForm({
                       <span className="flex items-center text-on-surface-variant"><PlayCircle size={18} /></span>
                     </div>
                     <span className="block text-[10px] text-primary leading-normal">
-                      Como criador no plano gratuito, você pode hospedar seus vídeos em plataformas externas de streaming rápido. Para fazer upload e hospedagem direta na CodeEngine, faça o upgrade acima.
+                      Como criador no plano gratuito, você pode hospedar seus vídeos em plataformas externas de streaming rápido. Para fazer upload e hospedagem direta na CodeEngine, faça o upgrade clicando no botão "Plano Premium" do Painel.
                     </span>
                   </div>
                 ) : (
