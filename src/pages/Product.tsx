@@ -661,6 +661,18 @@ export function Product({ setScreen, productId }: ProductProps) {
     return Math.max(0, basePrice - discount - referralDiscount);
   }
 
+  function getFinalAoaPrice(): number {
+    if (!product) return 0;
+    const originalAoa = Number((product as any).aoa_price || Math.round(product.price * 920));
+    if (originalAoa <= 0) return 0;
+    
+    const listPrice = safePrice(product?.price);
+    if (listPrice <= 0) return originalAoa;
+    
+    const discountRatio = getFinalPrice() / listPrice;
+    return Math.max(0, Math.round(originalAoa * discountRatio));
+  }
+
   function translateDbText(text?: string | null): string {
     if (!text) return '';
     if (locale === 'pt') return text;
@@ -997,12 +1009,14 @@ export function Product({ setScreen, productId }: ProductProps) {
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
             <p className="font-sans text-xs text-on-surface-variant">{t('product.finalPrice')}</p>
-            {isAngola && (product as any).aoa_price > 0 ? (
+            {isAngola ? (
               <>
                 <p className="font-mono text-base font-bold text-amber-500">
-                  Kz {Number((product as any).aoa_price).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
+                  Kz {Number(getFinalAoaPrice()).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
                 </p>
-                <p className="text-[9px] text-on-surface-variant/80">ou $ {getFinalPrice()}</p>
+                <p className="text-[9px] text-on-surface-variant/80">
+                  ou $ {getFinalPrice()} USD {discount > 0 && `(Desconto de $${discount.toFixed(2)} USD aplicado)`}
+                </p>
               </>
             ) : (
               <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
@@ -1011,6 +1025,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           <ProductActionButton
             productId={product.id}
             price={getFinalPrice()}
+            originalPrice={listPrice}
             isFree={product.is_free || false}
             productType={product.product_type || 'file'}
             productTitle={product.title}
@@ -1117,14 +1132,19 @@ export function Product({ setScreen, productId }: ProductProps) {
           
           <div className="flex flex-col gap-4">
             <div className="flex flex-col items-center justify-center gap-1.5 w-full">
-              {isAngola && (product as any).aoa_price > 0 ? (
+              {isAngola ? (
                 <>
                   <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-amber-500 tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
-                    Kz {Number((product as any).aoa_price).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
+                    Kz {Number(getFinalAoaPrice()).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
                   </span>
                   <span className="font-sans text-xs text-on-surface-variant">
                     Equivalente a $ {getFinalPrice()} USD
                   </span>
+                  {discount > 0 && (
+                    <span className="text-xs text-green-400 font-sans block mt-1 font-bold animate-pulse">
+                      Desconto de ${discount.toFixed(2)} USD aplicado ao preço em dólar
+                    </span>
+                  )}
                 </>
               ) : (
                 <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
@@ -1221,6 +1241,7 @@ export function Product({ setScreen, productId }: ProductProps) {
               <ProductActionButton
                 productId={product.id}
                 price={getFinalPrice()}
+                originalPrice={listPrice}
                 isFree={product.is_free || false}
                 productType={product.product_type || 'file'}
                 productTitle={product.title}

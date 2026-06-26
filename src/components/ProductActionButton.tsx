@@ -27,6 +27,7 @@ interface ProductActionButtonProps {
    *  The caller should navigate to the signup/login screen. */
   onRequireAuth?: () => void;
   preferAoa?: boolean;
+  originalPrice?: number;
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -47,6 +48,7 @@ export function ProductActionButton({
   ctaText,
   onRequireAuth,
   preferAoa = false,
+  originalPrice,
 }: ProductActionButtonProps) {
   const { locale } = useLocale();
   const { t } = useTranslation(['common', 'checkout'], { lng: locale });
@@ -109,11 +111,7 @@ export function ProductActionButton({
               // Small delay so component state settles before triggering checkout
               setTimeout(() => {
                 if (intent.hasMultiPayment) {
-                  if (intent.preferAoa) {
-                    setShowFastPayFlow(true);
-                  } else {
-                    setShowPaymentSelector(true);
-                  }
+                  setShowPaymentSelector(true);
                 } else {
                   void handlePaidCheckout(u);
                 }
@@ -149,11 +147,7 @@ export function ProductActionButton({
 
     // Logged in — proceed normally
     if (fastpayLink) {
-      if (preferAoa) {
-        setShowFastPayFlow(true);
-      } else {
-        setShowPaymentSelector(true);
-      }
+      setShowPaymentSelector(true);
     } else {
       void handlePaidCheckout();
     }
@@ -511,6 +505,7 @@ export function ProductActionButton({
             price,
             aoa_price: aoaPrice,
             fastpay_link: fastpayLink,
+            originalPrice: originalPrice || price,
           }}
           onSelectStripe={() => {
             setShowPaymentSelector(false);

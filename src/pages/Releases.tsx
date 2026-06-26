@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { LazyImage } from '../components/ui/LazyImage';
 import { useLocale } from '../contexts/LocaleContext';
 import { fetchLocalizedProducts } from '../hooks/useLocalizedProduct';
+import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface ReleasesProps {
   setScreen: (screen: string) => void;
@@ -19,6 +20,7 @@ interface ReleasesProps {
 export function Releases({ setScreen, onProductClick }: ReleasesProps) {
   const { t } = useTranslation('pages');
   const { locale } = useLocale();
+  const { isAngola } = useUserCountry();
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -273,7 +275,11 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
                     {product.is_free || product.price === 0 ? (
                       <span className="text-green-400">{t('releases.badges.free')}</span>
                     ) : (
-                      <>$ {product.price}</>
+                      <>
+                        {isAngola 
+                          ? `Kz ${Number(product.aoa_price || product.aoaPrice || Math.round(product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`
+                          : `$ ${product.price}`}
+                      </>
                     )}
                   </div>
                   

@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Heart, Trash2, ShoppingCart, ArrowRight, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types/store';
+import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface FavoritesProps {
   setScreen: (screen: string) => void;
@@ -16,6 +17,7 @@ interface Favorite {
 }
 
 export function Favorites({ setScreen }: FavoritesProps) {
+  const { isAngola } = useUserCountry();
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -228,7 +230,9 @@ export function Favorites({ setScreen }: FavoritesProps) {
                 {/* Footer */}
                 <div className="flex items-center justify-between">
                   <div className="font-display text-2xl font-bold text-primary">
-                    $ {favorite.product.price}
+                    {isAngola 
+                      ? `Kz ${Number(favorite.product.aoa_price || (favorite.product as any).aoaPrice || Math.round(favorite.product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`
+                      : `$ ${favorite.product.price}`}
                   </div>
                   
                   <button 

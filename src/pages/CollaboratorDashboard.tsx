@@ -1885,6 +1885,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 }
 
 function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
+  const { isAngola } = useUserCountry();
   const [search, setSearch] = useState('');
 
   // Filter

@@ -8,6 +8,7 @@ import { FavoriteButton } from '../components/FavoriteButton';
 import { fetchLocalizedProducts, LocalizedProduct } from '../hooks/useLocalizedProduct';
 import { useLocale } from '../contexts/LocaleContext';
 import { usePoints } from '../hooks/usePoints';
+import { useUserCountry } from '../contexts/UserCountryContext';
 import { canViewProduct } from '../lib/product-visibility';
 import { getProductCoverUrl } from '../lib/storage-path';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +31,7 @@ export function Library({ setScreen, onProductClick }: {
 }) {
   const { t } = useTranslation('pages');
   const { t: tCommon } = useTranslation();
+  const { isAngola } = useUserCountry();
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -438,7 +440,10 @@ export function Library({ setScreen, onProductClick }: {
                         {/* Price and CTA */}
                         <div className="flex flex-wrap items-center justify-between mt-auto w-full gap-3">
                           <span className="font-mono text-base sm:text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
-                            {product.is_free ? t('library.free') : `$ ${product.price}`}
+                            {product.is_free ? t('library.free') : 
+                              isAngola 
+                                ? `Kz ${Number(product.aoa_price || product.aoaPrice || Math.round(product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`
+                                : `$ ${product.price}`}
                           </span>
                           {isOwned(product.id) ? (
                             <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">
