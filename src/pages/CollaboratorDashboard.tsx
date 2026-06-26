@@ -1809,7 +1809,7 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
           <span className="block text-xs font-semibold text-on-surface-variant mb-1">Vendas Geradas</span>
           <div className="space-y-0.5 font-mono">
             <span className="block text-sm font-bold text-white">${totalSalesUSD.toFixed(2)}</span>
-            <span className="block text-xs font-semibold text-green-400">Kz {totalSalesAOA.toLocaleString('pt-AO')}</span>
+            {isAngola && <span className="block text-xs font-semibold text-green-400">Kz {totalSalesAOA.toLocaleString('pt-AO')}</span>}
           </div>
           <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Faturamento bruto total gerado por terceiros.</p>
         </div>
@@ -1825,7 +1825,7 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
           <span className="block text-xs font-semibold text-on-surface-variant mb-1">Comissões de Afiliados</span>
           <div className="space-y-0.5 font-mono">
             <span className="block text-sm font-bold text-white">${totalCommUSD.toFixed(2)}</span>
-            <span className="block text-xs font-semibold text-amber-400">Kz {totalCommAOA.toLocaleString('pt-AO')}</span>
+            {isAngola && <span className="block text-xs font-semibold text-amber-400">Kz {totalCommAOA.toLocaleString('pt-AO')}</span>}
           </div>
           <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Repasses gerados aos seus afiliados.</p>
         </div>
@@ -1898,10 +1898,12 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
                         <div className="font-mono font-bold text-xs text-white">
                           {item.salesUSD > 0 && `$${item.salesUSD.toFixed(2)}`}
                         </div>
-                        <div className="font-mono font-semibold text-[10px] text-green-400 mt-0.5">
-                          {item.salesAOA > 0 && `Kz ${item.salesAOA.toLocaleString('pt-AO')}`}
-                        </div>
-                        {item.salesUSD === 0 && item.salesAOA === 0 && (
+                        {isAngola && (
+                          <div className="font-mono font-semibold text-[10px] text-green-400 mt-0.5">
+                            {item.salesAOA > 0 && `Kz ${item.salesAOA.toLocaleString('pt-AO')}`}
+                          </div>
+                        )}
+                        {item.salesUSD === 0 && (!isAngola || item.salesAOA === 0) && (
                           <span className="text-[10px] text-on-surface-variant font-mono">-</span>
                         )}
                       </td>
@@ -1909,10 +1911,12 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
                         <div className="font-mono font-bold text-xs text-purple-300">
                           {item.commissionUSD > 0 && `$${item.commissionUSD.toFixed(2)}`}
                         </div>
-                        <div className="font-mono font-semibold text-[10px] text-amber-400 mt-0.5">
-                          {item.commissionAOA > 0 && `Kz ${item.commissionAOA.toLocaleString('pt-AO')}`}
-                        </div>
-                        {item.commissionUSD === 0 && item.commissionAOA === 0 && (
+                        {isAngola && (
+                          <div className="font-mono font-semibold text-[10px] text-amber-400 mt-0.5">
+                            {item.commissionAOA > 0 && `Kz ${item.commissionAOA.toLocaleString('pt-AO')}`}
+                          </div>
+                        )}
+                        {item.commissionUSD === 0 && (!isAngola || item.commissionAOA === 0) && (
                           <span className="text-[10px] text-on-surface-variant font-mono">-</span>
                         )}
                       </td>

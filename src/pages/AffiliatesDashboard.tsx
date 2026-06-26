@@ -63,6 +63,12 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
     }
   }, [isAngola, countryLoading, hasDefaultedCurrency]);
 
+  useEffect(() => {
+    if (!countryLoading && !isAngola && payoutMethod !== 'paypal') {
+      setPayoutMethod('paypal');
+    }
+  }, [isAngola, countryLoading, payoutMethod]);
+
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawMessage, setWithdrawMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -936,12 +942,14 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
               {/* Method Select */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-display font-bold uppercase tracking-wider text-on-surface-variant">Método Preferencial</label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className={`grid ${isAngola ? 'grid-cols-3' : 'grid-cols-1'} gap-3`}>
                   {[
                     { id: 'iban', label: 'IBAN (Bancos AO)', icon: <Landmark className="w-4 h-4" /> },
                     { id: 'paypal', label: 'PayPal (Global)', icon: <Wallet className="w-4 h-4" /> },
                     { id: 'multicaixa', label: 'Express/Telefone', icon: <Landmark className="w-4 h-4" /> }
-                  ].map((m) => (
+                  ]
+                  .filter((m) => isAngola ? true : m.id === 'paypal')
+                  .map((m) => (
                     <button
                       key={m.id}
                       type="button"
