@@ -445,24 +445,24 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
   // ─── DASHBOARD CORE SCREEN ────────────────────────────────────────────────
   return (
-    <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-8 pt-20 pb-8">
+    <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-6 pt-16 pb-4">
       <CountryRequiredModal />
       {/* Top Banner Row - 100% full width */}
-      <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-4 mb-4">
+      <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-b border-white/10 pb-2.5 mb-3">
         <div>
-          <div className="flex items-center gap-2 text-xs text-primary font-display uppercase tracking-wider mb-1 font-bold">
+          <div className="flex items-center gap-2 text-xs text-primary font-display uppercase tracking-wider mb-0.5 font-bold">
             <Percent className="w-3.5 h-3.5" />
             <span>Afiliados CodeEngine</span>
           </div>
-          <h1 className="font-display text-2xl md:text-3xl font-black text-white">
+          <h1 className="font-display text-xl md:text-2xl font-black text-white">
             Painel de Afiliado
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => setSeenExplainer(false)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-on-surface-variant hover:text-white transition-all"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-white/10 hover:bg-white/5 text-xs text-on-surface-variant hover:text-white transition-all"
             title="Ver instruções do programa de afiliados"
           >
             <AlertCircle className="w-3.5 h-3.5" />
@@ -472,7 +472,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 hover:bg-white/5 text-on-surface-variant hover:text-white transition-all disabled:opacity-50"
+            className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 hover:bg-white/5 text-on-surface-variant hover:text-white transition-all disabled:opacity-50"
             title="Atualizar dados"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -481,64 +481,64 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
       </div>
 
       {/* 1. KPIs Row (Full Width, 3-Column layout) */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {/* Card 1: Wallet Balance */}
-        <div className="bg-surface/30 backdrop-blur-md border border-white/10 rounded-xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[140px]">
-          <div className="flex items-start justify-between mb-2">
+        <div className="bg-surface/30 backdrop-blur-md border border-white/10 rounded-xl p-3.5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[110px]">
+          <div className="flex items-start justify-between mb-1">
             <div>
               <p className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Saldos Disponíveis</p>
-              <div className="mt-2 space-y-1">
+              <div className="mt-1 space-y-0.5">
                 {isAngola ? (
                   <>
-                    <h3 className="font-display text-xl font-extrabold text-white">
+                    <h3 className="font-display text-lg font-extrabold text-white">
                       {formatCurrency(wallet?.balance_aoa || 0, 'aoa')}
                     </h3>
-                    <h3 className="font-display text-sm font-semibold text-primary/80">
+                    <h3 className="font-display text-xs font-semibold text-primary/80">
                       {formatCurrency(wallet?.balance_usd || 0, 'usd')}
                     </h3>
                   </>
                 ) : (
-                  <h3 className="font-display text-xl font-extrabold text-white">
+                  <h3 className="font-display text-lg font-extrabold text-white">
                     {formatCurrency(wallet?.balance_usd || 0, 'usd')}
                   </h3>
                 )}
               </div>
             </div>
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="border-t border-white/5 pt-2 mt-2 flex items-center justify-between text-[11px] text-on-surface-variant">
+          <div className="border-t border-white/5 pt-1.5 mt-1.5 flex items-center justify-between text-[11px] text-on-surface-variant">
             <span>Método de Saque:</span>
             <span className="font-bold text-white uppercase">{wallet?.payout_method || 'Não Configurado'}</span>
           </div>
         </div>
 
         {/* Card 2: Traffic Stats */}
-        <div className="bg-surface/30 backdrop-blur-md border border-white/10 rounded-xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[140px]">
-          <div className="flex items-start justify-between mb-2">
+        <div className="bg-surface/30 backdrop-blur-md border border-white/10 rounded-xl p-3.5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[110px]">
+          <div className="flex items-start justify-between mb-1">
             <div>
               <p className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Desempenho Geral</p>
-              <div className="mt-3 grid grid-cols-2 gap-4">
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
                 <div>
                   <span className="text-[11px] text-on-surface-variant">Cliques</span>
-                  <p className="font-display text-xl font-extrabold text-white mt-0.5">
+                  <p className="font-display text-lg font-extrabold text-white mt-0.5">
                     {myLinks.reduce((sum, l) => sum + (l.clicks || 0), 0)}
                   </p>
                 </div>
                 <div>
                   <span className="text-[11px] text-on-surface-variant">Conversões</span>
-                  <p className="font-display text-xl font-extrabold text-white mt-0.5">
+                  <p className="font-display text-lg font-extrabold text-white mt-0.5">
                     {myLinks.reduce((sum, l) => sum + (l.totalConversions || 0), 0)}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="w-9 h-9 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary">
+            <div className="w-8 h-8 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="border-t border-white/5 pt-2 mt-2 flex items-center justify-between text-[11px] text-on-surface-variant">
+          <div className="border-t border-white/5 pt-1.5 mt-1.5 flex items-center justify-between text-[11px] text-on-surface-variant">
             <span>Taxa Média de Conversão:</span>
             <span className="font-bold text-white">
               {(() => {
@@ -551,14 +551,14 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
         </div>
 
         {/* Card 3: Total Withdrawn */}
-        <div className="bg-surface/30 backdrop-blur-md border border-white/10 rounded-xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[140px]">
-          <div className="flex items-start justify-between mb-2">
+        <div className="bg-surface/30 backdrop-blur-md border border-white/10 rounded-xl p-3.5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[110px]">
+          <div className="flex items-start justify-between mb-1">
             <div>
               <p className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Total Sacado</p>
-              <div className="mt-2 space-y-1">
+              <div className="mt-1 space-y-0.5">
                 {isAngola ? (
                   <>
-                    <h3 className="font-display text-lg font-bold text-white">
+                    <h3 className="font-display text-base font-bold text-white">
                       {formatCurrency(wallet?.total_withdrawn_aoa || 0, 'aoa')}
                     </h3>
                     <h3 className="font-display text-xs font-semibold text-on-surface-variant">
@@ -566,17 +566,17 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                     </h3>
                   </>
                 ) : (
-                  <h3 className="font-display text-lg font-bold text-white">
+                  <h3 className="font-display text-base font-bold text-white">
                     {formatCurrency(wallet?.total_withdrawn_usd || 0, 'usd')}
                   </h3>
                 )}
               </div>
             </div>
-            <div className="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400">
+            <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400">
               <Landmark className="w-4 h-4" />
             </div>
           </div>
-          <div className="border-t border-white/5 pt-2 mt-2 flex items-center justify-between text-[11px] text-on-surface-variant">
+          <div className="border-t border-white/5 pt-1.5 mt-1.5 flex items-center justify-between text-[11px] text-on-surface-variant">
             <span>Ganhos Totais acumulados:</span>
             <span className="font-bold text-white">
               {isAngola
@@ -589,7 +589,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
       </div>
 
       {/* 2. Navigation Tabs (Stretches Full Width) */}
-      <div className="w-full border-b border-white/10 mb-6 flex overflow-x-auto scrollbar-none whitespace-nowrap gap-2">
+      <div className="w-full border-b border-white/10 mb-4 flex overflow-x-auto scrollbar-none whitespace-nowrap gap-2">
         {[
           { id: 'overview', label: 'Minhas Afiliações & Links' },
           { id: 'products', label: 'Produtos Disponíveis' },
@@ -604,7 +604,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
               setPayoutMessage(null);
               setWithdrawMessage(null);
             }}
-            className={`px-4 py-3 font-display text-xs uppercase tracking-wider font-extrabold border-b-2 transition-all ${
+            className={`px-3 py-2 font-display text-xs uppercase tracking-wider font-extrabold border-b-2 transition-all ${
               activeTab === tab.id
                 ? 'border-primary text-primary bg-white/5'
                 : 'border-transparent text-on-surface-variant hover:text-white hover:bg-white/5'
@@ -638,23 +638,23 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             </div>
 
             {myLinks.length === 0 ? (
-              <div className="w-full py-16 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-on-surface-variant">
+              <div className="w-full py-10 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
+                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-2.5 text-on-surface-variant">
                   <Link2 className="w-6 h-6" />
                 </div>
                 <h3 className="font-display text-sm font-semibold text-white mb-1">Sem links de afiliado ativos</h3>
-                <p className="font-sans text-xs text-on-surface-variant max-w-sm mb-6">
+                <p className="font-sans text-xs text-on-surface-variant max-w-sm mb-4">
                   Você ainda não se afiliou a nenhum produto. Vá para a aba "Produtos Disponíveis" e ative seus links.
                 </p>
                 <button
                   onClick={() => setActiveTab('products')}
-                  className="px-6 py-2.5 bg-primary text-background hover:brightness-105 transition-all text-xs font-display uppercase tracking-widest font-extrabold rounded-lg"
+                  className="px-6 py-2 bg-primary text-background hover:brightness-105 transition-all text-xs font-display uppercase tracking-widest font-extrabold rounded-lg"
                 >
                   Ver Produtos Disponíveis
                 </button>
               </div>
             ) : (
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {myLinks.map((link: any) => {
                   const productUrl = `${window.location.origin}/?screen=product&id=${link.product.id}&ref=${link.tracking_code}`;
                   const generalUrl = `${window.location.origin}/?ref=${link.tracking_code}`;
@@ -662,10 +662,10 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                   return (
                     <div
                       key={link.id}
-                      className="bg-surface/30 border border-white/10 rounded-xl p-3 hover:border-primary/30 transition-all flex flex-row gap-3.5 items-center"
+                      className="bg-surface/30 border border-white/10 rounded-xl p-2.5 hover:border-primary/30 transition-all flex flex-row gap-2.5 items-center"
                     >
                       {/* Product Thumbnail */}
-                      <div className="w-16 h-20 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/40 relative">
+                      <div className="w-14 h-18 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/40 relative">
                         {link.product.cover_url ? (
                           <img
                             src={link.product.cover_url}
@@ -703,10 +703,10 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                         </div>
                         
                         {/* Compact Link Actions */}
-                        <div className="flex flex-row items-center gap-2 mt-2">
+                        <div className="flex flex-row items-center gap-2 mt-1.5">
                           <button
                             onClick={() => copyToClipboard(productUrl, `${link.id}-prod`)}
-                            className="flex-1 flex items-center justify-between gap-1 px-2.5 py-1.5 rounded bg-black/40 border border-white/5 hover:bg-white/5 text-[10px] text-white font-sans font-semibold transition-all cursor-pointer min-w-0"
+                            className="flex-1 flex items-center justify-between gap-1 px-2 py-1 rounded bg-black/40 border border-white/5 hover:bg-white/5 text-[10px] text-white font-sans font-semibold transition-all cursor-pointer min-w-0"
                           >
                             <span className="text-on-surface-variant truncate mr-1">Link Direto</span>
                             <div className="flex items-center gap-1 text-primary shrink-0">
@@ -717,7 +717,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
                           <button
                             onClick={() => copyToClipboard(generalUrl, `${link.id}-gen`)}
-                            className="flex-1 flex items-center justify-between gap-1 px-2.5 py-1.5 rounded bg-black/40 border border-white/5 hover:bg-white/5 text-[10px] text-white font-sans font-semibold transition-all cursor-pointer min-w-0"
+                            className="flex-1 flex items-center justify-between gap-1 px-2 py-1 rounded bg-black/40 border border-white/5 hover:bg-white/5 text-[10px] text-white font-sans font-semibold transition-all cursor-pointer min-w-0"
                           >
                             <span className="text-on-surface-variant truncate mr-1">Link Loja</span>
                             <div className="flex items-center gap-1 text-primary shrink-0">
@@ -758,8 +758,8 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             </div>
 
             {filteredProducts.length === 0 ? (
-              <div className="w-full py-16 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-on-surface-variant">
+              <div className="w-full py-10 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
+                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-2.5 text-on-surface-variant">
                   <Search className="w-6 h-6" />
                 </div>
                 <h3 className="font-display text-sm font-semibold text-white mb-1">Nenhum produto encontrado</h3>
@@ -768,7 +768,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                 </p>
               </div>
             ) : (
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredProducts.map((product: any) => {
                     const hasUsd = product.price && product.price > 0;
                     const hasAoa = product.aoa_price && product.aoa_price > 0;
@@ -778,7 +778,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                     return (
                   <div
                     key={product.id}
-                    className={`bg-surface/30 border rounded-xl p-4 transition-all flex flex-col justify-between ${
+                    className={`bg-surface/30 border rounded-xl p-3.5 transition-all flex flex-col justify-between ${
                       disabledForForeigner
                         ? 'border-white/5 opacity-60'
                         : 'border-white/10 hover:border-white/20'
@@ -786,7 +786,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                   >
                     <div>
                       {/* Product cover */}
-                      <div className="w-full aspect-video rounded-lg overflow-hidden border border-white/10 bg-black/40 mb-3 relative">
+                      <div className="w-full aspect-video rounded-lg overflow-hidden border border-white/10 bg-black/40 mb-2 relative">
                         {product.cover_url ? (
                           <img
                             src={product.cover_url}
@@ -825,7 +825,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                       </div>
                     </div>
 
-                    <div className="border-t border-white/5 pt-3 mt-3 flex items-center justify-between">
+                    <div className="border-t border-white/5 pt-2 mt-2 flex items-center justify-between">
                       <div>
                         <span className="text-[9px] font-sans uppercase tracking-wider text-on-surface-variant block">Seu Ganho Estimado</span>
                         <span className="text-xs font-display font-black text-white">
@@ -874,8 +874,8 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             </div>
 
             {conversions.length === 0 ? (
-              <div className="w-full py-16 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-on-surface-variant">
+              <div className="w-full py-10 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
+                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-2.5 text-on-surface-variant">
                   <TrendingUp className="w-6 h-6" />
                 </div>
                 <h3 className="font-display text-sm font-semibold text-white mb-1">Nenhuma comissão registrada</h3>
@@ -888,12 +888,12 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                 <table className="w-full text-left border-collapse font-sans text-xs">
                   <thead>
                     <tr className="border-b border-white/15 bg-white/5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                      <th className="p-4">Produto</th>
-                      <th className="p-4">Valor da Venda</th>
-                      <th className="p-4">Taxa</th>
-                      <th className="p-4">Sua Comissão</th>
-                      <th className="p-4">Data</th>
-                      <th className="p-4 text-right">Estado</th>
+                      <th className="p-2.5">Produto</th>
+                      <th className="p-2.5">Valor da Venda</th>
+                      <th className="p-2.5">Taxa</th>
+                      <th className="p-2.5">Sua Comissão</th>
+                      <th className="p-2.5">Data</th>
+                      <th className="p-2.5 text-right">Estado</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -901,19 +901,19 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                       .filter((conv: any) => isAngola || conv.currency === 'usd')
                       .map((conv: any) => (
                       <tr key={conv.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="p-4 font-semibold text-white">{conv.products?.title}</td>
-                        <td className="p-4">
+                        <td className="p-2.5 font-semibold text-white">{conv.products?.title}</td>
+                        <td className="p-2.5">
                           {conv.currency === 'usd' ? `$${conv.sale_amount_usd}` : `${formatCurrency(conv.sale_amount_aoa, 'aoa')}`}
                         </td>
-                        <td className="p-4">{conv.commission_rate}%</td>
-                        <td className="p-4 font-bold text-green-400">
+                        <td className="p-2.5">{conv.commission_rate}%</td>
+                        <td className="p-2.5 font-bold text-green-400">
                           {conv.currency === 'usd' ? `+$${conv.commission_usd}` : `+${formatCurrency(conv.commission_aoa, 'aoa')}`}
                         </td>
-                        <td className="p-4 text-on-surface-variant">
+                        <td className="p-2.5 text-on-surface-variant">
                           {new Date(conv.created_at).toLocaleDateString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
                         </td>
-                        <td className="p-4 text-right">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                        <td className="p-2.5 text-right">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                             conv.status === 'paid'
                               ? 'bg-green-500/10 text-green-400 border border-green-500/25'
                               : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/25'
@@ -932,9 +932,9 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
         {/* ==================== TAB: PAYOUT CONFIG ==================== */}
         {activeTab === 'payout' && (
-          <div className="w-full max-w-2xl bg-surface/30 border border-white/10 rounded-2xl p-6 shadow-lg">
-            <h2 className="font-display text-lg font-bold text-white mb-2">Dados de Recebimento</h2>
-            <p className="font-sans text-xs text-on-surface-variant mb-6">
+          <div className="w-full max-w-2xl bg-surface/30 border border-white/10 rounded-xl p-4 shadow-lg">
+            <h2 className="font-display text-lg font-bold text-white mb-1.5">Dados de Recebimento</h2>
+            <p className="font-sans text-xs text-on-surface-variant mb-4">
               Estes dados serão utilizados para processar os seus saques. Certifique-se de que os dados estão corretos para evitar rejeições.
             </p>
 
@@ -1095,11 +1095,11 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
         {/* ==================== TAB: WITHDRAWALS ==================== */}
         {activeTab === 'withdrawals' && (
-          <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Request Payout Form */}
-            <div className="lg:col-span-1 bg-surface/30 border border-white/10 rounded-2xl p-6 shadow-lg h-fit">
-              <h2 className="font-display text-lg font-bold text-white mb-2">Solicitar Saque</h2>
-              <p className="font-sans text-xs text-on-surface-variant mb-4">
+            <div className="lg:col-span-1 bg-surface/30 border border-white/10 rounded-xl p-4 shadow-lg h-fit">
+              <h2 className="font-display text-lg font-bold text-white mb-1.5">Solicitar Saque</h2>
+              <p className="font-sans text-xs text-on-surface-variant mb-3">
                 Transfira o seu saldo disponível de afiliado para o seu método de pagamento preferencial.
               </p>
 
@@ -1193,12 +1193,12 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             </div>
 
             {/* Payout Requests History List (Full Width Tables on right) */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-3">
               <h2 className="font-display text-sm font-bold text-white uppercase tracking-wider px-1">Seus Pedidos de Saque</h2>
               
               {withdrawals.length === 0 ? (
-                <div className="w-full py-16 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-on-surface-variant">
+                <div className="w-full py-10 bg-surface/20 border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center px-4">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-2.5 text-on-surface-variant">
                     <Clock className="w-6 h-6" />
                   </div>
                   <h3 className="font-display text-sm font-semibold text-white mb-1">Nenhum saque solicitado</h3>
@@ -1211,17 +1211,17 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                   <table className="w-full text-left border-collapse font-sans text-xs">
                     <thead>
                       <tr className="border-b border-white/15 bg-white/5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                        <th className="p-4">Valor</th>
-                        <th className="p-4">Método</th>
-                        <th className="p-4">Data</th>
-                        <th className="p-4">Taxa</th>
-                        <th className="p-4 text-right">Estado</th>
+                        <th className="p-2.5">Valor</th>
+                        <th className="p-2.5">Método</th>
+                        <th className="p-2.5">Data</th>
+                        <th className="p-2.5">Taxa</th>
+                        <th className="p-2.5 text-right">Estado</th>
                       </tr>
                     </thead>
                     <tbody>
                       {withdrawals.map((w: any) => (
                         <tr key={w.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                          <td className="p-4 font-bold text-white">
+                          <td className="p-2.5 font-bold text-white">
                             {w.currency === 'usd'
                               ? `$${w.amount_usd}`
                               : isAngola
@@ -1229,18 +1229,18 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                                 : '—'
                             }
                           </td>
-                          <td className="p-4 uppercase">{w.payout_method}</td>
-                          <td className="p-4 text-on-surface-variant">
+                          <td className="p-2.5 uppercase">{w.payout_method}</td>
+                          <td className="p-2.5 text-on-surface-variant">
                             {new Date(w.created_at).toLocaleDateString('pt-PT')}
                           </td>
-                          <td className="p-4 text-on-surface-variant">
+                          <td className="p-2.5 text-on-surface-variant">
                             {w.fee_amount > 0 ? (
                               w.currency === 'usd' ? `$${w.fee_amount}` : `${w.fee_amount} AOA`
                             ) : (
                               'Grátis'
                             )}
                           </td>
-                          <td className="p-4 text-right">
+                          <td className="p-2.5 text-right">
                             <div className="flex flex-col items-end gap-0.5">
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
                                 w.status === 'completed'

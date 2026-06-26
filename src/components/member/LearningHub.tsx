@@ -66,23 +66,23 @@ export function LearningHub({ onOpenCourse, onOpenEbook, onGoToLibrary }: Learni
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {continueItem && (
-        <div className="glass-panel rounded-2xl p-6 border border-primary/20 relative overflow-hidden">
+        <div className="glass-panel rounded-2xl p-4 border border-primary/20 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
-          <p className="font-display text-xs font-semibold tracking-widest uppercase text-primary mb-3">
+          <p className="font-display text-[10px] font-semibold tracking-widest uppercase text-primary mb-1.5">
             {t('memberDashboard.continueWhere')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             {continueItem.cover_url && (
               <img
                 src={continueItem.cover_url}
                 alt=""
-                className="w-24 h-24 rounded-lg object-cover"
+                className="w-16 h-16 rounded-lg object-cover"
               />
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="font-display text-xl font-bold text-white mb-2 truncate">
+              <h3 className="font-display text-base font-bold text-white mb-2 truncate">
                 {continueItem.product_title}
               </h3>
               <button
@@ -94,9 +94,9 @@ export function LearningHub({ onOpenCourse, onOpenEbook, onGoToLibrary }: Learni
                     onOpenCourse(continueItem.product_id, continueItem.lesson_id);
                   }
                 }}
-                className="primary-btn px-5 py-2.5 rounded-full font-display text-xs font-semibold tracking-widest uppercase inline-flex items-center gap-2"
+                className="primary-btn px-4 py-1.5 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase inline-flex items-center gap-1.5"
               >
-                <Play className="w-4 h-4" />
+                <Play className="w-3.5 h-3.5" />
                 {t('memberDashboard.continue')}
               </button>
             </div>
@@ -106,8 +106,8 @@ export function LearningHub({ onOpenCourse, onOpenEbook, onGoToLibrary }: Learni
 
       {recent.length > 0 && (
         <div>
-          <h2 className="font-display text-lg font-bold text-white mb-4">{t('memberDashboard.inProgress')}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <h2 className="font-display text-sm font-bold text-white mb-2">{t('memberDashboard.inProgress')}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {recent.map((item) => (
               <button
                 key={item.id}
@@ -117,12 +117,12 @@ export function LearningHub({ onOpenCourse, onOpenEbook, onGoToLibrary }: Learni
                     ? onOpenEbook(item.id)
                     : onOpenCourse(item.id, item.lastProgress?.lesson_id)
                 }
-                className="glass-panel rounded-xl p-4 border border-white/10 text-left hover:border-primary/30 transition-all flex gap-3"
+                className="glass-panel rounded-xl p-2.5 border border-white/10 text-left hover:border-primary/30 transition-all flex gap-2"
               >
-                <img src={item.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover" />
+                <img src={item.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1">
-                  <p className="font-sans text-sm text-white truncate">{item.title}</p>
-                  <div className="h-1 rounded-full bg-white/10 mt-2">
+                  <p className="font-sans text-xs text-white truncate">{item.title}</p>
+                  <div className="h-1 rounded-full bg-white/10 mt-1.5">
                     <div
                       className="h-full bg-primary rounded-full"
                       style={{ width: `${item.percentComplete}%` }}
@@ -138,10 +138,10 @@ export function LearningHub({ onOpenCourse, onOpenEbook, onGoToLibrary }: Learni
       <button
         type="button"
         onClick={onGoToLibrary}
-        className="w-full glass-panel rounded-xl p-4 border border-white/10 flex items-center justify-between text-left hover:border-primary/30 transition-all group"
+        className="w-full glass-panel rounded-xl p-2.5 border border-white/10 flex items-center justify-between text-left hover:border-primary/30 transition-all group"
       >
-        <span className="font-display text-sm font-semibold text-white">{t('memberDashboard.viewFullLibrary')}</span>
-        <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+        <span className="font-display text-xs font-semibold text-white">{t('memberDashboard.viewFullLibrary')}</span>
+        <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
       </button>
     </div>
   );

@@ -538,53 +538,53 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }
 
   return (
-    <div className="pt-20 pb-16 px-4 md:px-8 w-full min-h-screen page-wrapper">
+    <div className="pt-16 pb-6 px-4 md:px-8 w-full min-h-screen page-wrapper">
       <CountryRequiredModal />
       {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em] flex flex-wrap items-center gap-2">
+          <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant leading-[1.1] tracking-[-0.04em] flex flex-wrap items-center gap-2">
             {t('collaborator.dashboardTitle', 'Painel do Criador')}
             {profile?.plan === 'course_creator' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-[10px] font-bold text-blue-400 font-display shadow-lg shadow-blue-500/10">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-[9px] font-bold text-blue-400 font-display shadow-lg shadow-blue-500/10">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
                 Membro Pro
               </span>
             )}
           </h1>
-          <p className="mt-1 text-on-surface-variant font-sans text-xs sm:text-sm">
+          <p className="mt-0.5 text-on-surface-variant font-sans text-xs">
             {t('collaborator.dashboardSubtitle', { name: profile?.displayName, defaultValue: `Olá, ${profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.` })}
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap items-center">
+        <div className="flex gap-1.5 flex-wrap items-center">
           <button
             onClick={() => setShowPlanBenefitsModal(true)}
-            className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 font-semibold text-white hover:bg-primary/20 transition-all text-xs shadow-[0_0_10px_rgba(192,193,255,0.1)]"
+            className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 font-semibold text-white hover:bg-primary/20 transition-all text-[11px] shadow-[0_0_10px_rgba(192,193,255,0.1)]"
           >
-            <Award size={15} className="text-primary animate-pulse" />
+            <Award size={13} className="text-primary animate-pulse" />
             Benefícios do Plano Premium
           </button>
           <button
             onClick={openWalletModal}
-            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-semibold text-on-surface hover:bg-white/10 transition-all text-xs"
+            className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-semibold text-on-surface hover:bg-white/10 transition-all text-[11px]"
           >
-            <Landmark size={15} className="text-primary" />
+            <Landmark size={13} className="text-primary" />
             Configurar Carteira
           </button>
           <button
             onClick={onGoToProducts}
-            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-semibold text-on-surface hover:bg-white/10 transition-all text-xs"
+            className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-semibold text-on-surface hover:bg-white/10 transition-all text-[11px]"
           >
-            <FileText size={15} className="text-primary" />
+            <FileText size={13} className="text-primary" />
             Meus Produtos
           </button>
           <button
             onClick={() => setShowWithdrawModal(true)}
             disabled={(Number(balance?.available_balance) || 0) < 50}
             title={(Number(balance?.available_balance) || 0) < 50 ? 'Saldo mínimo de $50.00 necessário para sacar' : 'Solicitar saque'}
-            className="flex items-center gap-1.5 rounded-full bg-on-surface px-4 py-2 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-xs shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(192,193,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1 rounded-full bg-on-surface px-3 py-1.5 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-[11px] shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(192,193,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <PlusCircle size={15} />
+            <PlusCircle size={13} />
             Solicitar Saque
           </button>
         </div>
@@ -646,7 +646,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       })()}
 
       {/* Currency Filter Toggle */}
-      <div className="mb-4 flex items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10 flex-wrap sm:flex-nowrap">
+      <div className="mb-2 flex items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10 flex-wrap sm:flex-nowrap">
         {isAngola ? (
           <>
             <button
@@ -2146,9 +2146,9 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-4 animate-in fade-in duration-300">
       {/* Filters panel */}
-      <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+      <div className="glass-panel rounded-2xl p-3.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
         <div>
           <h3 className="text-base font-bold text-white font-display">
             {t('collaborator.analytics.title', 'Análise de Tráfego e Vendas')}
@@ -2201,8 +2201,8 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
       </div>
 
       {loading && !summary ? (
-        <div className="flex justify-center items-center py-16 text-on-surface-variant">
-          <RefreshCw size={20} className="animate-spin mr-2" /> {t('collaborator.analytics.loading', 'Carregando dados de análise...')}
+        <div className="flex justify-center items-center py-12 text-on-surface-variant">
+          <RefreshCw size={16} className="animate-spin mr-2" /> {t('collaborator.analytics.loading', 'Carregando dados de análise...')}
         </div>
       ) : error ? (
         <div className="glass-panel rounded-2xl p-6 border border-red-500/20 text-center text-red-400 text-sm">
@@ -2213,9 +2213,9 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
           {/* Summary Cards */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 relative z-10">
             {/* Card 1: Views */}
-            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-blue-500/15">
+            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-blue-500/15">
               <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
                   <Eye size={15} />
                 </div>
@@ -2226,13 +2226,13 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
               <span className="block text-xs font-semibold text-on-surface-variant mb-1">
                 {t('collaborator.analytics.views', 'Visualizações')}
               </span>
-              <span className="block text-xl font-bold text-white font-mono">{summary?.totalViews ?? 0}</span>
+              <span className="block text-lg font-bold text-white font-mono">{summary?.totalViews ?? 0}</span>
             </div>
 
             {/* Card 2: Conversions */}
-            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-green-500/15">
+            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-green-500/15">
               <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
                   <CheckCircle size={15} />
                 </div>
@@ -2243,13 +2243,13 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
               <span className="block text-xs font-semibold text-on-surface-variant mb-1">
                 {t('collaborator.analytics.conversions', 'Conversões (Vendas)')}
               </span>
-              <span className="block text-xl font-bold text-white font-mono">{summary?.totalConversions ?? 0}</span>
+              <span className="block text-lg font-bold text-white font-mono">{summary?.totalConversions ?? 0}</span>
             </div>
 
             {/* Card 3: CR% */}
-            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-purple-500/15">
+            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-purple-500/15">
               <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(168,85,247,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
                   <ArrowUpRight size={15} />
                 </div>
@@ -2260,15 +2260,15 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
               <span className="block text-xs font-semibold text-on-surface-variant mb-1">
                 {t('collaborator.analytics.conversionRate', 'Taxa de Conversão')}
               </span>
-              <span className="block text-xl font-bold text-white font-mono">
+              <span className="block text-lg font-bold text-white font-mono">
                 {Number(summary?.conversionRate || 0).toFixed(1)}%
               </span>
             </div>
 
             {/* Card 4: Revenue USD */}
-            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-primary/15">
+            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-primary/15">
               <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
                   <DollarSign size={15} />
                 </div>
@@ -2279,15 +2279,15 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
               <span className="block text-xs font-semibold text-on-surface-variant mb-1">
                 {t('collaborator.analytics.revenueUsd', 'Faturamento USD')}
               </span>
-              <span className="block text-xl font-bold text-white font-mono">
+              <span className="block text-lg font-bold text-white font-mono">
                 {Number(summary?.totalRevenueUsd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
               </span>
             </div>
 
             {/* Card 5: Revenue AOA */}
-            <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-amber-500/15">
+            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-amber-500/15">
               <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
                   <Landmark size={15} />
                 </div>
@@ -2298,15 +2298,15 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
               <span className="block text-xs font-semibold text-on-surface-variant mb-1">
                 {t('collaborator.analytics.revenueAoa', 'Faturamento AOA')}
               </span>
-              <span className="block text-xl font-bold text-white font-mono">
+              <span className="block text-lg font-bold text-white font-mono">
                 {Number(summary?.totalRevenueAoa || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })}
               </span>
             </div>
           </div>
 
           {/* Chart Container */}
-          <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10 relative z-10">
-            <h4 className="text-sm font-bold text-white font-display mb-4">
+          <div className="glass-panel rounded-2xl p-3 sm:p-3.5 border border-white/10 relative z-10">
+            <h4 className="text-sm font-bold text-white font-display mb-3">
               {t('collaborator.analytics.chartTitle', 'Tendência de Visitas e Conversões')}
             </h4>
             

@@ -424,25 +424,25 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   ];
 
   return (
-    <div className="pt-20 pb-16 px-4 sm:px-6 md:px-10 max-w-7xl mx-auto min-h-screen page-wrapper">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+    <div className="pt-16 pb-6 px-4 sm:px-6 md:px-10 max-w-7xl mx-auto min-h-screen page-wrapper">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
         <div>
-          <h1 className="font-display text-2xl font-bold text-white">{t('member.title')}</h1>
-          <p className="font-sans text-sm text-on-surface-variant">{memberData.email}</p>
+          <h1 className="font-display text-xl font-bold text-white">{t('member.title')}</h1>
+          <p className="font-sans text-xs text-on-surface-variant">{memberData.email}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-white/10 hover:border-red-400/30 transition-all text-on-surface-variant hover:text-red-400"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel border border-white/10 hover:border-red-400/30 transition-all text-on-surface-variant hover:text-red-400 text-xs"
         >
-          <LogOut className="w-4 h-4" />
-          <span className="font-display text-xs font-semibold tracking-widest uppercase">{t('member.logout')}</span>
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="font-display text-[10px] font-semibold tracking-widest uppercase">{t('member.logout')}</span>
         </button>
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel rounded-xl p-2 border border-white/10 mb-8 flex gap-2 overflow-x-auto"
+        className="glass-panel rounded-xl p-1.5 border border-white/10 mb-4 flex gap-1.5 overflow-x-auto"
       >
         {tabs.map((tab) => (
           <button
@@ -452,7 +452,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
               setCurrentSection(tab.id);
               if (memberData.id) void loadStats(memberData.id);
             }}
-            className={`flex-shrink-0 px-4 py-3 rounded-2xl font-display text-xs sm:text-sm font-semibold tracking-widest uppercase transition-all touch-target ${
+            className={`flex-shrink-0 px-3 py-2 rounded-xl font-display text-xs font-semibold tracking-widest uppercase transition-all touch-target ${
               currentSection === tab.id
                 ? 'bg-primary text-on-primary shadow-[0_0_20px_rgba(192,193,255,0.3)]'
                 : 'text-on-surface-variant hover:text-on-surface hover:bg-white/5'
@@ -460,7 +460,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
           >
             {tab.label}
             {tab.id === 'notificacoes' && stats.unreadNotifications > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">
+              <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
                 {stats.unreadNotifications}
               </span>
             )}

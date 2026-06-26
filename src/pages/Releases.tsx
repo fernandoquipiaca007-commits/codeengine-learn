@@ -78,28 +78,28 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
   };
 
   return (
-    <div className="pt-24 pb-12 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
+    <div className="pt-16 pb-6 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       {/* Hero Section */}
-      <header className="mb-10 flex flex-col items-start max-w-4xl">
+      <header className="mb-4 flex flex-col items-start max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-primary" />
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <TrendingUp className="w-4.5 h-4.5 text-primary" />
             </div>
-            <span className="font-display text-sm font-semibold tracking-widest uppercase text-primary">
+            <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
               {t('releases.badge')}
             </span>
           </div>
           
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[72px] leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-3">
             {t('releases.heading')}
           </h1>
           
-          <p className="font-sans text-xl text-on-surface-variant max-w-3xl leading-relaxed">
+          <p className="font-sans text-sm sm:text-base text-on-surface-variant max-w-3xl leading-relaxed">
             {t('releases.subtitle')}
           </p>
         </motion.div>
@@ -110,40 +110,40 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="mb-16"
+        className="mb-6"
       >
-        <div className="glass-panel rounded-2xl p-6 flex flex-wrap items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-primary" />
+        <div className="glass-panel rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
             <div>
-              <p className="font-display text-sm font-semibold text-white">
+              <p className="font-display text-xs font-semibold text-white">
                 {t('releases.stats.last30Days')}
               </p>
-              <p className="font-sans text-xs text-on-surface-variant">
+              <p className="font-sans text-[10px] text-on-surface-variant">
                 {t('releases.stats.newContent', { count: recentProducts.length })}
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <Star className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-2">
+            <Star className="w-4 h-4 text-primary" />
             <div>
-              <p className="font-display text-sm font-semibold text-white">
+              <p className="font-display text-xs font-semibold text-white">
                 {t('releases.stats.premiumQuality')}
               </p>
-              <p className="font-sans text-xs text-on-surface-variant">
+              <p className="font-sans text-[10px] text-on-surface-variant">
                 {t('releases.stats.curatedByExperts')}
               </p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-primary" />
             <div>
-              <p className="font-display text-sm font-semibold text-white">
+              <p className="font-display text-xs font-semibold text-white">
                 {t('releases.stats.alwaysUpdated')}
               </p>
-              <p className="font-sans text-xs text-on-surface-variant">
+              <p className="font-sans text-[10px] text-on-surface-variant">
                 {t('releases.stats.weeklyContent')}
               </p>
             </div>
@@ -153,10 +153,10 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
 
       {/* Products Grid */}
       {loading ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass-card rounded-2xl p-6 animate-pulse">
-              <div className="w-full h-48 bg-white/5 rounded-xl mb-4"></div>
+            <div key={i} className="glass-card rounded-2xl p-4.5 animate-pulse">
+              <div className="w-full h-36 bg-white/5 rounded-xl mb-4"></div>
               <div className="h-6 bg-white/5 rounded mb-2"></div>
               <div className="h-4 bg-white/5 rounded w-2/3"></div>
             </div>
@@ -167,7 +167,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-5"
         >
           {recentProducts.map((product, index) => (
             <motion.article
@@ -201,7 +201,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
               </div>
               
               {/* Cover Image */}
-              <div className="relative w-full h-64 overflow-hidden">
+              <div className="relative w-full h-44 overflow-hidden">
                 <LazyImage
                   src={getProductCoverUrl(product)}
                   alt={product.title}
@@ -212,7 +212,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
               </div>
               
               {/* Content */}
-              <div className="p-6">
+              <div className="p-4.5">
                 {/* Creator Row */}
                 <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
                   <div className="flex items-center gap-2">

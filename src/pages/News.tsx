@@ -745,18 +745,18 @@ export function News({ setScreen }: NewsProps) {
 
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
+    <div className="pt-16 pb-8 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       
       {/* Header */}
-      <header className="mb-6 md:mb-8 flex flex-col items-start max-w-3xl">
+      <header className="mb-4 md:mb-5 flex flex-col items-start max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex items-center gap-2 mb-4"
+          className="flex items-center gap-2 mb-2"
         >
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <Newspaper className="w-6 h-6 text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <Newspaper className="w-4.5 h-4.5 text-primary" />
           </div>
           <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
             {t('news.badge') || 'Knowledge Hub'}
@@ -767,7 +767,7 @@ export function News({ setScreen }: NewsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[72px] leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6"
+          className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-3"
         >
           {t('news.heading') || 'Knowledge Hub'}
         </motion.h1>
@@ -776,7 +776,7 @@ export function News({ setScreen }: NewsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="font-sans text-base sm:text-lg text-on-surface-variant max-w-2xl"
+          className="font-sans text-xs sm:text-sm text-on-surface-variant max-w-2xl"
         >
           {t('news.subtitle') || 'Stay ahead with the latest insights on AI, automation, SaaS and technology. Exclusive content for community members.'}
         </motion.p>
@@ -784,7 +784,7 @@ export function News({ setScreen }: NewsProps) {
 
       {/* 1. Featured News Carousel Section */}
       {featuredArticles.length > 0 && !selectedCategory && (
-        <div className="relative mb-20 group">
+        <div className="relative mb-8 group">
           {featuredArticles.map((article, idx) => {
             if (idx !== carouselIndex) return null;
 
@@ -795,7 +795,7 @@ export function News({ setScreen }: NewsProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="relative rounded-3xl overflow-hidden min-h-[480px] sm:min-h-[520px] flex flex-col justify-end p-6 sm:p-12 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                className="relative rounded-2xl overflow-hidden min-h-[260px] sm:min-h-[290px] flex flex-col justify-end p-4 sm:p-6 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
               >
                 {/* Background Cover Image */}
                 <div className="absolute inset-0 z-0">
@@ -812,7 +812,7 @@ export function News({ setScreen }: NewsProps) {
                 </div>
 
                 {/* Content Overlay */}
-                <div className="relative z-10 max-w-3xl space-y-4">
+                <div className="relative z-10 max-w-3xl space-y-2">
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 font-display text-[10px] font-bold uppercase tracking-wider`}>
                       {article.category}
@@ -827,22 +827,22 @@ export function News({ setScreen }: NewsProps) {
                     )}
                   </div>
 
-                  <h2 className="font-display text-2xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
+                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight tracking-tight">
                     {article.title}
                   </h2>
 
-                  <p className="font-sans text-sm sm:text-base text-on-surface-variant leading-relaxed line-clamp-3 max-w-2xl">
+                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed line-clamp-2 max-w-2xl">
                     {article.excerpt}
                   </p>
 
                   {/* Actions Row */}
-                  <div className="flex items-center gap-4 pt-4 flex-wrap">
+                  <div className="flex items-center gap-4 pt-2 flex-wrap">
                     <button
                       onClick={() => {
                         setSelectedArticle(article);
                         void trackView(article.id);
                       }}
-                      className="px-6 py-3 rounded-full bg-[#6366f1] text-white font-display text-xs font-bold tracking-widest uppercase hover:bg-[#5053e3] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all flex items-center gap-2"
+                      className="px-4.5 py-2 rounded-full bg-[#6366f1] text-white font-display text-[11px] font-bold tracking-widest uppercase hover:bg-[#5053e3] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all flex items-center gap-2"
                     >
                       <span>{t('news.readMore') || 'Read More'}</span>
                       <ArrowRight className="w-4 h-4" />
@@ -850,7 +850,7 @@ export function News({ setScreen }: NewsProps) {
 
                     <button
                       onClick={() => toggleLike(article.id)}
-                      className={`px-5 py-3 rounded-full border font-display text-xs font-bold tracking-widest uppercase flex items-center gap-2 transition-all ${
+                      className={`px-4 py-2 rounded-full border font-display text-[11px] font-bold tracking-widest uppercase flex items-center gap-2 transition-all ${
                         likedArticles.includes(article.id)
                           ? 'bg-red-500/10 border-red-500/30 text-red-400'
                           : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
