@@ -19,6 +19,7 @@ const Background3D = lazy(() =>
 // Each page is loaded on demand — not bundled into the initial JS payload.
 // This reduces the initial bundle size by ~70%.
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const Welcome = lazy(() => import('./pages/Welcome').then(m => ({ default: m.Welcome })));
 const Library = lazy(() => import('./pages/Library').then(m => ({ default: m.Library })));
 const Product = lazy(() => import('./pages/Product').then(m => ({ default: m.Product })));
 const Auth = lazy(() => import('./pages/Auth').then(m => ({ default: m.Auth })));
@@ -86,6 +87,9 @@ const PageContent = memo(function PageContent({
 }) {
   return (
     <Suspense fallback={<PageLoader />}>
+      {currentScreen === 'welcome' && (
+        <Welcome setScreen={navigateToScreen} />
+      )}
       {currentScreen === 'home' && (
         <Home setScreen={navigateToScreen} onProductClick={navigateToProduct} />
       )}
@@ -165,12 +169,12 @@ function getInitialScreen(): string {
     pathname !== '/' ||
     hash.includes('access_token=') ||
     hash.includes('type=recovery');
-  if (hasSpecialRoute) return 'home';
+  if (hasSpecialRoute) return 'welcome';
   const stored = sessionStorage.getItem('ce_last_screen');
-  const valid = ['home','library','member','about','releases','contact',
+  const valid = ['welcome','home','library','member','about','releases','contact',
     'favorites','news','settings','privacy','terms','licensing','support',
     'rewards','product', 'colaborador-candidatura', 'colaborador', 'colaborador-produtos', 'afiliados'];
-  return (stored && valid.includes(stored)) ? stored : 'home';
+  return (stored && valid.includes(stored)) ? stored : 'welcome';
 }
 
 function getInitialProductId(): string | null {
@@ -530,7 +534,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {!isImmersive && !['home', 'member','colaborador','colaborador-candidatura','colaborador-produtos','afiliados','settings'].includes(currentScreen) && (
+      {!isImmersive && !['welcome', 'member','colaborador','colaborador-candidatura','colaborador-produtos','afiliados','settings'].includes(currentScreen) && (
         <Footer setScreen={navigateToScreen} />
       )}
       <PwaInstallBanner />
