@@ -22,6 +22,7 @@ import { useUserCountry } from '../contexts/UserCountryContext';
 import { useLocale } from '../contexts/LocaleContext';
 import { prefetchProduct } from '../lib/prefetch';
 import { LazyImage } from '../components/ui/LazyImage';
+import { CircularGallery } from '../components/ui/circular-gallery';
 
 /* -----------------------------------------------------------------------------
  * LOCALIZED TEXT DICTIONARY
@@ -50,6 +51,8 @@ const LOCALIZED_TEXT = {
       ctaAffiliates: "Painel de Afiliados",
     },
     sections: {
+      featured: "Destaques",
+      featuredDesc: "Scroll para rodar a galeria 3D",
       mostSold: "Mais Vendidos",
       newReleases: "Lançamentos",
       soldCount: "{{count}} vendidos",
@@ -88,6 +91,8 @@ const LOCALIZED_TEXT = {
       ctaAffiliates: "Affiliate Dashboard",
     },
     sections: {
+      featured: "Featured",
+      featuredDesc: "Scroll to rotate the 3D gallery",
       mostSold: "Most Sold",
       newReleases: "New Releases",
       soldCount: "{{count}} sold",
@@ -126,6 +131,8 @@ const LOCALIZED_TEXT = {
       ctaAffiliates: "Tableau d'Affiliation",
     },
     sections: {
+      featured: "En Vedette",
+      featuredDesc: "Faites défiler pour faire pivoter la galerie 3D",
       mostSold: "Les Plus Vendus",
       newReleases: "Nouveautés",
       soldCount: "{{count}} vendus",
@@ -160,6 +167,17 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Responsive check for CircularGallery radius
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Auto transition language selector helper
   const activeLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
@@ -195,7 +213,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % 3);
-    }, 8000);
+    }, 8500);
     return () => clearInterval(timer);
   }, []);
 
@@ -221,6 +239,9 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   const mostSoldProducts = products.slice(0, 4);
   const newReleasesProducts = products.length >= 8 ? products.slice(4, 8) : products.slice(0, 4);
 
+  // Take first 8 products for circular gallery (or fallback to whatever is available)
+  const circularGalleryItems = products.slice(0, 8);
+
   const formatPrice = (p: LocalizedProduct) => {
     if (p.is_free) return activeLang === 'pt' ? 'Livre' : activeLang === 'fr' ? 'Gratuit' : 'Free';
     
@@ -233,13 +254,10 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-[#050505] text-on-surface overflow-x-hidden pt-20 pb-16 flex flex-col items-center">
-      {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[130px] mix-blend-screen opacity-40 pointer-events-none z-0" />
-      <div className="absolute top-[40%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/3 blur-[150px] mix-blend-screen opacity-30 pointer-events-none z-0" />
-      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-primary/3 blur-[160px] mix-blend-screen opacity-20 pointer-events-none z-0" />
-
-      <div className="w-full max-w-[1200px] px-6 flex flex-col gap-12 sm:gap-16 z-10 relative">
+    <div className="relative w-full min-h-screen bg-transparent text-on-surface pt-20 pb-16 flex flex-col items-center">
+      
+      {/* Homepage container with premium spacing guidelines to let cards breathe */}
+      <div className="w-full max-w-[1200px] px-6 flex flex-col gap-20 sm:gap-28 z-10 relative">
 
         {/* ─── Hero Carousel / Slider Section ─── */}
         <section className="relative w-full glass-card rounded-3xl p-6 md:p-10 border border-white/8 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[380px] md:min-h-[460px]">
@@ -459,6 +477,31 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
         </section>
 
 
+        {/* ─── Featured Products 3D Carousel Section ─── */}
+        {circularGalleryItems.length >= 3 && (
+          <section className="w-full flex flex-col items-center justify-center py-6 my-4 overflow-hidden relative min-h-[460px]">
+            <div className="text-center mb-8 z-10">
+              <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                {text.sections.featured}
+              </h2>
+              <p className="text-xs text-muted-foreground uppercase font-mono tracking-widest mt-1">
+                {text.sections.featuredDesc}
+              </p>
+            </div>
+            <div className="w-full h-[400px] relative mt-4">
+              <CircularGallery
+                items={circularGalleryItems}
+                radius={isMobile ? 380 : 540}
+                isAngola={isAngola}
+                activeLang={activeLang}
+                onProductClick={onProductClick}
+              />
+            </div>
+          </section>
+        )}
+
+
         {/* ─── "Most Sold" (Mais Vendidos) Section ─── */}
         <section className="flex flex-col gap-6 w-full">
           <div className="flex justify-between items-center w-full">
@@ -517,7 +560,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                         className="object-cover w-full h-full"
                         fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/90 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
                       
                       {/* Product Type Badge */}
                       {product.product_type && (
@@ -609,7 +652,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                         className="object-cover w-full h-full"
                         fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/90 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
                       
                       {/* Product Type Badge */}
                       {product.product_type && (
@@ -653,8 +696,12 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-2">
           
           {/* Card 1: Creator Partnership */}
-          <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group bg-[#09090d]/60">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.04] to-transparent z-0 pointer-events-none" />
+          <div 
+            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group min-h-[240px] bg-cover bg-center transition-all duration-300"
+            style={{
+              backgroundImage: "linear-gradient(to bottom, rgba(5, 5, 5, 0.88) 30%, rgba(5, 5, 5, 0.55) 70%, rgba(5, 5, 5, 0.35) 100%), url('/colaborador.jpg')",
+            }}
+          >
             <div className="flex flex-col gap-3 relative z-10">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <ShoppingBag className="w-5 h-5 text-primary" />
@@ -662,7 +709,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <h3 className="font-display font-extrabold text-xl text-white tracking-tight">
                 {text.promos.creatorTitle}
               </h3>
-              <p className="font-sans text-xs sm:text-sm text-on-surface-variant/90 leading-relaxed">
+              <p className="font-sans text-xs sm:text-sm text-on-surface-variant/90 leading-relaxed max-w-lg">
                 {text.promos.creatorDesc}
               </p>
             </div>
@@ -676,8 +723,12 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           </div>
 
           {/* Card 2: Affiliate Rewards */}
-          <div className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group bg-[#09090d]/60">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent z-0 pointer-events-none" />
+          <div 
+            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group min-h-[240px] bg-cover bg-center transition-all duration-300"
+            style={{
+              backgroundImage: "linear-gradient(to bottom, rgba(5, 5, 5, 0.88) 30%, rgba(5, 5, 5, 0.55) 70%, rgba(5, 5, 5, 0.35) 100%), url('/Afiliado.jpg')",
+            }}
+          >
             <div className="flex flex-col gap-3 relative z-10">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <Award className="w-5 h-5 text-primary" />
@@ -685,7 +736,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <h3 className="font-display font-extrabold text-xl text-white tracking-tight">
                 {text.promos.affiliateTitle}
               </h3>
-              <p className="font-sans text-xs sm:text-sm text-on-surface-variant/90 leading-relaxed">
+              <p className="font-sans text-xs sm:text-sm text-on-surface-variant/90 leading-relaxed max-w-lg">
                 {text.promos.affiliateDesc}
               </p>
             </div>
