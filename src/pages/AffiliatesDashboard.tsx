@@ -683,7 +683,14 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                             {link.product.title}
                           </h3>
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] font-sans text-on-surface-variant">
-                            <span>Preço: <strong className="text-white">{link.product.price ? `$${link.product.price}` : `${link.product.aoa_price} AOA`}</strong></span>
+                            <span>Preço: <strong className="text-white">
+                              {link.product.price
+                                ? `$${link.product.price}`
+                                : isAngola
+                                  ? `${link.product.aoa_price} AOA`
+                                  : '—'
+                              }
+                            </strong></span>
                             <span>Cliques: <strong className="text-white">{link.clicks || 0}</strong></span>
                             <span>Vendas: <strong className="text-white">{link.totalConversions || 0}</strong></span>
                           </div>
@@ -756,10 +763,20 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
               </div>
             ) : (
               <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredProducts.map((product: any) => (
+                {filteredProducts.map((product: any) => {
+                    const hasUsd = product.price && product.price > 0;
+                    const hasAoa = product.aoa_price && product.aoa_price > 0;
+                    const isAoaOnly = !hasUsd && hasAoa;
+                    const disabledForForeigner = !isAngola && isAoaOnly;
+
+                    return (
                   <div
                     key={product.id}
-                    className="bg-surface/30 border border-white/10 rounded-xl p-4 hover:border-white/20 transition-all flex flex-col justify-between"
+                    className={`bg-surface/30 border rounded-xl p-4 transition-all flex flex-col justify-between ${
+                      disabledForForeigner
+                        ? 'border-white/5 opacity-60'
+                        : 'border-white/10 hover:border-white/20'
+                    }`}
                   >
                     <div>
                       {/* Product cover */}
@@ -783,15 +800,34 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                       {/* Details */}
                       <h3 className="font-display text-sm font-bold text-white line-clamp-1 mb-1">{product.title}</h3>
                       <p className="text-[11px] font-sans text-on-surface-variant mb-2">Por: <strong className="text-white">{product.collaboratorName}</strong></p>
+
+                      {/* Currency badge */}
+                      <div className="flex gap-1.5 mb-2">
+                        {hasUsd && hasAoa ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border border-green-500/30 bg-green-500/10 text-green-400">
+                            💵 USD + 🟡 AOA
+                          </span>
+                        ) : hasUsd ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border border-blue-500/30 bg-blue-500/10 text-blue-400">
+                            💵 USD
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border border-amber-500/30 bg-amber-500/10 text-amber-400">
+                            🟡 Apenas AOA
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="border-t border-white/5 pt-3 mt-3 flex items-center justify-between">
                       <div>
                         <span className="text-[9px] font-sans uppercase tracking-wider text-on-surface-variant block">Seu Ganho Estimado</span>
                         <span className="text-xs font-display font-black text-white">
-                          {product.price
+                          {hasUsd
                             ? `$${(product.price * (product.affiliate_commission_pct / 100)).toFixed(2)}`
-                            : `${(product.aoa_price * (product.affiliate_commission_pct / 100)).toFixed(0)} AOA`
+                            : isAngola && hasAoa
+                              ? `${(product.aoa_price * (product.affiliate_commission_pct / 100)).toFixed(0)} AOA`
+                              : '—'
                           }
                         </span>
                       </div>
@@ -801,6 +837,10 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                           <CheckCircle className="w-4 h-4" />
                           <span>Já Afiliado</span>
                         </div>
+                      ) : disabledForForeigner ? (
+                        <span className="px-3 py-1.5 bg-white/5 text-on-surface-variant text-[10px] font-display uppercase tracking-widest font-bold rounded-lg border border-white/10 cursor-not-allowed">
+                          Apenas AOA
+                        </span>
                       ) : (
                         <button
                           onClick={() => handleJoinAffiliate(product.id)}
@@ -811,7 +851,9 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                       )}
                     </div>
                   </div>
-                ))}
+                    );
+                  })}
+
               </div>
             )}
           </div>
@@ -849,7 +891,9 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {conversions.map((conv: any) => (
+                    {conversions
+                      .filter((conv: any) => isAngola || conv.currency === 'usd')
+                      .map((conv: any) => (
                       <tr key={conv.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="p-4 font-semibold text-white">{conv.products?.title}</td>
                         <td className="p-4">
@@ -1170,7 +1214,12 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                       {withdrawals.map((w: any) => (
                         <tr key={w.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                           <td className="p-4 font-bold text-white">
-                            {w.currency === 'usd' ? `$${w.amount_usd}` : `${formatCurrency(w.amount_aoa, 'aoa')}`}
+                            {w.currency === 'usd'
+                              ? `$${w.amount_usd}`
+                              : isAngola
+                                ? `${formatCurrency(w.amount_aoa, 'aoa')}`
+                                : '—'
+                            }
                           </td>
                           <td className="p-4 uppercase">{w.payout_method}</td>
                           <td className="p-4 text-on-surface-variant">

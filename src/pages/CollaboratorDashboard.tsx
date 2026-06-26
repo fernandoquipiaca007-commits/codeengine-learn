@@ -1030,12 +1030,15 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   </div>
                   <div className="text-xs text-on-surface-variant mt-1">Ganho como Fundador (USD)</div>
                 </div>
-                <div className="glass-card rounded-2xl p-5 border border-amber-500/20 text-center">
-                  <div className="text-2xl font-bold text-amber-400 font-mono">
-                    {(founderStats?.totalEarnedAoa || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })}
+                {isAngola && (
+                  <div className="glass-card rounded-2xl p-5 border border-amber-500/20 text-center">
+                    <div className="text-2xl font-bold text-amber-400 font-mono">
+                      {(founderStats?.totalEarnedAoa || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })}
+                    </div>
+                    <div className="text-xs text-on-surface-variant mt-1">Ganho como Fundador (AOA)</div>
                   </div>
-                  <div className="text-xs text-on-surface-variant mt-1">Ganho como Fundador (AOA)</div>
-                </div>
+                )}
+
               </div>
 
               {/* Recent founder commissions */}
@@ -1057,7 +1060,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                        {founderStats.recentCommissions.map((item: any) => (
+                        {founderStats.recentCommissions
+                          .filter((item: any) => isAngola || item.currency === 'USD')
+                          .map((item: any) => (
                           <tr key={item.id} className="text-on-surface">
                             <td className="py-3 text-on-surface-variant text-xs font-mono">
                               {new Date(item.created_at).toLocaleDateString('pt-BR')}
@@ -1077,6 +1082,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                             </td>
                           </tr>
                         ))}
+
                       </tbody>
                     </table>
                   </div>

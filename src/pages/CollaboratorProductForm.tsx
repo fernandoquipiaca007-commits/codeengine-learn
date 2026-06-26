@@ -628,13 +628,15 @@ export function CollaboratorProductForm({
 
     const finalVideoUrl = collaboratorPlan === 'course_creator' ? videoUrl : youtubeVideoUrl;
 
+    // USD é obrigatório para TODOS os colaboradores. AOA é obrigatório apenas para angolanos.
     const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
 
     if (!title || !description || !categoryId || !isPriceValid || !coverUrl || !storageUrl) {
-      setFormError('Por favor preencha todos os campos obrigatórios (incluindo arquivos digitais) para salvar.');
+      setFormError('Por favor preencha todos os campos obrigatórios. O preço em USD (dólar) é obrigatório para todos os colaboradores.');
       setLoading(false);
       return;
     }
+
 
     if (!isFree) {
       if (Number(priceUSD) <= 0 || Number(priceUSD) > MAX_PRICE_USD) {
