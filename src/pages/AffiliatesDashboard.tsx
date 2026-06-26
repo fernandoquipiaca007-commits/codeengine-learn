@@ -492,14 +492,9 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                     </h3>
                   </>
                 ) : (
-                  <>
-                    <h3 className="font-display text-xl font-extrabold text-white">
-                      {formatCurrency(wallet?.balance_usd || 0, 'usd')}
-                    </h3>
-                    <h3 className="font-display text-sm font-semibold text-primary/80">
-                      {formatCurrency(wallet?.balance_aoa || 0, 'aoa')}
-                    </h3>
-                  </>
+                  <h3 className="font-display text-xl font-extrabold text-white">
+                    {formatCurrency(wallet?.balance_usd || 0, 'usd')}
+                  </h3>
                 )}
               </div>
             </div>
@@ -565,14 +560,9 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                     </h3>
                   </>
                 ) : (
-                  <>
-                    <h3 className="font-display text-lg font-bold text-white">
-                      {formatCurrency(wallet?.total_withdrawn_usd || 0, 'usd')}
-                    </h3>
-                    <h3 className="font-display text-xs font-semibold text-on-surface-variant">
-                      {formatCurrency(wallet?.total_withdrawn_aoa || 0, 'aoa')}
-                    </h3>
-                  </>
+                  <h3 className="font-display text-lg font-bold text-white">
+                    {formatCurrency(wallet?.total_withdrawn_usd || 0, 'usd')}
+                  </h3>
                 )}
               </div>
             </div>
@@ -1063,33 +1053,35 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
               {/* Currency selection */}
               <form onSubmit={handleRequestWithdraw} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Selecionar Moeda</label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setWithdrawCurrency('usd')}
-                      className={`flex-1 py-2 text-center rounded-lg border text-xs font-display font-extrabold uppercase transition-all ${
-                        withdrawCurrency === 'usd'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-white/10 bg-black/25 text-on-surface-variant'
-                      }`}
-                    >
-                      USD ($)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setWithdrawCurrency('aoa')}
-                      className={`flex-1 py-2 text-center rounded-lg border text-xs font-display font-extrabold uppercase transition-all ${
-                        withdrawCurrency === 'aoa'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-white/10 bg-black/25 text-on-surface-variant'
-                      }`}
-                    >
-                      AOA (Kz)
-                    </button>
+                {isAngola && (
+                  <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <label className="text-[10px] font-sans font-bold uppercase tracking-wider text-on-surface-variant">Selecionar Moeda</label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setWithdrawCurrency('usd')}
+                        className={`flex-1 py-2 text-center rounded-lg border text-xs font-display font-extrabold uppercase transition-all ${
+                          withdrawCurrency === 'usd'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-white/10 bg-black/25 text-on-surface-variant'
+                        }`}
+                      >
+                        USD ($)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWithdrawCurrency('aoa')}
+                        className={`flex-1 py-2 text-center rounded-lg border text-xs font-display font-extrabold uppercase transition-all ${
+                          withdrawCurrency === 'aoa'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-white/10 bg-black/25 text-on-surface-variant'
+                        }`}
+                      >
+                        AOA (Kz)
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Amount input */}
                 <div className="space-y-1">

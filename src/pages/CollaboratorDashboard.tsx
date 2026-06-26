@@ -70,6 +70,12 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     }
   }, [isAngola, countryLoading, hasDefaultedView]);
 
+  useEffect(() => {
+    if (!isAngola) {
+      setTempPayoutMethod('paypal');
+    }
+  }, [isAngola]);
+
   const [affiliates, setAffiliates] = useState<any[]>([]);
 
   // Membro Fundador state
@@ -400,7 +406,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }
 
   const openWalletModal = () => {
-    setTempPayoutMethod(profile?.payoutMethod || 'paypal');
+    setTempPayoutMethod(isAngola ? (profile?.payoutMethod || 'paypal') : 'paypal');
     setPaypalEmail(profile?.payoutInfo?.email || '');
     setBankName(profile?.payoutInfo?.bankName || '');
     setBankHolder(profile?.payoutInfo?.bankHolder || '');
@@ -665,28 +671,16 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             </button>
           </>
         ) : (
-          <>
-            <button
-              onClick={() => setWalletView('usd')}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-                walletView === 'usd'
-                  ? 'bg-primary text-background shadow-[0_0_10px_rgba(192,193,255,0.2)]'
-                  : 'text-on-surface-variant hover:text-white'
-              }`}
-            >
-              <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
-            </button>
-            <button
-              onClick={() => setWalletView('aoa')}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-                walletView === 'aoa'
-                  ? 'bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.2)]'
-                  : 'text-on-surface-variant hover:text-white'
-              }`}
-            >
-              <Landmark size={10} /> {t('collaborator.tabWalletAoa', 'AOA · FaciPay')}
-            </button>
-          </>
+          <button
+            onClick={() => setWalletView('usd')}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+              walletView === 'usd'
+                ? 'bg-primary text-background shadow-[0_0_10px_rgba(192,193,255,0.2)]'
+                : 'text-on-surface-variant hover:text-white'
+            }`}
+          >
+            <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
+          </button>
         )}
         <button
           onClick={() => setWalletView('affiliates')}
@@ -1474,7 +1468,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             <form onSubmit={handleWalletSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-2 uppercase tracking-wider">Método de Destino</label>
-                <div className="grid grid-cols-2 gap-3 font-sans">
+                <div className={`grid gap-3 font-sans ${isAngola ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <button
                     type="button"
                     onClick={() => setTempPayoutMethod('paypal')}
@@ -1487,18 +1481,20 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     <Mail size={16} />
                     PayPal
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setTempPayoutMethod('iban')}
-                    className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-medium transition-all ${
-                      tempPayoutMethod === 'iban'
-                        ? 'border-primary bg-primary/15 text-primary shadow-[0_0_15px_rgba(192,193,255,0.1)]'
-                        : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <Landmark size={16} />
-                    IBAN Bancário
-                  </button>
+                  {isAngola && (
+                    <button
+                      type="button"
+                      onClick={() => setTempPayoutMethod('iban')}
+                      className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-medium transition-all ${
+                        tempPayoutMethod === 'iban'
+                          ? 'border-primary bg-primary/15 text-primary shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                          : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <Landmark size={16} />
+                      IBAN Bancário
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1553,19 +1549,21 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               )}
 
               {/* FaciPay Account (para saques AOA via P2P) */}
-              <div className="mt-2 pt-4 border-t border-white/10">
-                <label className="block text-xs font-semibold text-amber-400 mb-1 uppercase tracking-wider flex items-center gap-1.5">
-                  <Landmark size={12} /> Conta FaciPay (Opcional — para saques AOA)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Nº da conta FaciPay"
-                  value={facipayAccount}
-                  onChange={(e) => setFacipayAccount(e.target.value)}
-                  className="w-full rounded-xl bg-surface-high border border-amber-500/20 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/50 font-mono"
-                />
-                <p className="text-[10px] text-on-surface-variant mt-1">Se tiver conta FaciPay, pode sacar AOA via P2P sem taxas.</p>
-              </div>
+              {isAngola && (
+                <div className="mt-2 pt-4 border-t border-white/10">
+                  <label className="block text-xs font-semibold text-amber-400 mb-1 uppercase tracking-wider flex items-center gap-1.5">
+                    <Landmark size={12} /> Conta FaciPay (Opcional — para saques AOA)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Nº da conta FaciPay"
+                    value={facipayAccount}
+                    onChange={(e) => setFacipayAccount(e.target.value)}
+                    className="w-full rounded-xl bg-surface-high border border-amber-500/20 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/50 font-mono"
+                  />
+                  <p className="text-[10px] text-on-surface-variant mt-1">Se tiver conta FaciPay, pode sacar AOA via P2P sem taxas.</p>
+                </div>
+              )}
 
               <button
                 type="submit"
