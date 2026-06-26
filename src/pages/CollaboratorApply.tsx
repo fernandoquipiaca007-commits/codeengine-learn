@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { AlertCircle, CheckCircle, Clock, Save, FileText, Video, Terminal, Calendar, ArrowRight, ShieldCheck, Mail, Landmark } from 'lucide-react';
+import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface CollaboratorApplyProps {
   setScreen: (screen: string) => void;
@@ -11,6 +12,7 @@ interface CollaboratorApplyProps {
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export function CollaboratorApply({ setScreen, onCandidacyApproved }: CollaboratorApplyProps) {
+  const { isAngola } = useUserCountry();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [candidacyStatus, setCandidacyStatus] = useState<'not_applied' | 'pending' | 'approved' | 'rejected'>('not_applied');
@@ -27,6 +29,12 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
   const [surveyVolume, setSurveyVolume] = useState('less_1gb');
 
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (!isAngola) {
+      setPayoutMethod('paypal');
+    }
+  }, [isAngola]);
 
   useEffect(() => {
     fetchCandidacyStatus();
@@ -254,7 +262,7 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
             <p className="text-white/50 text-xs mb-3 font-sans">
               Selecione o método de pagamento preferencial. Você poderá configurar seus dados de recebimento (e-mail PayPal ou IBAN bancário) a qualquer momento na sua carteira após aprovação.
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid gap-3 ${isAngola ? 'grid-cols-2' : 'grid-cols-1'}`}>
               <button
                 type="button"
                 onClick={() => setPayoutMethod('paypal')}
@@ -267,18 +275,20 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
                 <Mail size={18} />
                 PayPal (Internacional)
               </button>
-              <button
-                type="button"
-                onClick={() => setPayoutMethod('iban')}
-                className={`flex items-center justify-center gap-2 rounded-xl border p-4 text-sm font-medium transition-all ${
-                  payoutMethod === 'iban' 
-                    ? 'border-primary bg-primary/20 text-white' 
-                    : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                }`}
-              >
-                <Landmark size={18} />
-                IBAN Bancário (Nacional)
-              </button>
+              {isAngola && (
+                <button
+                  type="button"
+                  onClick={() => setPayoutMethod('iban')}
+                  className={`flex items-center justify-center gap-2 rounded-xl border p-4 text-sm font-medium transition-all ${
+                    payoutMethod === 'iban' 
+                      ? 'border-primary bg-primary/20 text-white' 
+                      : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
+                  }`}
+                >
+                  <Landmark size={18} />
+                  IBAN Bancário (Nacional)
+                </button>
+              )}
             </div>
           </div>
 

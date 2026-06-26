@@ -6,15 +6,26 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
 import { SUPPORTED_LOCALES, LOCALE_LABELS, AppLocale } from '../lib/locale';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface SettingsProps {
   setScreen: (screen: string) => void;
 }
 
 export function Settings({ setScreen }: SettingsProps) {
-  const { t } = useTranslation(['pages', 'common']);
+  const { t } = useTranslation(['pages', 'common', 'auth']);
   const { locale, setLocale } = useLocale();
+  const { country } = useUserCountry();
   const [user, setUser] = useState<any>(null);
+
+  const countriesMap: Record<string, { name: string; flag: string }> = {
+    AO: { name: t('auth:countries.AO') || 'Angola', flag: '🇦🇴' },
+    PT: { name: t('auth:countries.PT') || 'Portugal', flag: '🇵🇹' },
+    BR: { name: t('auth:countries.BR') || 'Brasil', flag: '🇧🇷' },
+    FR: { name: t('auth:countries.FR') || 'França', flag: '🇫🇷' },
+    US: { name: t('auth:countries.US') || 'Estados Unidos', flag: '🇺🇸' },
+    OTHER: { name: t('auth:countries.OTHER') || 'Outro', flag: '🌐' },
+  };
   const [memberData, setMemberData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -535,6 +546,21 @@ export function Settings({ setScreen }: SettingsProps) {
               <p className="font-sans text-[11px] text-on-surface-variant mt-1.5">
                 {t('pages:settings.emailNote')}
               </p>
+            </div>
+
+            <div>
+              <label className="block font-display text-xs font-semibold text-on-surface mb-1.5">
+                {t('auth:countryLabel') || 'País'}
+              </label>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container/50 border border-white/10">
+                <Globe className="w-4 h-4 text-on-surface-variant" />
+                <span className="text-sm mr-1">
+                  {countriesMap[country || '']?.flag || '🌐'}
+                </span>
+                <span className="font-sans text-xs text-on-surface-variant">
+                  {countriesMap[country || '']?.name || country || t('auth:countries.OTHER') || 'Outro'}
+                </span>
+              </div>
             </div>
 
             <button
