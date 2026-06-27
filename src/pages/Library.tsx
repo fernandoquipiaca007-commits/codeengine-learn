@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowRight, ArrowLeft, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle, ShieldCheck, User } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle, ShieldCheck, User, ChevronDown, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { Product, Category } from '../types/store';
@@ -39,6 +39,8 @@ export function Library({ setScreen, onProductClick }: {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
+  const [showSubcategoriesDropdown, setShowSubcategoriesDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthSession();
@@ -230,8 +232,8 @@ export function Library({ setScreen, onProductClick }: {
               transition={{ duration: 0.3, ease: 'easeOut' }}
               className="w-full flex flex-col gap-6"
             >
-              {/* Back button */}
-              <div className="flex justify-start">
+              {/* Back button & Filter Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -242,98 +244,140 @@ export function Library({ setScreen, onProductClick }: {
                   <ArrowLeft className="w-3.5 h-3.5" />
                   Voltar para Categorias
                 </button>
-              </div>
 
-              {/* Sidebar + Catalog content grid */}
-              <div id="library-catalog" className="flex flex-col lg:flex-row gap-6 relative z-10 scroll-mt-24">
-                {/* Sidebar */}
-                <aside className="lg:w-52 flex-shrink-0">
-                  <div className="glass-panel rounded-xl p-4 mb-4 lg:mb-0 lg:sticky lg:top-20">
-                    <h3 className="font-display text-[10px] font-semibold tracking-widest uppercase text-on-surface-variant mb-3 pb-3 border-b border-white/8">
-                      {t('library.categories')}
-                    </h3>
-                    <ul className="flex flex-wrap gap-1.5 sm:flex-col sm:gap-0.5">
-                      {/* All Categories */}
-                      <li>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSelectedCategory(null);
-                          }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-sans text-sm font-medium transition-all text-on-surface-variant hover:bg-white/5 hover:text-on-surface`}
-                        >
-                          <LayoutDashboard className="w-4 h-4 flex-shrink-0" /> {t('library.all')}
-                        </button>
-                      </li>
-
-                      {/* Dynamic Categories */}
-                      {categories.map((category) => {
-                        const Icon = getCategoryIcon(category.name);
-                        const count = products.filter((p) => p.category_id === category.id).length;
-                        const localizedProd = products.find((p) => p.category_id === category.id);
-                        const displayCategoryName = (localizedProd as any)?.category_name || category.name;
-                        
-                        return (
-                          <li key={category.id}>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setSelectedCategory(category.id);
-                              }}
-                              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg font-sans text-sm transition-all ${
-                                selectedCategory === category.id
-                                  ? 'bg-primary/10 text-primary border border-primary/20 font-semibold'
-                                  : 'text-on-surface-variant hover:bg-white/5 hover:text-on-surface'
-                              }`}
-                            >
-                              <Icon className="w-4 h-4 flex-shrink-0" /> {displayCategoryName} ({count})
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </aside>
-
-                {/* Product Grid */}
-                <div className="flex-grow">
-                  {/* Subcategories Filter Bar */}
-                  {subcategories.length > 0 && (
-                    <div className="rounded-xl p-2.5 mb-5 flex flex-wrap gap-1.5 items-center border border-white/8 bg-surface-container/50 backdrop-blur-sm">
-                      <span className="font-display text-[9px] font-bold tracking-widest uppercase text-on-surface-variant/50 px-2 py-1">
-                        Filtrar:
+                {/* Dropdown Filters (matching main branch style and behavior) */}
+                <div className="flex flex-wrap items-center gap-3 z-20">
+                  {/* Categories Dropdown */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCategoriesDropdown(!showCategoriesDropdown);
+                        setShowSubcategoriesDropdown(false);
+                      }}
+                      className="flex items-center justify-between px-5 py-3 rounded-xl bg-[#050508]/80 border border-white/10 text-xs font-semibold text-white hover:bg-white/5 transition-all shadow-[0_0_20px_rgba(0,0,0,0.2)]"
+                    >
+                      <span className="flex items-center gap-2">
+                        <LayoutDashboard className="w-4 h-4 text-primary" />
+                        <span>
+                          {selectedCategory 
+                            ? (products.find((p) => p.category_id === selectedCategory)?.category_name || categories.find(c => c.id === selectedCategory)?.name || 'Categoria') 
+                            : 'Todas as Categorias'}
+                        </span>
                       </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedSubcategory(null)}
-                          className={`px-3 py-1.5 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all duration-200 border ${
-                            selectedSubcategory === null
-                              ? 'bg-primary/15 text-primary border-primary/25'
-                              : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface'
-                          }`}
-                        >
-                          Todas
-                        </button>
-                        {subcategories.map((sub) => (
+                      <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${showCategoriesDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showCategoriesDropdown && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-30" 
+                          onClick={() => setShowCategoriesDropdown(false)} 
+                        />
+                        <div className="absolute right-0 mt-2 w-64 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 max-h-[250px] overflow-y-auto">
                           <button
-                            key={sub.id}
                             type="button"
-                            onClick={() => setSelectedSubcategory(sub.id)}
-                            className={`px-3 py-1.5 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all duration-200 border ${
-                              selectedSubcategory === sub.id
-                                ? 'bg-primary/15 text-primary border-primary/25'
-                                : 'text-on-surface-variant border-transparent hover:bg-white/5 hover:text-on-surface'
+                            onClick={() => {
+                              setSelectedCategory(null);
+                              setShowCategoriesDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors ${
+                              selectedCategory === null ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
                             }`}
                           >
-                            {sub.name}
+                            Todas as Categorias ({products.length})
                           </button>
-                        ))}
-                      </div>
+                          {categories.map((category) => {
+                            const count = products.filter((p) => p.category_id === category.id).length;
+                            const localizedProd = products.find((p) => p.category_id === category.id);
+                            const displayCategoryName = (localizedProd as any)?.category_name || category.name;
+                            return (
+                              <button
+                                key={category.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCategory(category.id);
+                                  setShowCategoriesDropdown(false);
+                                }}
+                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                                  selectedCategory === category.id ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
+                                }`}
+                              >
+                                {displayCategoryName} ({count})
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Subcategories Dropdown */}
+                  {selectedCategory && subcategories.length > 0 && (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSubcategoriesDropdown(!showSubcategoriesDropdown);
+                          setShowCategoriesDropdown(false);
+                        }}
+                        className="flex items-center justify-between px-5 py-3 rounded-xl bg-[#050508]/80 border border-white/10 text-xs font-semibold text-white hover:bg-white/5 transition-all shadow-[0_0_20px_rgba(0,0,0,0.2)]"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Filter className="w-4 h-4 text-primary" />
+                          <span>
+                            {selectedSubcategory 
+                              ? subcategories.find(s => s.id === selectedSubcategory)?.name 
+                              : 'Todos os Nichos'}
+                          </span>
+                        </span>
+                        <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${showSubcategoriesDropdown ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {showSubcategoriesDropdown && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-30" 
+                            onClick={() => setShowSubcategoriesDropdown(false)} 
+                          />
+                          <div className="absolute right-0 mt-2 w-64 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 max-h-[250px] overflow-y-auto">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedSubcategory(null);
+                                setShowSubcategoriesDropdown(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors ${
+                                selectedSubcategory === null ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
+                              }`}
+                            >
+                              Todos os Nichos
+                            </button>
+                            {subcategories.map((sub) => (
+                              <button
+                                key={sub.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSubcategory(sub.id);
+                                  setShowSubcategoriesDropdown(false);
+                                }}
+                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                                  selectedSubcategory === sub.id ? 'text-primary bg-primary/10' : 'text-on-surface-variant'
+                                }`}
+                              >
+                                {sub.name}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Catalog content grid */}
+              <div id="library-catalog" className="w-full relative z-10 scroll-mt-24">
 
                   {filteredProducts.length === 0 ? (
                     <div className="glass-panel rounded-xl p-12 text-center">
@@ -501,8 +545,7 @@ export function Library({ setScreen, onProductClick }: {
                     </div>
                   )}
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
           )}
         </AnimatePresence>
       )}

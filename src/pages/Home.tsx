@@ -307,10 +307,10 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     <div className="relative w-full min-h-screen bg-transparent text-on-surface pt-20 pb-16 flex flex-col items-center">
       
       {/* Homepage container with premium spacing guidelines to let cards breathe */}
-      <div className="w-full max-w-[1200px] px-6 flex flex-col gap-20 sm:gap-28 z-10 relative">
+      <div className="w-full max-w-[1200px] px-6 flex flex-col gap-14 sm:gap-18 z-10 relative">
 
         {/* ─── Hero Carousel / Slider Section ─── */}
-        <section className="relative w-full glass-card rounded-3xl p-6 md:p-10 border border-white/8 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[380px] md:min-h-[460px]">
+        <section className="relative w-full glass-card rounded-3xl p-6 md:p-8 border border-white/8 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[320px] md:min-h-[390px]">
           {/* Internal slider glow */}
           <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-primary/3 to-transparent z-0 pointer-events-none" />
 
@@ -321,10 +321,10 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
             <div className="lg:col-span-7 flex flex-col justify-center items-start text-left gap-4 max-w-xl">
               {activeSlide === 0 && (
                 <>
-                  <h1 className="font-display font-black tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-white">
+                  <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
                     {text.hero.slide0.title}
                   </h1>
-                  <p className="font-sans text-sm sm:text-base text-on-surface-variant/80">
+                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80">
                     {text.hero.slide0.description}
                   </p>
                   <div className="flex items-center gap-3 mt-2">
@@ -349,10 +349,10 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
               {activeSlide === 1 && (
                 <>
-                  <h1 className="font-display font-black tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-white">
+                  <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
                     {text.hero.slide1.title}
                   </h1>
-                  <p className="font-sans text-sm sm:text-base text-on-surface-variant/80">
+                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80">
                     {text.hero.slide1.description}
                   </p>
                   <div className="flex items-center gap-3 mt-2">
@@ -375,10 +375,10 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
               {activeSlide === 2 && (
                 <>
-                  <h1 className="font-display font-black tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.05] text-white">
+                  <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
                     {text.hero.slide2.title}
                   </h1>
-                  <p className="font-sans text-sm sm:text-base text-on-surface-variant/80">
+                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80">
                     {text.hero.slide2.description}
                   </p>
                   <div className="flex items-center gap-3 mt-2">
@@ -403,7 +403,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
             {/* Right Side: Visual Mockup Showcase */}
             <div className="lg:col-span-5 flex items-center justify-center select-none w-full">
               {activeSlide === 0 && (
-                <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[340px] sm:max-w-[400px] shadow-2xl relative overflow-hidden text-left bg-[#101015]/90">
+                <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[280px] sm:max-w-[320px] shadow-2xl relative overflow-hidden text-left bg-[#101015]/90">
                   <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 rounded-full bg-red-500/80" />
@@ -446,7 +446,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               )}
 
               {activeSlide === 1 && (
-                <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[340px] sm:max-w-[400px] shadow-2xl relative overflow-hidden aspect-[16/10] flex flex-col justify-between text-left bg-[#101015]/90">
+                <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[280px] sm:max-w-[320px] shadow-2xl relative overflow-hidden aspect-[16/10] flex flex-col justify-between text-left bg-[#101015]/90">
                   <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-primary/5 to-transparent z-0 pointer-events-none" />
                   <div className="flex items-center justify-between z-10">
                     <span className="text-[8px] bg-primary/20 border border-primary/30 text-white px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">Aulas em Vídeo</span>
@@ -466,7 +466,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               )}
 
               {activeSlide === 2 && (
-                <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[340px] sm:max-w-[400px] shadow-2xl relative overflow-hidden text-left bg-[#101015]/90">
+                <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[280px] sm:max-w-[320px] shadow-2xl relative overflow-hidden text-left bg-[#101015]/90">
                   <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
                     <span className="text-xs font-semibold text-white">Programa de Afiliados</span>
                     <span className="text-[8px] bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded font-mono">Ativo</span>
@@ -609,7 +609,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
         {/* ─── "Most Sold" (Mais Vendidos) Section ─── */}
         <section className="flex flex-col gap-6 w-full">
           <div className="flex justify-between items-center w-full">
-            <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center gap-2">
+            <h2 className="font-display font-extrabold text-xl md:text-2xl text-white tracking-tight flex items-center gap-2">
               <Award className="w-5 h-5 text-primary" />
               {text.sections.mostSold}
             </h2>
@@ -650,11 +650,6 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                   >
                     {/* Glowing background card element */}
                     <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
-
-                    {/* Rank Numbers behind content */}
-                    <div className="absolute right-4 bottom-1.5 text-8xl md:text-9xl font-black text-white/[0.04] font-display pointer-events-none select-none">
-                      {idx + 1}
-                    </div>
 
                     {/* Product Image */}
                     <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
@@ -793,7 +788,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
         {/* ─── "New Releases" (Lançamentos) Section ─── */}
         <section className="flex flex-col gap-6 w-full">
           <div className="flex justify-between items-center w-full">
-            <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center gap-2">
+            <h2 className="font-display font-extrabold text-xl md:text-2xl text-white tracking-tight flex items-center gap-2">
               <Zap className="w-5 h-5 text-primary animate-pulse" />
               {text.sections.newReleases}
             </h2>

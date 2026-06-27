@@ -747,41 +747,6 @@ export function News({ setScreen }: NewsProps) {
   return (
     <div className="pt-16 pb-8 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       
-      {/* Header */}
-      <header className="mb-4 md:mb-5 flex flex-col items-start max-w-3xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center gap-2 mb-2"
-        >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <Newspaper className="w-4.5 h-4.5 text-primary" />
-          </div>
-          <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
-            {t('news.badge') || 'Knowledge Hub'}
-          </span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-3"
-        >
-          {t('news.heading') || 'Knowledge Hub'}
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="font-sans text-xs sm:text-sm text-on-surface-variant max-w-2xl"
-        >
-          {t('news.subtitle') || 'Stay ahead with the latest insights on AI, automation, SaaS and technology. Exclusive content for community members.'}
-        </motion.p>
-      </header>
-
       {/* 1. Featured News Carousel Section */}
       {featuredArticles.length > 0 && !selectedCategory && (
         <div className="relative mb-8 group">

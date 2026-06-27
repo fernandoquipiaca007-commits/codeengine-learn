@@ -196,7 +196,7 @@ export function CategoryFeatureCard({ config, matchingCategoryId, onClick }: Cat
   return (
     <div 
       onClick={() => onClick(matchingCategoryId)}
-      className="relative h-60 rounded-3xl overflow-hidden border border-white/5 bg-[#050508]/80 hover:bg-black/90 cursor-pointer group transition-all duration-300 hover:border-primary/20 shadow-xl"
+      className="relative h-[160px] sm:h-[170px] lg:h-[155px] rounded-2xl overflow-hidden border border-white/5 bg-[#050508]/80 hover:bg-black/90 cursor-pointer group transition-all duration-300 hover:border-primary/20 shadow-xl"
     >
       {/* Absolute Shader Canvas Background */}
       <div className="absolute inset-0 z-0 opacity-45 mix-blend-screen pointer-events-none transition-opacity duration-300 group-hover:opacity-60">
@@ -220,24 +220,24 @@ export function CategoryFeatureCard({ config, matchingCategoryId, onClick }: Cat
       <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#050508] via-[#050508]/30 to-transparent pointer-events-none" />
 
       {/* Internal Content layout */}
-      <div className="relative z-20 p-6 h-full flex flex-col justify-between items-start text-left">
-        <div className="flex flex-col gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-primary/30">
-            <IconComponent className="w-5 h-5 text-white/90 group-hover:text-primary transition-colors" />
+      <div className="relative z-20 p-4 sm:p-4.5 lg:p-4 h-full flex flex-col justify-between items-start text-left">
+        <div className="flex flex-col gap-2">
+          <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-primary/30">
+            <IconComponent className="w-4.5 h-4.5 text-white/90 group-hover:text-primary transition-colors" />
           </div>
           <div>
-            <h3 className="font-display font-extrabold text-lg text-white group-hover:text-primary transition-colors">
+            <h3 className="font-display font-extrabold text-base lg:text-[15px] xl:text-base text-white group-hover:text-primary transition-colors leading-tight">
               {config.title}
             </h3>
-            <p className="font-sans text-xs text-on-surface-variant/90 leading-relaxed mt-1 line-clamp-3">
+            <p className="font-sans text-[11px] text-on-surface-variant/90 leading-normal mt-0.5 line-clamp-2">
               {config.description}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-all duration-300 group-hover:text-white group-hover:translate-x-1">
+        <div className="flex items-center text-[9px] font-bold uppercase tracking-wider text-muted-foreground transition-all duration-300 group-hover:text-white group-hover:translate-x-1">
           <span className="mr-1">Explorar</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3 h-3" />
         </div>
       </div>
     </div>
@@ -281,7 +281,7 @@ export interface CategorySelectorProps {
 
 export function CategorySelector({ dbCategories, onCategorySelect }: CategorySelectorProps) {
   return (
-    <section className="w-full flex flex-col gap-6 relative z-10 py-2">
+    <section className="w-full flex flex-col gap-4 relative z-10 py-1">
       <div className="text-left">
         <h2 className="font-display font-black tracking-tight text-xl sm:text-2xl text-white">
           Categorias em Destaque
