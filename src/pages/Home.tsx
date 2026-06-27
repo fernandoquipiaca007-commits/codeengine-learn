@@ -55,6 +55,8 @@ const LOCALIZED_TEXT = {
       featuredDesc: "Scroll para rodar a galeria 3D",
       mostSold: "Mais Vendidos",
       newReleases: "Lançamentos",
+      recommended: "Recomendados pela CodeEngine",
+      recentlyRead: "Continuar a Ler",
       soldCount: "{{count}} vendidos",
       viewProduct: "Ver Detalhes",
       loading: "A carregar produtos...",
@@ -95,6 +97,8 @@ const LOCALIZED_TEXT = {
       featuredDesc: "Scroll to rotate the 3D gallery",
       mostSold: "Most Sold",
       newReleases: "New Releases",
+      recommended: "Recommended by CodeEngine",
+      recentlyRead: "Continue Reading",
       soldCount: "{{count}} sold",
       viewProduct: "View Details",
       loading: "Loading products...",
@@ -135,6 +139,8 @@ const LOCALIZED_TEXT = {
       featuredDesc: "Faites défiler pour faire pivoter la galerie 3D",
       mostSold: "Les Plus Vendus",
       newReleases: "Nouveautés",
+      recommended: "Recommandés par CodeEngine",
+      recentlyRead: "Continuer la Lecture",
       soldCount: "{{count}} vendus",
       viewProduct: "Détails",
       loading: "Chargement des produits...",
@@ -154,6 +160,36 @@ const LOCALIZED_TEXT = {
 /* -----------------------------------------------------------------------------
  * MAIN HOME COMPONENT
  * -------------------------------------------------------------------------- */
+
+const getRecentlyReadProducts = (allProducts: LocalizedProduct[]) => {
+  const readIds: { id: string; updatedAt: number }[] = [];
+  
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('ebook_progress_') || key.startsWith('course_progress_'))) {
+        const id = key.replace('ebook_progress_', '').replace('course_progress_', '');
+        const dataStr = localStorage.getItem(key);
+        if (dataStr) {
+          try {
+            const data = JSON.parse(dataStr);
+            readIds.push({ id, updatedAt: data.updatedAt || 0 });
+          } catch {
+            readIds.push({ id, updatedAt: 0 });
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error reading localStorage for history', e);
+  }
+  
+  readIds.sort((a, b) => b.updatedAt - a.updatedAt);
+  
+  return readIds
+    .map(entry => allProducts.find(p => p.id === entry.id))
+    .filter((p): p is LocalizedProduct => !!p);
+};
 
 interface HomeProps {
   setScreen: (s: string) => void;
@@ -235,9 +271,23 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     return text.sections.soldCount.replace('{{count}}', displaySales);
   };
 
-  // Split products: top 4 for "Most Sold", next 4 for "New Releases"
+  const [recentlyRead, setRecentlyRead] = useState<LocalizedProduct[]>([]);
+
+  useEffect(() => {
+    if (products.length > 0) {
+      const history = getRecentlyReadProducts(products);
+      setRecentlyRead(history);
+    }
+  }, [products]);
+
+  // Split products: top 4 for "Most Sold", next 4 for "New Releases", next 4 for "Recommended"
   const mostSoldProducts = products.slice(0, 4);
   const newReleasesProducts = products.length >= 8 ? products.slice(4, 8) : products.slice(0, 4);
+  const recommendedProducts = products.filter(p => (p as any).is_featured).length > 0
+    ? products.filter(p => (p as any).is_featured).slice(0, 4)
+    : products.length >= 12 
+      ? products.slice(8, 12) 
+      : products.slice(0, 4);
 
   // Take first 8 products for circular gallery (or fallback to whatever is available)
   const circularGalleryItems = products.slice(0, 8);
@@ -479,24 +529,78 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
         {/* ─── Featured Products 3D Carousel Section ─── */}
         {circularGalleryItems.length >= 3 && (
-          <section className="w-full flex flex-col items-center justify-center py-6 my-4 overflow-visible relative min-h-[460px]">
-            <div className="text-center mb-8 z-10">
+          <section className="w-full flex flex-col items-center justify-center py-6 my-4 overflow-visible relative min-h-[380px] sm:min-h-[420px]">
+            <div className="text-center mb-6 z-10">
               <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center justify-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
                 {text.sections.featured}
               </h2>
-              <p className="text-xs text-muted-foreground uppercase font-mono tracking-widest mt-1">
-                {text.sections.featuredDesc}
-              </p>
             </div>
-            <div className="w-full h-[410px] sm:h-[460px] relative mt-4 overflow-visible">
+            <div className="w-full h-[330px] sm:h-[375px] relative mt-2 overflow-visible">
               <CircularGallery
                 items={circularGalleryItems}
-                radius={isMobile ? 380 : 540}
+                radius={isMobile ? 280 : 420}
                 isAngola={isAngola}
                 activeLang={activeLang}
                 onProductClick={onProductClick}
               />
+            </div>
+          </section>
+        )}
+
+
+        {/* ─── "Continuar a Ler" (History / Recently Read) Section ─── */}
+        {recentlyRead.length > 0 && (
+          <section className="flex flex-col gap-6 w-full">
+            <div className="flex justify-between items-center w-full">
+              <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" />
+                {text.sections.recentlyRead}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {recentlyRead.map((product) => (
+                <article
+                  key={product.id}
+                  onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                  onMouseEnter={() => prefetchProduct(product.id, locale)}
+                  className="glass-card glass-card-hover rounded-2xl p-2.5 relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                >
+                  <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+                  
+                  {/* Product Image */}
+                  <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                    <LazyImage
+                      src={getProductCoverUrl(product)}
+                      alt={product.title}
+                      className="max-w-full max-h-full object-contain"
+                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                    />
+                    
+                    {/* Continue Reading / Playing badge */}
+                    <span className="absolute top-2.5 left-2.5 bg-primary border border-primary/20 text-black px-2.5 py-0.5 rounded-full font-display text-[9px] font-black tracking-widest uppercase shadow animate-pulse">
+                      {product.product_type === 'course' ? 'Assistir' : 'Ler'}
+                    </span>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="flex-grow flex flex-col z-10 relative">
+                    <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
+                      {product.title}
+                    </h3>
+                    <p className="font-sans text-[10px] text-muted-foreground mt-1 line-clamp-2 leading-normal">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-primary group-hover:text-white flex items-center gap-1 font-display">
+                        {product.product_type === 'course' ? 'Continuar Curso' : 'Continuar Ebook'}
+                        <Play className="w-3 h-3 fill-current" />
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           </section>
         )}
@@ -594,6 +698,93 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                   </article>
                 );
               })}
+            </div>
+          )}
+        </section>
+
+
+        {/* ─── "Recommended" (Recomendados pela CodeEngine) Section ─── */}
+        <section className="flex flex-col gap-6 w-full">
+          <div className="flex justify-between items-center w-full">
+            <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              {text.sections.recommended}
+            </h2>
+            <div className="flex items-center gap-1.5">
+              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll left">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll right">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="glass-card rounded-2xl p-2 h-[260px] animate-pulse flex flex-col justify-between">
+                  <div className="aspect-[4/3] rounded-xl bg-white/5 w-full" />
+                  <div className="h-4 bg-white/10 rounded w-2/3 my-2" />
+                  <div className="h-3 bg-white/5 rounded w-1/2" />
+                  <div className="h-6 bg-white/5 rounded w-1/3 mt-2" />
+                </div>
+              ))}
+            </div>
+          ) : recommendedProducts.length === 0 ? (
+            <div className="p-8 text-center glass-card border border-white/5 rounded-2xl text-muted-foreground text-xs font-medium">
+              {text.sections.noProducts}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {recommendedProducts.map((product) => (
+                <article
+                  key={product.id}
+                  onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                  onMouseEnter={() => prefetchProduct(product.id, locale)}
+                  className="glass-card glass-card-hover rounded-2xl p-2.5 relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                >
+                  <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
+                  
+                  {/* Product Image */}
+                  <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                    <LazyImage
+                      src={getProductCoverUrl(product)}
+                      alt={product.title}
+                      className="max-w-full max-h-full object-contain"
+                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                    />
+                    
+                    {product.product_type && (
+                      <span className="absolute top-2.5 right-2.5 bg-surface/80 backdrop-blur-md border border-white/10 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase shadow">
+                        {product.product_type === 'course' ? 'Curso' : 'Ebook'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="flex-grow flex flex-col z-10 relative">
+                    <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
+                      {product.title}
+                    </h3>
+                    
+                    <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wide mt-1">
+                      {getMockSales(product.id)}
+                    </span>
+
+                    {/* Price and CTA */}
+                    <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
+                      <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)]">
+                        {formatPrice(product)}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-1 font-display">
+                        {text.sections.viewProduct}
+                        <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           )}
         </section>

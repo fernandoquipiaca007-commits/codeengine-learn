@@ -136,7 +136,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                 role="group"
                 aria-label={product.title}
                 className={cn(
-                  "absolute w-[280px] h-[370px] transition-opacity duration-300",
+                  "absolute w-[220px] h-[290px] transition-opacity duration-300",
                   opacity === 0 ? "pointer-events-none" : "pointer-events-auto"
                 )}
                 onClick={() => handleCardClick(product.id)}
@@ -144,8 +144,8 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   transform: `rotateY(${itemAngle}deg) translateZ(${radius}px)`,
                   left: '50%',
                   top: '50%',
-                  marginLeft: '-140px',
-                  marginTop: '-185px',
+                  marginLeft: '-110px',
+                  marginTop: '-145px',
                   opacity: opacity,
                 }}
               >
