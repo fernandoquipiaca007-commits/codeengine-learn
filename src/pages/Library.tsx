@@ -16,6 +16,7 @@ import { useAuthSession } from '../hooks/useAuthSession';
 import { LazyImage } from '../components/ui/LazyImage';
 import { queryCache } from '../lib/queryCache';
 import { prefetchProduct } from '../lib/prefetch';
+import { CategorySelector } from '../components/ui/category-feature-selector';
 
 interface Subcategory {
   id: string;
@@ -193,6 +194,25 @@ export function Library({ setScreen, onProductClick }: {
         </p>
       </header>
 
+      {/* Category Feature Cards Section */}
+      {!loading && !error && (
+        <div className="mb-12 sm:mb-16">
+          <CategorySelector
+            dbCategories={categories}
+            onCategorySelect={(categoryId) => {
+              setSelectedCategory(categoryId);
+              // Scroll smoothly to the catalog list
+              setTimeout(() => {
+                const element = document.getElementById('library-catalog');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }, 100);
+            }}
+          />
+        </div>
+      )}
+
       {/* Error Message */}
       {error && (
         <div className="mb-8 glass-panel rounded-xl p-6 border border-red-500/20 bg-red-500/5">
@@ -211,7 +231,7 @@ export function Library({ setScreen, onProductClick }: {
 
       {/* Content */}
       {!loading && (
-        <div className="flex flex-col lg:flex-row gap-6 relative z-10">
+        <div id="library-catalog" className="flex flex-col lg:flex-row gap-6 relative z-10 scroll-mt-24">
           {/* Sidebar */}
           <aside className="lg:w-52 flex-shrink-0">
             <div className="glass-panel rounded-xl p-4 mb-4 lg:mb-0 lg:sticky lg:top-20">
