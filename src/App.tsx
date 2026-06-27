@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, memo } from 'react';
+import { useState, useEffect, lazy, Suspense, memo, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { NavBar } from './components/NavBar';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -205,6 +205,7 @@ export default function App() {
   const { user, session, loading: authLoading } = useAuthSession();
   const [member, setMember] = useState<any>(null);
   const [loadingMember, setLoadingMember] = useState(true);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
 
   const handleOnboardingComplete = () => {
     setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : null);
@@ -465,17 +466,20 @@ export default function App() {
             if (updatedMem && active) currentMem = updatedMem;
           }
           setMember(currentMem);
+          lastFetchedUserIdRef.current = user.id;
           setLoadingMember(false);
         } catch (err) {
           console.error('[App] Error loading member:', err);
           if (active) {
             setMember(null);
+            lastFetchedUserIdRef.current = user.id;
             setLoadingMember(false);
           }
         }
       } else {
         if (active) {
           setMember(null);
+          lastFetchedUserIdRef.current = null;
           setLoadingMember(false);
         }
       }
@@ -548,7 +552,7 @@ export default function App() {
   // Onboarding mandatory redirection lock
   useEffect(() => {
     if (authLoading || loadingMember) return;
-    if (user) {
+    if (user && lastFetchedUserIdRef.current === user.id) {
       const isCompleted = member ? member.onboarding_completed === true : false;
       if (!isCompleted) {
         const isPurchase = sessionStorage.getItem('pendingCheckout') !== null;

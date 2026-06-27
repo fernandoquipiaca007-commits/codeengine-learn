@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera, Globe, RefreshCw, Download, X } from 'lucide-react';
+import { User, Mail, Lock, Bell, Eye, EyeOff, Save, AlertCircle, CheckCircle, Camera, Globe, RefreshCw, Download, X, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../contexts/LocaleContext';
