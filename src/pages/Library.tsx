@@ -331,7 +331,7 @@ export function Library({ setScreen, onProductClick }: {
                       <div className="absolute w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
                       
                       {/* Product Image */}
-                      <div className="aspect-[3/4] rounded-xl mb-2 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                      <div className="aspect-[4/3] rounded-xl mb-2 overflow-hidden relative bg-black/40 flex items-center justify-center">
                         <LazyImage
                           src={getProductCoverUrl(product)}
                           alt={product.title}

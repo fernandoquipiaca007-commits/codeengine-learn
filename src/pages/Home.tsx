@@ -553,7 +553,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     </div>
 
                     {/* Product Image */}
-                    <div className="aspect-[3/4] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                    <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                       <LazyImage
                         src={getProductCoverUrl(product)}
                         alt={product.title}
@@ -644,7 +644,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
 
                     {/* Product Image */}
-                    <div className="aspect-[3/4] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                    <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                       <LazyImage
                         src={getProductCoverUrl(product)}
                         alt={product.title}
@@ -697,7 +697,8 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           <div 
             className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square bg-cover bg-center transition-all duration-300"
             style={{
-              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.9) 0%, rgba(5, 5, 5, 0.3) 50%, transparent 100%), url('/colaborador.jpg')",
+              aspectRatio: '1/1',
+              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.95) 0%, rgba(5, 5, 5, 0.5) 50%, rgba(5, 5, 5, 0.1) 100%), url('/colaborador.jpg')",
             }}
           >
             <div className="flex flex-col gap-3 relative z-10">
@@ -724,7 +725,8 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           <div 
             className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square bg-cover bg-center transition-all duration-300"
             style={{
-              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.9) 0%, rgba(5, 5, 5, 0.3) 50%, transparent 100%), url('/Afiliado.jpg')",
+              aspectRatio: '1/1',
+              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.95) 0%, rgba(5, 5, 5, 0.5) 50%, rgba(5, 5, 5, 0.1) 100%), url('/Afiliado.jpg')",
             }}
           >
             <div className="flex flex-col gap-3 relative z-10">

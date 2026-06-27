@@ -149,30 +149,37 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   opacity: opacity,
                 }}
               >
-                {/* Full cover card layout - image is completely visible and separate from text */}
-                <div className="relative w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-white/5 bg-[#111115]/85 hover:bg-[#111115]/95 backdrop-blur-md flex flex-col p-2.5 group transition-all duration-300 hover:border-primary/20">
+                {/* Full cover card layout - image covers the card container completely (using object-contain to avoid crops) and text overlays on top */}
+                <div className="relative w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-white/5 bg-[#111115]/85 hover:bg-[#111115]/95 backdrop-blur-md group flex flex-col justify-end transition-all duration-300 hover:border-primary/20">
                   
-                  {/* Image container occupying the upper area - using object-contain to never crop */}
-                  <div className="w-full flex-grow relative overflow-hidden bg-black/40 rounded-xl flex items-center justify-center min-h-[220px]">
-                    <LazyImage
-                      src={getProductCoverUrl(product)}
-                      alt={product.title}
-                      className="max-w-full max-h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
-                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
-                    />
-                  </div>
+                  {/* Eager loaded Cover Photo - using object-contain inside absolute bounds so the full design is visible */}
+                  <img
+                    src={getProductCoverUrl(product)}
+                    alt={product.title}
+                    loading="eager"
+                    className="absolute inset-0 w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`;
+                    }}
+                  />
                   
-                  {/* Text section below the image, not overlaying it */}
-                  <div className="pt-3 px-1 text-white flex flex-col items-start gap-1 flex-shrink-0">
+                  {/* Radial bottom glow */}
+                  <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-10 bottom-0 left-0" />
+                  
+                  {/* Linear bottom dark gradient overlay for readable text */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#050505] via-[#050505]/85 to-transparent z-10" />
+
+                  {/* Overlaid texts at the bottom, directly on top of the image */}
+                  <div className="relative p-5 text-white z-20 flex flex-col items-start gap-1">
                     {product.product_type && (
-                      <span className="bg-primary/20 border border-primary/30 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase mb-0.5">
+                      <span className="bg-primary/20 border border-primary/30 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase mb-1">
                         {product.product_type === 'course' ? 'Curso' : 'Ebook'}
                       </span>
                     )}
-                    <h3 className="font-display text-sm font-extrabold leading-tight text-white line-clamp-1 w-full text-left group-hover:text-primary transition-colors">
+                    <h3 className="font-display text-sm font-extrabold leading-tight text-white line-clamp-2 text-left group-hover:text-primary transition-colors">
                       {product.title}
                     </h3>
-                    <p className="font-sans text-[10px] text-white/70 line-clamp-1 w-full text-left">
+                    <p className="font-sans text-[10px] text-white/70 line-clamp-2 text-left mt-1">
                       {product.description}
                     </p>
                   </div>
