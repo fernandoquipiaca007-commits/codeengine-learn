@@ -400,12 +400,12 @@ export function Library({ setScreen, onProductClick }: {
                             key={product.id}
                             onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
                             onMouseEnter={() => prefetchProduct(product.id, locale)}
-                            className="glass-card glass-card-hover rounded-2xl p-2 relative group flex flex-col cursor-pointer transition-all duration-300 hover:border-primary/20 aspect-[4/3] bg-surface/50 border border-white/5"
+                            className="glass-card glass-card-hover rounded-xl p-3 relative group flex flex-col justify-between cursor-pointer transition-all duration-300 hover:border-primary/20 bg-surface/50 border border-white/5 min-h-[300px] h-full text-left"
                           >
                             <div className="absolute w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
                             
                             {/* Product Image */}
-                            <div className="aspect-[4/3] rounded-xl mb-2 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                            <div className="h-[135px] w-full rounded-lg mb-2 overflow-hidden relative bg-black/40 flex items-center justify-center shrink-0">
                               <LazyImage
                                 src={getProductCoverUrl(product)}
                                 alt={product.title}
@@ -415,37 +415,37 @@ export function Library({ setScreen, onProductClick }: {
                               
                               {/* Favorite Button */}
                               {user && (
-                                <div className="absolute top-4 left-4 z-10">
+                                <div className="absolute top-2 left-2 z-10">
                                   <FavoriteButton
                                     isFavorite={isFavorite(product.id)}
                                     onToggle={(e) => {
                                       e?.stopPropagation();
                                       toggleFavorite(product.id);
                                     }}
-                                    size="md"
+                                    size="sm"
                                   />
                                 </div>
                               )}
                               
-                              <div className="absolute top-4 right-4 flex flex-col items-end gap-1 z-10">
+                              <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
                                 {isOwned(product.id) && (
-                                  <span className="bg-green-500/20 border border-green-400/40 text-green-300 px-3 py-1 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase flex items-center gap-1.5 shadow-lg shadow-green-500/20">
-                                    <CheckCircle className="w-3 h-3" />
+                                  <span className="bg-green-500/20 border border-green-400/40 text-green-300 px-2 py-0.5 rounded-full font-display text-[8px] font-semibold tracking-widest uppercase flex items-center gap-1 shadow-lg shadow-green-500/20">
+                                    <CheckCircle className="w-2.5 h-2.5" />
                                     {tCommon('product.ownedBadge')}
                                   </span>
                                 )}
                                 {product.is_free && (
-                                  <span className="bg-green-500/20 border border-green-400/40 text-green-300 px-2 py-0.5 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase">
+                                  <span className="bg-green-500/20 border border-green-400/40 text-green-300 px-2 py-0.5 rounded-full font-display text-[8px] font-semibold tracking-widest uppercase">
                                     {t('library.free')}
                                   </span>
                                 )}
                                 {product.product_type && product.product_type !== 'file' && (
-                                  <span className="bg-primary/20 border border-primary/40 text-primary px-2 py-0.5 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase">
+                                  <span className="bg-primary/20 border border-primary/40 text-primary px-2 py-0.5 rounded-full font-display text-[8px] font-semibold tracking-widest uppercase">
                                     {product.product_type === 'course' ? t('library.course') : t('library.ebook')}
                                   </span>
                                 )}
                                 {category && (
-                                  <span className="bg-surface/50 backdrop-blur-md border border-white/20 text-on-surface px-3 py-1 rounded-full font-display text-[10px] font-semibold tracking-widest uppercase shadow-lg shadow-black/50">
+                                  <span className="bg-surface/50 backdrop-blur-md border border-white/20 text-on-surface px-2 py-0.5 rounded-full font-display text-[8px] font-semibold tracking-widest uppercase shadow">
                                     {(product as any).category_name || category.name}
                                   </span>
                                 )}
@@ -453,23 +453,23 @@ export function Library({ setScreen, onProductClick }: {
                             </div>
 
                             {/* Product Info */}
-                            <div className="px-3 pb-3 flex-grow flex flex-col z-10 relative">
+                            <div className="px-1 pb-1 flex-grow flex flex-col z-10 relative">
                               {/* Creator Row */}
-                              <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2.5">
+                              <div className="flex items-center gap-1.5 mb-2 border-b border-white/5 pb-1.5">
                                 {product.collaborator ? (
                                   <>
                                     {product.collaborator.members?.profile_data?.avatar_url ? (
                                       <img
                                         src={product.collaborator.members.profile_data.avatar_url}
                                         alt={product.collaborator.display_name}
-                                        className="w-4 h-4 rounded-full object-cover border border-white/20"
+                                        className="w-3.5 h-3.5 rounded-full object-cover border border-white/20"
                                       />
                                     ) : (
-                                      <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-                                        <User className="w-2.5 h-2.5 text-white" />
+                                      <div className="w-3.5 h-3.5 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
+                                        <User className="w-2 h-2 text-white" />
                                       </div>
                                     )}
-                                    <span className="text-[10px] font-bold text-white tracking-wide truncate max-w-[120px]">
+                                    <span className="text-[9px] font-bold text-white tracking-wide truncate max-w-[120px]">
                                       {product.collaborator.display_name}
                                     </span>
                                     {product.collaborator.plan === 'course_creator' && (
@@ -482,30 +482,30 @@ export function Library({ setScreen, onProductClick }: {
                                   </>
                                 ) : (
                                   <>
-                                    <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-                                      <ShieldCheck className="w-2.5 h-2.5 text-primary" />
+                                    <div className="w-3.5 h-3.5 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                                      <ShieldCheck className="w-2 h-2 text-primary" />
                                     </div>
-                                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                                    <span className="text-[9px] font-bold text-primary uppercase tracking-wider">
                                       Oficial CodeEngine
                                     </span>
                                   </>
                                 )}
                               </div>
 
-                              <h2 className="font-display text-lg sm:text-xl font-bold text-white mb-2 line-clamp-2 min-h-[2.75rem] group-hover:text-primary group-active:text-primary transition-colors break-words">
+                              <h2 className="font-display text-sm sm:text-base font-bold text-white mb-1.5 line-clamp-2 min-h-[2.25rem] group-hover:text-primary group-active:text-primary transition-colors break-words leading-snug">
                                 {product.title}
                               </h2>
-                              <p className="font-sans text-sm sm:text-base text-on-surface-variant/80 line-clamp-2 mb-4 flex-grow break-words">
+                              <p className="font-sans text-xs text-on-surface-variant/80 line-clamp-2 mb-3 flex-grow break-words leading-normal">
                                 {product.description}
                               </p>
 
                               {/* Tags */}
                               {product.tags && product.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                  {product.tags.slice(0, 3).map((tag, index) => (
+                                <div className="flex flex-wrap gap-1 mb-3">
+                                  {product.tags.slice(0, 2).map((tag, index) => (
                                     <span
                                       key={index}
-                                      className="px-2 py-1 bg-white/5 border border-white/10 rounded-md font-mono text-xs text-on-surface-variant"
+                                      className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded font-mono text-[9px] text-on-surface-variant"
                                     >
                                       {tag}
                                     </span>
@@ -514,27 +514,27 @@ export function Library({ setScreen, onProductClick }: {
                               )}
 
                               {/* Price and CTA */}
-                              <div className="flex flex-wrap items-center justify-between mt-auto w-full gap-3">
-                                <span className="font-mono text-base sm:text-lg font-medium text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
+                              <div className="flex items-center justify-between mt-auto w-full gap-2.5 pt-2 border-t border-white/5">
+                                <span className="font-mono text-sm sm:text-base font-semibold text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
                                   {product.is_free ? t('library.free') : 
                                     isAngola 
                                       ? `Kz ${Number(product.aoa_price || product.aoaPrice || Math.round(product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`
                                       : `$ ${product.price}`}
                                 </span>
                                 {isOwned(product.id) ? (
-                                  <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">
-                                    <CheckCircle className="w-3.5 h-3.5" />
+                                  <div className="px-3 py-1.5 rounded-full font-display text-[9px] font-bold tracking-wider uppercase bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] flex items-center gap-1.5 transition-all">
+                                    <CheckCircle className="w-3 h-3" />
                                     {tCommon('product.alreadyOwned')}
                                   </div>
                                 ) : product.is_free ? (
-                                  <div className="px-4 py-2 rounded-full font-display text-[10px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1 transition-all">
+                                  <div className="px-3 py-1.5 rounded-full font-display text-[9px] font-bold tracking-wider uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] flex items-center gap-1 transition-all">
                                     Acesso Livre
-                                    <ArrowRight className="w-3.5 h-3.5" />
+                                    <ArrowRight className="w-3 h-3" />
                                   </div>
                                 ) : (
-                                  <button className="secondary-btn px-4 py-2.5 rounded-full font-display text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5 group-hover:bg-white/10 group-hover:border-primary/50 group-active:bg-white/10 group-active:border-primary/50 text-white transition-all shrink-0">
+                                  <button className="secondary-btn px-3 py-1.5 rounded-full font-display text-[9px] font-semibold tracking-wider uppercase flex items-center gap-1 group-hover:bg-white/10 group-hover:border-primary/50 group-active:bg-white/10 group-active:border-primary/50 text-white transition-all shrink-0">
                                     {product.cta_text || 'Comprar'}{' '}
-                                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-active:translate-x-0.5 transition-transform" />
+                                    <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 group-active:translate-x-0.5 transition-transform" />
                                   </button>
                                 )}
                               </div>
