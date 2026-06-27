@@ -32,6 +32,10 @@ export interface LocalizedProduct {
   status: string;
   video_url?: string;
   category_name?: string | null;
+  codeengine_recommended?: boolean;
+  editor_choice?: boolean;
+  featured_pick?: boolean;
+  is_bestseller?: boolean;
 }
 
 export function useLocalizedProduct(productId: string | null) {
@@ -174,7 +178,7 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
     const { data: products, error } = await supabase
       .from('products')
       .select(`
-        id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, updated_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path,
+        id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, updated_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path, codeengine_recommended, editor_choice, featured_pick, is_bestseller,
         collaborator:collaborators (
           id,
           display_name,

@@ -45,6 +45,23 @@ export function Library({ setScreen, onProductClick }: {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthSession();
   const { locale } = useLocale();
+  const [onboardingData, setOnboardingData] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadOnboarding() {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('user_onboarding')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setOnboardingData(data);
+      } else {
+        setOnboardingData(null);
+      }
+    }
+    void loadOnboarding();
+  }, [user?.id]);
   const { balance } = usePoints();
   const memberLevel = balance?.level ?? 'starter';
 
@@ -162,12 +179,69 @@ export function Library({ setScreen, onProductClick }: {
     };
   }, [locale, memberLevel, user?.id, loadData]);
 
-  // Filter products by category and subcategory
-  const filteredProducts = products.filter((p) => {
-    const matchesCategory = selectedCategory ? p.category_id === selectedCategory : true;
-    const matchesSubcategory = selectedSubcategory ? p.subcategory_id === selectedSubcategory : true;
-    return matchesCategory && matchesSubcategory;
-  });
+  const getRecommendationScore = (p: any, onboarding: any) => {
+    let score = 0;
+    
+    if (onboarding) {
+      const interests = onboarding.interests || [];
+      const contentPrefs = onboarding.content_preferences || [];
+      const productTags = p.tags || [];
+      const productType = p.product_type || '';
+
+      const normalize = (str: string) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const normInterests = interests.map(normalize);
+      const normTags = productTags.map(normalize);
+      
+      const hasInterestMatch = normInterests.some(i => normTags.some(t => t.includes(i) || i.includes(t) || (t === 'ai' && i.includes('artificial')) || (t === 'ia' && i.includes('artificial'))));
+      if (hasInterestMatch) {
+        score += 5;
+      }
+
+      const typeNorm = productType.toLowerCase();
+      const hasContentMatch = contentPrefs.some((pref: string) => {
+        const pNorm = pref.toLowerCase();
+        if (pNorm.includes('ebook') && (typeNorm === 'ebook' || typeNorm === 'file')) return true;
+        if (pNorm.includes('cours') && typeNorm === 'course') return true;
+        if (pNorm.includes('tool') && normTags.some(t => t.includes('tool') || t.includes('utilitario') || t.includes('ferramenta'))) return true;
+        if (pNorm.includes('template') && normTags.some(t => t.includes('template') || t.includes('modelo'))) return true;
+        if (pNorm.includes('news') && normTags.some(t => t.includes('noticia') || t.includes('artigo') || t.includes('news'))) return true;
+        if (pNorm.includes('guide') && normTags.some(t => t.includes('guia') || t.includes('guide') || t.includes('tutorial'))) return true;
+        if (pNorm.includes('software') && (typeNorm === 'software' || normTags.some(t => t.includes('software') || t.includes('app') || t.includes('programa')))) return true;
+        if (pNorm.includes('saas') && (typeNorm === 'saas' || normTags.some(t => t.includes('saas') || t.includes('web')))) return true;
+        return false;
+      });
+      if (hasContentMatch) {
+        score += 3;
+      }
+    }
+
+    if (p.is_featured || p.featured_pick) {
+      score += 2;
+    }
+
+    if (p.is_bestseller) {
+      score += 2;
+    }
+
+    if (p.codeengine_recommended || p.editor_choice || p.featured_pick) {
+      score += 4;
+    }
+
+    return score;
+  };
+
+  // Filter and sort products by category, subcategory and recommendation score
+  const filteredProducts = products
+    .filter((p) => {
+      const matchesCategory = selectedCategory ? p.category_id === selectedCategory : true;
+      const matchesSubcategory = selectedSubcategory ? p.subcategory_id === selectedSubcategory : true;
+      return matchesCategory && matchesSubcategory;
+    })
+    .sort((a, b) => {
+      const scoreA = getRecommendationScore(a, onboardingData);
+      const scoreB = getRecommendationScore(b, onboardingData);
+      return scoreB - scoreA;
+    });
 
   // Get category icon
   function getCategoryIcon(categoryName: string) {

@@ -219,6 +219,8 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   const activeLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const text = LOCALIZED_TEXT[activeLang];
 
+  const [onboardingData, setOnboardingData] = useState<any>(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session);
@@ -230,6 +232,27 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    async function loadOnboarding() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data } = await supabase
+          .from('user_onboarding')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        setOnboardingData(data);
+      } else {
+        setOnboardingData(null);
+      }
+    }
+    if (isLoggedIn) {
+      void loadOnboarding();
+    } else {
+      setOnboardingData(null);
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     async function loadProducts() {
@@ -280,17 +303,84 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     }
   }, [products]);
 
-  // Split products: top 4 for "Most Sold", next 4 for "New Releases", next 4 for "Recommended"
-  const mostSoldProducts = products.slice(0, 4);
-  const newReleasesProducts = products.length >= 8 ? products.slice(4, 8) : products.slice(0, 4);
-  const recommendedProducts = products.filter(p => (p as any).is_featured).length > 0
-    ? products.filter(p => (p as any).is_featured).slice(0, 4)
-    : products.length >= 12 
-      ? products.slice(8, 12) 
-      : products.slice(0, 4);
+  const getRecommendationScore = (p: any, onboarding: any) => {
+    let score = 0;
+    
+    if (onboarding) {
+      const interests = onboarding.interests || [];
+      const contentPrefs = onboarding.content_preferences || [];
+      const productTags = p.tags || [];
+      const productType = p.product_type || '';
+
+      const normalize = (str: string) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const normInterests = interests.map(normalize);
+      const normTags = productTags.map(normalize);
+      
+      const hasInterestMatch = normInterests.some(i => normTags.some(t => t.includes(i) || i.includes(t) || (t === 'ai' && i.includes('artificial')) || (t === 'ia' && i.includes('artificial'))));
+      if (hasInterestMatch) {
+        score += 5;
+      }
+
+      const typeNorm = productType.toLowerCase();
+      const hasContentMatch = contentPrefs.some((pref: string) => {
+        const pNorm = pref.toLowerCase();
+        if (pNorm.includes('ebook') && (typeNorm === 'ebook' || typeNorm === 'file')) return true;
+        if (pNorm.includes('cours') && typeNorm === 'course') return true;
+        if (pNorm.includes('tool') && normTags.some(t => t.includes('tool') || t.includes('utilitario') || t.includes('ferramenta'))) return true;
+        if (pNorm.includes('template') && normTags.some(t => t.includes('template') || t.includes('modelo'))) return true;
+        if (pNorm.includes('news') && normTags.some(t => t.includes('noticia') || t.includes('artigo') || t.includes('news'))) return true;
+        if (pNorm.includes('guide') && normTags.some(t => t.includes('guia') || t.includes('guide') || t.includes('tutorial'))) return true;
+        if (pNorm.includes('software') && (typeNorm === 'software' || normTags.some(t => t.includes('software') || t.includes('app') || t.includes('programa')))) return true;
+        if (pNorm.includes('saas') && (typeNorm === 'saas' || normTags.some(t => t.includes('saas') || t.includes('web')))) return true;
+        return false;
+      });
+      if (hasContentMatch) {
+        score += 3;
+      }
+    }
+
+    if (p.is_featured || p.featured_pick) {
+      score += 2;
+    }
+
+    if (p.is_bestseller) {
+      score += 2;
+    }
+
+    if (p.codeengine_recommended || p.editor_choice || p.featured_pick) {
+      score += 4;
+    }
+
+    return score;
+  };
+
+  const sortByInterests = (a: any, b: any) => {
+    if (!onboardingData) return 0;
+    const normalize = (str: string) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const normInterests = (onboardingData.interests || []).map(normalize);
+    const hasA = (a.tags || []).map(normalize).some((t: string) => normInterests.some(i => t.includes(i) || i.includes(t)));
+    const hasB = (b.tags || []).map(normalize).some((t: string) => normInterests.some(i => t.includes(i) || i.includes(t)));
+    return (hasB ? 1 : 0) - (hasA ? 1 : 0);
+  };
+
+  // Split products: top 4 for "Most Sold" (filter best seller first), next 4 for "New Releases", next 4 for "Recommended"
+  const bestSellerList = products.filter(p => p.is_bestseller).sort(sortByInterests);
+  const mostSoldProducts = bestSellerList.length >= 4 
+    ? bestSellerList.slice(0, 4) 
+    : [...bestSellerList, ...products.filter(p => !p.is_bestseller).slice(0, 4 - bestSellerList.length)];
+
+  const newReleasesProducts = [...products]
+    .sort(sortByInterests)
+    .slice(0, 4);
+
+  const recommendedProducts = [...products]
+    .sort((a, b) => getRecommendationScore(b, onboardingData) - getRecommendationScore(a, onboardingData))
+    .slice(0, 4);
 
   // Take first 8 products for circular gallery (or fallback to whatever is available)
-  const circularGalleryItems = products.slice(0, 8);
+  const circularGalleryItems = [...products]
+    .sort(sortByInterests)
+    .slice(0, 8);
 
   const formatPrice = (p: LocalizedProduct) => {
     if (p.is_free) return activeLang === 'pt' ? 'Livre' : activeLang === 'fr' ? 'Gratuit' : 'Free';

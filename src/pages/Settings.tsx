@@ -56,6 +56,10 @@ export function Settings({ setScreen }: SettingsProps) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [onboardingSource, setOnboardingSource] = useState('');
+  const [onboardingGoal, setOnboardingGoal] = useState('');
+  const [onboardingContentPrefs, setOnboardingContentPrefs] = useState<string[]>([]);
+  const [onboardingInterests, setOnboardingInterests] = useState<string[]>([]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -199,6 +203,20 @@ export function Settings({ setScreen }: SettingsProps) {
         setName(member.profile_data?.name || authUser.email?.split('@')[0] || '');
         setEmailNotifications(member.profile_data?.email_notifications !== false);
         setAvatarUrl(member.profile_data?.avatar_url || null);
+
+        // Load onboarding data if it exists
+        const { data: onboarding } = await supabase
+          .from('user_onboarding')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .maybeSingle();
+
+        if (onboarding) {
+          setOnboardingSource(onboarding.source || '');
+          setOnboardingGoal(onboarding.primary_goal || '');
+          setOnboardingContentPrefs(onboarding.content_preferences || []);
+          setOnboardingInterests(onboarding.interests || []);
+        }
       } else {
         // User is authenticated but no member record yet — don't redirect to auth
         setName(authUser.email?.split('@')[0] || '');
@@ -357,6 +375,18 @@ export function Settings({ setScreen }: SettingsProps) {
         .eq('id', activeMember.id);
 
       if (error) throw error;
+
+      // Save onboarding preferences
+      await supabase
+        .from('user_onboarding')
+        .upsert({
+          user_id: user.id,
+          source: onboardingSource || 'outro',
+          primary_goal: onboardingGoal,
+          content_preferences: onboardingContentPrefs,
+          interests: onboardingInterests,
+          completed_at: new Date().toISOString()
+        });
 
       setMemberData({
         ...activeMember,
@@ -704,6 +734,152 @@ export function Settings({ setScreen }: SettingsProps) {
             </label>
           </div>
         </motion.section>
+
+        {/* Onboarding Preferences Section */}
+        {(() => {
+          const onboardingGoals = [
+            { value: "skills", label: locale === 'pt' ? "Aprender novas habilidades" : locale === 'fr' ? "Apprendre de nouvelles compétences" : "Learn new skills" },
+            { value: "finance", label: locale === 'pt' ? "Crescer financeiramente" : locale === 'fr' ? "Grandir financièrement" : "Grow financially" },
+            { value: "automate", label: locale === 'pt' ? "Automatizar meus negócios" : locale === 'fr' ? "Automatiser mon entreprise" : "Automate my business" },
+            { value: "productivity", label: locale === 'pt' ? "Melhorar produtividade" : locale === 'fr' ? "Améliorer la productivité" : "Improve productivity" },
+            { value: "trends", label: locale === 'pt' ? "Acompanhar tendências tecnológicas" : locale === 'fr' ? "Suivre les tendances technologiques" : "Follow tech trends" },
+            { value: "tools", label: locale === 'pt' ? "Encontrar ferramentas úteis" : locale === 'fr' ? "Trouver des outils utiles" : "Find useful tools" }
+          ];
+
+          const onboardingContentOptions = [
+            { value: "ebooks", label: "E-books" },
+            { value: "courses", label: locale === 'pt' ? "Cursos Completos" : locale === 'fr' ? "Cours Complets" : "Full Courses" },
+            { value: "tools", label: locale === 'pt' ? "Ferramentas" : locale === 'fr' ? "Outils & Utilitaires" : "Tools & Utilities" },
+            { value: "templates", label: locale === 'pt' ? "Templates & Modelos" : locale === 'fr' ? "Modèles & Templates" : "Templates & Blueprints" },
+            { value: "news", label: locale === 'pt' ? "Notícias & Artigos" : locale === 'fr' ? "Actualités & Articles" : "News & Articles" },
+            { value: "guides", label: locale === 'pt' ? "Guias Práticos" : locale === 'fr' ? "Guides Pratiques" : "Practical Guides" },
+            { value: "softwares", label: locale === 'pt' ? "Logiciels" : "Softwares" },
+            { value: "saas", label: locale === 'pt' ? "Aplicações SaaS" : "SaaS Apps" }
+          ];
+
+          const onboardingInterestOptions = [
+            { value: "Inteligência Artificial", label: locale === 'pt' ? "Inteligência Artificial" : locale === 'fr' ? "Intelligence Artificielle" : "Artificial Intelligence" },
+            { value: "Programação", label: locale === 'pt' ? "Programação" : locale === 'fr' ? "Programmation" : "Programming" },
+            { value: "Automação", label: locale === 'pt' ? "Automação" : locale === 'fr' ? "Automatisation" : "Automation" },
+            { value: "Marketing", label: "Marketing" },
+            { value: "Negócios", label: locale === 'pt' ? "Negócios" : locale === 'fr' ? "Affaires" : "Business" },
+            { value: "Empreendedorismo", label: locale === 'pt' ? "Empreendedorismo" : locale === 'fr' ? "Entrepreneuriat" : "Entrepreneurship" },
+            { value: "Fitness", label: "Fitness" },
+            { value: "Saúde", label: locale === 'pt' ? "Saúde" : locale === 'fr' ? "Santé" : "Health" },
+            { value: "Finanças", label: locale === 'pt' ? "Finanças" : locale === 'fr' ? "Finance" : "Finance" },
+            { value: "Produtividade", label: locale === 'pt' ? "Produtividade" : locale === 'fr' ? "Productivité" : "Productivity" },
+            { value: "Design", label: "Design" },
+            { value: "Educação", label: locale === 'pt' ? "Educação" : locale === 'fr' ? "Éducation" : "Education" },
+            { value: "Crypto", label: "Crypto" },
+            { value: "Trading", label: "Trading" },
+            { value: "SaaS", label: "SaaS" }
+          ];
+
+          const toggleContentPref = (val: string) => {
+            setOnboardingContentPrefs(prev => 
+              prev.includes(val) ? prev.filter(x => x !== val) : [...prev, val]
+            );
+          };
+
+          const toggleInterest = (val: string) => {
+            setOnboardingInterests(prev => 
+              prev.includes(val) ? prev.filter(x => x !== val) : [...prev, val]
+            );
+          };
+
+          return (
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="glass-panel rounded-2xl p-5 border border-white/10"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Globe className="w-5 h-5 text-primary" />
+                <h2 className="font-display text-lg font-bold text-white">
+                  {locale === 'pt' ? "Preferências de Conteúdo & Interesses" : locale === 'fr' ? "Préférences de Contenu & Intérêts" : "Content Preferences & Interests"}
+                </h2>
+              </div>
+
+              <div className="space-y-6">
+                {/* Goal */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold text-white/70">
+                    {locale === 'pt' ? "Objetivo Principal" : locale === 'fr' ? "Objectif Principal" : "Primary Goal"}
+                  </label>
+                  <select
+                    value={onboardingGoal}
+                    onChange={(e) => setOnboardingGoal(e.target.value)}
+                    className="py-2.5 px-4 rounded-xl border border-white/10 bg-white/3 text-white text-xs font-medium focus:border-primary transition-all outline-none"
+                  >
+                    <option value="" disabled className="bg-black">
+                      {locale === 'pt' ? "Selecione..." : locale === 'fr' ? "Sélectionner..." : "Select..."}
+                    </option>
+                    {onboardingGoals.map((opt) => (
+                      <option key={opt.value} value={opt.value} className="bg-black">
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Content Prefs */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold text-white/70">
+                    {locale === 'pt' ? "Tipos de Conteúdo Preferidos" : locale === 'fr' ? "Types de Contenu Préférés" : "Preferred Content Types"}
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {onboardingContentOptions.map((opt) => {
+                      const selected = onboardingContentPrefs.includes(opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => toggleContentPref(opt.value)}
+                          className={`py-2 px-3 rounded-xl border text-[11px] font-medium transition-all text-center flex items-center justify-between ${
+                            selected
+                              ? 'bg-primary/20 border-primary text-white shadow-[0_0_10px_rgba(99,102,241,0.1)]'
+                              : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/10 text-white/70'
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          {selected && <Check className="w-3.5 h-3.5 text-primary" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Interests */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold text-white/70">
+                    {locale === 'pt' ? "Áreas de Interesse" : locale === 'fr' ? "Domaines d'Intérêt" : "Areas of Interest"}
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+                    {onboardingInterestOptions.map((opt) => {
+                      const selected = onboardingInterests.includes(opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => toggleInterest(opt.value)}
+                          className={`py-2 px-2.5 rounded-lg border text-[10px] font-medium transition-all text-center flex items-center justify-center gap-1 ${
+                            selected
+                              ? 'bg-primary/20 border-primary text-white shadow-[0_0_8px_rgba(99,102,241,0.1)]'
+                              : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/10 text-white/70'
+                          }`}
+                        >
+                          {selected && <span className="w-1 h-1 rounded-full bg-primary" />}
+                          <span>{opt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </motion.section>
+          );
+        })()}
 
         {/* PWA System Version & Updates Section */}
         <motion.section

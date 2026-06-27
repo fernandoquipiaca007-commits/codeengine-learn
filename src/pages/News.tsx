@@ -63,6 +63,25 @@ export function News({ setScreen }: NewsProps) {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [onboardingInterests, setOnboardingInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadOnboardingInterests() {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('user_onboarding')
+          .select('interests')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (data?.interests) {
+          setOnboardingInterests(data.interests);
+        }
+      } else {
+        setOnboardingInterests([]);
+      }
+    }
+    void loadOnboardingInterests();
+  }, [user?.id]);
   const [memberId, setMemberId] = useState<string | null>(null);
   const [likedArticles, setLikedArticles] = useState<string[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -133,10 +152,43 @@ export function News({ setScreen }: NewsProps) {
       };
 
       const baseNews = await queryCache.get(`news-featured-base-${locale}`, fetcher, { revalidate });
-      setNews(baseNews);
+
+      // Sort baseNews by user interests first
+      const sortedNews = [...baseNews].sort((a, b) => {
+        const getNewsScore = (article: any, interestsList: string[]) => {
+          if (!interestsList || interestsList.length === 0) return 0;
+          let score = 0;
+          const normalize = (str: string) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+          const normInterests = interestsList.map(normalize);
+          
+          const catNorm = normalize(article.category || '');
+          if (normInterests.some(i => catNorm.includes(i) || i.includes(catNorm))) {
+            score += 3;
+          }
+          
+          if (article.tags && article.tags.length > 0) {
+            for (const tag of article.tags) {
+              const tagNorm = normalize(tag);
+              if (normInterests.some(i => tagNorm.includes(i) || i.includes(tagNorm))) {
+                score += 1;
+              }
+            }
+          }
+          return score;
+        };
+
+        const scoreA = getNewsScore(a, onboardingInterests);
+        const scoreB = getNewsScore(b, onboardingInterests);
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime();
+      });
+
+      setNews(sortedNews);
 
       // Split into Featured (tagged with 'Destaque')
-      const featured = baseNews.filter(a => 
+      const featured = sortedNews.filter(a => 
         a.tags?.some(tag => tag.toLowerCase() === 'destaque')
       ).slice(0, 4);
 
@@ -215,14 +267,45 @@ export function News({ setScreen }: NewsProps) {
       const cacheKey = `news-grid-${selectedCategory || 'all'}-${sortBy}-${pageToLoad}-${locale}`;
       const fetchedNews = await queryCache.get(cacheKey, fetcher, { revalidate });
 
+      const getNewsScore = (article: any, interestsList: string[]) => {
+        if (!interestsList || interestsList.length === 0) return 0;
+        let score = 0;
+        const normalize = (str: string) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        const normInterests = interestsList.map(normalize);
+        
+        const catNorm = normalize(article.category || '');
+        if (normInterests.some(i => catNorm.includes(i) || i.includes(catNorm))) {
+          score += 3;
+        }
+        
+        if (article.tags && article.tags.length > 0) {
+          for (const tag of article.tags) {
+            const tagNorm = normalize(tag);
+            if (normInterests.some(i => tagNorm.includes(i) || i.includes(tagNorm))) {
+              score += 1;
+            }
+          }
+        }
+        return score;
+      };
+
+      const sortedFetchedNews = [...fetchedNews].sort((a, b) => {
+        const scoreA = getNewsScore(a, onboardingInterests);
+        const scoreB = getNewsScore(b, onboardingInterests);
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime();
+      });
+
       if (append) {
         setNormalArticles(prev => {
           const existingIds = new Set(prev.map(a => a.id));
-          const filtered = fetchedNews.filter((a: any) => !existingIds.has(a.id));
+          const filtered = sortedFetchedNews.filter((a: any) => !existingIds.has(a.id));
           return [...prev, ...filtered];
         });
       } else {
-        setNormalArticles(fetchedNews);
+        setNormalArticles(sortedFetchedNews);
       }
 
       setHasMore(fetchedNews.length === PAGE_SIZE);
