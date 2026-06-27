@@ -566,8 +566,9 @@ export default function App() {
   // Onboarding mandatory redirection lock
   useEffect(() => {
     if (loadingMember) return;
-    if (user && member) {
-      if (!member.onboarding_completed) {
+    if (user) {
+      const isCompleted = member ? member.onboarding_completed === true : false;
+      if (!isCompleted) {
         const isPurchase = sessionStorage.getItem('pendingCheckout') !== null;
         if (!isPurchase && currentScreen !== 'onboarding') {
           setScreen('onboarding');
