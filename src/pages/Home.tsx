@@ -695,13 +695,22 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           
           {/* Card 1: Creator Partnership */}
           <div 
-            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square bg-cover bg-center transition-all duration-300"
+            onClick={() => setScreen('colaborador-candidatura')}
+            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square cursor-pointer transition-all duration-300 hover:border-primary/20"
             style={{
               aspectRatio: '1/1',
-              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.95) 0%, rgba(5, 5, 5, 0.5) 50%, rgba(5, 5, 5, 0.1) 100%), url('/colaborador.jpg')",
             }}
           >
-            <div className="flex flex-col gap-3 relative z-10">
+            {/* Background Image with object-contain to prevent cropping */}
+            <img 
+              src="/colaborador.jpg" 
+              alt="Creator" 
+              className="absolute inset-0 w-full h-full object-contain z-0 transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent z-10" />
+
+            <div className="flex flex-col gap-3 relative z-20">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <ShoppingBag className="w-5 h-5 text-primary" />
               </div>
@@ -713,8 +722,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               </p>
             </div>
             <button
-              onClick={() => setScreen('colaborador-candidatura')}
-              className="relative inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] px-6 text-xs font-bold transition-all relative z-10 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+              className="relative inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] px-6 text-xs font-bold transition-all z-20 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
             >
               {text.promos.creatorBtn}
               <ArrowRight className="w-4 h-4" />
@@ -723,13 +731,22 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
           {/* Card 2: Affiliate Rewards */}
           <div 
-            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square bg-cover bg-center transition-all duration-300"
+            onClick={() => setScreen('afiliados')}
+            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square cursor-pointer transition-all duration-300 hover:border-primary/20"
             style={{
               aspectRatio: '1/1',
-              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.95) 0%, rgba(5, 5, 5, 0.5) 50%, rgba(5, 5, 5, 0.1) 100%), url('/Afiliado.jpg')",
             }}
           >
-            <div className="flex flex-col gap-3 relative z-10">
+            {/* Background Image with object-contain to prevent cropping */}
+            <img 
+              src="/Afiliado.jpg" 
+              alt="Affiliate" 
+              className="absolute inset-0 w-full h-full object-contain z-0 transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent z-10" />
+
+            <div className="flex flex-col gap-3 relative z-20">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <Award className="w-5 h-5 text-primary" />
               </div>
@@ -741,8 +758,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               </p>
             </div>
             <button
-              onClick={() => setScreen('afiliados')}
-              className="relative inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-6 text-xs font-bold text-white transition-all relative z-10 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+              className="relative inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-6 text-xs font-bold text-white transition-all z-20 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
             >
               {text.promos.affiliateBtn}
               <ArrowRight className="w-4 h-4" />
