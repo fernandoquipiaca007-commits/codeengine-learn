@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense, memo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { NavBar } from './components/NavBar';
+import { useAuthSession } from './hooks/useAuthSession';
 import { Footer } from './components/Footer';
 import { SearchModal } from './components/SearchModal';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
@@ -200,23 +201,9 @@ export default function App() {
   const [memberSection, setMemberSection] = useState<string>('inicio');
   const [showSearch, setShowSearch] = useState(false);
   const [isImmersive, setIsImmersive] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const { user, session, loading: authLoading } = useAuthSession();
   const [member, setMember] = useState<any>(null);
   const [loadingMember, setLoadingMember] = useState(true);
-
-  const fetchMember = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from('members')
-        .select('*')
-        .eq('auth_id', userId)
-        .maybeSingle();
-      return data;
-    } catch (err) {
-      console.error('[App] Error fetching member:', err);
-      return null;
-    }
-  };
 
   const handleOnboardingComplete = () => {
     setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : null);
@@ -449,123 +436,117 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-
-    const initSession = async () => {
-      setLoadingMember(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!active) return;
-      setUser(session?.user || null);
-      
-      if (session?.user) {
-        let mem = await fetchMember(session.user.id);
-        if (!active) return;
-        
-        // Handle purchase flow flags if pendingCheckout exists
-        const hasPendingCheckout = sessionStorage.getItem('pendingCheckout') !== null;
-        if (hasPendingCheckout && mem && (!mem.onboarding_deferred || !mem.purchase_flow_started)) {
-          const { data: updatedMem } = await supabase
-            .from('members')
-            .update({
-              onboarding_deferred: true,
-              purchase_flow_started: true
-            })
-            .eq('auth_id', session.user.id)
-            .select()
-            .single();
-          if (updatedMem && active) mem = updatedMem;
-        }
-        setMember(mem);
-      } else {
-        setMember(null);
-      }
-      setLoadingMember(false);
-    };
-    void initSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!active) return;
-      
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setMember(null);
-        setLoadingMember(false);
-        return;
-      }
-
-      if (session) {
-        setUser(session.user);
+    async function loadMember() {
+      if (user?.id) {
         setLoadingMember(true);
-        let mem = await fetchMember(session.user.id);
-        if (!active) return;
-
-        // Handle purchase flow flags if pendingCheckout exists
-        const hasPendingCheckout = sessionStorage.getItem('pendingCheckout') !== null;
-        if (hasPendingCheckout && mem && (!mem.onboarding_deferred || !mem.purchase_flow_started)) {
-          const { data: updatedMem } = await supabase
+        try {
+          const { data: mem } = await supabase
             .from('members')
-            .update({
-              onboarding_deferred: true,
-              purchase_flow_started: true
-            })
-            .eq('auth_id', session.user.id)
-            .select()
-            .single();
-          if (updatedMem && active) mem = updatedMem;
+            .select('*')
+            .eq('auth_id', user.id)
+            .maybeSingle();
+          
+          if (!active) return;
+          
+          let currentMem = mem;
+          // Handle purchase flow flags if pendingCheckout exists
+          const hasPendingCheckout = sessionStorage.getItem('pendingCheckout') !== null;
+          if (hasPendingCheckout && mem && (!mem.onboarding_deferred || !mem.purchase_flow_started)) {
+            const { data: updatedMem } = await supabase
+              .from('members')
+              .update({
+                onboarding_deferred: true,
+                purchase_flow_started: true
+              })
+              .eq('auth_id', user.id)
+              .select()
+              .single();
+            if (updatedMem && active) currentMem = updatedMem;
+          }
+          setMember(currentMem);
+          setLoadingMember(false);
+        } catch (err) {
+          console.error('[App] Error loading member:', err);
+          if (active) {
+            setMember(null);
+            setLoadingMember(false);
+          }
         }
-        setMember(mem);
-        setLoadingMember(false);
+      } else {
+        if (active) {
+          setMember(null);
+          setLoadingMember(false);
+        }
+      }
+    }
+    if (!authLoading) {
+      void loadMember();
+    } else {
+      setLoadingMember(true);
+    }
+    return () => {
+      active = false;
+    };
+  }, [user?.id, authLoading]);
 
-        // OAuth login redirects logic:
-        if (event === 'SIGNED_IN') {
-          if (window.location.hash.includes('access_token=')) {
-            window.history.replaceState({}, '', '/');
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Clear hash if returning from OAuth redirect
+        if (window.location.hash.includes('access_token=')) {
+          window.history.replaceState({}, '', '/');
+        }
+
+        const wasAuthenticating = sessionStorage.getItem('ce_google_signing_in') === 'true';
+
+        if (wasAuthenticating) {
+          sessionStorage.removeItem('ce_google_signing_in');
+
+          // Welcome API call (fire-and-forget)
+          fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/auth/welcome`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json', 
+              Authorization: `Bearer ${session.access_token}` 
+            },
+          }).catch(() => {});
+
+          const rawCheckout = sessionStorage.getItem('pendingCheckout');
+          if (rawCheckout) {
+            try {
+              const intent = JSON.parse(rawCheckout) as { productId: string };
+              if (intent.productId) {
+                sessionStorage.removeItem('pendingCheckout');
+                setTimeout(() => {
+                  navigateToProduct(intent.productId);
+                }, 100);
+                return;
+              }
+            } catch {}
           }
-          const wasAuthenticating = sessionStorage.getItem('ce_google_signing_in') === 'true';
-          if (wasAuthenticating) {
-            sessionStorage.removeItem('ce_google_signing_in');
-            
-            // Fire-and-forget welcome call
-            fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/auth/welcome`, {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json', 
-                Authorization: `Bearer ${session.access_token}` 
-              },
-            }).catch(() => {});
 
-            const rawCheckout = sessionStorage.getItem('pendingCheckout');
-            if (rawCheckout) {
-              try {
-                const intent = JSON.parse(rawCheckout) as { productId: string };
-                if (intent.productId) {
-                  sessionStorage.removeItem('pendingCheckout');
-                  setTimeout(() => { navigateToProduct(intent.productId); }, 100);
-                  return;
-                }
-              } catch {}
-            }
-
-            const pendingProduct = sessionStorage.getItem('pendingProductId');
-            if (pendingProduct) {
-              sessionStorage.removeItem('pendingProductId');
-              setTimeout(() => { navigateToProduct(pendingProduct); }, 100);
-              return;
-            }
-            navigateToScreen('member');
+          const pendingProduct = sessionStorage.getItem('pendingProductId');
+          if (pendingProduct) {
+            sessionStorage.removeItem('pendingProductId');
+            setTimeout(() => {
+              navigateToProduct(pendingProduct);
+            }, 100);
+            return;
           }
+
+          navigateToScreen('member');
         }
       }
     });
 
     return () => {
-      active = false;
       subscription.unsubscribe();
     };
   }, [navigateToScreen, navigateToProduct]);
 
   // Onboarding mandatory redirection lock
   useEffect(() => {
-    if (loadingMember) return;
+    if (authLoading || loadingMember) return;
     if (user) {
       const isCompleted = member ? member.onboarding_completed === true : false;
       if (!isCompleted) {
@@ -575,7 +556,7 @@ export default function App() {
         }
       }
     }
-  }, [user, member, loadingMember, currentScreen]);
+  }, [user, member, authLoading, loadingMember, currentScreen]);
 
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">
