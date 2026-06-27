@@ -553,14 +553,13 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     </div>
 
                     {/* Product Image */}
-                    <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-surface-highest">
+                    <div className="aspect-[3/4] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                       <LazyImage
                         src={getProductCoverUrl(product)}
                         alt={product.title}
-                        className="object-cover w-full h-full"
+                        className="max-w-full max-h-full object-contain"
                         fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
                       
                       {/* Product Type Badge */}
                       {product.product_type && (
@@ -645,14 +644,13 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
 
                     {/* Product Image */}
-                    <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-surface-highest">
+                    <div className="aspect-[3/4] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                       <LazyImage
                         src={getProductCoverUrl(product)}
                         alt={product.title}
-                        className="object-cover w-full h-full"
+                        className="max-w-full max-h-full object-contain"
                         fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
                       
                       {/* Product Type Badge */}
                       {product.product_type && (
@@ -697,9 +695,9 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           
           {/* Card 1: Creator Partnership */}
           <div 
-            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group min-h-[240px] bg-cover bg-center transition-all duration-300"
+            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square bg-cover bg-center transition-all duration-300"
             style={{
-              backgroundImage: "linear-gradient(to bottom, rgba(5, 5, 5, 0.88) 30%, rgba(5, 5, 5, 0.55) 70%, rgba(5, 5, 5, 0.35) 100%), url('/colaborador.jpg')",
+              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.9) 0%, rgba(5, 5, 5, 0.3) 50%, transparent 100%), url('/colaborador.jpg')",
             }}
           >
             <div className="flex flex-col gap-3 relative z-10">
@@ -724,9 +722,9 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
           {/* Card 2: Affiliate Rewards */}
           <div 
-            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group min-h-[240px] bg-cover bg-center transition-all duration-300"
+            className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square bg-cover bg-center transition-all duration-300"
             style={{
-              backgroundImage: "linear-gradient(to bottom, rgba(5, 5, 5, 0.88) 30%, rgba(5, 5, 5, 0.55) 70%, rgba(5, 5, 5, 0.35) 100%), url('/Afiliado.jpg')",
+              backgroundImage: "linear-gradient(to top, rgba(5, 5, 5, 0.9) 0%, rgba(5, 5, 5, 0.3) 50%, transparent 100%), url('/Afiliado.jpg')",
             }}
           >
             <div className="flex flex-col gap-3 relative z-10">

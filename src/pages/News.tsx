@@ -987,13 +987,12 @@ export function News({ setScreen }: NewsProps) {
               >
                 {/* Thumbnail */}
                 {article.thumbnail_url && (
-                  <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
+                  <div className="relative w-full h-48 overflow-hidden flex-shrink-0 bg-black/40 flex items-center justify-center">
                     <LazyImage
                       src={article.thumbnail_url}
                       alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
                   </div>
                 )}
 
@@ -1082,17 +1081,16 @@ export function News({ setScreen }: NewsProps) {
           <div className="bg-[#0f0f0f] border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative">
             
             {/* Header / Cover Image */}
-            <div className="relative h-48 sm:h-64 flex-shrink-0">
+            <div className="relative h-48 sm:h-64 flex-shrink-0 bg-black/40 flex items-center justify-center">
               {selectedArticle.thumbnail_url ? (
                 <LazyImage
                   src={selectedArticle.thumbnail_url}
                   alt={selectedArticle.title}
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full object-contain"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary/20 via-black to-secondary/20" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] to-transparent" />
               
               {/* Close Button */}
               <button
@@ -1284,8 +1282,8 @@ export function News({ setScreen }: NewsProps) {
               {/* Main Story Content Card */}
               <div className="z-10 flex-1 flex flex-col justify-center gap-4 my-8">
                 {selectedArticle.thumbnail_url && (
-                  <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/5">
-                    <LazyImage src={selectedArticle.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                  <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/5 bg-black/40 flex items-center justify-center">
+                    <LazyImage src={selectedArticle.thumbnail_url} alt="" className="max-w-full max-h-full object-contain" />
                   </div>
                 )}
                 <h2 className="font-display text-lg font-extrabold text-white leading-tight tracking-tight">

@@ -37,7 +37,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
       if (!isDraggingRef.current) return;
       const deltaX = e.clientX - startXRef.current;
       dragDistanceRef.current = Math.abs(deltaX);
-      // Sensitivity scale factor: 0.15 degrees per pixel
       setRotation(startRotationRef.current + deltaX * 0.15);
     };
 
@@ -88,7 +87,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     // Handle navigation click without triggering on drag release
     const handleCardClick = (productId: string) => {
       if (dragDistanceRef.current > 6) {
-        // Ignored click because the user is dragging
         return;
       }
       if (onProductClick) {
@@ -128,7 +126,6 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
             const relativeAngle = (itemAngle + totalRotation + 360) % 360;
             const normalizedAngle = Math.abs(relativeAngle > 180 ? 360 - relativeAngle : relativeAngle);
             
-            // Fading out cards on the back for depth
             const opacity = normalizedAngle > 90 
               ? Math.max(0, 1 - ((normalizedAngle - 90) / 45)) 
               : 1;
@@ -152,34 +149,30 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   opacity: opacity,
                 }}
               >
-                {/* Full cover card layout inspired by the reference visual */}
-                <div className="relative w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-white/10 bg-surface/50 group flex flex-col justify-end">
+                {/* Full cover card layout - image is completely visible and separate from text */}
+                <div className="relative w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-white/5 bg-[#111115]/85 hover:bg-[#111115]/95 backdrop-blur-md flex flex-col p-2.5 group transition-all duration-300 hover:border-primary/20">
                   
-                  {/* Cover Photo */}
-                  <LazyImage
-                    src={getProductCoverUrl(product)}
-                    alt={product.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
-                  />
+                  {/* Image container occupying the upper area - using object-contain to never crop */}
+                  <div className="w-full flex-grow relative overflow-hidden bg-black/40 rounded-xl flex items-center justify-center min-h-[220px]">
+                    <LazyImage
+                      src={getProductCoverUrl(product)}
+                      alt={product.title}
+                      className="max-w-full max-h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
+                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                    />
+                  </div>
                   
-                  {/* Radial bottom glow */}
-                  <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.08)_0%,transparent_70%)] rounded-full pointer-events-none z-10 bottom-0 left-0" />
-                  
-                  {/* Linear bottom dark gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent z-10" />
-
-                  {/* Overlaid texts at the bottom */}
-                  <div className="relative p-5 text-white z-20 flex flex-col items-start gap-1">
+                  {/* Text section below the image, not overlaying it */}
+                  <div className="pt-3 px-1 text-white flex flex-col items-start gap-1 flex-shrink-0">
                     {product.product_type && (
-                      <span className="bg-primary/20 border border-primary/30 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase mb-1">
+                      <span className="bg-primary/20 border border-primary/30 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase mb-0.5">
                         {product.product_type === 'course' ? 'Curso' : 'Ebook'}
                       </span>
                     )}
-                    <h3 className="font-display text-base font-extrabold leading-tight text-white line-clamp-2 text-left group-hover:text-primary transition-colors">
+                    <h3 className="font-display text-sm font-extrabold leading-tight text-white line-clamp-1 w-full text-left group-hover:text-primary transition-colors">
                       {product.title}
                     </h3>
-                    <p className="font-sans text-[10px] text-white/70 line-clamp-2 text-left mt-1">
+                    <p className="font-sans text-[10px] text-white/70 line-clamp-1 w-full text-left">
                       {product.description}
                     </p>
                   </div>

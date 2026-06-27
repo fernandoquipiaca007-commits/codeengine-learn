@@ -245,7 +245,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-10 shrink-0 rounded-lg overflow-hidden border border-white/10">
-                          <img src={prod.cover_url} alt={prod.title} className="h-full w-full object-cover" />
+                          <img src={prod.cover_url} alt={prod.title} className="h-full w-full object-contain" />
                         </div>
                         <div>
                           <span className="font-semibold text-white line-clamp-1">{prod.title}</span>

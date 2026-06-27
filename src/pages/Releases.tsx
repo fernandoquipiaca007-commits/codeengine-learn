@@ -203,14 +203,13 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
               </div>
               
               {/* Cover Image */}
-              <div className="relative w-full h-44 overflow-hidden">
+              <div className="relative w-full h-44 overflow-hidden bg-black/40 flex items-center justify-center">
                 <LazyImage
                   src={getProductCoverUrl(product)}
                   alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  fallback={`https://placehold.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                  className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                  fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent"></div>
               </div>
               
               {/* Content */}

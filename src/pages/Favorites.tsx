@@ -194,14 +194,13 @@ export function Favorites({ setScreen }: FavoritesProps) {
               {/* Cover Image */}
               <div 
                 onClick={() => setScreen('product')}
-                className="relative w-full h-64 overflow-hidden cursor-pointer"
+                className="relative w-full h-64 overflow-hidden cursor-pointer bg-black/40 flex items-center justify-center"
               >
                 <img
                   src={favorite.product.cover_url}
                   alt={favorite.product.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent"></div>
               </div>
               
               {/* Content */}
