@@ -479,7 +479,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
         {/* ─── Featured Products 3D Carousel Section ─── */}
         {circularGalleryItems.length >= 3 && (
-          <section className="w-full flex flex-col items-center justify-center py-6 my-4 overflow-hidden relative min-h-[460px]">
+          <section className="w-full flex flex-col items-center justify-center py-6 my-4 overflow-visible relative min-h-[460px]">
             <div className="text-center mb-8 z-10">
               <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center justify-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
@@ -489,7 +489,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                 {text.sections.featuredDesc}
               </p>
             </div>
-            <div className="w-full h-[400px] relative mt-4">
+            <div className="w-full h-[410px] sm:h-[460px] relative mt-4 overflow-visible">
               <CircularGallery
                 items={circularGalleryItems}
                 radius={isMobile ? 380 : 540}

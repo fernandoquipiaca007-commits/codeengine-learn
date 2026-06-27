@@ -100,7 +100,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         role="region"
         aria-label="Circular 3D Gallery"
         className={cn(
-          "relative w-full h-full flex items-center justify-center select-none overflow-hidden touch-none",
+          "relative w-full h-full flex items-center justify-center select-none overflow-visible touch-none",
           className
         )}
         style={{ perspective: '2000px' }}
