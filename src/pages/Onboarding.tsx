@@ -1,21 +1,104 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLocale } from '../contexts/LocaleContext';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
   ArrowRight, 
-  Bot, 
-  Code2, 
-  Workflow, 
-  Megaphone, 
-  Briefcase, 
-  TrendingUp, 
   Check,
   Compass,
   Cpu,
   Bookmark,
   Target
 } from 'lucide-react';
+
+/* ─── Typewriter ─────────────────────────────────────────────────────────── */
+function Typewriter({ text, speed = 55 }: { text: string; speed?: number }) {
+  const [displayed, setDisplayed] = useState('');
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    setDisplayed('');
+    setIdx(0);
+  }, [text]);
+
+  useEffect(() => {
+    if (idx >= text.length) return;
+    const t = setTimeout(() => {
+      setDisplayed((p) => p + text[idx]);
+      setIdx((p) => p + 1);
+    }, speed);
+    return () => clearTimeout(t);
+  }, [idx, text, speed]);
+
+  return (
+    <span>
+      {displayed}
+      <span className="animate-pulse opacity-70">|</span>
+    </span>
+  );
+}
+
+/* ─── Particle dots canvas background ───────────────────────────────────── */
+function ParticleCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+    const particles: { x: number; y: number; r: number; vx: number; vy: number; alpha: number; da: number }[] = [];
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < 60; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.5 + 0.3,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
+        alpha: Math.random() * 0.5 + 0.1,
+        da: (Math.random() - 0.5) * 0.004,
+      });
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha += p.da;
+        if (p.alpha > 0.6 || p.alpha < 0.05) p.da *= -1;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180,180,255,${p.alpha})`;
+        ctx.fill();
+      }
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
+}
 
 const TRANSLATIONS = {
   pt: {
@@ -26,6 +109,13 @@ const TRANSLATIONS = {
     next: "Continuar",
     finish: "Finalizar Onboarding",
     saving: "Salvando...",
+    back: "Voltar",
+    quotes: {
+      step1: "A sua jornada na CodeEngine começa hoje. Queremos conhecer a sua história.",
+      step2: "Foco e direção. O objetivo certo molda a melhor experiência.",
+      step3: "Selecione o formato ideal. Facilitamos o acesso ao conhecimento.",
+      step4: "Personalização inteligente. Conectamos você ao conteúdo certo."
+    },
     questions: {
       source: {
         title: "Como conheceu a CodeEngine?",
@@ -57,7 +147,7 @@ const TRANSLATIONS = {
         options: [
           { value: "ebooks", label: "E-books" },
           { value: "courses", label: "Cursos Completos" },
-          { value: "tools", label: "Ferramentas" },
+          { value: "tools", label: "Ferramentas & Utilitários" },
           { value: "templates", label: "Templates & Modelos" },
           { value: "news", label: "Notícias & Artigos" },
           { value: "guides", label: "Guias Práticos" },
@@ -90,12 +180,19 @@ const TRANSLATIONS = {
   },
   en: {
     title: "Personalize Your Experience",
-    subtitle: "Tell us a bit about yourself so we can recommend the best content for you.",
+    subtitle: "Tell us a bit about yourself so we can recommend the best content.",
     step: "Step",
     of: "of",
     next: "Continue",
     finish: "Finish Onboarding",
     saving: "Saving...",
+    back: "Back",
+    quotes: {
+      step1: "Your journey on CodeEngine starts today. We want to know your story.",
+      step2: "Focus and direction. The right goal shapes the best experience.",
+      step3: "Select the ideal format. We make knowledge access easy.",
+      step4: "Smart personalization. Connecting you to the right content."
+    },
     questions: {
       source: {
         title: "How did you hear about CodeEngine?",
@@ -166,6 +263,13 @@ const TRANSLATIONS = {
     next: "Continuer",
     finish: "Terminer l'Onboarding",
     saving: "Enregistrement...",
+    back: "Retour",
+    quotes: {
+      step1: "Votre voyage sur CodeEngine commence aujourd'hui. Racontez-nous votre histoire.",
+      step2: "Focus et direction. Le bon objectif façonne la meilleure expérience.",
+      step3: "Sélectionnez le format idéal. Nous facilitons l'accès au savoir.",
+      step4: "Personnalisation intelligente. Nous vous connectons au bon contenu."
+    },
     questions: {
       source: {
         title: "Comment avez-vous connu CodeEngine?",
@@ -312,7 +416,6 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     }
   };
 
-  // Check if button should be disabled for current step
   const isStepInvalid = () => {
     if (step === 1) return !source;
     if (step === 2) return !goal;
@@ -321,193 +424,269 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     return false;
   };
 
+  const activeQuote = step === 1 ? t.quotes.step1 
+                    : step === 2 ? t.quotes.step2 
+                    : step === 3 ? t.quotes.step3 
+                    : t.quotes.step4;
+
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 relative overflow-hidden bg-black text-white font-sans">
-      {/* Immersive starfield/space overlay background matching CodeEngine styling */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,16,48,0.3)_0%,rgba(0,0,0,0.8)_80%)] pointer-events-none z-0" />
-      <div className="absolute w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(99,102,241,0.05)_0%,transparent_70%)] rounded-full top-1/4 left-1/4 filter blur-3xl pointer-events-none z-0 animate-pulse" />
-      <div className="absolute w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(139,92,246,0.05)_0%,transparent_70%)] rounded-full bottom-1/4 right-1/4 filter blur-3xl pointer-events-none z-0" />
+    <div className="fixed inset-0 z-[100] flex bg-[#050505] overflow-hidden">
+      {/* ── LEFT: Form Panel ─────────────────────────────────────────────── */}
+      <div className="relative flex w-full md:w-[46%] lg:w-[42%] flex-col items-center justify-center px-8 py-6 overflow-y-auto">
+        {/* Subtle ambient glow */}
+        <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-96 h-72 bg-primary/10 rounded-full blur-[100px]" />
 
-      {/* Main Glassmorphic Container */}
-      <div className="w-full max-w-xl glass-card rounded-3xl p-6 md:p-8 relative z-10 border border-white/5 bg-surface/40 backdrop-blur-2xl shadow-2xl flex flex-col gap-6 text-center select-none animate-fade-in transition-all">
-        
-        {/* Header */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner mb-2">
-            <Sparkles className="w-6 h-6 animate-pulse" />
+        <div className="relative z-10 w-full max-w-[380px]">
+          {/* Logo — real CodeEngine icon */}
+          <div className="mb-6 flex justify-between items-center">
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/icons/icon-512.png"
+                alt="CodeEngine"
+                className="w-9 h-9 rounded-xl object-cover"
+              />
+              <span className="font-display text-sm font-semibold text-white/60">
+                CodeEngine
+              </span>
+            </div>
+            <div className="text-[10px] font-semibold font-display tracking-widest uppercase text-white/30">
+              {t.step} {step} / {totalSteps}
+            </div>
           </div>
-          <h1 className="font-display font-extrabold text-2xl md:text-3xl bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/60 tracking-tight">
-            {t.title}
-          </h1>
-          <p className="text-muted-foreground text-sm max-w-md">
-            {t.subtitle}
-          </p>
-        </div>
 
-        {/* Step indicator */}
-        <div className="w-full flex flex-col gap-2">
-          <div className="flex justify-between items-center text-xs text-muted-foreground font-medium">
-            <span>{t.step} {step} {t.of} {totalSteps}</span>
-            <span className="text-primary font-semibold">{Math.round((step / totalSteps) * 100)}%</span>
+          {/* Heading */}
+          <div className="mb-6">
+            <h1 className="font-display text-2xl font-bold text-white mb-1.5 leading-tight">
+              {t.title}
+            </h1>
+            <p className="text-xs text-white/40 font-sans leading-relaxed">
+              {t.subtitle}
+            </p>
           </div>
-          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+
+          {/* Progress bar */}
+          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mb-6">
             <div 
-              className="h-full bg-gradient-to-r from-primary to-indigo-400 rounded-full transition-all duration-300 ease-out" 
+              className="h-full bg-primary rounded-full transition-all duration-300 ease-out" 
               style={{ width: `${(step / totalSteps) * 100}%` }}
             />
           </div>
-        </div>
 
-        {/* Question Area */}
-        <div className="min-h-[260px] flex flex-col justify-center gap-4 py-2 transition-all">
-          
-          {/* STEP 1: SOURCE */}
-          {step === 1 && (
-            <div className="flex flex-col gap-4 animate-slide-up">
-              <h2 className="text-lg font-bold flex items-center gap-2 justify-center">
-                <Compass className="w-5 h-5 text-primary" />
-                {t.questions.source.title}
-              </h2>
-              <div className="grid grid-cols-2 gap-2.5">
-                {t.questions.source.options.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setSource(opt.value)}
-                    className={`py-3 px-4 rounded-xl border text-sm font-medium transition-all ${
-                      source === opt.value
-                        ? 'bg-primary/20 border-primary text-white shadow-[0_0_15px_rgba(99,102,241,0.15)]'
-                        : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/10 text-white/70'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+          {/* Question fields container */}
+          <div className="space-y-5 py-2">
+            
+            {/* STEP 1: SOURCE */}
+            {step === 1 && (
+              <div className="space-y-3.5 animate-fade-in">
+                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-2 font-display">
+                  {t.questions.source.title}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {t.questions.source.options.map((opt) => {
+                    const isSelected = source === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setSource(opt.value)}
+                        className={`w-full py-2.5 px-3 rounded-lg border text-xs font-medium font-sans transition-all text-center ${
+                          isSelected
+                            ? 'bg-primary/10 border-primary text-white shadow-[0_0_12px_rgba(99,102,241,0.1)]'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/8 hover:text-white'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* STEP 2: GOAL */}
-          {step === 2 && (
-            <div className="flex flex-col gap-4 animate-slide-up">
-              <h2 className="text-lg font-bold flex items-center gap-2 justify-center">
-                <Target className="w-5 h-5 text-primary" />
-                {t.questions.goal.title}
-              </h2>
-              <div className="flex flex-col gap-2">
-                {t.questions.goal.options.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setGoal(opt.value)}
-                    className={`py-3.5 px-5 rounded-xl border text-sm text-left font-medium transition-all flex items-center justify-between ${
-                      goal === opt.value
-                        ? 'bg-primary/20 border-primary text-white shadow-[0_0_15px_rgba(99,102,241,0.15)]'
-                        : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/10 text-white/70'
-                    }`}
-                  >
-                    <span>{opt.label}</span>
-                    {goal === opt.value && <Check className="w-4 h-4 text-primary" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: CONTENT TYPE */}
-          {step === 3 && (
-            <div className="flex flex-col gap-4 animate-slide-up">
-              <div className="text-center">
-                <h2 className="text-lg font-bold flex items-center gap-2 justify-center">
-                  <Bookmark className="w-5 h-5 text-primary" />
-                  {t.questions.content.title}
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">{t.questions.content.subtitle}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
-                {t.questions.content.options.map((opt) => {
-                  const selected = contentPrefs.includes(opt.value);
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => toggleContentPref(opt.value)}
-                      className={`py-3 px-4 rounded-xl border text-sm font-medium transition-all flex items-center justify-between ${
-                        selected
-                          ? 'bg-primary/20 border-primary text-white shadow-[0_0_15px_rgba(99,102,241,0.15)]'
-                          : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/10 text-white/70'
-                      }`}
-                    >
-                      <span>{opt.label}</span>
-                      {selected && <Check className="w-4 h-4 text-primary" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: INTERESTS */}
-          {step === 4 && (
-            <div className="flex flex-col gap-4 animate-slide-up">
-              <div className="text-center">
-                <h2 className="text-lg font-bold flex items-center gap-2 justify-center">
-                  <Cpu className="w-5 h-5 text-primary" />
-                  {t.questions.interests.title}
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">{t.questions.interests.subtitle}</p>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-1">
-                {t.questions.interests.options.map((opt) => {
-                  const selected = interests.includes(opt.value);
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => toggleInterest(opt.value)}
-                      className={`py-2 px-3 rounded-lg border text-xs font-medium transition-all text-center flex items-center justify-center gap-1.5 ${
-                        selected
-                          ? 'bg-primary/20 border-primary text-white shadow-[0_0_12px_rgba(99,102,241,0.15)]'
-                          : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/10 text-white/70'
-                      }`}
-                    >
-                      {selected && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                      <span>{opt.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-        </div>
-
-        {/* Footer Navigation Controls */}
-        <div className="flex justify-between items-center mt-4 gap-4">
-          <button
-            onClick={handleBack}
-            disabled={step === 1 || loading}
-            className={`py-3 px-6 rounded-xl border text-sm font-medium transition-all ${
-              step === 1
-                ? 'opacity-0 pointer-events-none'
-                : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/10 active:scale-95'
-            }`}
-          >
-            Voltar
-          </button>
-
-          <button
-            onClick={handleNext}
-            disabled={isStepInvalid() || loading}
-            className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-indigo-500 hover:from-primary/90 hover:to-indigo-500/90 disabled:from-white/5 disabled:to-white/5 disabled:text-white/20 text-sm font-semibold tracking-wide flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(99,102,241,0.2)] disabled:shadow-none"
-          >
-            {loading ? (
-              <span>{t.saving}</span>
-            ) : (
-              <>
-                <span>{step === totalSteps ? t.finish : t.next}</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
             )}
-          </button>
+
+            {/* STEP 2: GOAL */}
+            {step === 2 && (
+              <div className="space-y-2 animate-fade-in">
+                <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-3 font-display">
+                  {t.questions.goal.title}
+                </label>
+                <div className="space-y-2">
+                  {t.questions.goal.options.map((opt) => {
+                    const isSelected = goal === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setGoal(opt.value)}
+                        className={`w-full py-2.5 px-4 rounded-lg border text-xs font-sans font-medium text-left transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-primary/10 border-primary text-white shadow-[0_0_12px_rgba(99,102,241,0.1)]'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/8 hover:text-white'
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: CONTENT TYPE */}
+            {step === 3 && (
+              <div className="space-y-3 animate-fade-in">
+                <div>
+                  <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/40 font-display">
+                    {t.questions.content.title}
+                  </label>
+                  <p className="text-[10px] text-white/20 font-sans mt-0.5">{t.questions.content.subtitle}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 max-h-[250px] overflow-y-auto pr-1">
+                  {t.questions.content.options.map((opt) => {
+                    const isSelected = contentPrefs.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => toggleContentPref(opt.value)}
+                        className={`w-full py-2.5 px-3 rounded-lg border text-xs font-sans font-medium text-left flex items-center justify-between transition-all ${
+                          isSelected
+                            ? 'bg-primary/10 border-primary text-white shadow-[0_0_12px_rgba(99,102,241,0.1)]'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/8 hover:text-white'
+                        }`}
+                      >
+                        <span className="truncate mr-1">{opt.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: INTERESTS */}
+            {step === 4 && (
+              <div className="space-y-3 animate-fade-in">
+                <div>
+                  <label className="block text-[10px] font-semibold tracking-widest uppercase text-white/40 font-display">
+                    {t.questions.interests.title}
+                  </label>
+                  <p className="text-[10px] text-white/20 font-sans mt-0.5">{t.questions.interests.subtitle}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 max-h-[250px] overflow-y-auto pr-1">
+                  {t.questions.interests.options.map((opt) => {
+                    const isSelected = interests.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => toggleInterest(opt.value)}
+                        className={`w-full py-2 px-2.5 rounded-lg border text-[10px] font-sans font-medium text-left flex items-center justify-between transition-all ${
+                          isSelected
+                            ? 'bg-primary/10 border-primary text-white shadow-[0_0_10px_rgba(99,102,241,0.1)]'
+                            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/8 hover:text-white'
+                        }`}
+                      >
+                        <span className="truncate mr-1">{opt.label}</span>
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Action buttons */}
+          <div className="mt-6 flex items-center gap-3">
+            {step > 1 && (
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={loading}
+                className="py-2.5 px-4 rounded-lg border border-white/10 bg-white/4 font-sans text-xs font-medium text-white/70 hover:bg-white/8 hover:text-white transition-all duration-200"
+              >
+                {t.back}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isStepInvalid() || loading}
+              className="flex-1 bg-primary text-on-primary font-display text-sm font-bold px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(192,193,255,0.25)] hover:shadow-[0_0_36px_rgba(192,193,255,0.4)] disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-on-primary" />
+              ) : (
+                <>
+                  <span>{step === totalSteps ? t.finish : t.next}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </>
+              )}
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── RIGHT: Illustration Panel ─────────────────────────────────────── */}
+      <div className="hidden md:flex relative flex-1 flex-col overflow-hidden">
+        {/* Particle canvas */}
+        <ParticleCanvas />
+
+        {/* Micro-dot grid overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.09) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+
+        {/* Ambient light blooms */}
+        <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/3 left-1/4 w-64 h-64 bg-indigo-500/6 rounded-full blur-[100px] pointer-events-none" />
+
+        {/* Illustration image — full fill */}
+        <div className="absolute inset-0">
+          <img
+            src="/onboarding.png"
+            alt="CodeEngine illustration"
+            className="w-full h-full object-cover object-center opacity-90"
+            onError={(e) => { 
+              (e.target as HTMLImageElement).src = '/login.png'; 
+            }}
+          />
         </div>
 
+        {/* Bottom gradient overlay for quote readability */}
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#050505]/95 via-[#050505]/50 to-transparent pointer-events-none" />
+
+        {/* Vertical separator line */}
+        <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/8 to-transparent" />
+
+        {/* Quote */}
+        <div className="relative z-10 mt-auto px-10 pb-10">
+          <AnimatePresence mode="wait">
+            <motion.blockquote
+              key={step}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-1.5 text-center"
+            >
+              <p className="text-base font-medium text-white/90 drop-shadow-lg font-display">
+                &ldquo;<Typewriter key={step} text={activeQuote} speed={55} />&rdquo;
+              </p>
+              <cite className="block text-xs font-light not-italic text-white/40 tracking-wider">
+                — CodeEngine
+              </cite>
+            </motion.blockquote>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
