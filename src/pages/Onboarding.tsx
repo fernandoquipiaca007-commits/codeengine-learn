@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 /* ─── Typewriter ─────────────────────────────────────────────────────────── */
-function Typewriter({ text, speed = 55 }: { text: string; speed?: number }) {
+function Typewriter({ text = '', speed = 55 }: { text?: string; speed?: number }) {
   const [displayed, setDisplayed] = useState('');
   const [idx, setIdx] = useState(0);
 
@@ -23,7 +23,7 @@ function Typewriter({ text, speed = 55 }: { text: string; speed?: number }) {
   }, [text]);
 
   useEffect(() => {
-    if (idx >= text.length) return;
+    if (!text || idx >= text.length) return;
     const t = setTimeout(() => {
       setDisplayed((p) => p + text[idx]);
       setIdx((p) => p + 1);
@@ -424,10 +424,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     return false;
   };
 
-  const activeQuote = step === 1 ? t.quotes.step1 
-                    : step === 2 ? t.quotes.step2 
-                    : step === 3 ? t.quotes.step3 
-                    : t.quotes.step4;
+  const activeQuote = (step === 1 ? t.quotes?.step1 
+                    : step === 2 ? t.quotes?.step2 
+                    : step === 3 ? t.quotes?.step3 
+                    : t.quotes?.step4) || '';
 
   return (
     <div className="fixed inset-0 z-[100] flex bg-[#050505] overflow-hidden">
@@ -652,12 +652,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         {/* Illustration image — full fill */}
         <div className="absolute inset-0">
           <img
-            src="/onboarding.png"
+            src="/login.png"
             alt="CodeEngine illustration"
             className="w-full h-full object-cover object-center opacity-90"
-            onError={(e) => { 
-              (e.target as HTMLImageElement).src = '/login.png'; 
-            }}
+            loading="eager"
           />
         </div>
 

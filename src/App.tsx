@@ -79,6 +79,7 @@ const PageContent = memo(function PageContent({
   navigateToScreen,
   navigateToProduct,
   setIsImmersive,
+  onOnboardingComplete,
 }: {
   currentScreen: string;
   currentProductId: string | null;
