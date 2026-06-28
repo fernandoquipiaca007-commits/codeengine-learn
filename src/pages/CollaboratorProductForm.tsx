@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
@@ -646,12 +646,62 @@ export function CollaboratorProductForm({
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Utilizador não autenticado.');
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) throw new Error('Utilizador não autenticado.');
 
-      const fileExt = file.name.split('.').pop();
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const fileName = `${user.id}/${Date.now()}_${sanitizedName}`;
+      const fileName = `${userId}/${Date.now()}_${sanitizedName}`;
+
+      if (bucket !== 'avatars') {
+        try {
+          const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+          const token = session?.access_token;
+          if (!token) throw new Error('Sessão expirada. Autentique-se novamente.');
+
+          const presignedResponse = await fetch(`${BACKEND_URL}/api/admin/storage/presigned-upload`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              bucketName: bucket,
+              filePath: fileName,
+              contentType: file.type || 'application/octet-stream'
+            })
+          });
+
+          if (!presignedResponse.ok) {
+            const errData = await presignedResponse.json().catch(() => ({}));
+            throw new Error(errData.error || `Erro de assinatura de upload (${presignedResponse.status})`);
+          }
+
+          const { uploadUrl, dbPath } = await presignedResponse.json();
+          if (!uploadUrl) {
+            throw new Error('Pre-signed URL não retornada pelo servidor.');
+          }
+
+          const putRes = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': file.type || 'application/octet-stream',
+            },
+            body: file
+          });
+
+          if (!putRes.ok) {
+            throw new Error(`R2 upload failed with status ${putRes.status}`);
+          }
+
+          fieldSetter(dbPath);
+          const successMsg = bucket === 'ebooks-private' ? 'Concluído! (Arquivo privado salvo)' : 'Concluído!';
+          setUploadProgress(prev => ({ ...prev, [key]: successMsg }));
+          return;
+        } catch (r2Err: any) {
+          console.warn('R2 upload failed, falling back to Supabase:', r2Err);
+        }
+      }
 
       const { data, error } = await supabase.storage
         .from(bucket)

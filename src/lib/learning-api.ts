@@ -11,7 +11,7 @@ async function authHeaders() {
   };
 }
 
-export async function getLessonStreamUrl(lessonId: string): Promise<{ url: string; type: 'video' | 'audio' | 'link' }> {
+export async function getLessonStreamUrl(lessonId: string): Promise<{ url: string; type: 'video' | 'audio' | 'link' | 'cloudflare-stream' }> {
   const headers = await authHeaders();
   const res = await fetch(`${BACKEND_URL}/api/lessons/${lessonId}/stream`, { headers });
   if (!res.ok) {
@@ -19,7 +19,9 @@ export async function getLessonStreamUrl(lessonId: string): Promise<{ url: strin
     throw new Error((err as { error?: string }).error || 'Failed to load media');
   }
   const data = await res.json();
-  return { url: data.url, type: data.type || 'video' };
+  const type = data.type || 'video';
+  const url = type === 'cloudflare-stream' ? data.iframeUrl : data.url;
+  return { url, type };
 }
 
 export async function saveProgress(payload: {

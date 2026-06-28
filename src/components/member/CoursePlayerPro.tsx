@@ -70,7 +70,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   
   // Estado da Mídia
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'video' | 'audio' | 'link' | null>(null);
+  const [mediaType, setMediaType] = useState<'video' | 'audio' | 'link' | 'cloudflare-stream' | null>(null);
   const [loading, setLoading] = useState(true);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -630,8 +630,19 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                   </div>
                 )}
 
-                {/* 3. Media Player (Video/Audio) */}
-                {mediaUrl && mediaType !== 'link' && !mediaError && (
+                {/* 3. Cloudflare Stream Player */}
+                {mediaUrl && mediaType === 'cloudflare-stream' && !mediaError && (
+                  <iframe
+                    src={mediaUrl}
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowFullScreen
+                    className="w-full h-full border-0 absolute inset-0 rounded-2xl"
+                    title="Cloudflare Stream Player"
+                  />
+                )}
+
+                {/* 3. Custom HTML5 Media Player (Video/Audio) */}
+                {mediaUrl && mediaType !== 'link' && mediaType !== 'cloudflare-stream' && !mediaError && (
                   <>
                     <video
                       ref={videoRef}

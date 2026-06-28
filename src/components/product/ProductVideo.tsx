@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { queryCache } from '../../lib/queryCache';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '../../contexts/LocaleContext';
+import { getPublicStorageUrl } from '../../lib/storage-path';
 
 interface Video {
   id: string;
@@ -151,14 +152,14 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
             {activeVideoData.video_type === 'upload' ? (
               <video
                 ref={videoRef}
-                src={activeVideoData.video_url}
+                src={getPublicStorageUrl(activeVideoData.video_url, 'product-videos')}
                 controls
                 preload="metadata"
                 playsInline
                 muted
                 loop
                 className="w-full h-full"
-                poster={activeVideoData.thumbnail_url || undefined}
+                poster={getPublicStorageUrl(activeVideoData.thumbnail_url, 'product-covers') || undefined}
               />
             ) : getEmbedUrl(activeVideoData) ? (
               <iframe
@@ -207,7 +208,7 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
                 <div className="aspect-video bg-surface-highest relative group">
                   {video.thumbnail_url ? (
                     <img
-                      src={video.thumbnail_url}
+                      src={getPublicStorageUrl(video.thumbnail_url, 'product-covers')}
                       alt={video.title || 'Miniatura do vídeo'}
                       className="w-full h-full object-cover"
                     />
