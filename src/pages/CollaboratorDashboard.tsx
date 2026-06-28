@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { 
   TrendingUp, Clock, CheckCircle, ArrowUpRight, ArrowDownRight, 
   DollarSign, Landmark, Mail, PlusCircle, AlertCircle, RefreshCw, ChevronRight, FileText, ExternalLink, Award, ShieldCheck, Video, PlayCircle,
-  Users, Percent, Search, Briefcase, Eye, Check, ArrowLeft
+  Users, Percent, Search, Briefcase, Eye, Check, ArrowLeft, Megaphone
 } from 'lucide-react';
 import { useUserCountry } from '../contexts/UserCountryContext';
 import { CountryRequiredModal } from '../components/CountryRequiredModal';
+import AdsDashboard from '../components/collaborator/AdsDashboard';
 
 interface CollaboratorDashboardProps {
   setScreen: (screen: string) => void;
@@ -60,7 +61,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [aoaModalSuccess, setAoaModalSuccess] = useState<string | null>(null);
 
   // Currency filter for dashboard view
-  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder' | 'analytics'>('usd');
+  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder' | 'analytics' | 'ads'>('usd');
   const [hasDefaultedView, setHasDefaultedView] = useState(false);
 
   useEffect(() => {
@@ -720,6 +721,16 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         >
           <TrendingUp size={12} /> {t('collaborator.tabAnalytics', 'Análise')}
         </button>
+        <button
+          onClick={() => setWalletView('ads')}
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+            walletView === 'ads'
+              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-[0_0_10px_rgba(244,63,94,0.25)]'
+              : 'text-on-surface-variant hover:text-white'
+          }`}
+        >
+          <Megaphone size={12} /> {t('collaborator.tabAds', 'Anúncios')}
+        </button>
       </div>
 
       {/* ====== USD WALLET VIEW ====== */}
@@ -1101,8 +1112,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         </div>
       )}
 
+      {/* ====== ADS PLATFORM DASHBOARD VIEW ====== */}
+      {walletView === 'ads' && profile && (
+        <AdsDashboard collaboratorId={profile.id} />
+      )}
+
       {/* Main Grid: Extrato e Solicitações */}
-      {walletView !== 'affiliates' && walletView !== 'founder' && walletView !== 'analytics' && (
+      {walletView !== 'affiliates' && walletView !== 'founder' && walletView !== 'analytics' && walletView !== 'ads' && (
         <div className="grid gap-4 lg:grid-cols-3 relative z-10">
         {/* Ledger Extrato */}
         <div className="lg:col-span-2 glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">

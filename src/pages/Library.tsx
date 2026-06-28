@@ -115,6 +115,24 @@ export function Library({ setScreen, onProductClick }: {
     [locale, memberLevel, user?.id]
   );
 
+  const [categoryAds, setCategoryAds] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadCategoryAds() {
+      try {
+        const { data } = await supabase
+          .from('ad_campaigns')
+          .select('*, product:products(*)')
+          .eq('status', 'active')
+          .eq('placement', 'category_boost');
+        setCategoryAds(data || []);
+      } catch (err) {
+        console.error('Error loading category ads:', err);
+      }
+    }
+    loadCategoryAds();
+  }, []);
+
   // Load products and categories (re-fetch when locale changes)
   useEffect(() => {
     void loadData();
@@ -230,8 +248,24 @@ export function Library({ setScreen, onProductClick }: {
     return score;
   };
 
-  // Filter and sort products by category, subcategory and recommendation score
-  const filteredProducts = products
+  // Filter category ads matching current selected category/subcategory
+  const matchedCategoryAds = categoryAds
+    .filter(ad => {
+      if (!ad.product || ad.product.status !== 'active') return false;
+      const matchesCategory = selectedCategory ? ad.product.category_id === selectedCategory : true;
+      const matchesSubcategory = selectedSubcategory ? ad.product.subcategory_id === selectedSubcategory : true;
+      return matchesCategory && matchesSubcategory;
+    })
+    .map(ad => ({
+      ...ad.product,
+      isSponsored: true,
+      campaignId: ad.id,
+      adScore: parseFloat(ad.base_bid || '1.00') * (ad.quality_score || 1.0)
+    }))
+    .sort((a, b) => b.adScore - a.adScore);
+
+  // Filter and sort organic products by category, subcategory and recommendation score
+  const organicFiltered = products
     .filter((p) => {
       const matchesCategory = selectedCategory ? p.category_id === selectedCategory : true;
       const matchesSubcategory = selectedSubcategory ? p.subcategory_id === selectedSubcategory : true;
@@ -242,6 +276,24 @@ export function Library({ setScreen, onProductClick }: {
       const scoreB = getRecommendationScore(b, onboardingData);
       return scoreB - scoreA;
     });
+
+  // Combine: sponsored ads first (up to max 2), then organic, avoiding duplicates
+  const sponsoredIds = new Set(matchedCategoryAds.map(a => a.id));
+  const organicWithoutDupes = organicFiltered.filter(p => !sponsoredIds.has(p.id));
+  const filteredProducts = [...matchedCategoryAds.slice(0, 2), ...organicWithoutDupes];
+
+  // Track category ads impressions when visible products change
+  useEffect(() => {
+    filteredProducts.forEach(prod => {
+      if ((prod as any).isSponsored && (prod as any).campaignId) {
+        fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaignId: (prod as any).campaignId })
+        }).catch(() => {});
+      }
+    });
+  }, [filteredProducts]);
 
   // Get category icon
   function getCategoryIcon(categoryName: string) {
@@ -472,7 +524,16 @@ export function Library({ setScreen, onProductClick }: {
                         return (
                           <article
                             key={product.id}
-                            onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                            onClick={() => {
+                              if ((product as any).isSponsored && (product as any).campaignId) {
+                                fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ campaignId: (product as any).campaignId })
+                                }).catch(() => {});
+                              }
+                              onProductClick ? onProductClick(product.id) : setScreen('product');
+                            }}
                             onMouseEnter={() => prefetchProduct(product.id, locale)}
                             className="glass-card glass-card-hover rounded-xl p-3 relative group flex flex-col justify-between cursor-pointer transition-all duration-300 hover:border-primary/20 bg-surface/50 border border-white/5 min-h-[300px] h-full text-left"
                           >
@@ -502,6 +563,11 @@ export function Library({ setScreen, onProductClick }: {
                               )}
                               
                               <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-10">
+                                {product.isSponsored && (
+                                  <span className="bg-primary text-black border border-primary/20 px-2 py-0.5 rounded-full font-display text-[8px] font-black tracking-widest uppercase shadow shadow-primary/20">
+                                    Patrocinado
+                                  </span>
+                                )}
                                 {isOwned(product.id) && (
                                   <span className="bg-green-500/20 border border-green-400/40 text-green-300 px-2 py-0.5 rounded-full font-display text-[8px] font-semibold tracking-widest uppercase flex items-center gap-1 shadow-lg shadow-green-500/20">
                                     <CheckCircle className="w-2.5 h-2.5" />

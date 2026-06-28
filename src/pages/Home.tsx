@@ -12,7 +12,8 @@ import {
   Zap, 
   BookOpen, 
   CheckCircle,
-  Play
+  Play,
+  Globe
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
@@ -268,13 +269,80 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     loadProducts();
   }, [locale]);
 
+  const [heroAds, setHeroAds] = useState<any[]>([]);
+  const [featuredAds, setFeaturedAds] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadAds() {
+      try {
+        const { data: heroData } = await supabase
+          .from('ad_campaigns')
+          .select('*, product:products(*)')
+          .eq('status', 'active')
+          .eq('placement', 'hero_banner')
+          .limit(5);
+        setHeroAds(heroData || []);
+
+        const { data: featData } = await supabase
+          .from('ad_campaigns')
+          .select('*, product:products(*)')
+          .eq('status', 'active')
+          .eq('placement', 'featured_3d')
+          .limit(3);
+        setFeaturedAds(featData || []);
+      } catch (err) {
+        console.error('Error loading ads on home:', err);
+      }
+    }
+    loadAds();
+  }, []);
+
+  const totalSlides = 3 + heroAds.length;
+
+  // Track featured ads impressions on load
+  useEffect(() => {
+    if (featuredAds.length > 0) {
+      featuredAds.forEach(ad => {
+        fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaignId: ad.id })
+        }).catch(() => {});
+      });
+    }
+  }, [featuredAds]);
+
+  // Track hero ad impression when active slide changes to it
+  useEffect(() => {
+    if (activeSlide >= 3 && heroAds[activeSlide - 3]) {
+      const ad = heroAds[activeSlide - 3];
+      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: ad.id })
+      }).catch(() => {});
+    }
+  }, [activeSlide, heroAds]);
+
+  const handleHeroAdClick = (ad: any) => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignId: ad.id })
+    }).catch(() => {});
+
+    if (ad.product_id) {
+      onProductClick ? onProductClick(ad.product_id) : setScreen('product');
+    }
+  };
+
   // Autoplay hero carousel
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % 3);
+      setActiveSlide((prev) => (prev + 1) % totalSlides);
     }, 8500);
     return () => clearInterval(timer);
-  }, []);
+  }, [totalSlides]);
 
   // Consistent simulated sales count based on product ID
   const getMockSales = (prodId: string) => {
@@ -377,10 +445,17 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     .sort((a, b) => getRecommendationScore(b, onboardingData) - getRecommendationScore(a, onboardingData))
     .slice(0, 4);
 
-  // Take first 8 products for circular gallery (or fallback to whatever is available)
-  const circularGalleryItems = [...products]
-    .sort(sortByInterests)
-    .slice(0, 8);
+  // Take first 8 products for circular gallery (or fallback to whatever is available), injecting sponsored ads first
+  const circularGalleryItems = [
+    ...featuredAds
+      .filter(ad => ad.product && ad.product.status === 'active')
+      .map(ad => ({
+        ...ad.product,
+        isSponsored: true,
+        campaignId: ad.id
+      })),
+    ...products.sort(sortByInterests)
+  ].slice(0, 8);
 
   const formatPrice = (p: LocalizedProduct) => {
     if (p.is_free) return activeLang === 'pt' ? 'Livre' : activeLang === 'fr' ? 'Gratuit' : 'Free';
@@ -473,10 +548,10 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                   </p>
                   <div className="flex items-center gap-3 mt-2">
                     <button
-                      onClick={() => setScreen('colaborador-candidatura')}
+                      onClick={() => setScreen('afiliados')}
                       className="relative inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.25)] px-6 text-xs font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                     >
-                      {text.hero.ctaApply}
+                      {text.hero.ctaExplore}
                       <ArrowRight className="w-4 h-4 text-black" />
                     </button>
                     <button
@@ -487,6 +562,37 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     </button>
                   </div>
                 </>
+              )}
+
+              {activeSlide >= 3 && heroAds[activeSlide - 3] && (
+                (() => {
+                  const ad = heroAds[activeSlide - 3];
+                  const prod = ad.product || {};
+                  return (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30 uppercase tracking-widest">
+                          Patrocinado
+                        </span>
+                      </div>
+                      <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white line-clamp-2">
+                        {prod.title || 'Anúncio Premium'}
+                      </h1>
+                      <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80 line-clamp-3">
+                        {prod.description || 'Promova seus produtos com a plataforma CodeEngine Ads.'}
+                      </p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <button
+                          onClick={() => handleHeroAdClick(ad)}
+                          className="relative inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.25)] px-6 text-xs font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                        >
+                          {locale === 'pt' ? 'Ver Produto' : locale === 'fr' ? 'Voir le Produit' : 'View Product'}
+                          <ArrowRight className="w-4 h-4 text-black" />
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()
               )}
             </div>
 
@@ -576,6 +682,30 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                   </div>
                 </div>
               )}
+
+              {activeSlide >= 3 && heroAds[activeSlide - 3] && (
+                (() => {
+                  const ad = heroAds[activeSlide - 3];
+                  const prod = ad.product || {};
+                  return (
+                    <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[280px] sm:max-w-[320px] shadow-2xl relative overflow-hidden aspect-[16/10] flex items-center justify-center bg-[#101015]/90">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-primary/5 to-transparent z-0 pointer-events-none" />
+                      {prod.cover_url ? (
+                        <img 
+                          src={prod.cover_url} 
+                          alt={prod.title} 
+                          className="w-full h-full object-contain rounded-lg z-10" 
+                        />
+                      ) : (
+                        <div className="text-center p-6 z-10">
+                          <Globe className="w-12 h-12 text-primary/50 mx-auto mb-2" />
+                          <span className="text-[10px] uppercase font-mono tracking-widest text-primary/60">CodeEngine Ads</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              )}
             </div>
           </div>
 
@@ -583,7 +713,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/5 relative z-10">
             {/* Dots */}
             <div className="flex gap-2">
-              {[0, 1, 2].map((idx) => (
+              {Array.from({ length: totalSlides }).map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveSlide(idx)}
@@ -599,14 +729,14 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
             {/* Navigation Arrows */}
             <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setActiveSlide((prev) => (prev === 0 ? 2 : prev - 1))}
+                onClick={() => setActiveSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))}
                 className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
                 aria-label="Previous slide"
               >
                 <ChevronLeft className="w-4 h-4 text-white" />
               </button>
               <button
-                onClick={() => setActiveSlide((prev) => (prev + 1) % 3)}
+                onClick={() => setActiveSlide((prev) => (prev + 1) % totalSlides)}
                 className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
                 aria-label="Next slide"
               >

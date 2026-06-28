@@ -85,12 +85,19 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
     const anglePerItem = 360 / items.length;
 
     // Handle navigation click without triggering on drag release
-    const handleCardClick = (productId: string) => {
+    const handleCardClick = (product: any) => {
       if (dragDistanceRef.current > 6) {
         return;
       }
+      if (product.isSponsored && product.campaignId) {
+        fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaignId: product.campaignId })
+        }).catch(() => {});
+      }
       if (onProductClick) {
-        onProductClick(productId);
+        onProductClick(product.id);
       }
     };
     
@@ -139,7 +146,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   "absolute w-[220px] h-[290px] transition-opacity duration-300",
                   opacity === 0 ? "pointer-events-none" : "pointer-events-auto"
                 )}
-                onClick={() => handleCardClick(product.id)}
+                onClick={() => handleCardClick(product)}
                 style={{
                   transform: `rotateY(${itemAngle}deg) translateZ(${radius}px)`,
                   left: '50%',
@@ -171,11 +178,18 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
 
                   {/* Overlaid texts at the bottom, directly on top of the image */}
                   <div className="relative p-5 text-white z-20 flex flex-col items-start gap-1">
-                    {product.product_type && (
-                      <span className="bg-primary/20 border border-primary/30 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase mb-1">
-                        {product.product_type === 'course' ? 'Curso' : 'Ebook'}
-                      </span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                      {product.product_type && (
+                        <span className="bg-primary/20 border border-primary/30 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase">
+                          {product.product_type === 'course' ? 'Curso' : 'Ebook'}
+                        </span>
+                      )}
+                      {product.isSponsored && (
+                        <span className="bg-primary/35 border border-primary/50 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase">
+                          Patrocinado
+                        </span>
+                      )}
+                    </div>
                     <h3 className="font-display text-sm font-extrabold leading-tight text-white line-clamp-2 text-left group-hover:text-primary transition-colors">
                       {product.title}
                     </h3>
