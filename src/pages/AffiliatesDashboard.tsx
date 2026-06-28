@@ -142,7 +142,15 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
       });
       const linksData = await linksRes.json();
       if (linksData.success) {
-        setMyLinks(linksData.links || []);
+        const linksList = linksData.links || [];
+        setMyLinks(linksList);
+        if (linksList.length > 0) {
+          setSeenExplainer(true);
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            localStorage.setItem(`ce_affiliate_intro_seen_${session.user.id}`, 'true');
+          }
+        }
       }
 
       // 3. Fetch Available Products

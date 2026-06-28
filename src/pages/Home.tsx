@@ -893,11 +893,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                       <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
                         {product.title}
                       </h3>
-                      
-                      {/* Stats & Mock sales count */}
-                      <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wide mt-1">
-                        {getMockSales(product.id)}
-                      </span>
+
 
                       {/* Price and CTA */}
                       <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
@@ -982,10 +978,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
                       {product.title}
                     </h3>
-                    
-                    <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wide mt-1">
-                      {getMockSales(product.id)}
-                    </span>
+
 
                     {/* Price and CTA */}
                     <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">

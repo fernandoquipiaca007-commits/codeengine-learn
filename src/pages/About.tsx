@@ -61,10 +61,10 @@ export function About({ setScreen }: AboutProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="animate__animated animate__fadeInDown font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-2">
+          <h1 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-2">
             {t('about.heroTitle')}
           </h1>
-          <p className="animate__animated animate__fadeInUp font-sans text-xs sm:text-sm text-on-surface-variant max-w-3xl leading-relaxed">
+          <p className="font-sans text-xs sm:text-sm text-on-surface-variant max-w-3xl leading-relaxed">
             {t('about.heroSubtitle')}
           </p>
         </motion.div>
@@ -121,7 +121,7 @@ export function About({ setScreen }: AboutProps) {
         transition={{ duration: 0.6, delay: 0.3 }}
         className="mb-6"
       >
-        <h2 className="animate__animated animate__slideInLeft font-display text-lg sm:text-xl font-bold text-white mb-4">
+        <h2 className="font-display text-lg sm:text-xl font-bold text-white mb-4">
           {t('about.whatMovesUs')}
         </h2>
         <div className="grid md:grid-cols-3 gap-4">
@@ -155,7 +155,7 @@ export function About({ setScreen }: AboutProps) {
         transition={{ duration: 0.6, delay: 0.4 }}
         className="mb-6"
       >
-        <h2 className="animate__animated animate__slideInRight font-display text-lg sm:text-xl font-bold text-white mb-4">
+        <h2 className="font-display text-lg sm:text-xl font-bold text-white mb-4">
           {t('about.whyChoose')}
         </h2>
         <div className="grid md:grid-cols-3 gap-4">
