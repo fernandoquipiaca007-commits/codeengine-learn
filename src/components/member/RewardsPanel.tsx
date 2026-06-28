@@ -56,10 +56,10 @@ export function RewardsPanel({ memberId }: RewardsPanelProps) {
   const levelName = LEVEL_NAMES[level] || 'Starter';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-3">
       {/* Card de Nível Principal */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <LevelCard />
@@ -67,16 +67,16 @@ export function RewardsPanel({ memberId }: RewardsPanelProps) {
 
       {/* Compartilhar e Ganhar */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <ReferralShareCard productId={null} compact={false} />
+        <ReferralShareCard productId={null} compact={true} />
       </motion.div>
 
       {/* Lista de Recompensas Disponíveis */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
@@ -86,33 +86,33 @@ export function RewardsPanel({ memberId }: RewardsPanelProps) {
       {/* Atividade Recente */}
       {recentActivity.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h3 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-primary" />
+          <h3 className="font-display text-xs font-bold text-white mb-2 flex items-center gap-1.5">
+            <TrendingUp className="w-4 h-4 text-primary" />
             {t('rewardsPanel.recentActivity')}
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {recentActivity.map((activity, index) => (
               <div
                 key={activity.id || index}
-                className="glass-panel rounded-xl p-4 border border-white/10 flex items-center justify-between"
+                className="glass-panel rounded-lg p-2.5 border border-white/10 flex items-center justify-between"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full ${
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-7.5 h-7.5 rounded-full ${
                     activity.points_change > 0 ? 'bg-green-500/20 border border-green-500/30' : 'bg-red-500/20 border border-red-500/30'
                   } flex items-center justify-center`}>
                     {activity.points_change > 0 ? (
-                      <TrendingUp className="w-5 h-5 text-green-400" />
+                      <TrendingUp className="w-4 h-4 text-green-400" />
                     ) : (
-                      <Gift className="w-5 h-5 text-red-400" />
+                      <Gift className="w-4 h-4 text-red-400" />
                     )}
                   </div>
                   <div>
-                    <p className="font-sans text-sm font-semibold text-white">{activity.description}</p>
-                    <p className="font-sans text-xs text-on-surface-variant">
+                    <p className="font-sans text-xs font-semibold text-white">{activity.description}</p>
+                    <p className="font-sans text-[9px] text-on-surface-variant">
                       {new Date(activity.created_at).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: 'short',
@@ -123,7 +123,7 @@ export function RewardsPanel({ memberId }: RewardsPanelProps) {
                     </p>
                   </div>
                 </div>
-                <div className={`font-mono text-lg font-bold ${
+                <div className={`font-mono text-sm font-bold ${
                   activity.points_change > 0 ? 'text-green-400' : 'text-red-400'
                 }`}>
                   {activity.points_change > 0 ? '+' : ''}{activity.points_change}
@@ -136,53 +136,53 @@ export function RewardsPanel({ memberId }: RewardsPanelProps) {
 
       {/* Como Ganhar Pontos */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="glass-panel rounded-xl p-8 border border-white/10"
+        className="glass-panel rounded-xl p-4 border border-white/10"
       >
-        <h3 className="font-display text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-primary" />
+        <h3 className="font-display text-xs font-bold text-white mb-3 flex items-center gap-1.5">
+          <Trophy className="w-4 h-4 text-primary" />
           {t('rewardsPanel.howToEarnPoints')}
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-              <Star className="w-4 h-4 text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <div className="flex items-start gap-2.5">
+            <div className="w-6.5 h-6.5 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+              <Star className="w-3.5 h-3.5 text-primary" />
             </div>
             <div>
-              <p className="font-sans text-sm font-semibold text-white">{t('rewardsPanel.buyProducts')}</p>
-              <p className="font-sans text-xs text-on-surface-variant">{t('rewardsPanel.buyProductsDesc')}</p>
+              <p className="font-sans text-xs font-semibold text-white">{t('rewardsPanel.buyProducts')}</p>
+              <p className="font-sans text-[10px] text-on-surface-variant">{t('rewardsPanel.buyProductsDesc')}</p>
             </div>
           </div>
           
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-secondary/20 border border-secondary/30 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-4 h-4 text-secondary" />
+          <div className="flex items-start gap-2.5">
+            <div className="w-6.5 h-6.5 rounded-full bg-secondary/20 border border-secondary/30 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-3.5 h-3.5 text-secondary" />
             </div>
             <div>
-              <p className="font-sans text-sm font-semibold text-white">{t('rewardsPanel.referFriends')}</p>
-              <p className="font-sans text-xs text-on-surface-variant">{t('rewardsPanel.referFriendsDesc')}</p>
+              <p className="font-sans text-xs font-semibold text-white">{t('rewardsPanel.referFriends')}</p>
+              <p className="font-sans text-[10px] text-on-surface-variant">{t('rewardsPanel.referFriendsDesc')}</p>
             </div>
           </div>
           
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-tertiary-container/20 border border-tertiary-container/30 flex items-center justify-center flex-shrink-0">
-              <Award className="w-4 h-4 text-tertiary-container" />
+          <div className="flex items-start gap-2.5">
+            <div className="w-6.5 h-6.5 rounded-full bg-tertiary-container/20 border border-tertiary-container/30 flex items-center justify-center flex-shrink-0">
+              <Award className="w-3.5 h-3.5 text-tertiary-container" />
             </div>
             <div>
-              <p className="font-sans text-sm font-semibold text-white">{t('rewardsPanel.completeCourses')}</p>
-              <p className="font-sans text-xs text-on-surface-variant">{t('rewardsPanel.completeCoursesDesc')}</p>
+              <p className="font-sans text-xs font-semibold text-white">{t('rewardsPanel.completeCourses')}</p>
+              <p className="font-sans text-[10px] text-on-surface-variant">{t('rewardsPanel.completeCoursesDesc')}</p>
             </div>
           </div>
           
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-4 h-4 text-primary" />
+          <div className="flex items-start gap-2.5">
+            <div className="w-6.5 h-6.5 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-3.5 h-3.5 text-primary" />
             </div>
             <div>
-              <p className="font-sans text-sm font-semibold text-white">{t('rewardsPanel.participateEvents')}</p>
-              <p className="font-sans text-xs text-on-surface-variant">{t('rewardsPanel.participateEventsDesc')}</p>
+              <p className="font-sans text-xs font-semibold text-white">{t('rewardsPanel.participateEvents')}</p>
+              <p className="font-sans text-[10px] text-on-surface-variant">{t('rewardsPanel.participateEventsDesc')}</p>
             </div>
           </div>
         </div>

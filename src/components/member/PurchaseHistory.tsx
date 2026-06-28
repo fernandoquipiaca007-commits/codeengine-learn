@@ -263,25 +263,25 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
   const downloadActionText = (t('purchases.actions.download') && t('purchases.actions.download') !== 'purchases.actions.download') ? t('purchases.actions.download') : labelDict.downloadAction;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h2 className="font-display text-sm sm:text-base font-bold text-white mb-0.5">
             {pageTitle}
           </h2>
-          <p className="font-sans text-base text-on-surface-variant">
+          <p className="font-sans text-[10px] text-on-surface-variant">
             {purchasesCountText}
           </p>
         </div>
 
         {/* Filter */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {['all', 'completed', 'pending', 'failed'].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status as any)}
-              className={`px-4 py-2 rounded-lg font-display text-xs font-semibold tracking-widest uppercase transition-all ${
+              className={`px-2.5 py-1 rounded font-display text-[9px] font-semibold tracking-widest uppercase transition-all ${
                 filter === status
                   ? 'bg-primary text-on-primary'
                   : 'glass-panel border border-white/10 text-on-surface-variant hover:border-primary/30'
@@ -296,18 +296,18 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
       {/* Purchases List */}
       {filteredPurchases.length === 0 ? (
         <div
-          className="glass-panel rounded-2xl p-12 text-center border border-white/10"
+          className="glass-panel rounded-xl p-6 text-center border border-white/10"
         >
-          <ShoppingBag className="w-16 h-16 text-on-surface-variant mx-auto mb-4 opacity-50" />
-          <h3 className="font-display text-2xl font-bold text-white mb-2">
+          <ShoppingBag className="w-10 h-10 text-on-surface-variant mx-auto mb-2 opacity-50" />
+          <h3 className="font-display text-sm font-bold text-white mb-1">
             {emptyTitleText}
           </h3>
-          <p className="font-sans text-base text-on-surface-variant">
+          <p className="font-sans text-xs text-on-surface-variant">
             {filter === 'all' ? emptyAllText : emptyFilteredText}
           </p>
         </div>
       ) : (
-      <div className="space-y-4">
+      <div className="space-y-2">
           {filteredPurchases.map((purchase, index) => {
             const effectiveStatus = getEffectiveStatus(purchase);
             const isFree = purchase.products?.is_free || purchase.amount_paid === 0;
@@ -316,50 +316,50 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
             return (
             <motion.div
               key={purchase.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="glass-panel rounded-xl p-4 sm:p-6 border border-white/10 hover:border-primary/30 transition-all group"
+              transition={{ duration: 0.25, delay: index * 0.03 }}
+              className="glass-panel rounded-lg p-2.5 border border-white/10 hover:border-primary/30 transition-all group"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <div className="flex flex-row items-center gap-3">
                 {/* Product Image */}
-                <div className="w-24 h-24 rounded-lg overflow-hidden bg-surface-highest flex-shrink-0">
+                <div className="w-9 h-9 rounded overflow-hidden bg-surface-highest flex-shrink-0">
                   <img
                     src={getProductCoverUrl(purchase.products)}
                     alt={purchase.products?.title || 'Produto'}
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
+                    className="w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
                     onError={(e) => {
-                      e.currentTarget.src = `https://placehold.co/96x96/1a1a2e/c0c1ff?text=${encodeURIComponent((purchase.products?.title || 'P').charAt(0))}`;
+                      e.currentTarget.src = `https://placehold.co/48x48/1a1a2e/c0c1ff?text=${encodeURIComponent((purchase.products?.title || 'P').charAt(0))}`;
                     }}
                   />
                 </div>
 
                 {/* Info */}
                 <div className="flex-grow min-w-0">
-                  <h3 className="font-display text-lg sm:text-xl font-semibold text-white mb-2 group-hover:text-primary transition-colors text-safe-wrap">
+                  <h3 className="font-display text-xs font-semibold text-white truncate group-hover:text-primary transition-colors text-safe-wrap">
                     {purchase.products?.title || 'Produto'}
                   </h3>
 
-                  <div className="hidden sm:flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-on-surface-variant">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                  <div className="flex items-center gap-2 mt-0.5 text-[9px] text-on-surface-variant">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
                       <span className="font-sans">{formatDate(purchase.purchase_date)}</span>
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
                       {isFree ? (
-                        <Gift className="w-4 h-4 text-green-400" />
+                        <Gift className="w-3 h-3 text-green-400" />
                       ) : (
-                        <DollarSign className="w-4 h-4" />
+                        <DollarSign className="w-3 h-3" />
                       )}
                       <span className={`font-mono font-semibold ${isFree ? 'text-green-400' : ''}`}>
                         {formatPrice(purchase.amount_paid, isFree)}
                       </span>
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
                       {getStatusIcon(effectiveStatus)}
-                      <span className="font-display text-xs font-semibold tracking-widest uppercase">
+                      <span className="font-display text-[8px] font-semibold tracking-widest uppercase">
                         {getStatusLabelFallback(effectiveStatus)}
                       </span>
                     </div>
@@ -370,9 +370,9 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                 {hasAccess && (
                   <button
                     onClick={() => onDownload(purchase.product_id)}
-                    className="secondary-btn w-full sm:w-auto px-5 py-3 rounded-lg font-display text-xs font-semibold tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-white/10 transition-all touch-target"
+                    className="secondary-btn px-2.5 py-1 rounded text-[10px] font-semibold flex items-center justify-center gap-1 hover:bg-white/10 transition-all ml-auto touch-target"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3 h-3" />
                     {downloadActionText}
                   </button>
                 )}

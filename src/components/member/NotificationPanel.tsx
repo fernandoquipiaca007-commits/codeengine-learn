@@ -249,14 +249,14 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
   }
 
   return (
-    <div className="space-y-6 min-h-[600px] relative z-10">
+    <div className="space-y-3 relative z-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel rounded-xl p-6 border border-white/10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 glass-panel rounded-lg p-3.5 border border-white/10">
         <div>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h2 className="font-display text-sm sm:text-base font-bold text-white mb-0.5">
             {t('notificationPanel.title')}
           </h2>
-          <p className="font-sans text-base text-on-surface-variant">
+          <p className="font-sans text-[10px] text-on-surface-variant">
             {unreadCount > 0 ? (
               <>
                 <span className="font-semibold text-primary">{unreadCount}</span>{' '}
@@ -269,12 +269,12 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
         </div>
 
         {/* Actions */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Filter */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-1 flex-wrap">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-display text-xs font-semibold tracking-widest uppercase transition-all ${
+              className={`px-2.5 py-1 rounded font-display text-[9px] font-semibold tracking-widest uppercase transition-all ${
                 filter === 'all'
                   ? 'bg-primary text-on-primary'
                   : 'glass-panel border border-white/10 text-on-surface-variant hover:border-primary/30'
@@ -284,7 +284,7 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`px-4 py-2 rounded-lg font-display text-xs font-semibold tracking-widest uppercase transition-all ${
+              className={`px-2.5 py-1 rounded font-display text-[9px] font-semibold tracking-widest uppercase transition-all ${
                 filter === 'unread'
                   ? 'bg-primary text-on-primary'
                   : 'glass-panel border border-white/10 text-on-surface-variant hover:border-primary/30'
@@ -298,9 +298,9 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="px-4 py-2 rounded-lg glass-panel border border-white/10 font-display text-xs font-semibold tracking-widest uppercase flex items-center gap-2 text-on-surface hover:text-primary hover:border-primary/30 transition-all"
+              className="px-2.5 py-1 rounded glass-panel border border-white/10 font-display text-[9px] font-semibold tracking-widest uppercase flex items-center gap-1.5 text-on-surface hover:text-primary hover:border-primary/30 transition-all"
             >
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="w-3.5 h-3.5" />
               {t('notificationPanel.actions.markAll')}
             </button>
           )}
@@ -310,30 +310,30 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
       {/* Notifications List */}
       {filteredNotifications.length === 0 ? (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-panel rounded-2xl p-12 text-center border border-white/10"
+          className="glass-panel rounded-xl p-8 text-center border border-white/10"
         >
-          <Bell className="w-16 h-16 text-on-surface-variant mx-auto mb-4 opacity-50" />
-          <h3 className="font-display text-2xl font-bold text-white mb-2">
+          <Bell className="w-10 h-10 text-on-surface-variant mx-auto mb-2 opacity-50" />
+          <h3 className="font-display text-sm font-bold text-white mb-1">
             {filter === 'unread' ? t('notificationPanel.empty.unread') : t('notificationPanel.empty.all')}
           </h3>
-          <p className="font-sans text-base text-on-surface-variant">
+          <p className="font-sans text-xs text-on-surface-variant">
             {filter === 'unread'
               ? t('notificationPanel.empty.unreadDesc')
               : t('notificationPanel.empty.allDesc')}
           </p>
         </motion.div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           <AnimatePresence>
             {filteredNotifications.map((notification, index) => (
               <motion.div
                 key={notification.id}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2, delay: index * 0.03 }}
+                exit={{ opacity: 0, x: 15 }}
+                transition={{ duration: 0.18, delay: index * 0.02 }}
                 role="button"
                 tabIndex={0}
                 onClick={() => handleNotificationClick(notification)}
@@ -343,58 +343,64 @@ export function NotificationPanel({ memberId, onNavigate }: NotificationPanelPro
                     handleNotificationClick(notification);
                   }
                 }}
-                className={`glass-panel rounded-xl p-5 border transition-all group relative cursor-pointer ${
+                className={`glass-panel rounded-lg p-2.5 border transition-all group relative cursor-pointer ${
                   notification.read_status
                     ? 'border-white/10 opacity-70'
                     : 'border-primary/30 bg-primary/5'
                 }`}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   {/* Icon */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                     notification.read_status ? 'bg-surface-container' : 'bg-primary/20'
                   }`}>
                     {getNotificationIcon(notification.type)}
                   </div>
 
                   {/* Content */}
-                  <div className="flex-grow min-w-0">
+                  <div className="flex-grow min-w-0 pr-8">
                     {notification.title && (
-                      <p className="font-display text-sm font-semibold text-white mb-1 pr-8">
+                      <p className="font-display text-xs font-semibold text-white mb-0.5">
                         {notification.title}
                       </p>
                     )}
-                    <p className="font-sans text-sm text-on-surface mb-1 pr-8">
+                    <p className="font-sans text-xs text-on-surface mb-0.5">
                       {notification.message}
                     </p>
-                    <p className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant">
+                    <p className="font-display text-[9px] font-semibold tracking-widest uppercase text-on-surface-variant">
                       {formatDate(notification.created_at)}
                     </p>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     {!notification.read_status && (
                       <button
-                        onClick={() => markAsRead(notification.id)}
-                        className="w-8 h-8 rounded-full bg-surface/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary/50 transition-all"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void markAsRead(notification.id);
+                        }}
+                        className="w-6 h-6 rounded-full bg-surface/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary/50 transition-all"
                         title={t('notificationPanel.actions.markAsRead')}
                       >
-                        <CheckCircle className="w-4 h-4" />
+                        <CheckCircle className="w-3.5 h-3.5" />
                       </button>
                     )}
                     <button
-                      onClick={() => deleteNotification(notification.id)}
-                      className="w-8 h-8 rounded-full bg-surface/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-on-surface-variant hover:text-red-400 hover:border-red-400/50 transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void deleteNotification(notification.id);
+                      }}
+                      className="w-6 h-6 rounded-full bg-surface/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-on-surface-variant hover:text-red-400 hover:border-red-400/50 transition-all"
                       title={t('notificationPanel.actions.delete')}
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
 
                   {/* Unread Indicator */}
                   {!notification.read_status && (
-                    <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <div className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
                   )}
                 </div>
               </motion.div>
