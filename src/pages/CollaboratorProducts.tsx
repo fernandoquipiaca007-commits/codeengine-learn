@@ -282,14 +282,23 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
                           <Trash2 size={13} /> Excluir
                         </button>
                         
-                        {prod.approval_status === 'approved' && prod.status === 'active' && (
+                        {prod.approval_status === 'approved' && prod.status === 'active' ? (
                           <a
-                            href={`/?screen=product&id=${prod.id}`}
+                            href={`/product/${prod.id}?name=${encodeURIComponent(prod.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer"
                           >
                             Ver Loja <ExternalLink size={12} className="text-primary" />
+                          </a>
+                        ) : (
+                          <a
+                            href={`/product/${prod.id}?name=${encodeURIComponent(prod.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}&preview=true`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 rounded-full bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/25 transition-all cursor-pointer animate-pulse"
+                          >
+                            Ver Preview <ExternalLink size={12} />
                           </a>
                         )}
                       </div>

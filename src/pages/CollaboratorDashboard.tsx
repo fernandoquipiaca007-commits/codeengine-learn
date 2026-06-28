@@ -130,8 +130,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }
 
   async function copyInviteLink() {
-    if (!founderStats?.authUserId) return;
-    const link = `${window.location.origin}/?invite=${founderStats.authUserId}`;
+    const inviteCode = founderStats?.referralCode || founderStats?.authUserId;
+    if (!inviteCode) return;
+    const link = `${window.location.origin}/?invite=${inviteCode}`;
     try {
       await navigator.clipboard.writeText(link);
       setInviteLinkCopied(true);
@@ -1010,14 +1011,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   <div className="flex-1 flex items-center gap-2 bg-surface-high rounded-xl px-4 py-3 border border-white/10 font-mono text-xs text-on-surface-variant overflow-hidden">
                     <ExternalLink size={13} className="text-yellow-400 flex-shrink-0" />
                     <span className="truncate">
-                      {founderStats?.authUserId
-                        ? `${window.location.origin}/?invite=${founderStats.authUserId}`
+                      {founderStats?.referralCode || founderStats?.authUserId
+                        ? `${window.location.origin}/?invite=${founderStats.referralCode || founderStats.authUserId}`
                         : 'Carregando...'}
                     </span>
                   </div>
                   <button
                     onClick={copyInviteLink}
-                    disabled={!founderStats?.authUserId}
+                    disabled={!(founderStats?.referralCode || founderStats?.authUserId)}
                     className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${
                       inviteLinkCopied
                         ? 'bg-green-500 text-white'

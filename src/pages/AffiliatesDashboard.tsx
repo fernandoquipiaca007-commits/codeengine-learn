@@ -664,7 +664,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
             ) : (
               <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {myLinks.map((link: any) => {
-                  const productUrl = `${window.location.origin}/?screen=product&id=${link.product.id}&ref=${link.tracking_code}`;
+                  const productUrl = `${window.location.origin}/product/${link.product.id}?name=${encodeURIComponent(link.product.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}&ref=${link.tracking_code}`;
                   const generalUrl = `${window.location.origin}/?ref=${link.tracking_code}`;
 
                   return (

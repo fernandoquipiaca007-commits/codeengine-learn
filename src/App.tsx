@@ -332,12 +332,26 @@ export default function App() {
       localStorage.setItem('ce_referral_code', JSON.stringify({ code: ref, expiry }));
     }
 
-    // Save founder invitation link if present (?invite=AUTH_USER_ID)
+    // Save founder invitation link if present (?invite=AUTH_USER_ID or ?invite=REFERRAL_CODE)
     // This is separate from ?ref= which is for product affiliate tracking
     const invite = params.get('invite');
     if (invite) {
       const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
-      localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: invite, expiry }));
+      if (invite.length === 36) {
+        localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: invite, expiry }));
+      } else {
+        // Query supabase to resolve referral_code to auth_id
+        supabase
+          .from('members')
+          .select('auth_id')
+          .eq('referral_code', invite)
+          .maybeSingle()
+          .then(({ data }) => {
+            if (data?.auth_id) {
+              localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: data.auth_id, expiry }));
+            }
+          });
+      }
       // Clean the invite param from URL to avoid leaking auth IDs in browser history
       params.delete('invite');
       const cleanUrl = params.toString()

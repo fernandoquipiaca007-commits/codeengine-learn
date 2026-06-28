@@ -179,7 +179,7 @@ export function ProductActionButton({
       }
 
       // Create checkout session
-      const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:3000';
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
       const { data: member } = await supabase
         .from('members')
         .select('id')

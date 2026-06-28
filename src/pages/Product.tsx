@@ -127,6 +127,10 @@ export function Product({ setScreen, productId }: ProductProps) {
   const { t } = useTranslation(['pages', 'common'], { lng: locale });
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
+  
+  const params = new URLSearchParams(window.location.search);
+  const isPreviewMode = params.get('preview') === 'true';
+
   const [product, setProduct] = useState<ProductType | null>(null);
   const [customCopy, setCustomCopy] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -816,6 +820,20 @@ export function Product({ setScreen, productId }: ProductProps) {
   return (
     <ProductPurchaseProvider productId={product.id}>
     <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+      {isPreviewMode && (
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 p-4 text-sm text-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans animate-pulse">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <strong className="font-semibold block">Modo de Pré-visualização</strong>
+              <span className="text-orange-300/90 text-xs">Este produto ainda não está ativo ou aprovado. Esta página de rascunho é visível apenas para você (criador).</span>
+            </div>
+          </div>
+          <div className="px-3 py-1 rounded bg-orange-500/20 text-orange-300 text-xs font-semibold uppercase tracking-wider border border-orange-500/30 self-start sm:self-auto">
+            Rascunho
+          </div>
+        </div>
+      )}
       {/* Campaign Banner */}
       <CampaignBanner productId={product.id} onSpecialPrice={setCampaignPrice} onCampaignActive={setCampaignEndDate} />
       

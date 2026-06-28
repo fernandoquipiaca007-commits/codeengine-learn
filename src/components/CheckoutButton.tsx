@@ -40,7 +40,7 @@ export function CheckoutButton({
       }
 
       // Create checkout session
-      const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
 
       // Read referral code from localStorage
       let referralCode = '';
