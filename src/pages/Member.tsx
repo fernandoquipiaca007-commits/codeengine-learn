@@ -424,25 +424,25 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   ];
 
   return (
-    <div className="pt-16 pb-6 px-4 sm:px-6 md:px-10 max-w-[min(100%,900px)] mx-auto min-h-screen page-wrapper">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+    <div className="pt-10 pb-3 px-3 sm:px-6 max-w-[min(100%,820px)] mx-auto min-h-[calc(100vh-80px)] page-wrapper">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
         <div>
-          <h1 className="font-display text-xl font-bold text-white">{t('member.title')}</h1>
-          <p className="font-sans text-xs text-on-surface-variant">{memberData.email}</p>
+          <h1 className="font-display text-lg font-bold text-white">{t('member.title')}</h1>
+          <p className="font-sans text-[10px] text-on-surface-variant">{memberData.email}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel border border-white/10 hover:border-red-400/30 transition-all text-on-surface-variant hover:text-red-400 text-xs"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-panel border border-white/10 hover:border-red-400/30 transition-all text-on-surface-variant hover:text-red-400 text-[10px]"
         >
-          <LogOut className="w-3.5 h-3.5" />
-          <span className="font-display text-[10px] font-semibold tracking-widest uppercase">{t('member.logout')}</span>
+          <LogOut className="w-3 h-3" />
+          <span className="font-display text-[9px] font-semibold tracking-widest uppercase">{t('member.logout')}</span>
         </button>
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel rounded-xl p-2 border border-white/10 mb-8 flex gap-2 overflow-x-auto"
+        className="glass-panel rounded-xl p-1.5 border border-white/10 mb-4 flex gap-1.5 overflow-x-auto"
       >
         {tabs.map((tab) => (
           <button

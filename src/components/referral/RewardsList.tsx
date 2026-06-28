@@ -30,6 +30,7 @@ export function RewardsList() {
   const [claimedCoupons, setClaimedCoupons] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [showAllLocked, setShowAllLocked] = useState(false);
 
   // Initialize claimed coupons from backend data
   useEffect(() => {
@@ -263,12 +264,23 @@ export function RewardsList() {
       {/* Locked */}
       {locked.length > 0 && (
         <div>
-          <h4 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/50 mb-3 flex items-center gap-2">
+          <h4 className="font-display text-xs font-semibold tracking-widest uppercase text-on-surface-variant/50 mb-2 flex items-center gap-2">
             <Lock className="w-4 h-4" /> {t('rewardsPanel.lockedRewards')} ({locked.length})
           </h4>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {locked.map((r, i) => renderReward(r, i))}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(showAllLocked ? locked : locked.slice(0, 1)).map((r, i) => renderReward(r, i))}
           </div>
+          {locked.length > 1 && (
+            <div className="mt-2 text-center">
+              <button
+                type="button"
+                onClick={() => setShowAllLocked(!showAllLocked)}
+                className="text-[10px] text-primary font-bold hover:underline transition-all uppercase tracking-wider"
+              >
+                {showAllLocked ? "Ver menos" : `Ver mais ${locked.length - 1} recompensas trancadas`}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

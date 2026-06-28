@@ -215,21 +215,69 @@ export default function App() {
   const navigateToProduct = (productId: string) => {
     setCurrentProductId(productId);
     setScreen('product');
+    // Push state to browser history
+    const state = { screen: 'product', productId, section: 'inicio' };
+    window.history.pushState(state, '', `/product/${productId}`);
   };
 
   const navigateToScreen = (screen: string, section?: string) => {
+    const sect = section || 'inicio';
     if (screen !== 'product') {
       setCurrentProductId(null);
     }
 
     if (screen === 'member') {
-      setMemberSection(section || 'inicio');
+      setMemberSection(sect);
       setScreen(screen);
     } else {
       setMemberSection('inicio');
       setScreen(screen);
     }
+
+    // Push state to browser history
+    const state = { screen, productId: null, section: sect };
+    let path = '/';
+    if (screen !== 'welcome' && screen !== 'home') {
+      if (screen === 'news') {
+        path = '/news';
+      } else {
+        path = `/?screen=${screen}`;
+        if (screen === 'member' && sect !== 'inicio') {
+          path += `&section=${sect}`;
+        }
+      }
+    }
+    window.history.pushState(state, '', path);
   };
+
+  // Listen to popstate event for browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const state = e.state;
+      if (state) {
+        if (state.screen === 'product') {
+          setCurrentProductId(state.productId || null);
+          setScreen('product');
+        } else {
+          setCurrentProductId(null);
+          if (state.screen === 'member') {
+            setMemberSection(state.section || 'inicio');
+            setScreen('member');
+          } else {
+            setMemberSection('inicio');
+            setScreen(state.screen || 'welcome');
+          }
+        }
+      } else {
+        setCurrentProductId(null);
+        setMemberSection('inicio');
+        setScreen('welcome');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Persist current screen to sessionStorage so it survives page refreshes
   useEffect(() => {
@@ -294,8 +342,11 @@ export default function App() {
     if (pathname.startsWith('/product/')) {
       const productId = pathname.split('/product/')[1]?.split(/[?#/]/)[0];
       if (productId) {
-        navigateToProduct(productId);
-        window.history.replaceState({}, '', '/');
+        // Set state first
+        setCurrentProductId(productId);
+        setScreen('product');
+        // Set initial state representation in history
+        window.history.replaceState({ screen: 'product', productId, section: 'inicio' }, '', `/product/${productId}`);
         return;
       }
     }
@@ -306,12 +357,12 @@ export default function App() {
       if (newsId) {
         sessionStorage.setItem('pendingNewsId', newsId);
         setScreen('news');
-        window.history.replaceState({}, '', '/');
+        window.history.replaceState({ screen: 'news', productId: null, section: 'inicio' }, '', `/news/${newsId}`);
         return;
       }
     } else if (pathname === '/news' || pathname === '/news/') {
       setScreen('news');
-      window.history.replaceState({}, '', '/');
+      window.history.replaceState({ screen: 'news', productId: null, section: 'inicio' }, '', `/news`);
       return;
     }
 

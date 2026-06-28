@@ -2095,11 +2095,11 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
 function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: number; conversions: number; revenueUsd: number; revenueAoa: number }> }) {
   // SVG dimensions
   const width = 500;
-  const height = 200;
+  const height = 140;
   const paddingLeft = 40;
   const paddingRight = 20;
-  const paddingTop = 20;
-  const paddingBottom = 30;
+  const paddingTop = 15;
+  const paddingBottom = 25;
 
   const chartWidth = width - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
@@ -2303,28 +2303,28 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
   }
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
+    <div className="space-y-3 animate-in fade-in duration-300">
       {/* Filters panel */}
-      <div className="glass-panel rounded-2xl p-3.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+      <div className="glass-panel rounded-2xl p-2.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 relative z-10">
         <div>
-          <h3 className="text-base font-bold text-white font-display">
+          <h3 className="text-sm font-bold text-white font-display">
             {t('collaborator.analytics.title', 'Análise de Tráfego e Vendas')}
           </h3>
-          <p className="text-xs text-on-surface-variant mt-0.5">
+          <p className="text-[10px] text-on-surface-variant mt-0.5">
             {t('collaborator.analytics.description', 'Monitore as visitas, conversões e o faturamento total gerado pelas páginas de seus produtos.')}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Product selector dropdown */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">
               {t('collaborator.analytics.productSelector', 'Filtrar por Produto')}
             </span>
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/50 font-sans"
+              className="rounded-xl bg-surface-high border border-white/10 px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/50 font-sans"
             >
               <option value="">{t('collaborator.analytics.allProducts', 'Todos os Produtos')}</option>
               {products.map(p => (
@@ -2334,8 +2334,8 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
           </div>
 
           {/* Period selector */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">
               {t('collaborator.analytics.periodSelector', 'Período')}
             </span>
             <div className="flex items-center gap-1 p-0.5 bg-surface-high rounded-xl border border-white/10">
@@ -2343,7 +2343,7 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
                 <button
                   key={p}
                   onClick={() => setPeriod(p)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${
                     period === p
                       ? 'bg-primary text-background'
                       : 'text-on-surface-variant hover:text-white'
@@ -2368,102 +2368,102 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
       ) : (
         <>
           {/* Summary Cards */}
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 relative z-10">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5 relative z-10">
             {/* Card 1: Views */}
-            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-blue-500/15">
-              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  <Eye size={15} />
+            <div className="glass-card rounded-2xl p-2.5 relative overflow-hidden border border-blue-500/15">
+              <div className="absolute w-[100px] h-[100px] bg-[radial-gradient(circle,rgba(59,130,246,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  <Eye size={13} />
                 </div>
-                <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">
                   {t('collaborator.tabAnalytics', 'Análise')}
                 </span>
               </div>
-              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
                 {t('collaborator.analytics.views', 'Visualizações')}
               </span>
-              <span className="block text-lg font-bold text-white font-mono">{summary?.totalViews ?? 0}</span>
+              <span className="block text-base font-bold text-white font-mono">{summary?.totalViews ?? 0}</span>
             </div>
 
             {/* Card 2: Conversions */}
-            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-green-500/15">
-              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                  <CheckCircle size={15} />
+            <div className="glass-card rounded-2xl p-2.5 relative overflow-hidden border border-green-500/15">
+              <div className="absolute w-[100px] h-[100px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                  <CheckCircle size={13} />
                 </div>
-                <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">
                   {t('collaborator.analytics.conversions', 'Conversões (Vendas)')}
                 </span>
               </div>
-              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
                 {t('collaborator.analytics.conversions', 'Conversões (Vendas)')}
               </span>
-              <span className="block text-lg font-bold text-white font-mono">{summary?.totalConversions ?? 0}</span>
+              <span className="block text-base font-bold text-white font-mono">{summary?.totalConversions ?? 0}</span>
             </div>
 
             {/* Card 3: CR% */}
-            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-purple-500/15">
-              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(168,85,247,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  <ArrowUpRight size={15} />
+            <div className="glass-card rounded-2xl p-2.5 relative overflow-hidden border border-purple-500/15">
+              <div className="absolute w-[100px] h-[100px] bg-[radial-gradient(circle,rgba(168,85,247,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  <ArrowUpRight size={13} />
                 </div>
-                <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20 uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20 uppercase tracking-wider">
                   CR %
                 </span>
               </div>
-              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
                 {t('collaborator.analytics.conversionRate', 'Taxa de Conversão')}
               </span>
-              <span className="block text-lg font-bold text-white font-mono">
+              <span className="block text-base font-bold text-white font-mono">
                 {Number(summary?.conversionRate || 0).toFixed(1)}%
               </span>
             </div>
 
             {/* Card 4: Revenue USD */}
-            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-primary/15">
-              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
-                  <DollarSign size={15} />
+            <div className="glass-card rounded-2xl p-2.5 relative overflow-hidden border border-primary/15">
+              <div className="absolute w-[100px] h-[100px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20">
+                  <DollarSign size={13} />
                 </div>
-                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-wider">
                   USD
                 </span>
               </div>
-              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
                 {t('collaborator.analytics.revenueUsd', 'Faturamento USD')}
               </span>
-              <span className="block text-lg font-bold text-white font-mono">
+              <span className="block text-base font-bold text-white font-mono">
                 {Number(summary?.totalRevenueUsd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
               </span>
             </div>
 
             {/* Card 5: Revenue AOA */}
-            <div className="glass-card rounded-2xl p-3.5 relative overflow-hidden border border-amber-500/15">
-              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  <Landmark size={15} />
+            <div className="glass-card rounded-2xl p-2.5 relative overflow-hidden border border-amber-500/15">
+              <div className="absolute w-[100px] h-[100px] bg-[radial-gradient(circle,rgba(245,158,11,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <Landmark size={13} />
                 </div>
-                <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">
                   AOA
                 </span>
               </div>
-              <span className="block text-xs font-semibold text-on-surface-variant mb-1">
+              <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
                 {t('collaborator.analytics.revenueAoa', 'Faturamento AOA')}
               </span>
-              <span className="block text-lg font-bold text-white font-mono">
+              <span className="block text-base font-bold text-white font-mono">
                 {Number(summary?.totalRevenueAoa || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })}
               </span>
             </div>
           </div>
 
           {/* Chart Container */}
-          <div className="glass-panel rounded-2xl p-3 sm:p-3.5 border border-white/10 relative z-10">
-            <h4 className="text-sm font-bold text-white font-display mb-3">
+          <div className="glass-panel rounded-2xl p-2.5 border border-white/10 relative z-10">
+            <h4 className="text-xs font-bold text-white font-display mb-2">
               {t('collaborator.analytics.chartTitle', 'Tendência de Visitas e Conversões')}
             </h4>
             

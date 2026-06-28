@@ -760,6 +760,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <CircularGallery
                 items={circularGalleryItems}
                 radius={isMobile ? 280 : 420}
+                autoRotateSpeed={0.045}
                 isAngola={isAngola}
                 activeLang={activeLang}
                 onProductClick={onProductClick}

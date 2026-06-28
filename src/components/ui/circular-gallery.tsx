@@ -17,7 +17,7 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
-  ({ items, className, radius = 600, autoRotateSpeed = 0.012, isAngola = false, activeLang = 'pt', onProductClick, ...props }, ref) => {
+  ({ items, className, radius = 600, autoRotateSpeed = 0.045, isAngola = false, activeLang = 'pt', onProductClick, ...props }, ref) => {
     const [rotation, setRotation] = useState(0);
     const isDraggingRef = useRef(false);
     const startXRef = useRef(0);
