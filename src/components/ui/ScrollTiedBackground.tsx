@@ -61,11 +61,17 @@ export function ScrollTiedBackground({
     // Smooth LERP (Linear Interpolation) loop for 60fps scrubbing
     const updateScrub = () => {
       if (video && video.readyState >= 2 && video.duration) {
-        // Interpolate progress towards target progress with a soft cinematic easing factor (0.045)
         const diff = targetProgress - currentProgress;
-        if (Math.abs(diff) > 0.0001) {
-          currentProgress += diff * 0.045;
-          video.currentTime = currentProgress * video.duration;
+        if (Math.abs(diff) > 0.0005) {
+          currentProgress += diff * 0.16; // Snappy, responsive catch-up (16% per frame)
+        } else {
+          currentProgress = targetProgress; // Snap to target when extremely close
+        }
+
+        const targetTime = currentProgress * video.duration;
+        // Only seek if target time differs by more than 15ms (approx. 1/60s frame duration)
+        if (Math.abs(video.currentTime - targetTime) > 0.015) {
+          video.currentTime = targetTime;
         }
       }
       requestRef.current = requestAnimationFrame(updateScrub);

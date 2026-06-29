@@ -22,15 +22,23 @@ All theme details are stored in the `public.products` table:
 
 ## 2. Dynamic Scroll-Scrubbing Technique
 To bind video playback to scroll position smoothly at 60fps:
-1. **Linear Interpolation (LERP):** Never set `video.currentTime` directly on scroll events.
-2. **Animation Loop:** Use `requestAnimationFrame` to interpolate current scroll progress towards the target scroll position progress:
+1. **Snappy LERP (Linear Interpolation) loop for 60fps scrubbing:**
+   Ensure `targetProgress` is calculated during window scroll events. Inside the LERP loop (running at 60fps with `requestAnimationFrame`), calculate `diff = targetProgress - currentProgress`. Update progress using a snappy factor of `0.16` (16% per frame) for real-time responsiveness, and snap progress directly when the delta is negligible. Prevent decoder stutter by only executing seekers if the time changes by more than 15ms (1 frame at 60fps):
    ```typescript
-   const targetProgress = scrollTop / scrollHeight;
    const diff = targetProgress - currentProgress;
-   currentProgress += diff * 0.045; // Soft cinematic easing factor (4.5% catch-up per frame)
-   video.currentTime = currentProgress * video.duration;
+   if (Math.abs(diff) > 0.0005) {
+     currentProgress += diff * 0.16; // Snappy, responsive catch-up
+   } else {
+     currentProgress = targetProgress; // Snap to target when extremely close
+   }
+
+   const targetTime = currentProgress * video.duration;
+   // Only seek if target time differs by more than 15ms
+   if (Math.abs(video.currentTime - targetTime) > 0.015) {
+     video.currentTime = targetTime;
+   }
    ```
-3. **Avoid LoadedMetadata Race Conditions:** Set `onLoadedMetadata` directly on the `<video>` element and check `video.readyState >= 1` in `useEffect` on mount.
+2. **Avoid LoadedMetadata Race Conditions:** Set `onLoadedMetadata` directly on the `<video>` element and check `video.readyState >= 1` in `useEffect` on mount.
 
 ---
 
