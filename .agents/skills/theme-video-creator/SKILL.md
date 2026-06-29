@@ -23,12 +23,12 @@ All theme details are stored in the `public.products` table:
 ## 2. Dynamic Scroll-Scrubbing Technique
 To bind video playback to scroll position smoothly at 60fps:
 1. **Linear Interpolation (LERP):** Never set `video.currentTime` directly on scroll events.
-2. **Animation Loop:** Use `requestAnimationFrame` to interpolate current video time towards the target scroll position time:
+2. **Animation Loop:** Use `requestAnimationFrame` to interpolate current scroll progress towards the target scroll position progress:
    ```typescript
-   const progress = scrollTop / scrollHeight;
-   const targetTime = progress * video.duration;
-   const diff = targetTime - video.currentTime;
-   video.currentTime += diff * 0.1; // Smooth easing factor
+   const targetProgress = scrollTop / scrollHeight;
+   const diff = targetProgress - currentProgress;
+   currentProgress += diff * 0.045; // Soft cinematic easing factor (4.5% catch-up per frame)
+   video.currentTime = currentProgress * video.duration;
    ```
 3. **Avoid LoadedMetadata Race Conditions:** Set `onLoadedMetadata` directly on the `<video>` element and check `video.readyState >= 1` in `useEffect` on mount.
 
