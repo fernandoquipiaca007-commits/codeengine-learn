@@ -79,3 +79,31 @@ When adding new video files under `public/temas/`, always rename them to avoid U
 2. **No ellipses or Unicode symbols:** Eliminate three-dot ellipsis characters (`…`) completely.
 3. **Regex constraint:** Filenames must consist only of `/^[a-zA-Z0-9_]+\.mp4$/`.
 
+---
+
+## 6. Autoplay Video Covers on Hover
+To showcase the actual background animations directly inside the selector carousel:
+1. **Video Elements:** Replace static image covers with real `<video>` elements set to `preload="metadata"`, `muted`, `loop`, and `playsInline`.
+2. **Hover Handlers:** Attach mouseenter and mouseleave listeners to trigger playback on target elements:
+   ```typescript
+   const handleVideoHover = (e: React.MouseEvent<HTMLDivElement>, play: boolean) => {
+     const video = e.currentTarget.querySelector('video');
+     if (video) {
+       if (play) video.play().catch(() => {});
+       else {
+         video.pause();
+         video.currentTime = 0;
+       }
+     }
+   };
+   ```
+
+---
+
+## 7. Full-Screen Live Mockup Preview
+To offer collaborators instant preview feedback:
+1. **Live Preview Overlay:** Render a full-screen scrollable wrapper (`fixed inset-0 z-50 overflow-y-auto`) over the form.
+2. **Mockup Content:** Mount the `<ScrollTiedBackground>` component and display mock cards for the product header, curriculum, and pricing, reflecting the current opacity and blur properties in real-time.
+3. **Back Navigation:** Add a prominent "Voltar às Configurações" button to close the overlay and return to editing.
+
+

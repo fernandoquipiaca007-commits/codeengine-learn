@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent } from 'lucide-react';
+import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
+import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface CollaboratorProductFormProps {
@@ -306,6 +307,7 @@ export function CollaboratorProductForm({
     sectionOpacity: 0.1,
     blurAmount: 8
   });
+  const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
 
   const [campaign, setCampaign] = useState<CampaignState>({
@@ -2479,11 +2481,23 @@ export function CollaboratorProductForm({
         {activeTab === 'theme' && (
           <div className="space-y-6">
             <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
-              <div>
-                <h3 className="text-lg font-bold text-white font-display">Tema Visual da Página de Vendas</h3>
-                <p className="text-xs text-on-surface-variant mt-1">
-                  Selecione um tema de fundo dinâmico para a página do seu produto. Temas de vídeo interativos reagem dinamicamente à rolagem da tela (scroll scrubbing) para criar uma experiência cinematográfica incrível.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white font-display">Tema Visual da Página de Vendas</h3>
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    Selecione um tema de fundo dinâmico para a página do seu produto. Temas de vídeo interativos reagem dinamicamente à rolagem da tela (scroll scrubbing) para criar uma experiência cinematográfica incrível.
+                  </p>
+                </div>
+                {themeVideoPath && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white transition-all shadow-md active:scale-95 shrink-0 self-start sm:self-center"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Visualizar Prévia
+                  </button>
+                )}
               </div>
 
               <CardFanCarousel 
@@ -2589,6 +2603,83 @@ export function CollaboratorProductForm({
         </div>
 
       </form>
+
+      {showPreview && (
+        <div className="fixed inset-0 w-full h-full z-[100] bg-black overflow-y-auto font-sans">
+          {/* Live Background */}
+          <ScrollTiedBackground
+            videoPath={themeVideoPath}
+            videoOpacity={themeVideoConfig.videoOpacity}
+            overlayOpacity={themeVideoConfig.overlayOpacity}
+            backgroundStyle={(themeVideoConfig as any).backgroundStyle}
+          />
+          
+          {/* Floating Back Button */}
+          <button
+            type="button"
+            onClick={() => setShowPreview(false)}
+            className="fixed top-6 left-6 z-[110] flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white backdrop-blur-md transition-all shadow-md active:scale-95 text-xs font-semibold"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar às Configurações
+          </button>
+          
+          {/* Preview Mockup Page Layout */}
+          <div 
+            style={{
+              '--glass-opacity': themeVideoConfig.sectionOpacity,
+              '--glass-blur': `${themeVideoConfig.blurAmount}px`
+            } as React.CSSProperties}
+            className={`pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto relative z-10 min-h-[150vh] ${
+              (themeVideoConfig as any).isLight ? 'light-theme-page' : ''
+            }`}
+          >
+            {/* Product Header Mockup */}
+            <div className="glass-panel p-8 rounded-2xl border border-white/10 mb-8 space-y-4">
+              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-[10px] font-bold text-primary tracking-wide uppercase font-sans">
+                Modo de Visualização Prévia do Tema
+              </span>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-white font-display">
+                {name || 'Nome do seu Produto'}
+              </h1>
+              <p className="text-sm text-on-surface-variant max-w-2xl leading-relaxed">
+                {description || 'Esta é uma prévia da descrição do seu produto. Configure as propriedades de opacidade e desfoque nos sliders ao lado e observe como elas alteram o estilo deste painel em tempo real. Role a página para testar a sincronização de rolagem do vídeo.'}
+              </p>
+            </div>
+
+            <div className="grid gap-8 md:grid-cols-3">
+              {/* Mockup Curriculum Grade */}
+              <div className="md:col-span-2 space-y-6">
+                <div className="glass-panel p-6 rounded-2xl border border-white/10">
+                  <h2 className="text-xl font-bold text-white font-display mb-4">Grade Curricular do Curso</h2>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((num) => (
+                      <div key={num} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
+                        <span className="text-xs text-white/80">Módulo {num}: Conteúdo Exemplo do Curso</span>
+                        <span className="text-[10px] text-on-surface-variant">4 aulas (45m)</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mockup Purchase Card */}
+              <div className="space-y-6">
+                <div className="glass-panel p-6 rounded-2xl border border-white/10 text-center space-y-4 font-sans">
+                  <span className="text-xs text-on-surface-variant">Acesso Vitalício</span>
+                  <div className="text-3xl font-extrabold text-white font-display">
+                    {price ? `${price} AOA` : 'Preço do Produto'}
+                  </div>
+                  <button type="button" className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-lg transition-all active:scale-[0.98]">
+                    Inscrever-se Agora
+                  </button>
+                  <span className="block text-[10px] text-on-surface-variant">Garantia de 7 dias • Suporte Completo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

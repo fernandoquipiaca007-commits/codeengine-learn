@@ -19,6 +19,81 @@ export interface ThemePreset {
   imgUrl: string;
 }
 
+const VIDEO_FILES = [
+  "AI_microchip_hovering_above_gear_202606292229.mp4",
+  "AI_microchip_landing_on_motherboard_202606292158.mp4",
+  "Black_pumpkin_emitting_orange_light_202606292252.mp4",
+  "Bowl_floating_with_honey_1080p_202606292157.mp4",
+  "Butterfly_floating_slow_motion_202606292253.mp4",
+  "Credit_card_hovering_in_air_202606292229.mp4",
+  "Crystal_DNA_helix_rotating_202606292222.mp4",
+  "Crystal_brain_pulsing_light_202606292229.mp4",
+  "Crystal_heart_pulsing_warm_light_202606292252.mp4",
+  "Crystal_lotus_flower_opening_clo_202606292253.mp4",
+  "Crystal_snowflake_floating_and_s_202606292252.mp4",
+  "Crystal_staircase_trending_upwards_202606292229_1.mp4",
+  "Digital_tablet_floating_in_air_202606292229.mp4",
+  "Digital_timer_floating_in_air_202606292252.mp4",
+  "FPV_diving_through_red_rock_202606292251.mp4",
+  "FPV_floating_through_cave_202606292251.mp4",
+  "FPV_flying_above_calm_ocean_202606292251.mp4",
+  "FPV_soaring_above_snow_mountains_202606292251.mp4",
+  "Feather_pen_drawing_light_line_202606292218_1.mp4",
+  "Floating_screen_displaying_code_202606292229.mp4",
+  "Flying_through_mystical_forest_202606292252.mp4",
+  "Game_controller_floating_tilting_1080p_202606292220.mp4",
+  "Glass_and_gold_gears_rotating_202606292158.mp4",
+  "Glass_blender_blending_purple_sm_202606292158.mp4",
+  "Glass_rose_floating_blooming_clo_202606292252.mp4",
+  "Glowing_glass_nodes_connected_by_202606292230.mp4",
+  "Golden_champagne_bubbles_rising_202606292252.mp4",
+  "Golden_key_floating_rotating_202606292222.mp4",
+  "Golden_ribbon_tying_bow_202606292252.mp4",
+  "High_tech_safe_opens_light_Glass_202606292157.mp4",
+  "Holographic_data_sphere_pulsing_202606292221.mp4",
+  "Holographic_globe_spinning_and_d_202606292229.mp4",
+  "Hourglass_with_falling_sand_1080p_202606292209.mp4",
+  "Jellyfish_swimming_upwards_in_mi_202606292253.mp4",
+  "Leaf_with_falling_water_drop_202606292253.mp4",
+  "Lines_of_code_self_write_digital_202606292157.mp4",
+  "Luxury_briefcase_floating_mid_air_202606292229.mp4",
+  "Measuring_tape_unrolling_in_air_202606292253.mp4",
+  "Metallic_soundwaves_morphing_in_air_202606292229.mp4",
+  "Metallic_stamp_pressing_wax_1080p_202606292219.mp4",
+  "Metallic_stopwatch_floating_tick_1080p_202606292219.mp4",
+  "Microphone_floating_with_neon_so_202606292222.mp4",
+  "Olha_assim_o_ponto_que_eu_quer.mp4",
+  "Percentage_symbol_rotating_in_air_202606292252.mp4",
+  "Pocket_watch_gears_turning_mid_air_202606292252.mp4",
+  "Ribbon_shipping_box_floating_mid_202606292221.mp4",
+  "Rocket_lifting_off_neon_smoke_202606292157.mp4",
+  "Rose_quartz_gold_roller_floating_202606292221.mp4",
+  "Swimming_through_coral_reef_202606292251.mp4",
+  "Three_black_stones_floating_water_202606292254.mp4",
+  "Two_rings_floating_twisting_toge_202606292219_1.mp4",
+  "White_and_gold_Koi_fish_202606292254.mp4"
+];
+
+const generatedPresets: ThemePreset[] = VIDEO_FILES.map(file => {
+  const baseName = file.replace(/\.mp4$/, '');
+  let cleanName = baseName.replace(/_\d{8}\d{4}(_\d+)?$/, '');
+  cleanName = cleanName.replace(/_1080p$/, '');
+  cleanName = cleanName.replace(/_/g, ' ');
+  const formattedName = cleanName
+    .split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+
+  return {
+    id: `theme_3d_${baseName}`,
+    name: formattedName + " 3D",
+    description: `Vídeo 3D interativo loop "${formattedName}".`,
+    videoPath: `temas/${file}`,
+    config: { videoOpacity: 0.25, overlayOpacity: 0.70, sectionOpacity: 0.10, blurAmount: 8 },
+    imgUrl: "/theme_3d_interactive.png"
+  };
+});
+
 export const THEME_PRESETS: ThemePreset[] = [
   {
     id: "space_dark",
@@ -28,46 +103,7 @@ export const THEME_PRESETS: ThemePreset[] = [
     config: { videoOpacity: 0.0, overlayOpacity: 0.9, sectionOpacity: 0.15, blurAmount: 12 },
     imgUrl: "/space_dark_theme.png"
   },
-  {
-    id: "theme_3d_gears",
-    name: "Engrenagens de Ouro 3D",
-    description: "Vídeo 3D interativo premium com engrenagens de vidro e ouro orbitando suavemente.",
-    videoPath: "temas/Glass_and_gold_gears_rotating_202606291958.mp4",
-    config: { videoOpacity: 0.25, overlayOpacity: 0.7, sectionOpacity: 0.1, blurAmount: 8 },
-    imgUrl: "/theme_3d_interactive.png"
-  },
-  {
-    id: "theme_3d_dna",
-    name: "Hélice de DNA Cristal",
-    description: "Estrutura rotativa 3D de hélice de DNA com reflexos luminosos de cristal.",
-    videoPath: "temas/Crystal_DNA_helix_rotating_202606292222.mp4",
-    config: { videoOpacity: 0.22, overlayOpacity: 0.72, sectionOpacity: 0.08, blurAmount: 10 },
-    imgUrl: "/theme_3d_interactive.png"
-  },
-  {
-    id: "theme_3d_pumpkin",
-    name: "Abóbora de Fogo 3D",
-    description: "Abóbora escura emitindo luz alaranjada quente, perfeita para temas escuros dramáticos.",
-    videoPath: "temas/Black_pumpkin_emitting_orange_light_202606292252.mp4",
-    config: { videoOpacity: 0.28, overlayOpacity: 0.68, sectionOpacity: 0.12, blurAmount: 6 },
-    imgUrl: "/theme_3d_interactive.png"
-  },
-  {
-    id: "theme_3d_microchip",
-    name: "Microchip IA 3D",
-    description: "Microchip tecnológico flutuando acima de engrenagens futuristas.",
-    videoPath: "temas/AI_microchip_hovering_above_gear_202606292229.mp4",
-    config: { videoOpacity: 0.25, overlayOpacity: 0.7, sectionOpacity: 0.1, blurAmount: 8 },
-    imgUrl: "/theme_3d_interactive.png"
-  },
-  {
-    id: "theme_3d_butterfly",
-    name: "Borboleta Cósmica 3D",
-    description: "Borboleta de luz flutuando em câmera lenta com efeitos luminosos suaves.",
-    videoPath: "temas/Butterfly_floating_slow_motion_202606292253.mp4",
-    config: { videoOpacity: 0.25, overlayOpacity: 0.7, sectionOpacity: 0.1, blurAmount: 8 },
-    imgUrl: "/theme_3d_interactive.png"
-  },
+  ...generatedPresets,
   {
     id: "color_glacial",
     name: "Gelo Glacial (Frio)",
@@ -185,6 +221,18 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
   const hasEntered = useRef(false);
   const directionRef = useRef<"left" | "right" | null>(null);
   const prevVisible = useRef<Set<number>>(new Set());
+
+  const handleVideoHover = (e: React.MouseEvent<HTMLDivElement>, play: boolean) => {
+    const video = e.currentTarget.querySelector('video');
+    if (video) {
+      if (play) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+        video.currentTime = 0;
+      }
+    }
+  };
 
   const totalCards = THEME_PRESETS.length;
   const needsPagination = totalCards > MAX_VISIBLE;
@@ -392,6 +440,8 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
               <div
                 key={preset.id}
                 onClick={() => onSelectPreset(preset)}
+                onMouseEnter={(e) => handleVideoHover(e, true)}
+                onMouseLeave={(e) => handleVideoHover(e, false)}
                 className={`fan-card absolute w-[9.5rem] h-[13.5rem] md:w-[11.5rem] md:h-[16.5rem] rounded-2xl overflow-hidden cursor-pointer border transition-all ${
                   isSelected 
                     ? "border-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] ring-2 ring-primary/40" 
@@ -400,11 +450,29 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
                 style={{ position: 'absolute' }}
               >
                 <div className="relative w-full h-full">
-                  <img 
-                    src={preset.imgUrl} 
-                    alt={preset.name} 
-                    className="absolute inset-0 w-full h-full object-cover pointer-events-none" 
-                  />
+                  {preset.videoPath ? (
+                    preset.videoPath.startsWith("color:") ? (
+                      <div 
+                        style={{ background: preset.config.backgroundStyle }}
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                      />
+                    ) : (
+                      <video 
+                        src={`/${preset.videoPath}`}
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none animate-fade-in"
+                        preload="metadata"
+                        muted
+                        loop
+                        playsInline
+                      />
+                    )
+                  ) : (
+                    <img 
+                      src={preset.imgUrl} 
+                      alt={preset.name} 
+                      className="absolute inset-0 w-full h-full object-cover pointer-events-none" 
+                    />
+                  )}
                   {/* Subtle card glow overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
                   
@@ -436,17 +504,8 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
         >
           {chevron("left")}
         </button>
-        <div className="flex items-center gap-2">
-          {THEME_PRESETS.map((_, i) => (
-            <span 
-              key={i} 
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                i === centerIndex 
-                  ? "bg-primary scale-[1.3]" 
-                  : "bg-white/15"
-              }`} 
-            />
-          ))}
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/60 font-sans select-none">
+          {centerIndex + 1} / {totalCards}
         </div>
         <button 
           type="button"
