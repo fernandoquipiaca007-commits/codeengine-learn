@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
+import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface CollaboratorProductFormProps {
@@ -2485,52 +2486,14 @@ export function CollaboratorProductForm({
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                {/* Option 1: Default theme */}
-                <div 
-                  onClick={() => setThemeVideoPath('')}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between min-h-[120px] ${
-                    themeVideoPath === '' 
-                      ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]' 
-                      : 'bg-white/5 border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div>
-                    <span className="block text-sm font-semibold text-white">Padrão Escuro Espacial</span>
-                    <span className="block text-xs text-on-surface-variant mt-1">
-                      O tema clássico com partículas estelares estáticas e fundo escuro minimalista.
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-primary font-semibold mt-2 uppercase tracking-wider">
-                    {themeVideoPath === '' ? 'Selecionado' : 'Selecionar'}
-                  </span>
-                </div>
-
-                {/* Option 2: 3D interactive animation theme */}
-                <div 
-                  onClick={() => setThemeVideoPath('temas/Olha_assim_o_ponto_que_eu_quer.mp4')}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between min-h-[120px] ${
-                    themeVideoPath === 'temas/Olha_assim_o_ponto_que_eu_quer.mp4' 
-                      ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]' 
-                      : 'bg-white/5 border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div>
-                    <span className="block text-sm font-semibold text-white flex items-center gap-1.5">
-                      Tema 3D Interativo
-                      <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-[9px] font-bold text-primary tracking-wide uppercase">
-                        Premium
-                      </span>
-                    </span>
-                    <span className="block text-xs text-on-surface-variant mt-1 font-sans">
-                      A reprodução do vídeo de fundo (câmera 3D orbitando objetos) é totalmente sincronizada com a rolagem do mouse.
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-primary font-semibold mt-2 uppercase tracking-wider">
-                    {themeVideoPath === 'temas/Olha_assim_o_ponto_que_eu_quer.mp4' ? 'Selecionado' : 'Selecionar'}
-                  </span>
-                </div>
-              </div>
+              <CardFanCarousel 
+                currentPath={themeVideoPath}
+                currentConfig={themeVideoConfig}
+                onSelectPreset={(preset) => {
+                  setThemeVideoPath(preset.videoPath);
+                  setThemeVideoConfig(preset.config);
+                }}
+              />
 
               {themeVideoPath && (
                 <div className="pt-4 border-t border-white/10 space-y-6">

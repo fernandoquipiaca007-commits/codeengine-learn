@@ -1,1 +1,1 @@
-Triggering Vercel deployment for smooth scroll scrubbing: 2026-06-29T08:54:00Z
+Triggering Vercel deployment for CardFanCarousel theme selector: 2026-06-29T19:59:00Z
