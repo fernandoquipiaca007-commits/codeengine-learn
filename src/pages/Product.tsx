@@ -29,6 +29,7 @@ import { useAuthSession } from '../hooks/useAuthSession';
 import { useOwnedProducts } from '../hooks/useOwnedProducts';
 import { queryCache } from '../lib/queryCache';
 import { LazyImage } from '../components/ui/LazyImage';
+import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 
 
 interface ProductProps {
@@ -819,7 +820,10 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   return (
     <ProductPurchaseProvider productId={product.id}>
-    <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+      {product.theme_video_path && (
+        <ScrollTiedBackground videoPath={product.theme_video_path} />
+      )}
+      <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper relative z-10">
       {isPreviewMode && (
         <div className="mb-6 rounded-2xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 p-4 text-sm text-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans animate-pulse">
           <div className="flex items-center gap-2">

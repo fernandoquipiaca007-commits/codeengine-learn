@@ -298,7 +298,8 @@ export function CollaboratorProductForm({
   const [ctaText, setCtaText] = useState('Comprar Agora');
 
   // Customizations
-  const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections'>('details');
+  const [themeVideoPath, setThemeVideoPath] = useState('');
+  const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
 
   const [campaign, setCampaign] = useState<CampaignState>({
     banner_text: '',
@@ -509,9 +510,10 @@ export function CollaboratorProductForm({
             setYoutubeVideoUrl('');
           }
           
-          setStorageUrl(prod.storage_url || '');
+           setStorageUrl(prod.storage_url || '');
           setTagsInput(prod.tags ? prod.tags.join(', ') : '');
           setCtaText(prod.cta_text || 'Comprar Agora');
+          setThemeVideoPath(prod.theme_video_path || '');
 
           // Dual Pricing Values
           setPriceUSD(prod.price ? String(prod.price) : '');
@@ -841,9 +843,9 @@ export function CollaboratorProductForm({
         bonuses,
         benefits,
         customSections,
-        translations,
         affiliateEnabled,
-        affiliateCommissionPct: Number(affiliateCommissionPct) || 0
+        affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
+        themeVideoPath: themeVideoPath || null
       };
 
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -1072,6 +1074,15 @@ export function CollaboratorProductForm({
           }`}
         >
           <Globe2 size={14} className="inline mr-1.5" /> Traduções
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('theme')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+            activeTab === 'theme' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Video size={14} className="inline mr-1.5" /> Tema 3D
         </button>
       </div>
 
@@ -2445,6 +2456,82 @@ export function CollaboratorProductForm({
         {activeTab === 'curriculum' && productId && (
           <div className="space-y-4">
             <CurriculumEditor productId={productId} />
+          </div>
+        )}
+
+        {/* Theme Editor tab */}
+        {activeTab === 'theme' && (
+          <div className="space-y-6">
+            <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+              <div>
+                <h3 className="text-lg font-bold text-white font-display">Tema Visual da Página de Vendas</h3>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  Selecione um tema de fundo dinâmico para a página do seu produto. Temas de vídeo interativos reagem dinamicamente à rolagem da tela (scroll scrubbing) para criar uma experiência cinematográfica incrível.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Option 1: Default theme */}
+                <div 
+                  onClick={() => setThemeVideoPath('')}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between min-h-[120px] ${
+                    themeVideoPath === '' 
+                      ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]' 
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div>
+                    <span className="block text-sm font-semibold text-white">Padrão Escuro Espacial</span>
+                    <span className="block text-xs text-on-surface-variant mt-1">
+                      O tema clássico com partículas estelares estáticas e fundo escuro minimalista.
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-primary font-semibold mt-2 uppercase tracking-wider">
+                    {themeVideoPath === '' ? 'Selecionado' : 'Selecionar'}
+                  </span>
+                </div>
+
+                {/* Option 2: 3D interactive animation theme */}
+                <div 
+                  onClick={() => setThemeVideoPath('temas/Olha_assim_o_ponto_que_eu_quer.mp4')}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between min-h-[120px] ${
+                    themeVideoPath === 'temas/Olha_assim_o_ponto_que_eu_quer.mp4' 
+                      ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.15)]' 
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div>
+                    <span className="block text-sm font-semibold text-white flex items-center gap-1.5">
+                      Tema 3D Interativo
+                      <span className="px-1.5 py-0.5 rounded-full bg-primary/20 text-[9px] font-bold text-primary tracking-wide uppercase">
+                        Premium
+                      </span>
+                    </span>
+                    <span className="block text-xs text-on-surface-variant mt-1 font-sans">
+                      A reprodução do vídeo de fundo (câmera 3D orbitando objetos) é totalmente sincronizada com a rolagem do mouse.
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-primary font-semibold mt-2 uppercase tracking-wider">
+                    {themeVideoPath === 'temas/Olha_assim_o_ponto_que_eu_quer.mp4' ? 'Selecionado' : 'Selecionar'}
+                  </span>
+                </div>
+              </div>
+
+              {themeVideoPath && (
+                <div className="pt-4 border-t border-white/10">
+                  <span className="block text-xs font-semibold text-white mb-2">Prévia do Vídeo de Fundo</span>
+                  <div className="aspect-video w-full max-w-md rounded-xl overflow-hidden bg-black border border-white/10 relative">
+                    <video 
+                      src={`/${themeVideoPath}`} 
+                      className="w-full h-full object-cover" 
+                      controls 
+                      muted
+                      playsInline
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
