@@ -207,9 +207,9 @@
 
   /* ── Glass System ── */
   .glass-panel {
-    background: linear-gradient(135deg, rgba(16, 16, 22, 0.95) 0%, rgba(9, 9, 13, 0.92) 100%);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: linear-gradient(135deg, rgba(16, 16, 22, var(--glass-opacity, 0.95)) 0%, rgba(9, 9, 13, var(--glass-opacity, 0.92)) 100%);
+    backdrop-filter: blur(var(--glass-blur, 24px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 24px));
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow:
       0 8px 24px rgba(0, 0, 0, 0.4),
@@ -217,9 +217,9 @@
   }
 
   .glass-card {
-    background: rgba(15, 15, 20, 0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(15, 15, 20, var(--glass-opacity, 0.92));
+    backdrop-filter: blur(var(--glass-blur, 20px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow:
       0 4px 16px rgba(0, 0, 0, 0.35),

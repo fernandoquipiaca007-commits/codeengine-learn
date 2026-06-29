@@ -2,9 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 
 interface ScrollTiedBackgroundProps {
   videoPath: string;
+  videoOpacity?: number;
+  overlayOpacity?: number;
 }
 
-export function ScrollTiedBackground({ videoPath }: ScrollTiedBackgroundProps) {
+export function ScrollTiedBackground({ 
+  videoPath,
+  videoOpacity = 0.25,
+  overlayOpacity = 0.7
+}: ScrollTiedBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const requestRef = useRef<number | null>(null);
   const targetTimeRef = useRef<number>(0);
@@ -88,12 +94,14 @@ export function ScrollTiedBackground({ videoPath }: ScrollTiedBackgroundProps) {
         playsInline
         webkit-playsinline="true"
         onLoadedMetadata={() => setIsLoaded(true)}
-        className={`w-full h-full object-cover transition-opacity duration-700 ${
-          isLoaded ? 'opacity-[0.25]' : 'opacity-0'
-        }`}
+        style={{ opacity: isLoaded ? videoOpacity : 0 }}
+        className="w-full h-full object-cover transition-opacity duration-700"
       />
       {/* Dark gradient mask to ensure text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/95 z-1" />
+      <div 
+        style={{ opacity: overlayOpacity }}
+        className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/95 z-1" 
+      />
     </div>
   );
 }

@@ -818,12 +818,25 @@ export function Product({ setScreen, productId }: ProductProps) {
     );
   }
 
+  const themeConfig = (product as any).theme_video_config || {};
+  const hasThemeVideo = !!product.theme_video_path;
+
   return (
     <ProductPurchaseProvider productId={product.id}>
-      {product.theme_video_path && (
-        <ScrollTiedBackground videoPath={product.theme_video_path} />
+      {hasThemeVideo && (
+        <ScrollTiedBackground 
+          videoPath={product.theme_video_path} 
+          videoOpacity={themeConfig.videoOpacity}
+          overlayOpacity={themeConfig.overlayOpacity}
+        />
       )}
-      <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper relative z-10">
+      <div 
+        style={hasThemeVideo ? {
+          '--glass-opacity': themeConfig.sectionOpacity ?? 0.1,
+          '--glass-blur': `${themeConfig.blurAmount ?? 8}px`
+        } as React.CSSProperties : {}}
+        className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper relative z-10"
+      >
       {isPreviewMode && (
         <div className="mb-6 rounded-2xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 p-4 text-sm text-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans animate-pulse">
           <div className="flex items-center gap-2">

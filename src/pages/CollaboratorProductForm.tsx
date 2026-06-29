@@ -299,6 +299,12 @@ export function CollaboratorProductForm({
 
   // Customizations
   const [themeVideoPath, setThemeVideoPath] = useState('');
+  const [themeVideoConfig, setThemeVideoConfig] = useState({
+    videoOpacity: 0.25,
+    overlayOpacity: 0.7,
+    sectionOpacity: 0.1,
+    blurAmount: 8
+  });
   const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
 
   const [campaign, setCampaign] = useState<CampaignState>({
@@ -514,6 +520,14 @@ export function CollaboratorProductForm({
           setTagsInput(prod.tags ? prod.tags.join(', ') : '');
           setCtaText(prod.cta_text || 'Comprar Agora');
           setThemeVideoPath(prod.theme_video_path || '');
+          if (prod.theme_video_config) {
+            setThemeVideoConfig({
+              videoOpacity: prod.theme_video_config.videoOpacity ?? 0.25,
+              overlayOpacity: prod.theme_video_config.overlayOpacity ?? 0.7,
+              sectionOpacity: prod.theme_video_config.sectionOpacity ?? 0.1,
+              blurAmount: prod.theme_video_config.blurAmount ?? 8
+            });
+          }
 
           // Dual Pricing Values
           setPriceUSD(prod.price ? String(prod.price) : '');
@@ -845,7 +859,8 @@ export function CollaboratorProductForm({
         customSections,
         affiliateEnabled,
         affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
-        themeVideoPath: themeVideoPath || null
+        themeVideoPath: themeVideoPath || null,
+        themeVideoConfig
       };
 
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -2518,16 +2533,89 @@ export function CollaboratorProductForm({
               </div>
 
               {themeVideoPath && (
-                <div className="pt-4 border-t border-white/10">
-                  <span className="block text-xs font-semibold text-white mb-2">Prévia do Vídeo de Fundo</span>
-                  <div className="aspect-video w-full max-w-md rounded-xl overflow-hidden bg-black border border-white/10 relative">
-                    <video 
-                      src={`/${themeVideoPath}`} 
-                      className="w-full h-full object-cover" 
-                      controls 
-                      muted
-                      playsInline
-                    />
+                <div className="pt-4 border-t border-white/10 space-y-6">
+                  {/* Controles de Visibilidade e Opacidade */}
+                  <div className="grid gap-6 sm:grid-cols-2 bg-white/5 p-4 rounded-xl border border-white/5">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                        <span>Opacidade do Vídeo</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.videoOpacity * 100)}%</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0.05" 
+                        max="1" 
+                        step="0.05" 
+                        value={themeVideoConfig.videoOpacity}
+                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, videoOpacity: Number(e.target.value) }))}
+                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                      />
+                      <span className="block text-[10px] text-on-surface-variant">Controla quão visível o vídeo de fundo fica na página.</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                        <span>Escuridão da Máscara (Overlay)</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="0.95" 
+                        step="0.05" 
+                        value={themeVideoConfig.overlayOpacity}
+                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
+                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                      />
+                      <span className="block text-[10px] text-on-surface-variant">Controla a escuridão do filtro sobre o vídeo de fundo para garantir contraste do texto.</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                        <span>Opacidade dos Painéis (Glassmorphism)</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.sectionOpacity * 100)}%</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0.02" 
+                        max="0.5" 
+                        step="0.01" 
+                        value={themeVideoConfig.sectionOpacity}
+                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, sectionOpacity: Number(e.target.value) }))}
+                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                      />
+                      <span className="block text-[10px] text-on-surface-variant">Controla a opacidade dos painéis (menor opacidade = componentes mais invisíveis/transparentes).</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                        <span>Intensidade do Desfoque (Blur)</span>
+                        <span className="text-primary font-mono">{themeVideoConfig.blurAmount}px</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="24" 
+                        step="1" 
+                        value={themeVideoConfig.blurAmount}
+                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, blurAmount: Number(e.target.value) }))}
+                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                      />
+                      <span className="block text-[10px] text-on-surface-variant">Intensidade do desfoque dos painéis com efeito de vidro fosco.</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="block text-xs font-semibold text-white">Prévia do Vídeo de Fundo</span>
+                    <div className="aspect-video w-full max-w-md rounded-xl overflow-hidden bg-black border border-white/10 relative">
+                      <video 
+                        src={`/${themeVideoPath}`} 
+                        className="w-full h-full object-cover" 
+                        controls 
+                        muted
+                        playsInline
+                      />
+                    </div>
                   </div>
                 </div>
               )}
