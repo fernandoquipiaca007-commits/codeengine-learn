@@ -22,6 +22,11 @@ export function ScrollTiedBackground({ videoPath }: ScrollTiedBackgroundProps) {
       setIsLoaded(true);
     };
 
+    // If metadata is already loaded (common on cached files)
+    if (video.readyState >= 1) {
+      setIsLoaded(true);
+    }
+
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -82,6 +87,7 @@ export function ScrollTiedBackground({ videoPath }: ScrollTiedBackgroundProps) {
         muted
         playsInline
         webkit-playsinline="true"
+        onLoadedMetadata={() => setIsLoaded(true)}
         className={`w-full h-full object-cover transition-opacity duration-700 ${
           isLoaded ? 'opacity-[0.25]' : 'opacity-0'
         }`}
