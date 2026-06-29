@@ -819,23 +819,27 @@ export function Product({ setScreen, productId }: ProductProps) {
   }
 
   const themeConfig = (product as any).theme_video_config || {};
-  const hasThemeVideo = !!product.theme_video_path;
+  const hasTheme = !!product.theme_video_path;
+  const isLight = !!themeConfig.isLight;
 
   return (
     <ProductPurchaseProvider productId={product.id}>
-      {hasThemeVideo && (
+      {hasTheme && (
         <ScrollTiedBackground 
           videoPath={product.theme_video_path} 
           videoOpacity={themeConfig.videoOpacity}
           overlayOpacity={themeConfig.overlayOpacity}
+          backgroundStyle={themeConfig.backgroundStyle}
         />
       )}
       <div 
-        style={hasThemeVideo ? {
+        style={hasTheme ? {
           '--glass-opacity': themeConfig.sectionOpacity ?? 0.1,
           '--glass-blur': `${themeConfig.blurAmount ?? 8}px`
         } as React.CSSProperties : {}}
-        className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper relative z-10"
+        className={`pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper relative z-10 ${
+          isLight ? 'light-theme-page' : ''
+        }`}
       >
       {isPreviewMode && (
         <div className="mb-6 rounded-2xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 p-4 text-sm text-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans animate-pulse">

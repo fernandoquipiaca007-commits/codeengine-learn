@@ -656,3 +656,44 @@ html.has-campaign-banner nav.fixed {
 html.has-campaign-banner .page-wrapper {
   padding-top: calc(48px + 5rem) !important;
 }
+
+/* ── Light Page Theme Overrides ── */
+.light-theme-page {
+  color: #0f172a !important; /* slate-900 */
+}
+.light-theme-page h1, 
+.light-theme-page h2, 
+.light-theme-page h3, 
+.light-theme-page h4, 
+.light-theme-page h5, 
+.light-theme-page h6,
+.light-theme-page strong {
+  color: #0f172a !important;
+}
+.light-theme-page .text-on-surface-variant,
+.light-theme-page .text-white\/60,
+.light-theme-page .text-white\/70,
+.light-theme-page p {
+  color: #334155 !important; /* slate-700 */
+}
+.light-theme-page .glass-panel,
+.light-theme-page .glass-card {
+  background: rgba(255, 255, 255, var(--glass-opacity, 0.75)) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05) !important;
+}
+.light-theme-page .text-white {
+  color: #0f172a !important;
+}
+.light-theme-page .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+.light-theme-page .secondary-btn {
+  background: rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+.light-theme-page .secondary-btn:hover {
+  background: rgba(15, 23, 42, 0.08);
+}
+

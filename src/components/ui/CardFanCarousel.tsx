@@ -11,6 +11,10 @@ export interface ThemePreset {
     overlayOpacity: number;
     sectionOpacity: number;
     blurAmount: number;
+    backgroundStyle?: string;
+    textColor?: string;
+    accentColor?: string;
+    isLight?: boolean;
   };
   imgUrl: string;
 }
@@ -25,36 +29,109 @@ export const THEME_PRESETS: ThemePreset[] = [
     imgUrl: "/space_dark_theme.png"
   },
   {
-    id: "theme_3d_balanced",
-    name: "Tema 3D Equilibrado",
-    description: "Configuração padrão com equilíbrio perfeito entre o vídeo 3D e a legibilidade do conteúdo.",
-    videoPath: "temas/Olha_assim_o_ponto_que_eu_quer.mp4",
+    id: "theme_3d_gears",
+    name: "Engrenagens de Ouro 3D",
+    description: "Vídeo 3D interativo premium com engrenagens de vidro e ouro orbitando suavemente.",
+    videoPath: "temas/Glass_and_gold_gears_rotating_202606291958.mp4",
     config: { videoOpacity: 0.25, overlayOpacity: 0.7, sectionOpacity: 0.1, blurAmount: 8 },
     imgUrl: "/theme_3d_interactive.png"
   },
   {
-    id: "theme_3d_revealed",
-    name: "Tema 3D Revelado",
-    description: "Vídeo de fundo mais claro e visível. Ideal para destacar a animação 3D ao máximo.",
-    videoPath: "temas/Olha_assim_o_ponto_que_eu_quer.mp4",
-    config: { videoOpacity: 0.45, overlayOpacity: 0.45, sectionOpacity: 0.05, blurAmount: 4 },
+    id: "theme_3d_dna",
+    name: "Hélice de DNA Cristal",
+    description: "Estrutura rotativa 3D de hélice de DNA com reflexos luminosos de cristal.",
+    videoPath: "temas/Crystal_DNA_helix_rotating_202606292222.mp4",
+    config: { videoOpacity: 0.22, overlayOpacity: 0.72, sectionOpacity: 0.08, blurAmount: 10 },
     imgUrl: "/theme_3d_interactive.png"
   },
   {
-    id: "theme_3d_neon",
-    name: "Vidro Neon Translúcido",
-    description: "Painéis extremamente transparentes e com desfoque alto, dando a sensação de que flutuam sobre o vídeo.",
-    videoPath: "temas/Olha_assim_o_ponto_que_eu_quer.mp4",
-    config: { videoOpacity: 0.35, overlayOpacity: 0.6, sectionOpacity: 0.02, blurAmount: 16 },
+    id: "theme_3d_pumpkin",
+    name: "Abóbora de Fogo 3D",
+    description: "Abóbora escura emitindo luz alaranjada quente, perfeita para temas escuros dramáticos.",
+    videoPath: "temas/Black_pumpkin_emitting_orange_light_202606292252.mp4",
+    config: { videoOpacity: 0.28, overlayOpacity: 0.68, sectionOpacity: 0.12, blurAmount: 6 },
     imgUrl: "/theme_3d_interactive.png"
   },
   {
-    id: "theme_3d_cinema",
-    name: "Cinema Sombrio",
-    description: "Vídeo sutil em segundo plano com painéis de texto mais visíveis. Foco total em leitura.",
-    videoPath: "temas/Olha_assim_o_ponto_que_eu_quer.mp4",
-    config: { videoOpacity: 0.15, overlayOpacity: 0.85, sectionOpacity: 0.25, blurAmount: 20 },
+    id: "theme_3d_microchip",
+    name: "Microchip IA 3D",
+    description: "Microchip tecnológico flutuando acima de engrenagens futuristas.",
+    videoPath: "temas/AI_microchip_hovering_above_gear_202606292229.mp4",
+    config: { videoOpacity: 0.25, overlayOpacity: 0.7, sectionOpacity: 0.1, blurAmount: 8 },
     imgUrl: "/theme_3d_interactive.png"
+  },
+  {
+    id: "theme_3d_butterfly",
+    name: "Borboleta Cósmica 3D",
+    description: "Borboleta de luz flutuando em câmera lenta com efeitos luminosos suaves.",
+    videoPath: "temas/Butterfly_floating_slow_motion_202606292253.mp4",
+    config: { videoOpacity: 0.25, overlayOpacity: 0.7, sectionOpacity: 0.1, blurAmount: 8 },
+    imgUrl: "/theme_3d_interactive.png"
+  },
+  {
+    id: "color_glacial",
+    name: "Gelo Glacial (Frio)",
+    description: "Fundo gradiente premium em tons de azul escuro e glacial com alto contraste de texto.",
+    videoPath: "color:glacial",
+    config: {
+      videoOpacity: 0.0,
+      overlayOpacity: 0.0,
+      sectionOpacity: 0.1,
+      blurAmount: 12,
+      backgroundStyle: "linear-gradient(135deg, #0b0f19 0%, #1e293b 50%, #020617 100%)",
+      textColor: "#f8fafc",
+      accentColor: "#38bdf8"
+    },
+    imgUrl: "/theme_glacial.png"
+  },
+  {
+    id: "color_cyber",
+    name: "Cyber Violeta (Dark)",
+    description: "Fundo futurista em tons de roxo profundo e magenta neon com painéis translúcidos.",
+    videoPath: "color:cyber",
+    config: {
+      videoOpacity: 0.0,
+      overlayOpacity: 0.0,
+      sectionOpacity: 0.08,
+      blurAmount: 16,
+      backgroundStyle: "linear-gradient(135deg, #09090b 0%, #2e1065 50%, #030712 100%)",
+      textColor: "#f4f4f5",
+      accentColor: "#d946ef"
+    },
+    imgUrl: "/theme_cyber.png"
+  },
+  {
+    id: "color_aurora",
+    name: "Aurora Esmeralda",
+    description: "Tema sofisticado com gradiente verde esmeralda escuro e destaques dourados/verdes.",
+    videoPath: "color:aurora",
+    config: {
+      videoOpacity: 0.0,
+      overlayOpacity: 0.0,
+      sectionOpacity: 0.1,
+      blurAmount: 10,
+      backgroundStyle: "linear-gradient(135deg, #022c22 0%, #064e3b 50%, #020617 100%)",
+      textColor: "#f0fdf4",
+      accentColor: "#34d399"
+    },
+    imgUrl: "/theme_aurora.png"
+  },
+  {
+    id: "color_white",
+    name: "Branco Minimalista",
+    description: "Tema claro de alta qualidade em tons de cinza suave e branco, com tipografia e bordas escuras.",
+    videoPath: "color:white",
+    config: {
+      videoOpacity: 0.0,
+      overlayOpacity: 0.0,
+      sectionOpacity: 0.25,
+      blurAmount: 14,
+      backgroundStyle: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+      textColor: "#0f172a",
+      accentColor: "#2563eb",
+      isLight: true
+    },
+    imgUrl: "/theme_white.png"
   }
 ];
 
@@ -65,6 +142,10 @@ interface CardFanCarouselProps {
     overlayOpacity: number;
     sectionOpacity: number;
     blurAmount: number;
+    backgroundStyle?: string;
+    textColor?: string;
+    accentColor?: string;
+    isLight?: boolean;
   };
   onSelectPreset: (preset: ThemePreset) => void;
 }
@@ -108,12 +189,14 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
   const totalCards = THEME_PRESETS.length;
   const needsPagination = totalCards > MAX_VISIBLE;
 
-  // Determine active preset based on current videoPath and config values
   const getActivePresetIndex = () => {
     const matchedIndex = THEME_PRESETS.findIndex(
       p => p.videoPath === currentPath && 
-      Math.abs(p.config.videoOpacity - currentConfig.videoOpacity) < 0.06 &&
-      Math.abs(p.config.overlayOpacity - currentConfig.overlayOpacity) < 0.06
+      (currentPath.startsWith("color:") 
+        ? p.config.backgroundStyle === currentConfig.backgroundStyle 
+        : Math.abs(p.config.videoOpacity - currentConfig.videoOpacity) < 0.06 &&
+          Math.abs(p.config.overlayOpacity - currentConfig.overlayOpacity) < 0.06
+      )
     );
     return matchedIndex !== -1 ? matchedIndex : 0;
   };
@@ -124,7 +207,7 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
   useEffect(() => {
     const activeIdx = getActivePresetIndex();
     setCenterIndex(activeIdx);
-  }, [currentPath, currentConfig.videoOpacity, currentConfig.overlayOpacity]);
+  }, [currentPath, currentConfig.videoOpacity, currentConfig.overlayOpacity, currentConfig.backgroundStyle]);
 
   const getVisibleMap = useCallback((center: number) => {
     const map = new Map<number, number>();
@@ -299,8 +382,11 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
           {THEME_PRESETS.map((preset, index) => {
             const isSelected = 
               preset.videoPath === currentPath && 
-              Math.abs(preset.config.videoOpacity - currentConfig.videoOpacity) < 0.06 &&
-              Math.abs(preset.config.overlayOpacity - currentConfig.overlayOpacity) < 0.06;
+              (currentPath.startsWith("color:") 
+                ? preset.config.backgroundStyle === currentConfig.backgroundStyle 
+                : Math.abs(preset.config.videoOpacity - currentConfig.videoOpacity) < 0.06 &&
+                  Math.abs(preset.config.overlayOpacity - currentConfig.overlayOpacity) < 0.06
+              );
 
             return (
               <div

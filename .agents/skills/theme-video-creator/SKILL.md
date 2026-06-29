@@ -51,3 +51,31 @@ Ensure all UI panels on top of the background video remain readable and clean:
      backdrop-filter: blur(var(--glass-blur));
    }
    ```
+
+---
+
+## 4. Solid/Gradient Color Themes & Adaptivity
+To configure a color theme instead of a video theme:
+1. Set `theme_video_path` starting with `"color:"` (e.g. `color:white` or `color:glacial`).
+2. Add the following parameters in `theme_video_config`:
+   - `backgroundStyle` (string): CSS gradient or solid color property (e.g. `linear-gradient(...)`).
+   - `textColor` (string): Primary text color override.
+   - `accentColor` (string): Accent color override.
+   - `isLight` (boolean): `true` if it is a light mode theme.
+3. **Light Mode CSS Override:** Toggle the `.light-theme-page` class on the page root. This overrides surface text, labels, and borders to slate-900 / slate-700 colors, and turns glassmorphism panels white-translucent:
+   ```css
+   .light-theme-page { color: #0f172a !important; }
+   .light-theme-page .glass-panel {
+     background: rgba(255, 255, 255, var(--glass-opacity, 0.75)) !important;
+     border: 1px solid rgba(15, 23, 42, 0.08) !important;
+   }
+   ```
+
+---
+
+## 5. Asset Sanitization Rules
+When adding new video files under `public/temas/`, always rename them to avoid URL/routing issues on production servers:
+1. **No spaces or parentheses:** Convert spaces, dashes, and parentheses to single underscores (`_`).
+2. **No ellipses or Unicode symbols:** Eliminate three-dot ellipsis characters (`…`) completely.
+3. **Regex constraint:** Filenames must consist only of `/^[a-zA-Z0-9_]+\.mp4$/`.
+

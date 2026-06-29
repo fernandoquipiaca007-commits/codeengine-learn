@@ -4,19 +4,24 @@ interface ScrollTiedBackgroundProps {
   videoPath: string;
   videoOpacity?: number;
   overlayOpacity?: number;
+  backgroundStyle?: string;
 }
 
 export function ScrollTiedBackground({ 
   videoPath,
   videoOpacity = 0.25,
-  overlayOpacity = 0.7
+  overlayOpacity = 0.7,
+  backgroundStyle
 }: ScrollTiedBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const requestRef = useRef<number | null>(null);
-  const targetTimeRef = useRef<number>(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    if (videoPath.startsWith('color:')) {
+      setIsLoaded(true);
+      return;
+    }
     const video = videoRef.current;
     if (!video) return;
 
@@ -40,6 +45,7 @@ export function ScrollTiedBackground({
   }, [videoPath]);
 
   useEffect(() => {
+    if (videoPath.startsWith('color:')) return;
     const video = videoRef.current;
     if (!video) return;
 
@@ -77,27 +83,38 @@ export function ScrollTiedBackground({
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [isLoaded]);
+  }, [isLoaded, videoPath]);
+
+  const isColorTheme = videoPath.startsWith('color:');
 
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none select-none overflow-hidden z-0 bg-black">
-      {/* Background Video */}
-      <video
-        ref={videoRef}
-        src={`/${videoPath}`}
-        preload="auto"
-        muted
-        playsInline
-        webkit-playsinline="true"
-        onLoadedMetadata={() => setIsLoaded(true)}
-        style={{ opacity: isLoaded ? videoOpacity : 0 }}
-        className="w-full h-full object-cover transition-opacity duration-700"
-      />
+      {isColorTheme ? (
+        <div 
+          style={{ background: backgroundStyle }} 
+          className="w-full h-full"
+        />
+      ) : (
+        /* Background Video */
+        <video
+          ref={videoRef}
+          src={`/${videoPath}`}
+          preload="auto"
+          muted
+          playsInline
+          webkit-playsinline="true"
+          onLoadedMetadata={() => setIsLoaded(true)}
+          style={{ opacity: isLoaded ? videoOpacity : 0 }}
+          className="w-full h-full object-cover transition-opacity duration-700"
+        />
+      )}
       {/* Dark gradient mask to ensure text readability */}
-      <div 
-        style={{ opacity: overlayOpacity }}
-        className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/95 z-1" 
-      />
+      {!isColorTheme && (
+        <div 
+          style={{ opacity: overlayOpacity }}
+          className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/95 z-1" 
+        />
+      )}
     </div>
   );
 }
