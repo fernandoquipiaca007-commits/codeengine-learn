@@ -118,7 +118,7 @@
     "appInstalledDesc": "Você já está rodando a versão otimizada com suporte a uso offline e carregamento instantâneo.",
     "appInstallPromptDesc": "Instale a plataforma em seu dispositivo para ter uma experiência nativa em tela cheia, suporte offline aprimorado, inicialização instantânea e menor consumo de dados.",
     "alreadyLatestVersion": "Você já possui a versão mais recente do aplicativo!",
-    "avatarMaxSizeError": "A imagem deve ter no máximo 2MB.",
+    "avatarMaxSizeError": "A imagem deve ter no máximo 5MB.",
     "avatarInitProfileError": "Não foi possível inicializar os dados de perfil.",
     "avatarSuccess": "Foto de perfil atualizada com sucesso!",
     "avatarError": "Erro ao carregar imagem.",
@@ -515,5 +515,39 @@
     "lessons": "aulas",
     "afterPurchase": "Após compra",
     "lessonsTitle": "Aulas"
+  },
+  "collaborator": {
+    "dashboardTitle": "Painel do Criador",
+    "dashboardSubtitle": "Olá, {{name}}! Gerencie seu saldo e acompanhe seu extrato.",
+    "tabWalletUsd": "USD · Stripe",
+    "tabWalletAoa": "AOA · FaciPay",
+    "tabAffiliates": "Meus Afiliados",
+    "tabFounder": "Membro Fundador",
+    "tabAnalytics": "Análise",
+    "analytics": {
+      "title": "Análise de Tráfego e Vendas",
+      "description": "Monitore as visitas, conversões e o faturamento total gerado pelas páginas de seus produtos.",
+      "allProducts": "Todos os Produtos",
+      "productSelector": "Filtrar por Produto",
+      "periodSelector": "Período",
+      "days7": "Últimos 7 dias",
+      "days30": "Últimos 30 dias",
+      "days90": "Últimos 90 dias",
+      "views": "Visualizações",
+      "conversions": "Conversões (Vendas)",
+      "conversionRate": "Taxa de Conversão",
+      "revenueUsd": "Faturamento USD",
+      "revenueAoa": "Faturamento AOA",
+      "chartTitle": "Tendência de Visitas e Conversões",
+      "loading": "Carregando dados de análise...",
+      "noData": "Nenhum dado encontrado para este período."
+    }
+  },
+  "countryModal": {
+    "title": "Selecione o seu País",
+    "description": "Para aceder às funcionalidades de monetização, precisamos saber em que país está registado.",
+    "confirm": "Confirmar País",
+    "selectPlaceholder": "Selecione o seu país...",
+    "errorSave": "Erro ao guardar o país. Tente novamente."
   }
 }

@@ -26,6 +26,7 @@ export interface Product {
   fastpay_link?: string | null;
   created_at: string;
   updated_at: string;
+  collaborator?: any;
 }
 
 export interface Category {

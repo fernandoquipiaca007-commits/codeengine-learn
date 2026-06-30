@@ -63,6 +63,25 @@ export function News({ setScreen }: NewsProps) {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [onboardingInterests, setOnboardingInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadOnboardingInterests() {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('user_onboarding')
+          .select('interests')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (data?.interests) {
+          setOnboardingInterests(data.interests);
+        }
+      } else {
+        setOnboardingInterests([]);
+      }
+    }
+    void loadOnboardingInterests();
+  }, [user?.id]);
   const [memberId, setMemberId] = useState<string | null>(null);
   const [likedArticles, setLikedArticles] = useState<string[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -133,10 +152,43 @@ export function News({ setScreen }: NewsProps) {
       };
 
       const baseNews = await queryCache.get(`news-featured-base-${locale}`, fetcher, { revalidate });
-      setNews(baseNews);
+
+      // Sort baseNews by user interests first
+      const sortedNews = [...baseNews].sort((a, b) => {
+        const getNewsScore = (article: any, interestsList: string[]) => {
+          if (!interestsList || interestsList.length === 0) return 0;
+          let score = 0;
+          const normalize = (str: string) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+          const normInterests = interestsList.map(normalize);
+          
+          const catNorm = normalize(article.category || '');
+          if (normInterests.some(i => catNorm.includes(i) || i.includes(catNorm))) {
+            score += 3;
+          }
+          
+          if (article.tags && article.tags.length > 0) {
+            for (const tag of article.tags) {
+              const tagNorm = normalize(tag);
+              if (normInterests.some(i => tagNorm.includes(i) || i.includes(tagNorm))) {
+                score += 1;
+              }
+            }
+          }
+          return score;
+        };
+
+        const scoreA = getNewsScore(a, onboardingInterests);
+        const scoreB = getNewsScore(b, onboardingInterests);
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime();
+      });
+
+      setNews(sortedNews);
 
       // Split into Featured (tagged with 'Destaque')
-      const featured = baseNews.filter(a => 
+      const featured = sortedNews.filter(a => 
         a.tags?.some(tag => tag.toLowerCase() === 'destaque')
       ).slice(0, 4);
 
@@ -215,14 +267,45 @@ export function News({ setScreen }: NewsProps) {
       const cacheKey = `news-grid-${selectedCategory || 'all'}-${sortBy}-${pageToLoad}-${locale}`;
       const fetchedNews = await queryCache.get(cacheKey, fetcher, { revalidate });
 
+      const getNewsScore = (article: any, interestsList: string[]) => {
+        if (!interestsList || interestsList.length === 0) return 0;
+        let score = 0;
+        const normalize = (str: string) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        const normInterests = interestsList.map(normalize);
+        
+        const catNorm = normalize(article.category || '');
+        if (normInterests.some(i => catNorm.includes(i) || i.includes(catNorm))) {
+          score += 3;
+        }
+        
+        if (article.tags && article.tags.length > 0) {
+          for (const tag of article.tags) {
+            const tagNorm = normalize(tag);
+            if (normInterests.some(i => tagNorm.includes(i) || i.includes(tagNorm))) {
+              score += 1;
+            }
+          }
+        }
+        return score;
+      };
+
+      const sortedFetchedNews = [...fetchedNews].sort((a, b) => {
+        const scoreA = getNewsScore(a, onboardingInterests);
+        const scoreB = getNewsScore(b, onboardingInterests);
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
+        }
+        return new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime();
+      });
+
       if (append) {
         setNormalArticles(prev => {
           const existingIds = new Set(prev.map(a => a.id));
-          const filtered = fetchedNews.filter((a: any) => !existingIds.has(a.id));
+          const filtered = sortedFetchedNews.filter((a: any) => !existingIds.has(a.id));
           return [...prev, ...filtered];
         });
       } else {
-        setNormalArticles(fetchedNews);
+        setNormalArticles(sortedFetchedNews);
       }
 
       setHasMore(fetchedNews.length === PAGE_SIZE);
@@ -745,46 +828,11 @@ export function News({ setScreen }: NewsProps) {
 
 
   return (
-    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
+    <div className="pt-16 pb-8 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       
-      {/* Header */}
-      <header className="mb-12 md:mb-16 flex flex-col items-start max-w-3xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center gap-3 mb-6"
-        >
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <Newspaper className="w-6 h-6 text-primary" />
-          </div>
-          <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
-            {t('news.badge') || 'Knowledge Hub'}
-          </span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[72px] leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6"
-        >
-          {t('news.heading') || 'Knowledge Hub'}
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="font-sans text-base sm:text-lg text-on-surface-variant max-w-2xl"
-        >
-          {t('news.subtitle') || 'Stay ahead with the latest insights on AI, automation, SaaS and technology. Exclusive content for community members.'}
-        </motion.p>
-      </header>
-
       {/* 1. Featured News Carousel Section */}
       {featuredArticles.length > 0 && !selectedCategory && (
-        <div className="relative mb-20 group">
+        <div className="relative mb-8 group">
           {featuredArticles.map((article, idx) => {
             if (idx !== carouselIndex) return null;
 
@@ -795,7 +843,7 @@ export function News({ setScreen }: NewsProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="relative rounded-3xl overflow-hidden min-h-[480px] sm:min-h-[520px] flex flex-col justify-end p-6 sm:p-12 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
+                className="relative rounded-2xl overflow-hidden min-h-[260px] sm:min-h-[290px] flex flex-col justify-end p-4 sm:p-6 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]"
               >
                 {/* Background Cover Image */}
                 <div className="absolute inset-0 z-0">
@@ -812,7 +860,7 @@ export function News({ setScreen }: NewsProps) {
                 </div>
 
                 {/* Content Overlay */}
-                <div className="relative z-10 max-w-3xl space-y-4">
+                <div className="relative z-10 max-w-3xl space-y-2">
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 font-display text-[10px] font-bold uppercase tracking-wider`}>
                       {article.category}
@@ -827,22 +875,22 @@ export function News({ setScreen }: NewsProps) {
                     )}
                   </div>
 
-                  <h2 className="font-display text-2xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
+                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight tracking-tight">
                     {article.title}
                   </h2>
 
-                  <p className="font-sans text-sm sm:text-base text-on-surface-variant leading-relaxed line-clamp-3 max-w-2xl">
+                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed line-clamp-2 max-w-2xl">
                     {article.excerpt}
                   </p>
 
                   {/* Actions Row */}
-                  <div className="flex items-center gap-4 pt-4 flex-wrap">
+                  <div className="flex items-center gap-4 pt-2 flex-wrap">
                     <button
                       onClick={() => {
                         setSelectedArticle(article);
                         void trackView(article.id);
                       }}
-                      className="px-6 py-3 rounded-full bg-[#6366f1] text-white font-display text-xs font-bold tracking-widest uppercase hover:bg-[#5053e3] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all flex items-center gap-2"
+                      className="px-4.5 py-2 rounded-full bg-[#6366f1] text-white font-display text-[11px] font-bold tracking-widest uppercase hover:bg-[#5053e3] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all flex items-center gap-2"
                     >
                       <span>{t('news.readMore') || 'Read More'}</span>
                       <ArrowRight className="w-4 h-4" />
@@ -850,7 +898,7 @@ export function News({ setScreen }: NewsProps) {
 
                     <button
                       onClick={() => toggleLike(article.id)}
-                      className={`px-5 py-3 rounded-full border font-display text-xs font-bold tracking-widest uppercase flex items-center gap-2 transition-all ${
+                      className={`px-4 py-2 rounded-full border font-display text-[11px] font-bold tracking-widest uppercase flex items-center gap-2 transition-all ${
                         likedArticles.includes(article.id)
                           ? 'bg-red-500/10 border-red-500/30 text-red-400'
                           : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
@@ -987,13 +1035,12 @@ export function News({ setScreen }: NewsProps) {
               >
                 {/* Thumbnail */}
                 {article.thumbnail_url && (
-                  <div className="relative w-full h-48 overflow-hidden flex-shrink-0">
+                  <div className="relative w-full h-48 overflow-hidden flex-shrink-0 bg-black/40 flex items-center justify-center">
                     <LazyImage
                       src={article.thumbnail_url}
                       alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
                   </div>
                 )}
 
@@ -1082,17 +1129,16 @@ export function News({ setScreen }: NewsProps) {
           <div className="bg-[#0f0f0f] border border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative">
             
             {/* Header / Cover Image */}
-            <div className="relative h-48 sm:h-64 flex-shrink-0">
+            <div className="relative h-48 sm:h-64 flex-shrink-0 bg-black/40 flex items-center justify-center">
               {selectedArticle.thumbnail_url ? (
                 <LazyImage
                   src={selectedArticle.thumbnail_url}
                   alt={selectedArticle.title}
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full object-contain"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary/20 via-black to-secondary/20" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] to-transparent" />
               
               {/* Close Button */}
               <button
@@ -1284,8 +1330,8 @@ export function News({ setScreen }: NewsProps) {
               {/* Main Story Content Card */}
               <div className="z-10 flex-1 flex flex-col justify-center gap-4 my-8">
                 {selectedArticle.thumbnail_url && (
-                  <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/5">
-                    <LazyImage src={selectedArticle.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                  <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/5 bg-black/40 flex items-center justify-center">
+                    <LazyImage src={selectedArticle.thumbnail_url} alt="" className="max-w-full max-h-full object-contain" />
                   </div>
                 )}
                 <h2 className="font-display text-lg font-extrabold text-white leading-tight tracking-tight">

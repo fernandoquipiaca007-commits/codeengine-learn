@@ -113,7 +113,7 @@
     "appInstalledDesc": "Vous exécutez déjà la version optimisée avec support hors ligne et chargement instantané.",
     "appInstallPromptDesc": "Installez la plateforme sur votre appareil pour une expérience native plein écran, un support hors ligne amélioré, un démarrage instantané et une consommation de données réduite.",
     "alreadyLatestVersion": "Vous disposez déjà de la dernière version de l'application !",
-    "avatarMaxSizeError": "L'image ne doit pas dépasser 2 Mo.",
+    "avatarMaxSizeError": "L'image ne doit pas dépasser 5 Mo.",
     "avatarInitProfileError": "Impossible d'initialiser les données de profil.",
     "avatarSuccess": "Photo de profil mise à jour avec succès !",
     "avatarError": "Erreur lors du chargement de l'image.",
@@ -486,5 +486,39 @@
     "lessons": "leçons",
     "afterPurchase": "Après l'achat",
     "lessonsTitle": "Leçons"
+  },
+  "collaborator": {
+    "dashboardTitle": "Tableau de Bord du Créateur",
+    "dashboardSubtitle": "Bonjour, {{name}} ! Gérez votre solde et suivez votre extrait.",
+    "tabWalletUsd": "USD · Stripe",
+    "tabWalletAoa": "AOA · FaciPay",
+    "tabAffiliates": "Mes Affiliés",
+    "tabFounder": "Membre Fondateur",
+    "tabAnalytics": "Analyses",
+    "analytics": {
+      "title": "Analyses de Trafic & Ventes",
+      "description": "Suivez les visites, les conversions et le chiffre d'affaires total généré par vos pages produits.",
+      "allProducts": "Tous les Produits",
+      "productSelector": "Filtrer par Produit",
+      "periodSelector": "Période",
+      "days7": "7 derniers jours",
+      "days30": "30 derniers jours",
+      "days90": "90 derniers jours",
+      "views": "Vues de Page",
+      "conversions": "Conversions (Ventes)",
+      "conversionRate": "Taux de Conversion",
+      "revenueUsd": "Revenu USD",
+      "revenueAoa": "Revenu AOA",
+      "chartTitle": "Tendance des Visites & Conversions",
+      "loading": "Chargement des données d'analyse...",
+      "noData": "Aucune donnée trouvée pour cette période."
+    }
+  },
+  "countryModal": {
+    "title": "Sélectionnez votre Pays",
+    "description": "Pour accéder aux fonctionnalités de monétisation, nous devons savoir dans quel pays vous êtes enregistré.",
+    "confirm": "Confirmer le Pays",
+    "selectPlaceholder": "Sélectionnez votre pays...",
+    "errorSave": "Erreur lors de l'enregistrement du pays. Veuillez réessayer."
   }
 }

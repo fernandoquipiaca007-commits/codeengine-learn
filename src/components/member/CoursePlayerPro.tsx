@@ -35,6 +35,13 @@ interface Lesson {
   video_duration_seconds?: number;
 }
 
+interface Module {
+  id: string;
+  title: string;
+  description?: string;
+  display_order: number;
+}
+
 interface ProgressRow {
   lesson_id: string;
   position_seconds: number;
@@ -52,6 +59,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
   // Estado básico
   const [product, setProduct] = useState<{ title: string; cover_url: string } | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState<ProgressRow[]>([]);
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(initialLessonId || null);
@@ -62,7 +70,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   
   // Estado da Mídia
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'video' | 'audio' | 'link' | null>(null);
+  const [mediaType, setMediaType] = useState<'video' | 'audio' | 'link' | 'cloudflare-stream' | null>(null);
   const [loading, setLoading] = useState(true);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -101,9 +109,11 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
       const data = await getProductProgress(productId);
       setProduct(data.product);
 
-      // Aulas ordenadas
+      // Aulas e Módulos ordenados
       const allLessons = data.lessons || [];
+      const allModules = data.modules || [];
       setLessons(allLessons);
+      setModules(allModules);
       setProgress(data.progress || []);
 
       // Determinar aula inicial
@@ -465,6 +475,81 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
   const currentLesson = lessons.find((l) => l.id === currentLessonId);
 
+  function renderPlaylistLessonRow(lesson: Lesson) {
+    const status = lessonStatus(lesson.id);
+    const isActive = lesson.id === currentLessonId;
+    const progressRecord = progress.find((p) => p.lesson_id === lesson.id);
+    let progressPercent = 0;
+    if (status === 'completed') progressPercent = 100;
+    else if (progressRecord?.position_seconds && lesson.video_duration_seconds) {
+      progressPercent = (progressRecord.position_seconds / lesson.video_duration_seconds) * 100;
+    }
+
+    return (
+      <button
+        key={lesson.id}
+        onClick={() => setCurrentLessonId(lesson.id)}
+        className={`w-full text-left rounded-2xl p-3 transition-all relative overflow-hidden group ${
+          isActive
+            ? 'bg-primary/10 border-2 border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+            : 'bg-white/5 hover:bg-white/10 border-2 border-transparent'
+        }`}
+      >
+        {progressPercent > 0 && !isActive && (
+          <div
+            className="absolute bottom-0 left-0 h-1 bg-primary/40 transition-all opacity-50"
+            style={{ width: `${progressPercent}%` }}
+          />
+        )}
+        {isActive && (
+          <div
+            className="absolute bottom-0 left-0 h-1.5 bg-primary transition-all shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+            style={{ width: `${progressPercent > 0 ? progressPercent : 100}%` }}
+          />
+        )}
+
+        <div className="flex items-center gap-4 relative z-10">
+          <div className={`flex-shrink-0 w-16 h-12 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105 ${isActive ? 'bg-primary shadow-lg shadow-primary/30' : 'bg-[#1a1a1a] border border-white/5'}`}>
+            {status === 'completed' ? (
+              <CheckCircle className={`w-5 h-5 ${isActive ? 'text-white' : 'text-green-400'}`} />
+            ) : status === 'in_progress' ? (
+              <PlayCircle className={`w-5 h-5 ${isActive ? 'text-white' : 'text-primary'}`} />
+            ) : (
+              <Play className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-500 ml-1'}`} />
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0 py-1">
+            <p
+              className={`text-sm font-semibold truncate leading-tight ${
+                isActive ? 'text-primary' : 'text-gray-200 group-hover:text-white'
+              }`}
+            >
+              {lesson.title}
+            </p>
+            <div className="flex items-center gap-2 text-[11px] font-medium text-gray-500 mt-1.5">
+              {lesson.video_duration_seconds ? (
+                <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTime(lesson.video_duration_seconds)}</span>
+              ) : (
+                <span>{t('coursePlayer.interactiveLesson', { defaultValue: 'Aula interativa' })}</span>
+              )}
+              {status === 'in_progress' && progressPercent > 0 && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-gray-600" />
+                  <span className="text-primary">{Math.round(progressPercent)}%</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {status === 'completed' && !isActive && (
+            <CheckCircle className="w-5 h-5 text-green-500/50 flex-shrink-0 mr-1" />
+          )}
+        </div>
+      </button>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 bg-black min-h-screen">
@@ -545,8 +630,19 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                   </div>
                 )}
 
-                {/* 3. Media Player (Video/Audio) */}
-                {mediaUrl && mediaType !== 'link' && !mediaError && (
+                {/* 3. Cloudflare Stream Player */}
+                {mediaUrl && mediaType === 'cloudflare-stream' && !mediaError && (
+                  <iframe
+                    src={mediaUrl}
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowFullScreen
+                    className="w-full h-full border-0 absolute inset-0 rounded-2xl"
+                    title="Cloudflare Stream Player"
+                  />
+                )}
+
+                {/* 3. Custom HTML5 Media Player (Video/Audio) */}
+                {mediaUrl && mediaType !== 'link' && mediaType !== 'cloudflare-stream' && !mediaError && (
                   <>
                     <video
                       ref={videoRef}
@@ -770,85 +866,47 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                     </p>
                   </div>
 
-                  {/* Lista de Aulas Plana (Estilo Design Branch) */}
-                  <div className="space-y-2 overflow-y-auto custom-scrollbar pr-1 pb-4 flex-1">
-                    {lessons.map((lesson) => {
-                      const status = lessonStatus(lesson.id);
-                      const isActive = lesson.id === currentLessonId;
-                      // Calcular % se tivermos a duration
-                      const progressRecord = progress.find((p) => p.lesson_id === lesson.id);
-                      let progressPercent = 0;
-                      if (status === 'completed') progressPercent = 100;
-                      else if (progressRecord?.position_seconds && lesson.video_duration_seconds) {
-                        progressPercent = (progressRecord.position_seconds / lesson.video_duration_seconds) * 100;
-                      }
+                  {/* Lista de Aulas Agrupadas por Módulo */}
+                  <div className="space-y-6 overflow-y-auto custom-scrollbar pr-1 pb-4 flex-1">
+                    {/* 1. Aulas sem Módulo (Introdução) */}
+                    {(() => {
+                      const unassigned = lessons.filter((l) => !l.module_id);
+                      if (unassigned.length === 0) return null;
+                      return (
+                        <div className="space-y-2">
+                          <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pl-1 font-display">
+                            {t('coursePlayer.introduction', { defaultValue: 'Introdução' })}
+                          </h4>
+                          <div className="space-y-2">
+                            {unassigned.map(renderPlaylistLessonRow)}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* 2. Módulos e suas Aulas */}
+                    {modules.map((mod) => {
+                      const modLessons = lessons
+                        .filter((l) => l.module_id === mod.id)
+                        .sort((a, b) => a.display_order - b.display_order);
+                      if (modLessons.length === 0) return null;
 
                       return (
-                        <button
-                          key={lesson.id}
-                          onClick={() => setCurrentLessonId(lesson.id)}
-                          className={`w-full text-left rounded-2xl p-3 transition-all relative overflow-hidden group ${
-                            isActive
-                              ? 'bg-primary/10 border-2 border-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
-                              : 'bg-white/5 hover:bg-white/10 border-2 border-transparent'
-                          }`}
-                        >
-                          {/* Barra de progresso estática no fundo do card da playlist */}
-                          {progressPercent > 0 && !isActive && (
-                            <div
-                              className="absolute bottom-0 left-0 h-1 bg-primary/40 transition-all opacity-50"
-                              style={{ width: `${progressPercent}%` }}
-                            />
-                          )}
-                          {isActive && (
-                             <div
-                             className="absolute bottom-0 left-0 h-1.5 bg-primary transition-all shadow-[0_0_10px_rgba(59,130,246,0.8)]"
-                             style={{ width: `${progressPercent > 0 ? progressPercent : 100}%` }}
-                           />
-                          )}
-
-                          <div className="flex items-center gap-4 relative z-10">
-                            {/* Thumbnail Quadrada Premium */}
-                            <div className={`flex-shrink-0 w-16 h-12 rounded-xl overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105 ${isActive ? 'bg-primary shadow-lg shadow-primary/30' : 'bg-[#1a1a1a] border border-white/5'}`}>
-                              {status === 'completed' ? (
-                                <CheckCircle className={`w-5 h-5 ${isActive ? 'text-white' : 'text-green-400'}`} />
-                              ) : status === 'in_progress' ? (
-                                <PlayCircle className={`w-5 h-5 ${isActive ? 'text-white' : 'text-primary'}`} />
-                              ) : (
-                                <Play className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-500 ml-1'}`} />
-                              )}
-                            </div>
-
-                            {/* Informação da Aula */}
-                            <div className="flex-1 min-w-0 py-1">
-                              <p
-                                className={`text-sm font-semibold truncate leading-tight ${
-                                  isActive ? 'text-primary' : 'text-gray-200 group-hover:text-white'
-                                }`}
-                              >
-                                {lesson.title}
+                        <div key={mod.id} className="space-y-2 border-t border-white/5 pt-4 first:border-t-0 first:pt-0">
+                          <div>
+                            <h4 className="text-sm font-bold text-primary pl-1 font-display">
+                              {mod.title}
+                            </h4>
+                            {mod.description && (
+                              <p className="text-[10px] text-gray-400 mt-1 pl-1 leading-relaxed font-sans">
+                                {mod.description}
                               </p>
-                              <div className="flex items-center gap-2 text-[11px] font-medium text-gray-500 mt-1.5">
-                                {lesson.video_duration_seconds ? (
-                                  <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {formatTime(lesson.video_duration_seconds)}</span>
-                                ) : (
-                                  <span>{t('coursePlayer.interactiveLesson')}</span>
-                                )}
-                                {status === 'in_progress' && progressPercent > 0 && (
-                                  <>
-                                    <span className="w-1 h-1 rounded-full bg-gray-600" />
-                                    <span className="text-primary">{Math.round(progressPercent)}%</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Icon de Completado Lateral */}
-                            {status === 'completed' && !isActive && (
-                              <CheckCircle className="w-5 h-5 text-green-500/50 flex-shrink-0 mr-1" />
                             )}
                           </div>
-                        </button>
+                          <div className="space-y-2 mt-2">
+                            {modLessons.map(renderPlaylistLessonRow)}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>

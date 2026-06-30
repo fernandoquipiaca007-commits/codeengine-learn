@@ -63,7 +63,35 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
   async function searchProducts(searchQuery: string) {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // 1. Fetch active search boost campaigns
+      const { data: ads } = await supabase
+        .from('ad_campaigns')
+        .select('*, product:products(*)')
+        .eq('status', 'active')
+        .eq('placement', 'search_boost');
+
+      // Filter matched ads and calculate scores
+      const matchedAds = (ads || [])
+        .filter((ad: any) => {
+          if (!ad.product || ad.product.status !== 'active') return false;
+          const matchTitle = ad.product.title?.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchDesc = ad.product.description?.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchTitle || matchDesc;
+        })
+        .map((ad: any) => {
+          const bid = parseFloat(ad.base_bid || '1.00');
+          const score = bid * (ad.quality_score || 1.0);
+          return {
+            ...ad.product,
+            isSponsored: true,
+            campaignId: ad.id,
+            adScore: score
+          };
+        })
+        .sort((a: any, b: any) => b.adScore - a.adScore);
+
+      // 2. Fetch organic results
+      const { data: organic, error } = await supabase
         .from('products')
         .select('*')
         .eq('status', 'active')
@@ -71,7 +99,25 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
         .limit(10);
 
       if (error) throw error;
-      setResults(data || []);
+
+      // Filter organic results to remove duplicates
+      const sponsoredIds = new Set(matchedAds.map((a: any) => a.id));
+      const organicFiltered = (organic || []).filter((p: any) => !sponsoredIds.has(p.id));
+
+      // Combine results: sponsored at the top
+      const combined = [...matchedAds, ...organicFiltered].slice(0, 10);
+      setResults(combined);
+
+      // Track impressions (fire-and-forget)
+      combined.forEach(prod => {
+        if (prod.isSponsored && prod.campaignId) {
+          fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ campaignId: prod.campaignId })
+          }).catch(() => {});
+        }
+      });
     } catch (error) {
       console.error('Error searching products:', error);
       setResults([]);
@@ -82,6 +128,14 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
 
   function handleSelectProduct(product: Product) {
     saveRecentSearch(query);
+    if ((product as any).isSponsored && (product as any).campaignId) {
+      // Track click (fire-and-forget)
+      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId: (product as any).campaignId })
+      }).catch(() => {});
+    }
     onNavigate('product', product.id);
     onClose();
   }
@@ -160,8 +214,13 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
                       className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-display text-sm font-semibold text-white group-hover:text-primary transition-colors truncate">
-                        {product.title}
+                      <h3 className="font-display text-sm font-semibold text-white group-hover:text-primary transition-colors truncate flex items-center gap-1.5">
+                        <span>{product.title}</span>
+                        {product.isSponsored && (
+                          <span className="inline-flex items-center px-1.5 py-0.25 rounded text-[8px] font-semibold bg-primary/20 text-primary border border-primary/30 uppercase tracking-wider flex-shrink-0">
+                            Patrocinado
+                          </span>
+                        )}
                       </h3>
                       <p className="font-sans text-xs text-on-surface-variant truncate mt-1">
                         {product.description}

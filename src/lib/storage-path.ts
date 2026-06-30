@@ -37,6 +37,51 @@ export function getStoragePath(storageUrl: string): string {
  * Prefers cover_storage_path (new) over cover_url (legacy).
  * For storage paths, generates the full public URL.
  */
+/**
+ * Resolves any public storage URL or path (Supabase or Cloudflare R2).
+ */
+export function getPublicStorageUrl(
+  urlOrPath: string | null | undefined,
+  bucketName: string,
+  updatedAt?: string | null
+): string {
+  if (!urlOrPath?.trim()) return '';
+  const trimmed = urlOrPath.trim();
+
+  let baseUrl = '';
+  if (trimmed.startsWith('r2://')) {
+    const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL || 'https://pub-c54d043e644fcfd77ca7c0307a26917b.r2.dev';
+    baseUrl = `${R2_PUBLIC_URL}/${trimmed.replace('r2://', '')}`;
+  } else if (trimmed.startsWith('http')) {
+    baseUrl = trimmed;
+  } else {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ffdqqiunkzhtgbgaojay.supabase.co';
+    const cleanPath = trimmed.replace(/^\//, '');
+    const cleanBaseUrl = supabaseUrl.replace(/\/$/, '');
+    baseUrl = `${cleanBaseUrl}/storage/v1/object/public/${bucketName}/${cleanPath}`;
+  }
+
+  // Add cache buster if updatedAt is present to bypass browser cache
+  if (updatedAt) {
+    try {
+      const t = new Date(updatedAt).getTime();
+      if (!isNaN(t)) {
+        const separator = baseUrl.includes('?') ? '&' : '?';
+        baseUrl = `${baseUrl}${separator}t=${t}`;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return baseUrl;
+}
+
+/**
+ * Resolves the display URL for a product cover image.
+ * Prefers cover_storage_path (new) over cover_url (legacy).
+ * For storage paths, generates the full public URL.
+ */
 export function getProductCoverUrl(
   product: {
     cover_url?: string | null;
@@ -47,8 +92,6 @@ export function getProductCoverUrl(
   },
   activeLocale?: string
 ): string {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ffdqqiunkzhtgbgaojay.supabase.co';
-
   const currentLang = activeLocale || product.language || 'pt';
 
   // By default, prefer cover_storage_path (new) over cover_url (legacy)
@@ -67,12 +110,12 @@ export function getProductCoverUrl(
 
   if (!path) return '';
 
-  let baseUrl = path;
-  // It's a relative path — build the public URL
-  if (!path.startsWith('http') && supabaseUrl) {
-    const cleanPath = path.replace(/^\//, '');
-    const cleanBaseUrl = supabaseUrl.replace(/\/$/, '');
-    baseUrl = `${cleanBaseUrl}/storage/v1/object/public/product-covers/${cleanPath}`;
+  let baseUrl = '';
+  if (path.startsWith('r2://')) {
+    const R2_PUBLIC_URL = import.meta.env.VITE_R2_PUBLIC_URL || 'https://pub-c54d043e644fcfd77ca7c0307a26917b.r2.dev';
+    baseUrl = `${R2_PUBLIC_URL}/${path.replace('r2://', '')}`;
+  } else {
+    baseUrl = getPublicStorageUrl(path, 'product-covers');
   }
 
   // Add cache buster if updated_at is present to bypass browser cache

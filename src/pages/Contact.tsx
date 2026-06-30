@@ -72,62 +72,62 @@ export function Contact({ setScreen }: ContactProps) {
   };
 
   return (
-    <div className="pt-40 pb-24 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden">
+    <div className="pt-16 pb-6 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden">
       {/* Hero Section */}
-      <header className="mb-24 flex flex-col items-start max-w-4xl">
+      <header className="mb-4 flex flex-col items-start max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center gap-3 mb-6 animate__animated animate__fadeInDown">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Mail className="w-6 h-6 text-primary" />
+          <div className="flex items-center gap-2 mb-3 animate__animated animate__fadeInDown">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Mail className="w-4.5 h-4.5 text-primary" />
             </div>
-            <span className="font-display text-sm font-semibold tracking-widest uppercase text-primary">
+            <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
               {t('contact.title')}
             </span>
           </div>
 
-          <h1 className="animate__animated animate__slideInRight font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-6">
+          <h1 className="animate__animated animate__slideInRight font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-3">
             {t('contact.heroTitle')}
           </h1>
 
-          <p className="animate__animated animate__fadeInUp font-sans text-base sm:text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
+          <p className="animate__animated animate__fadeInUp font-sans text-xs sm:text-sm text-on-surface-variant max-w-3xl leading-relaxed">
             {t('contact.heroSubtitle')}
           </p>
         </motion.div>
       </header>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-4">
         {/* Contact Categories */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="lg:col-span-1 space-y-6"
+          className="lg:col-span-1 space-y-4"
         >
-          <h2 className="font-display text-xl sm:text-2xl font-semibold text-white mb-6">
+          <h2 className="font-display text-lg sm:text-xl font-semibold text-white mb-3">
             {t('contact.howCanWeHelp')}
           </h2>
           
           {categories.map((category, index) => (
             <div
               key={category.value}
-              className="glass-card rounded-xl p-6 relative group hover:scale-105 transition-transform duration-300"
+              className="glass-card rounded-xl p-4 relative group hover:scale-105 transition-transform duration-300"
             >
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0">
-                  <category.icon className="w-6 h-6 text-primary" />
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0">
+                  <category.icon className="w-4.5 h-4.5 text-primary" />
                 </div>
                 
                 <div>
-                  <h3 className="font-display text-lg font-semibold text-white mb-2">
+                  <h3 className="font-display text-base font-semibold text-white mb-1">
                     {category.label}
                   </h3>
-                  <p className="font-sans text-sm text-on-surface-variant">
+                  <p className="font-sans text-xs text-on-surface-variant">
                     {category.value === 'support' && t('contact.categories.supportDesc')}
                     {category.value === 'partnership' && t('contact.categories.partnershipDesc')}
                     {category.value === 'content' && t('contact.categories.contentDesc')}
@@ -139,14 +139,14 @@ export function Contact({ setScreen }: ContactProps) {
           ))}
           
           {/* Info Box */}
-          <div className="glass-panel rounded-xl p-6">
-            <h3 className="font-display text-lg font-semibold text-white mb-4">
+          <div className="glass-panel rounded-xl p-4">
+            <h3 className="font-display text-base font-semibold text-white mb-2">
               {t('contact.responseTime')}
             </h3>
-            <p className="font-sans text-sm text-on-surface-variant mb-4">
+            <p className="font-sans text-xs text-on-surface-variant mb-2">
               {t('contact.responseTimeDesc')}
             </p>
-            <p className="font-sans text-xs text-on-surface-variant">
+            <p className="font-sans text-[10px] text-on-surface-variant">
               {t('contact.premiumSupport')}
             </p>
           </div>
@@ -159,27 +159,27 @@ export function Contact({ setScreen }: ContactProps) {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="lg:col-span-2"
         >
-          <div className="glass-panel rounded-2xl p-8 md:p-12 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl p-5 md:p-6 relative overflow-hidden">
             <div className="absolute w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0"></div>
             
             {status === 'success' ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-12"
+                className="text-center py-8"
               >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/5 flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle className="w-10 h-10 text-green-400" />
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/5 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-400" />
                 </div>
-                <h3 className="font-display text-3xl font-bold text-white mb-4">
+                <h3 className="font-display text-xl font-bold text-white mb-2">
                   {t('contact.formSuccess.title')}
                 </h3>
-                <p className="font-sans text-lg text-on-surface-variant mb-8">
+                <p className="font-sans text-sm text-on-surface-variant mb-6">
                   {t('contact.formSuccess.desc')}
                 </p>
                 <button
                   onClick={() => setStatus('idle')}
-                  className="font-display text-sm font-semibold tracking-widest uppercase px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-on-primary hover:shadow-[0_0_40px_rgba(192,193,255,0.5)] transition-all"
+                  className="font-display text-xs font-semibold tracking-widest uppercase px-6 py-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80 text-on-primary hover:shadow-[0_0_40px_rgba(192,193,255,0.5)] transition-all"
                 >
                   {t('contact.formSuccess.button')}
                 </button>
@@ -188,30 +188,30 @@ export function Contact({ setScreen }: ContactProps) {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-12"
+                className="text-center py-8"
               >
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-red-500/20 to-red-500/5 flex items-center justify-center mx-auto mb-6">
-                  <AlertCircle className="w-10 h-10 text-red-400" />
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500/20 to-red-500/5 flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="w-8 h-8 text-red-400" />
                 </div>
-                <h3 className="font-display text-3xl font-bold text-white mb-4">
+                <h3 className="font-display text-xl font-bold text-white mb-2">
                   {t('contact.formError.title')}
                 </h3>
-                <p className="font-sans text-lg text-on-surface-variant mb-8">
+                <p className="font-sans text-sm text-on-surface-variant mb-6">
                   {t('contact.formError.desc')}
                 </p>
                 <button
                   onClick={() => setStatus('idle')}
-                  className="font-display text-sm font-semibold tracking-widest uppercase px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-on-primary hover:shadow-[0_0_40px_rgba(192,193,255,0.5)] transition-all"
+                  className="font-display text-xs font-semibold tracking-widest uppercase px-6 py-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80 text-on-primary hover:shadow-[0_0_40px_rgba(192,193,255,0.5)] transition-all"
                 >
                   {t('contact.formError.button')}
                 </button>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="grid md:grid-cols-2 gap-4">
                   {/* Name */}
                   <div>
-                    <label className="block font-display text-sm font-semibold text-white mb-2">
+                    <label className="block font-display text-xs font-semibold text-white mb-1.5">
                       {t('contact.name')}
                     </label>
                     <input
@@ -220,14 +220,14 @@ export function Contact({ setScreen }: ContactProps) {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                       placeholder={t('contact.namePlaceholder')}
                     />
                   </div>
 
                   {/* Email */}
                   <div>
-                    <label className="block font-display text-sm font-semibold text-white mb-2">
+                    <label className="block font-display text-xs font-semibold text-white mb-1.5">
                       {t('contact.email')}
                     </label>
                     <input
@@ -236,23 +236,23 @@ export function Contact({ setScreen }: ContactProps) {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                       placeholder={t('contact.emailPlaceholder')}
                     />
                   </div>
                 </div>
                 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4">
                   {/* Category */}
                   <div>
-                    <label className="block font-display text-sm font-semibold text-white mb-2">
+                    <label className="block font-display text-xs font-semibold text-white mb-1.5">
                       {t('contact.category')}
                     </label>
                     <select
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     >
                       {categories.map(cat => (
                         <option key={cat.value} value={cat.value} className="bg-surface">
@@ -264,7 +264,7 @@ export function Contact({ setScreen }: ContactProps) {
                   
                   {/* Subject */}
                   <div>
-                    <label className="block font-display text-sm font-semibold text-white mb-2">
+                    <label className="block font-display text-xs font-semibold text-white mb-1.5">
                       {t('contact.subject')}
                     </label>
                     <input
@@ -273,7 +273,7 @@ export function Contact({ setScreen }: ContactProps) {
                       value={formData.subject}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                       placeholder={t('contact.subjectPlaceholder')}
                     />
                   </div>
@@ -281,7 +281,7 @@ export function Contact({ setScreen }: ContactProps) {
 
                 {/* Message */}
                 <div>
-                  <label className="block font-display text-sm font-semibold text-white mb-2">
+                  <label className="block font-display text-xs font-semibold text-white mb-1.5">
                     {t('contact.message')}
                   </label>
                   <textarea
@@ -289,8 +289,8 @@ export function Contact({ setScreen }: ContactProps) {
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    rows={6}
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                    rows={4}
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                     placeholder={t('contact.messagePlaceholder')}
                   />
                 </div>
@@ -299,16 +299,16 @@ export function Contact({ setScreen }: ContactProps) {
                 <button
                   type="submit"
                   disabled={status === 'sending'}
-                  className="w-full md:w-auto font-display text-sm font-semibold tracking-widest uppercase px-8 py-4 rounded-full bg-gradient-to-r from-primary to-primary/80 text-on-primary hover:shadow-[0_0_40px_rgba(192,193,255,0.5)] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full md:w-auto font-display text-xs font-semibold tracking-widest uppercase px-6 py-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80 text-on-primary hover:shadow-[0_0_40px_rgba(192,193,255,0.5)] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {status === 'sending' ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div>
                       {t('contact.sending')}
                     </>
                   ) : (
                     <>
-                      <Send className="w-5 h-5" />
+                      <Send className="w-4 h-4" />
                       {t('contact.send')}
                     </>
                   )}
@@ -324,22 +324,22 @@ export function Contact({ setScreen }: ContactProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
-        className="mt-24"
+        className="mt-12"
       >
-        <h2 className="font-display text-4xl font-bold text-white mb-12 text-center">
+        <h2 className="font-display text-2xl font-bold text-white mb-6 text-center">
           {t('contact.faq.title')}
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-4">
           {((t('contact.faq.questions', { returnObjects: true }) as any[]) || []).map((faq: { q: string; a: string }, index: number) => (
             <div
               key={index}
-              className="glass-card rounded-xl p-6 hover:scale-105 transition-transform duration-300"
+              className="glass-card rounded-xl p-4 hover:scale-105 transition-transform duration-300"
             >
-              <h3 className="font-display text-lg font-semibold text-white mb-3">
+              <h3 className="font-display text-base font-semibold text-white mb-2">
                 {faq.q}
               </h3>
-              <p className="font-sans text-sm text-on-surface-variant">
+              <p className="font-sans text-xs text-on-surface-variant">
                 {faq.a}
               </p>
             </div>

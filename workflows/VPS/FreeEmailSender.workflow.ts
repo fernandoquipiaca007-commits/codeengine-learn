@@ -34,7 +34,7 @@ import { workflow, node, links } from '@n8n-as-code/transformer';
     name: 'Free Email Sender',
     active: true,
     isArchived: false,
-    settings: { executionOrder: 'v1' },
+    settings: { executionOrder: 'v1', binaryMode: 'separate' },
 })
 export class FreeEmailSenderWorkflow {
     // =====================================================================
@@ -114,31 +114,43 @@ for (const item of $input.all()) {
   let htmlLinesContent = '';
   
   if (emailType === 'forgot_password') {
-    const lines = text.split('\\\\n');
+    // Extract the 6-digit OTP code using regex
+    const otpMatch = text.match(/\\b\\d{6}\\b/);
+    const otpCode = otpMatch ? otpMatch[0] : '';
+    
+    // Remove the OTP code and trailing colons from the body text to keep it clean
+    let cleanText = text;
+    if (otpCode) {
+      cleanText = text.replace(otpCode, '').replace(/:\\s*$/, '').replace(/:\\s*\\n/, '\\n');
+    }
+    
+    const lines = cleanText.split('\\n');
     const processedLines = lines.map(line => {
       const trimmed = line.trim();
       if (trimmed === '') return '<br>';
       if (trimmed === '---') return '<hr style="border: 1px solid #e5e7eb; margin: 20px 0;">';
-      
-      // If the line consists of exactly 6 digits, it is the OTP code!
-      if (/^\\\\d{6}$/.test(trimmed)) {
-        return \`
-          <div style="text-align: center; margin: 30px 0;">
-            <span style="font-family: monospace; font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #c0c1ff; background-color: #1e1b4b; padding: 12px 24px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: inline-block;">\${trimmed}</span>
-          </div>
-        \`;
-      }
-      return \`<p style="margin: 10px 0; color: #374151; line-height: 1.6;">\${line}</p>\`;
+      return \`<p style="margin: 10px 0; color: #374151; line-height: 1.6; font-size: 15px;">\${line}</p>\`;
     });
-    htmlLinesContent = processedLines.join('\\\\n');
+    
+    htmlLinesContent = processedLines.join('\\n');
+    
+    if (otpCode) {
+      htmlLinesContent += \`
+        <div style="text-align: center; margin: 35px 0; padding: 25px; background-color: #f5f3ff; border: 1px dashed #c0c1ff; border-radius: 12px;">
+          <p style="margin: 0 0 12px 0; color: #4f46e5; font-size: 13px; font-weight: bold; letter-spacing: 0.1em; text-transform: uppercase;">Código de Confirmação</p>
+          <span style="font-family: monospace; font-size: 42px; font-weight: bold; letter-spacing: 8px; color: #1e1b4b; background-color: #ffffff; padding: 12px 28px; border-radius: 8px; border: 1px solid #e0e0ff; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">\${otpCode}</span>
+          <p style="margin: 12px 0 0 0; color: #6b7280; font-size: 12px;">Copie e cole este código para redefinir sua senha de forma segura.</p>
+        </div>
+      \`;
+    }
   } else {
-    const lines = text.split('\\\\n');
+    const lines = text.split('\\n');
     const htmlLines = lines.map(line => {
       if (line.trim() === '') return '<br>';
       if (line.trim() === '---') return '<hr style="border: 1px solid #e5e7eb; margin: 20px 0;">';
       return \`<p style="margin: 10px 0; color: #374151; line-height: 1.6;">\${line}</p>\`;
     });
-    htmlLinesContent = htmlLines.join('\\\\n');
+    htmlLinesContent = htmlLines.join('\\n');
   }
 
   const currentYear = new Date().getFullYear();

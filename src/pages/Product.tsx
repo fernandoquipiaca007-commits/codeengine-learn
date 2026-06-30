@@ -22,12 +22,14 @@ import { resolveContentLocale } from '../lib/content-locale';
 import { useLocale } from '../contexts/LocaleContext';
 import { ProductPurchaseProvider, useProductPurchaseOptional } from '../contexts/ProductPurchaseContext';
 import { getProductCoverUrl } from '../lib/storage-path';
+import { useUserCountry } from '../contexts/UserCountryContext';
 import { ReferralProgress } from '../components/referral/ReferralProgress';
 import { ReferralShareCard } from '../components/referral/ReferralShareCard';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { useOwnedProducts } from '../hooks/useOwnedProducts';
 import { queryCache } from '../lib/queryCache';
 import { LazyImage } from '../components/ui/LazyImage';
+import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 
 
 interface ProductProps {
@@ -56,16 +58,16 @@ const TRANSLATIONS = {
 
 const SECTION_TITLES = {
   pt: {
-    title: 'Adquira o seu exemplar',
-    subtitle: 'Escolha o melhor método de pagamento e comece a ler/assistir agora mesmo.'
+    title: 'Garanta o seu acesso',
+    subtitle: 'Escolha o método de pagamento e comece a usar agora mesmo.'
   },
   en: {
-    title: 'Get Your Copy',
-    subtitle: 'Choose the best payment method and start reading/watching right away.'
+    title: 'Get Your Access',
+    subtitle: 'Choose the best payment method and start using right away.'
   },
   fr: {
-    title: 'Obtenez votre exemplaire',
-    subtitle: 'Choisissez le meilleur mode de paiement et commencez à lire/regarder dès maintenant.'
+    title: 'Obtenez votre accès',
+    subtitle: 'Choisissez le meilleur mode de paiement et commencez à utiliser dès maintenant.'
   }
 };
 
@@ -122,9 +124,14 @@ function ProductCouponSection({ productId, originalPrice, onCouponApplied }: Pro
 
 export function Product({ setScreen, productId }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
+  const { isAngola } = useUserCountry();
   const { t } = useTranslation(['pages', 'common'], { lng: locale });
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
+  
+  const params = new URLSearchParams(window.location.search);
+  const isPreviewMode = params.get('preview') === 'true';
+
   const [product, setProduct] = useState<ProductType | null>(null);
   const [customCopy, setCustomCopy] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -173,6 +180,7 @@ export function Product({ setScreen, productId }: ProductProps) {
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
+  const [collaboratorInfo, setCollaboratorInfo] = useState<any>(null);
   const prevLocaleRef = useRef(locale);
   const mainCtaRef = useRef<HTMLDivElement>(null);
   const promoVideoRef = useRef<HTMLVideoElement>(null);
@@ -313,12 +321,44 @@ export function Product({ setScreen, productId }: ProductProps) {
             ...trCustomCopy
           };
 
+          // Fetch collaborator details if present
+          let collaboratorInfo = null;
+          if ((localized as any).collaborator_id) {
+            try {
+              const { data: collab } = await supabase
+                .from('collaborators')
+                .select('id, display_name, member_id, bio, specialty')
+                .eq('id', (localized as any).collaborator_id)
+                .maybeSingle();
+              
+              if (collab) {
+                const { data: mem } = await supabase
+                  .from('members')
+                  .select('profile_data')
+                  .eq('id', collab.member_id)
+                  .maybeSingle();
+                
+                collaboratorInfo = {
+                  id: collab.id,
+                  display_name: collab.display_name,
+                  bio: collab.bio,
+                  specialty: collab.specialty,
+                  avatar_url: mem?.profile_data?.avatar_url || null,
+                  cover_url: mem?.profile_data?.cover_url || mem?.profile_data?.banner_url || null,
+                };
+              }
+            } catch (err) {
+              console.error('[ProductPage] Error fetching collaboratorInfo:', err);
+            }
+          }
+
           const row = localized as unknown as Record<string, unknown>;
           return {
             product: localized,
             pageLayout: parsePageLayoutConfig(row.page_layout_config),
             customCopy: mergedCustomCopy,
-            availableLanguages: Array.from(availLangs)
+            availableLanguages: Array.from(availLangs),
+            collaboratorInfo
           };
         };
 
@@ -331,6 +371,7 @@ export function Product({ setScreen, productId }: ProductProps) {
           setPageLayout(cachedData.pageLayout);
           setCustomCopy(cachedData.customCopy);
           setAvailableLanguages(cachedData.availableLanguages || []);
+          setCollaboratorInfo(cachedData.collaboratorInfo || null);
         } else if (!silent) {
           console.log('[ProductPage] no product found, setting to null');
           setProduct(null);
@@ -625,22 +666,16 @@ export function Product({ setScreen, productId }: ProductProps) {
     return Math.max(0, basePrice - discount - referralDiscount);
   }
 
-  function renderFormattedPrice(usdPrice: number, aoaPriceVal?: number | null) {
-    if (isUserInAngola() && aoaPriceVal != null && aoaPriceVal > 0) {
-      let finalAoa = aoaPriceVal;
-      const listPriceVal = safePrice(product?.price);
-      if (listPriceVal > 0) {
-        const ratio = usdPrice / listPriceVal;
-        finalAoa = aoaPriceVal * ratio;
-      }
-      
-      const formatted = new Intl.NumberFormat('pt-AO', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }).format(finalAoa);
-      return `${formatted} Kz`;
-    }
-    return `$ ${usdPrice}`;
+  function getFinalAoaPrice(): number {
+    if (!product) return 0;
+    const originalAoa = Number((product as any).aoa_price || Math.round(product.price * 920));
+    if (originalAoa <= 0) return 0;
+    
+    const listPrice = safePrice(product?.price);
+    if (listPrice <= 0) return originalAoa;
+    
+    const discountRatio = getFinalPrice() / listPrice;
+    return Math.max(0, Math.round(originalAoa * discountRatio));
   }
 
   function translateDbText(text?: string | null): string {
@@ -755,7 +790,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   if (loading) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
+      <div className="pt-24 pb-12 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
@@ -763,7 +798,7 @@ export function Product({ setScreen, productId }: ProductProps) {
 
   if (!product) {
     return (
-      <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
+      <div className="pt-24 pb-12 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
         <div className="glass-panel rounded-2xl p-12 text-center">
           <h2 className="font-display text-3xl font-bold text-white mb-4">{t('product.productNotFound')}</h2>
           <p className="font-sans text-lg text-on-surface-variant mb-8">
@@ -783,9 +818,43 @@ export function Product({ setScreen, productId }: ProductProps) {
     );
   }
 
+  const themeConfig = (product as any).theme_video_config || {};
+  const hasTheme = !!product.theme_video_path;
+  const isLight = !!themeConfig.isLight;
+
   return (
     <ProductPurchaseProvider productId={product.id}>
-    <div className="pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper">
+      {hasTheme && (
+        <ScrollTiedBackground 
+          videoPath={product.theme_video_path} 
+          videoOpacity={themeConfig.videoOpacity}
+          overlayOpacity={themeConfig.overlayOpacity}
+          backgroundStyle={themeConfig.backgroundStyle}
+        />
+      )}
+      <div 
+        style={hasTheme ? {
+          '--glass-opacity': themeConfig.sectionOpacity ?? 0.1,
+          '--glass-blur': `${themeConfig.blurAmount ?? 8}px`
+        } as React.CSSProperties : {}}
+        className={`pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper relative z-10 ${
+          isLight ? 'light-theme-page' : ''
+        }`}
+      >
+      {isPreviewMode && (
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 p-4 text-sm text-orange-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans animate-pulse">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <strong className="font-semibold block">Modo de Pré-visualização</strong>
+              <span className="text-orange-300/90 text-xs">Este produto ainda não está ativo ou aprovado. Esta página de rascunho é visível apenas para você (criador).</span>
+            </div>
+          </div>
+          <div className="px-3 py-1 rounded bg-orange-500/20 text-orange-300 text-xs font-semibold uppercase tracking-wider border border-orange-500/30 self-start sm:self-auto">
+            Rascunho
+          </div>
+        </div>
+      )}
       {/* Campaign Banner */}
       <CampaignBanner productId={product.id} onSpecialPrice={setCampaignPrice} onCampaignActive={setCampaignEndDate} />
       
@@ -793,27 +862,128 @@ export function Product({ setScreen, productId }: ProductProps) {
       {setScreen && (
         <button
           onClick={() => setScreen('library')}
-          className="mb-5 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
+          className="mb-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="font-display text-xs font-semibold tracking-widest uppercase">{t('product.back')}</span>
         </button>
       )}
 
-      {/* Hero Section */}
-      <section ref={heroRef} className="grid gap-8 md:grid-cols-[1.15fr_0.85fr] md:gap-12 items-center mb-16 relative">
-        {/* Content Left */}
+      {/* Hero Section — 3 columns on md: [left-panel | content | cover] */}
+      <section ref={heroRef} className="grid gap-6 md:grid-cols-[220px_1fr_auto] md:gap-8 items-start mb-16 relative">
+
+        {/* ── LEFT: Creator / CodeEngine Panel ── */}
+        <div className="hidden md:flex flex-col gap-3">
+          {(product as any).collaborator_id && collaboratorInfo ? (
+            /* Collaborator Card */
+            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+              {/* Avatar circular + verified */}
+              <div className="flex flex-col items-center pt-6 pb-4 px-4 gap-3 relative">
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
+                    {collaboratorInfo.avatar_url ? (
+                      <img src={collaboratorInfo.avatar_url} alt={collaboratorInfo.display_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary font-bold text-2xl font-display">
+                        {collaboratorInfo.display_name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {/* Verified badge — green circle with checkmark (Instagram/Meta style) */}
+                  <span
+                    title="Criador Verificado pela CodeEngine"
+                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
+                    style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </span>
+                </div>
+
+                <div className="text-center space-y-0.5">
+                  <p className="font-display font-bold text-white text-sm leading-tight">{collaboratorInfo.display_name}</p>
+                  {collaboratorInfo.specialty && (
+                    <p className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest">{collaboratorInfo.specialty}</p>
+                  )}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                    <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Verificado
+                  </span>
+                </div>
+              </div>
+
+              {/* Bio */}
+              {collaboratorInfo.bio && (
+                <div className="px-4 pb-5 border-t border-white/5 pt-3">
+                  <p className="text-[11px] text-on-surface-variant font-sans leading-relaxed line-clamp-6">
+                    {collaboratorInfo.bio}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* CodeEngine Official Card */
+            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+              <div className="flex flex-col items-center pt-6 pb-4 px-4 gap-3">
+                {/* Logo placeholder */}
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/40 shadow-xl bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center">
+                    <span className="font-display font-black text-2xl text-white tracking-tight">CE</span>
+                  </div>
+                  {/* Always verified for CodeEngine */}
+                  <span
+                    title="Produto Oficial CodeEngine"
+                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
+                    style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </span>
+                </div>
+
+                <div className="text-center space-y-0.5">
+                  <p className="font-display font-bold text-white text-sm">CodeEngine</p>
+                  <p className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest">Loja Oficial</p>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                    <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Verificado
+                  </span>
+                </div>
+              </div>
+              <div className="px-4 pb-5 border-t border-white/5 pt-3">
+                <p className="text-[11px] text-on-surface-variant font-sans leading-relaxed">
+                  Produto oficial desenvolvido pelos especialistas da CodeEngine — conteúdo premium, curado e certificado pela nossa equipa.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+
         <div className="flex flex-col gap-5 relative z-10 min-w-0 w-full">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel w-fit border border-primary/30">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
-              {t('product.premiumBadge')}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel w-fit border border-primary/30">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+              <span className="font-display text-xs font-semibold tracking-widest uppercase text-primary">
+                {t('product.premiumBadge')}
+              </span>
+            </div>
+
+            {/* Mobile: inline author badge */}
+            <div className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-emerald-500/30 text-xs font-semibold text-white font-display">
+              {/* green verified dot */}
+              <span className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}>
+                <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              {(product as any).collaborator_id && collaboratorInfo ? collaboratorInfo.display_name : 'Oficial CodeEngine'}
+            </div>
           </div>
-          
+
           <h1 className={`${
-            (product.title || '').length > 45 
-              ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[36px]' 
+            (product.title || '').length > 45
+              ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[36px]'
               : 'text-3xl sm:text-4xl md:text-[44px]'
           } font-display leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/70 break-words`}>
             {hasCopy(customCopy?.hero_headline) ? (
@@ -829,8 +999,8 @@ export function Product({ setScreen, productId }: ProductProps) {
               product.title || 'Produto'
             )}
           </h1>
-          
-          <div className="max-w-xl">
+
+          <div className="max-w-xl pl-1">
             {renderPersuasiveDescription(description)}
           </div>
 
@@ -850,10 +1020,10 @@ export function Product({ setScreen, productId }: ProductProps) {
               />
             </div>
           )}
-          
+
           {/* Tags */}
           {Array.isArray(product.tags) && product.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 pl-1">
               {product.tags.map((tag, index) => (
                 <span
                   key={index}
@@ -865,11 +1035,11 @@ export function Product({ setScreen, productId }: ProductProps) {
             </div>
           )}
         </div>
-        
-        {/* Image Right */}
-        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px]" style={{ perspective: '1200px' }}>
+
+        {/* ── RIGHT: Cover Image ── */}
+        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px] md:max-w-[320px]" style={{ perspective: '1200px' }}>
           <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
-          <div ref={coverRef} className="relative z-10 w-full max-w-full sm:max-w-[350px] will-change-transform">
+          <div ref={coverRef} className="relative z-10 w-full max-w-full sm:max-w-[300px] will-change-transform">
             <LazyImage
               src={getProductCoverUrl(product, locale)}
               alt={product.title}
@@ -880,6 +1050,8 @@ export function Product({ setScreen, productId }: ProductProps) {
         </div>
       </section>
 
+
+
       {/* Mobile sticky CTA */}
       <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-surface/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out ${
         showStickyButton 
@@ -889,11 +1061,23 @@ export function Product({ setScreen, productId }: ProductProps) {
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
             <p className="font-sans text-xs text-on-surface-variant">{t('product.finalPrice')}</p>
-            <p className="font-mono text-xl font-bold text-primary">{renderFormattedPrice(getFinalPrice(), (product as any)?.aoa_price)}</p>
+            {isAngola ? (
+              <>
+                <p className="font-mono text-base font-bold text-amber-500">
+                  Kz {Number(getFinalAoaPrice()).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
+                </p>
+                <p className="text-[9px] text-on-surface-variant/80">
+                  ou $ {getFinalPrice()} USD {discount > 0 && `(Desconto de $${discount.toFixed(2)} USD aplicado)`}
+                </p>
+              </>
+            ) : (
+              <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
+            )}
           </div>
           <ProductActionButton
             productId={product.id}
             price={getFinalPrice()}
+            originalPrice={listPrice}
             isFree={product.is_free || false}
             productType={product.product_type || 'file'}
             productTitle={product.title}
@@ -905,6 +1089,7 @@ export function Product({ setScreen, productId }: ProductProps) {
             onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
             onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
             onRequireAuth={() => setScreen && setScreen('signup')}
+            preferAoa={isAngola}
           />
         </div>
       </div>
@@ -985,34 +1170,52 @@ export function Product({ setScreen, productId }: ProductProps) {
       )}
 
       {/* Seção de Compra - Realocada para o Final */}
-      <section className="mt-16 pt-12 border-t border-white/10 max-w-2xl mx-auto w-full relative">
-        <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full mix-blend-screen pointer-events-none"></div>
-        <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-white/10 relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-5">
+      <section className="mt-12 pt-8 border-t border-white/10 max-w-xl mx-auto w-full relative">
+        <div className="absolute inset-0 bg-primary/5 blur-[80px] rounded-full mix-blend-screen pointer-events-none"></div>
+        <div className="glass-panel rounded-2xl p-4 sm:p-6 border border-white/10 relative z-10 shadow-[0_15px_40px_rgba(0,0,0,0.5)] flex flex-col gap-4">
           <div className="text-center">
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2">
+            <h2 className="font-display text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-1.5">
               {SECTION_TITLES[currentLang]?.title || SECTION_TITLES.pt.title}
             </h2>
-            <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">
+            <p className="font-sans text-xs text-on-surface-variant max-w-sm mx-auto">
               {SECTION_TITLES[currentLang]?.subtitle || SECTION_TITLES.pt.subtitle}
             </p>
           </div>
           
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
-              {(campaignPrice || discount > 0) ? (
-                <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
-                  <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/50 line-through">
-                    {tDict.before} {renderFormattedPrice(listPrice, (product as any)?.aoa_price)}
+          <div className="flex flex-col gap-3.5">
+            <div className="flex flex-col items-center justify-center gap-1 w-full">
+              {isAngola ? (
+                <>
+                  <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-amber-500 tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
+                    Kz {Number(getFinalAoaPrice()).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
                   </span>
-                  <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/30">|</span>
-                  <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                    {tDict.now} {renderFormattedPrice(getFinalPrice(), (product as any)?.aoa_price)}
+                  <span className="font-sans text-[11px] text-on-surface-variant">
+                    Equivalente a $ {getFinalPrice()} USD
                   </span>
-                </div>
+                  {discount > 0 && (
+                    <span className="text-xs text-green-400 font-sans block mt-1 font-bold animate-pulse">
+                      Desconto de ${discount.toFixed(2)} USD aplicado ao preço em dólar
+                    </span>
+                  )}
+                </>
               ) : (
-                <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                  {renderFormattedPrice(getFinalPrice(), (product as any)?.aoa_price)}
-                </span>
+                <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
+                  {(campaignPrice || discount > 0) ? (
+                    <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
+                      <span className="text-sm sm:text-base font-semibold text-on-surface-variant/50 line-through">
+                        {tDict.before} ${listPrice}
+                      </span>
+                      <span className="text-sm sm:text-base font-semibold text-on-surface-variant/30">|</span>
+                      <span className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                        {tDict.now} ${getFinalPrice()}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                      $ {getFinalPrice()}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
             
@@ -1090,6 +1293,7 @@ export function Product({ setScreen, productId }: ProductProps) {
               <ProductActionButton
                 productId={product.id}
                 price={getFinalPrice()}
+                originalPrice={listPrice}
                 isFree={product.is_free || false}
                 productType={product.product_type || 'file'}
                 productTitle={product.title}
@@ -1100,6 +1304,7 @@ export function Product({ setScreen, productId }: ProductProps) {
                 onNavigateToLibrary={() => setScreen && setScreen('member', 'biblioteca')}
                 onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
                 onRequireAuth={() => setScreen && setScreen('signup')}
+                preferAoa={isAngola}
               />
             </div>
 

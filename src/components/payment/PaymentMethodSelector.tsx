@@ -15,6 +15,7 @@ interface PaymentMethodSelectorProps {
     price: number;
     aoa_price?: number | null;
     fastpay_link?: string | null;
+    originalPrice: number;
   };
   onSelectStripe: () => void;
   onSelectFastPay: () => void;
@@ -34,6 +35,7 @@ export function PaymentMethodSelector({
   const [fastpayEnabled, setFastpayEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasFastPayLink = !!product.fastpay_link;
+  const computedAoaPrice = product.aoa_price || Math.round(product.originalPrice * 920);
 
   useEffect(() => {
     async function checkFastPay() {
@@ -133,7 +135,7 @@ export function PaymentMethodSelector({
               </div>
               <div className="text-sm text-on-surface-variant mt-0.5">
                 <span className="font-sans font-bold text-orange-400">
-                  {product.aoa_price ? `${product.aoa_price.toFixed(2)} AOA` : `${product.price.toFixed(2)} Kz`}
+                  {Math.round(computedAoaPrice).toLocaleString('pt-AO')} Kz
                 </span>
                 {" • " + t('paymentMethodSelector.fastPayDesc')}
               </div>
@@ -148,9 +150,7 @@ export function PaymentMethodSelector({
             <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-on-surface-variant leading-relaxed">
               {t('paymentMethodSelector.notice', {
-                price: product.aoa_price
-                  ? `${product.aoa_price.toFixed(2)} AOA`
-                  : `${product.price.toFixed(2)} Kz`
+                price: `${Math.round(computedAoaPrice).toLocaleString('pt-AO')} Kz`
               })}
             </p>
           </div>

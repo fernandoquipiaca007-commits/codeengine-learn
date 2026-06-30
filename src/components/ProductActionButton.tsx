@@ -26,6 +26,8 @@ interface ProductActionButtonProps {
   /** Called when user tries to buy/claim without being authenticated.
    *  The caller should navigate to the signup/login screen. */
   onRequireAuth?: () => void;
+  preferAoa?: boolean;
+  originalPrice?: number;
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -45,6 +47,8 @@ export function ProductActionButton({
   onStartLearning,
   ctaText,
   onRequireAuth,
+  preferAoa = false,
+  originalPrice,
 }: ProductActionButtonProps) {
   const { locale } = useLocale();
   const { t } = useTranslation(['common', 'checkout'], { lng: locale });
@@ -100,6 +104,7 @@ export function ProductActionButton({
             const intent = JSON.parse(raw) as {
               productId: string;
               hasMultiPayment: boolean;
+              preferAoa?: boolean;
             };
             if (intent.productId === productId) {
               sessionStorage.removeItem('pendingCheckout');
@@ -134,6 +139,7 @@ export function ProductActionButton({
         aoaPrice: aoaPrice ?? null,
         price,
         productTitle,
+        preferAoa,
       }));
       onRequireAuth?.();
       return;
@@ -166,13 +172,14 @@ export function ProductActionButton({
           aoaPrice: aoaPrice ?? null,
           price,
           productTitle,
+          preferAoa,
         }));
         onRequireAuth?.();
         return;
       }
 
       // Create checkout session
-      const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:3000';
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
       const { data: member } = await supabase
         .from('members')
         .select('id')
@@ -498,6 +505,7 @@ export function ProductActionButton({
             price,
             aoa_price: aoaPrice,
             fastpay_link: fastpayLink,
+            originalPrice: originalPrice || price,
           }}
           onSelectStripe={() => {
             setShowPaymentSelector(false);

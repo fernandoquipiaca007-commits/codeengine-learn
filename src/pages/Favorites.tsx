@@ -3,8 +3,7 @@ import { motion } from 'motion/react';
 import { Heart, Trash2, ShoppingCart, ArrowRight, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types/store';
-import { formatProductPrice } from '../lib/safe-display';
-
+import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface FavoritesProps {
   setScreen: (screen: string) => void;
@@ -18,6 +17,7 @@ interface Favorite {
 }
 
 export function Favorites({ setScreen }: FavoritesProps) {
+  const { isAngola } = useUserCountry();
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -97,9 +97,9 @@ export function Favorites({ setScreen }: FavoritesProps) {
   };
 
   return (
-    <div className="pt-40 pb-24 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
+    <div className="pt-24 pb-12 px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen">
       {/* Hero Section */}
-      <header className="mb-24 flex flex-col items-start max-w-4xl">
+      <header className="mb-10 flex flex-col items-start max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -194,14 +194,13 @@ export function Favorites({ setScreen }: FavoritesProps) {
               {/* Cover Image */}
               <div 
                 onClick={() => setScreen('product')}
-                className="relative w-full h-64 overflow-hidden cursor-pointer"
+                className="relative w-full h-64 overflow-hidden cursor-pointer bg-black/40 flex items-center justify-center"
               >
                 <img
                   src={favorite.product.cover_url}
                   alt={favorite.product.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent"></div>
               </div>
               
               {/* Content */}
@@ -230,7 +229,9 @@ export function Favorites({ setScreen }: FavoritesProps) {
                 {/* Footer */}
                 <div className="flex items-center justify-between">
                   <div className="font-display text-2xl font-bold text-primary">
-                    {favorite.product.is_free ? 'Acesso Livre' : formatProductPrice(favorite.product.price, favorite.product.aoa_price)}
+                    {isAngola 
+                      ? `Kz ${Number(favorite.product.aoa_price || (favorite.product as any).aoaPrice || Math.round(favorite.product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`
+                      : `$ ${favorite.product.price}`}
                   </div>
                   
                   <button 

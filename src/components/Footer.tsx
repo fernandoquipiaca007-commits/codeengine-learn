@@ -6,7 +6,7 @@ interface FooterProps {
 
 export function Footer({ setScreen }: FooterProps = {}) {
   const { t } = useTranslation();
-  
+
   const handleNavigation = (screen: string) => {
     if (setScreen) {
       setScreen(screen);
@@ -14,44 +14,33 @@ export function Footer({ setScreen }: FooterProps = {}) {
     }
   };
 
+  const links = [
+    { key: 'privacy',   label: t('footer.privacy') },
+    { key: 'terms',     label: t('footer.terms') },
+    { key: 'licensing', label: t('footer.licensing') },
+    { key: 'support',   label: t('footer.support') },
+    { key: 'rewards',   label: 'Recompensas' },
+  ];
+
   return (
-    <footer className="w-full py-5 px-6 flex flex-col items-center gap-3 bg-surface-lowest border-t border-outline/10 mt-10">
-      <div className="font-display text-base font-black text-on-surface/80 tracking-tighter">
+    <footer className="w-full py-6 px-6 flex flex-col items-center gap-3 border-t border-white/5">
+      <div className="font-display text-sm font-bold text-on-surface/60 tracking-tight">
         CodeEngine 1
       </div>
-      <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-        <button 
-          onClick={() => handleNavigation('privacy')}
-          className="font-display text-[10px] font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors focus:underline focus:underline-offset-4"
-        >
-          {t('footer.privacy')}
-        </button>
-        <button 
-          onClick={() => handleNavigation('terms')}
-          className="font-display text-[10px] font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors focus:underline focus:underline-offset-4"
-        >
-          {t('footer.terms')}
-        </button>
-        <button 
-          onClick={() => handleNavigation('licensing')}
-          className="font-display text-[10px] font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors focus:underline focus:underline-offset-4"
-        >
-          {t('footer.licensing')}
-        </button>
-        <button 
-          onClick={() => handleNavigation('support')}
-          className="font-display text-[10px] font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors focus:underline focus:underline-offset-4"
-        >
-          {t('footer.support')}
-        </button>
-        <button 
-          onClick={() => handleNavigation('rewards')}
-          className="font-display text-[10px] font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors focus:underline focus:underline-offset-4"
-        >
-          Recompensas
-        </button>
+
+      <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5">
+        {links.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => handleNavigation(key)}
+            className="font-sans text-[10px] font-medium tracking-wider uppercase text-on-surface-variant/50 hover:text-primary transition-colors duration-200"
+          >
+            {label}
+          </button>
+        ))}
       </div>
-      <div className="font-sans text-[10px] text-on-surface-variant opacity-40 text-center mt-1">
+
+      <div className="font-sans text-[9px] text-on-surface-variant/30 text-center">
         © 2026 CodeEngine 1. {t('footer.tagline')}.
       </div>
     </footer>

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { LucideSearch, Menu, User, LogOut, Heart, ShoppingBag, Bell, Settings } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { LucideSearch, Menu, User, LogOut, Heart, ShoppingBag, Bell, Settings, Briefcase, Percent, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -18,16 +19,131 @@ interface NavBarProps {
   onSearchClick: () => void;
 }
 
+// ── Dropdown animation variants ──────────────────────────────
+const dropdownVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: -6 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.97,
+    y: -4,
+    transition: { duration: 0.12, ease: 'easeIn' }
+  },
+};
+
+const mobileMenuVariants = {
+  hidden: { opacity: 0, y: -8, scale: 0.97 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] }
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    scale: 0.98,
+    transition: { duration: 0.14, ease: 'easeIn' }
+  },
+};
+
+// ── Nav link component ────────────────────────────────────────
+function NavLink({
+  label,
+  active,
+  onClick,
+  onMouseEnter,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  onMouseEnter?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      className={cn(
+        'relative font-display text-[10px] 2xl:text-[11px] font-semibold tracking-widest uppercase',
+        'px-1.5 py-1 transition-colors duration-200 whitespace-nowrap',
+        active
+          ? 'text-primary'
+          : 'text-on-surface-variant hover:text-on-surface'
+      )}
+    >
+      {label}
+      {active && (
+        <motion.span
+          layoutId="nav-active-dot"
+          className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        />
+      )}
+    </button>
+  );
+}
+
 export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps) {
   const { t } = useTranslation('common');
   const { user } = useAuthSession();
   const { locale } = useLocale();
   const { balance } = usePoints();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const [showProfileMenu, setShowProfileMenu]   = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [showMobileMenu, setShowMobileMenu]     = useState(false);
+  const [unreadCount, setUnreadCount]           = useState(0);
+  const [avatarUrl, setAvatarUrl]               = useState<string | null>(null);
+  const [collabStatus, setCollabStatus]         = useState<string>('not_applied');
+
+  // ── Scroll behaviour ─────────────────────────────────────────
+  const [scrolled, setScrolled]   = useState(false);
+  const [visible, setVisible]     = useState(true);
+  const lastScrollY               = useRef(0);
+  const scrollDelta               = useRef(0);
+
+  useEffect(() => {
+    const HIDE_THRESHOLD   = 80;   // px scrolled before hide triggers
+    const SCROLL_THRESHOLD = 60;   // accumulated delta before hiding
+    const SHOW_THRESHOLD   = 12;   // accumulated delta before revealing
+
+    function onScroll() {
+      const y = window.scrollY;
+      const delta = y - lastScrollY.current;
+
+      // Scrolled state (compact navbar)
+      setScrolled(y > 24);
+
+      // Accumulate delta
+      scrollDelta.current += delta;
+
+      if (y > HIDE_THRESHOLD) {
+        if (scrollDelta.current > SCROLL_THRESHOLD) {
+          // Scrolling down — hide
+          setVisible(false);
+          scrollDelta.current = 0;
+        } else if (scrollDelta.current < -SHOW_THRESHOLD) {
+          // Scrolling up — reveal
+          setVisible(true);
+          scrollDelta.current = 0;
+        }
+      } else {
+        // Near top — always visible
+        setVisible(true);
+        scrollDelta.current = 0;
+      }
+
+      lastScrollY.current = y;
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const memberLevel = balance?.level ?? 'starter';
   const isLoggedIn = !!user;
@@ -36,11 +152,9 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
     prefetchLibrary(locale, memberLevel, isLoggedIn);
   };
 
+  // ── Avatar ───────────────────────────────────────────────────
   useEffect(() => {
-    if (!user?.id) {
-      setAvatarUrl(null);
-      return;
-    }
+    if (!user?.id) { setAvatarUrl(null); return; }
 
     const loadAvatar = async () => {
       try {
@@ -49,91 +163,72 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           .select('profile_data')
           .eq('auth_id', user.id)
           .maybeSingle();
-        
-        if (data?.profile_data?.avatar_url) {
-          setAvatarUrl(data.profile_data.avatar_url);
-        } else {
-          setAvatarUrl(null);
-        }
+        setAvatarUrl(data?.profile_data?.avatar_url ?? null);
       } catch (err) {
         console.error('Error loading avatar in navbar:', err);
       }
     };
-
     void loadAvatar();
-    
-    // Also listen for any profile changes or uploads to dynamically update
+
     const channel = supabase
       .channel(`navbar-avatar-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'members',
-          filter: `auth_id=eq.${user.id}`
-        },
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'members', filter: `auth_id=eq.${user.id}` },
         (payload: any) => {
-          if (payload.new?.profile_data?.avatar_url) {
-            setAvatarUrl(payload.new.profile_data.avatar_url);
-          } else {
-            setAvatarUrl(null);
-          }
+          setAvatarUrl(payload.new?.profile_data?.avatar_url ?? null);
         }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user?.id]);
 
+  // ── Collaborator status ──────────────────────────────────────
+  useEffect(() => {
+    if (!user) { setCollabStatus('not_applied'); return; }
+
+    const fetchCollabStatus = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const res = await fetch(`${BACKEND_URL}/api/collaborators/status`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await res.json();
+        if (data.success) setCollabStatus(data.status);
+      } catch (err) {
+        console.error('Error fetching collaborator status in navbar:', err);
+      }
+    };
+    void fetchCollabStatus();
+  }, [user]);
+
+  // ── Notification count ───────────────────────────────────────
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
     let cancelled = false;
 
     const syncUnread = async () => {
-      if (!user?.id) {
-        setUnreadCount(0);
-        await setAppBadgeCount(0);
-        return;
-      }
+      if (!user?.id) { setUnreadCount(0); await setAppBadgeCount(0); return; }
       channel = await loadUnreadCount(user.id);
-      if (cancelled && channel) {
-        supabase.removeChannel(channel);
-      }
+      if (cancelled && channel) supabase.removeChannel(channel);
     };
-
     void syncUnread();
 
     return () => {
       cancelled = true;
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      if (channel) supabase.removeChannel(channel);
     };
   }, [user?.id]);
 
-  // Since mobile menu is now a dropdown, we don't lock body scroll
-  useEffect(() => {
-    // Commented out to allow natural scrolling while dropdown is open
-    /*
-    if (!showMobileMenu) return;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-    */
-  }, [showMobileMenu]);
+  // Mobile scroll lock not needed (dropdown style)
+  useEffect(() => {}, [showMobileMenu]);
 
   async function loadUnreadCount(userId: string) {
     try {
       const { data: member } = await supabase
-        .from('members')
-        .select('id')
-        .eq('auth_id', userId)
-        .maybeSingle();
-
+        .from('members').select('id').eq('auth_id', userId).maybeSingle();
       if (!member) return null;
 
       const { count, error } = await supabase
@@ -141,54 +236,28 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         .select('*', { count: 'exact', head: true })
         .eq('member_id', member.id)
         .eq('read_status', false);
-
       if (error) throw error;
 
       const unread = count ?? 0;
       setUnreadCount(unread);
       void setAppBadgeCount(unread);
 
-      // Subscribe to new notifications
       const channel = supabase
         .channel(`notifications-${member.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `member_id=eq.${member.id}`
-          },
-          () => {
-            setUnreadCount(prev => {
-              const next = prev + 1;
-              void setAppBadgeCount(next);
-              return next;
-            });
-          }
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'notifications', filter: `member_id=eq.${member.id}` },
+          () => { setUnreadCount(p => { const n = p + 1; void setAppBadgeCount(n); return n; }); }
         )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'notifications',
-            filter: `member_id=eq.${member.id}`
-          },
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `member_id=eq.${member.id}` },
           (payload: any) => {
             if (payload.new.read_status && !payload.old.read_status) {
-              setUnreadCount(prev => {
-                const next = Math.max(0, prev - 1);
-                void setAppBadgeCount(next);
-                return next;
-              });
+              setUnreadCount(p => { const n = Math.max(0, p - 1); void setAppBadgeCount(n); return n; });
             }
           }
         );
       channel.subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          console.warn('Notifications realtime channel error for member:', member.id);
-        }
+        if (status === 'CHANNEL_ERROR') console.warn('Notifications realtime channel error');
       });
       return channel;
     } catch (error) {
@@ -203,396 +272,369 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
     setScreen('home');
   };
 
+  const closeAll = () => {
+    setShowProfileMenu(false);
+    setShowNotifications(false);
+    setShowMobileMenu(false);
+  };
+
+  // ── Nav links config ─────────────────────────────────────────
+  const navLinks = [
+    { label: t('nav.home'),     screen: 'home' },
+    { label: t('nav.library'),  screen: 'library',  onHover: handleLibraryHover },
+    { label: t('nav.releases'), screen: 'releases' },
+    { label: t('nav.news'),     screen: 'news' },
+    { label: t('nav.about'),    screen: 'about' },
+    { label: t('nav.contact'),  screen: 'contact' },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 bg-surface/80 backdrop-blur-xl rounded-full mt-2 sm:mt-2.5 lg:mt-3 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] md:w-[95%] lg:w-[90%] max-w-[1080px] border border-white/10 shadow-[0_0_40px_rgba(192,193,255,0.1)] transition-all duration-200">
-      <div className="nav-beam"></div>
-      
-      {/* Logo - Brand Icon and Name */}
-      <div 
-        className="flex items-center gap-2 cursor-pointer flex-shrink-0 min-w-0"
-        onClick={() => setScreen('home')}
-      >
-        <img 
-          src="/logo.png" 
-          alt="Logo" 
-          className="h-6 sm:h-7 md:h-8 w-auto object-contain flex-shrink-0"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none';
-          }}
-        />
-        <span className="hidden 2xl:inline font-display text-sm sm:text-base md:text-lg font-bold tracking-tighter text-on-surface whitespace-nowrap">
-          CodeEngine 1
-        </span>
-      </div>
-      
-      {/* Desktop Navigation - Hidden on tablet and below */}
-      <div className="hidden xl:flex items-center gap-1 xl:gap-1.5 2xl:gap-3 flex-shrink min-w-0">
-        <button 
-          onClick={() => setScreen('home')}
-          className={cn(
-            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
-            currentScreen === 'home' 
-              ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
-              : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
-          )}
-        >
-          {t('nav.home')}
-        </button>
-        
-        <button 
-          onClick={() => setScreen('library')}
-          onMouseEnter={handleLibraryHover}
-          className={cn(
-            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
-            currentScreen === 'library' 
-              ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
-              : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
-          )}
-        >
-          {t('nav.library')}
-        </button>
-        
-        <button 
-          onClick={() => setScreen('releases')}
-          className={cn(
-            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
-            currentScreen === 'releases' 
-              ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
-              : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
-          )}
-        >
-          {t('nav.releases')}
-        </button>
-        
-        <button 
-          onClick={() => setScreen('news')}
-          className={cn(
-            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
-            currentScreen === 'news' 
-              ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
-              : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
-          )}
-        >
-          {t('nav.news')}
-        </button>
-        
-        <button 
-          onClick={() => setScreen('about')}
-          className={cn(
-            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
-            currentScreen === 'about' 
-              ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
-              : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
-          )}
-        >
-          {t('nav.about')}
-        </button>
-        
-        <button 
-          onClick={() => setScreen('contact')}
-          className={cn(
-            "font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase transition-all duration-200 px-1 xl:px-1.5 2xl:px-2 py-1 whitespace-nowrap",
-            currentScreen === 'contact' 
-              ? "text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]" 
-              : "text-on-surface-variant hover:text-primary hover:drop-shadow-[0_0_8px_rgba(192,193,255,0.5)]"
-          )}
-        >
-          {t('nav.contact')}
-        </button>
-      </div>
-      
-      {/* Right Side Actions - Intelligent Progressive Collapse */}
-      <div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2 flex-shrink-0 min-w-0">
-        <LanguageSelector variant="dropdown" className="hidden lg:block flex-shrink-0" />
-        {/* Search Button - Always visible */}
-        <button 
-          onClick={onSearchClick}
-          className="text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5 flex-shrink-0"
-          title={t('nav.search')}
-        >
-          <LucideSearch className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
-        </button>
-        
-        {user ? (
-          // Logged in: Progressive display
-          <>
-            {/* Points Badge - Always visible */}
-            <div className="flex-shrink-0">
-              <PointsBadge onClick={() => setScreen('member', 'recompensas')} />
-            </div>
- 
-            {/* Notification Bell - Always visible */}
-            <div className="relative flex-shrink-0">
-              <button
-                onClick={() => {
-                  setShowNotifications(!showNotifications);
-                  setShowProfileMenu(false);
-                }}
-                className="relative text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5"
-              >
-                <Bell className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] sm:min-w-[20px] h-[18px] sm:h-[20px] px-1 sm:px-1.5 bg-red-500 rounded-full flex items-center justify-center border-2 border-surface shadow-lg animate-pulse">
-                    <span className="font-display text-[9px] sm:text-[10px] font-bold text-white leading-none">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  </span>
-                )}
-              </button>
-              
-              {showNotifications && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowNotifications(false)}
-                  />
-                  <NotificationDropdown
-                    userId={user.id}
-                    onNavigate={(screen) => {
-                      setScreen(screen);
-                      setShowNotifications(false);
-                    }}
-                    onClose={() => setShowNotifications(false)}
-                  />
-                </>
-              )}
-            </div>
- 
-            {/* Profile Button - Always visible but adaptive */}
-            <div className="relative flex-shrink-0">
-              <button
-                onClick={() => {
-                  setShowProfileMenu(!showProfileMenu);
-                  setShowNotifications(false);
-                }}
-                className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-transparent hover:border-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex items-center justify-center flex-shrink-0"
-              >
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-on-surface text-background hover:bg-primary hover:text-on-primary flex items-center justify-center transition-colors">
-                    <User className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6 flex-shrink-0" />
-                  </div>
-                )}
-              </button>
-              
-              {showProfileMenu && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowProfileMenu(false)}
-                  />
-                  <div className="fixed left-1/2 top-20 sm:top-24 z-50 w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl sm:rounded-xl bg-surface/95 backdrop-blur-xl border border-white/10 p-3 sm:p-4 shadow-[0_0_60px_rgba(0,0,0,0.45)] max-h-[calc(100vh-6rem)] overflow-y-auto md:absolute md:left-auto md:top-full md:mt-2 md:right-0 md:translate-x-0 md:w-64 md:max-w-none">
-                    <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-white/15 bg-gradient-to-b from-white/5 to-transparent">
-                      <p className="font-display text-xs sm:text-sm font-semibold text-white truncate">
-                        {user.email}
-                      </p>
-                      <p className="font-sans text-[10px] sm:text-xs text-on-surface-variant mt-1">
-                        {t('profile.memberSince')}
-                      </p>
-                    </div>
-                    
-                    <button
-                      onClick={() => {
-                        setScreen('member', 'inicio');
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                    >
-                      <User className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
-                      <span className="truncate">{t('profile.memberArea')}</span>
-                    </button>
- 
-                    <button
-                      onClick={() => {
-                        setScreen('member', 'biblioteca');
-                        setShowProfileMenu(false);
-                      }}
-                      onMouseEnter={handleLibraryHover}
-                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                    >
-                      <Heart className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
-                      <span className="truncate">{t('profile.myLibrary')}</span>
-                    </button>
- 
-                    <button
-                      onClick={() => {
-                        setScreen('member', 'compras');
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                    >
-                      <ShoppingBag className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
-                      <span className="truncate">{t('profile.myPurchases')}</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setScreen('member', 'notificacoes');
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                    >
-                      <Bell className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
-                      <span className="truncate">{t('profile.notifications')}</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setScreen('settings');
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                    >
-                      <Settings className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
-                      <span className="truncate">{t('profile.settings')}</span>
-                    </button>
-                    
-                    <div className="border-t border-white/15 mt-2 pt-2 bg-gradient-to-t from-white/5 to-transparent">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 text-left font-sans text-xs sm:text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
-                      >
-                        <LogOut className="w-3.5 sm:w-4 h-3.5 sm:h-4 flex-shrink-0" />
-                        <span className="truncate">{t('profile.logout')}</span>
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            {/* Mobile Menu Button - Always visible on non-desktop */}
-            <button 
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5 flex-shrink-0"
-              aria-label={t('nav.openMenu')}
-            >
-              <Menu className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
-            </button>
-          </>
-        ) : (
-          // Not logged in: Progressive display
-          <>
-            <button 
-              onClick={() => setScreen('auth')}
-              className="hidden lg:block font-display text-[10px] xl:text-xs font-semibold tracking-wider uppercase text-on-surface-variant hover:text-primary transition-all whitespace-nowrap"
-            >
-              {t('nav.signIn')}
-            </button>
-            <button 
-              onClick={() => setScreen('signup')}
-              className="font-display text-[9px] xl:text-[10px] 2xl:text-xs font-semibold tracking-wider uppercase px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(192,193,255,0.4)] flex-shrink-0 whitespace-nowrap"
-            >
-              <span className="hidden lg:inline">{t('nav.becomeMember')}</span>
-              <span className="lg:hidden">{t('nav.signIn')}</span>
-            </button>
-            
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 sm:p-2.5 rounded-full hover:bg-white/5 flex-shrink-0"
-              aria-label={t('nav.openMenu')}
-            >
-              <Menu className="w-5 sm:w-[22px] md:w-6 h-5 sm:h-[22px] md:h-6" />
-            </button>
-          </>
+    <>
+      {/* ── Docked Header Navbar ────────────────────────────────── */}
+      <motion.nav
+        initial={{ y: 0, opacity: 1 }}
+        animate={{
+          y: 0,
+          opacity: 1,
+        }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className={cn(
+          'fixed top-0 left-0 right-0 z-50 flex flex-nowrap justify-between items-center w-full rounded-none',
+          'transition-[padding,box-shadow,background,border-color] duration-300',
+          'px-6 md:px-12 shadow-none',
+          scrolled
+            ? 'py-2 bg-[#050505]/75 backdrop-blur-[6px] border-b border-white/5'
+            : 'py-3.5 bg-transparent border-b border-transparent'
         )}
-      </div>
-      
-      {/* Mobile Menu Dropdown Overlay */}
-      {showMobileMenu && (
-        <>
-          {/* Backdrop with blur */}
-          <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
-            onClick={() => setShowMobileMenu(false)}
+      >
+        <div className="nav-beam" />
+
+        {/* ── Logo ───────────────────────────────────────────── */}
+        <div
+          className="flex items-center gap-2 cursor-pointer flex-shrink-0 min-w-0"
+          onClick={() => setScreen('home')}
+        >
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className={cn(
+              'w-auto object-contain flex-shrink-0 transition-all duration-300',
+              scrolled ? 'h-4 sm:h-5' : 'h-5 sm:h-6'
+            )}
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-          
-          {/* Floating Dropdown - Matching Profile/Notifications */}
-          <div className="fixed left-1/2 top-20 sm:top-24 z-50 w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2 rounded-2xl bg-surface/95 backdrop-blur-xl border border-white/10 p-3 sm:p-4 shadow-[0_0_60px_rgba(0,0,0,0.45)] max-h-[calc(100vh-6rem)] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-white/15 bg-gradient-to-b from-white/5 to-transparent rounded-t-xl mb-2">
-              <span className="font-display text-xs uppercase tracking-wider text-on-surface-variant font-bold">
-                {t('nav.menu')}
-              </span>
-              <button
-                onClick={() => setShowMobileMenu(false)}
-                className="text-on-surface-variant hover:text-primary p-1.5 rounded-full hover:bg-white/5 transition-all"
-                aria-label={t('nav.closeMenu')}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            {/* Navigation Links */}
-            <div className="space-y-1">
-              {[
-                { label: t('nav.home'), screen: 'home' },
-                { label: t('nav.library'), screen: 'library' },
-                { label: t('nav.releases'), screen: 'releases' },
-                { label: t('nav.news'), screen: 'news' },
-                { label: t('nav.about'), screen: 'about' },
-                { label: t('nav.contact'), screen: 'contact' },
-              ].map((item) => (
+          <span className={cn(
+            'hidden md:inline font-display font-bold tracking-tighter text-on-surface whitespace-nowrap transition-all duration-300',
+            scrolled ? 'text-xs' : 'text-sm'
+          )}>
+            CodeEngine 1
+          </span>
+        </div>
+
+        {/* ── Desktop Nav Links ───────────────────────────────── */}
+        <div className="hidden xl:flex items-center gap-2 2xl:gap-4 flex-shrink min-w-0">
+          {navLinks.map(link => (
+            <NavLink
+              key={link.screen}
+              label={link.label}
+              active={currentScreen === link.screen}
+              onClick={() => setScreen(link.screen)}
+              onMouseEnter={link.onHover}
+            />
+          ))}
+        </div>
+
+        {/* ── Right Side Actions ──────────────────────────────── */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 min-w-0">
+          <LanguageSelector variant="dropdown" className="hidden lg:block flex-shrink-0" />
+
+          {/* Search */}
+          <button
+            onClick={onSearchClick}
+            className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5 flex-shrink-0"
+            title={t('nav.search')}
+          >
+            <LucideSearch className="w-[18px] sm:w-5 h-[18px] sm:h-5" />
+          </button>
+
+          {user ? (
+            <>
+              {/* Points badge */}
+              <div className="flex-shrink-0">
+                <PointsBadge onClick={() => setScreen('member', 'recompensas')} />
+              </div>
+
+              {/* Notification bell */}
+              <div className="relative flex-shrink-0">
                 <button
-                  key={item.screen}
-                  onClick={() => {
-                    setScreen(item.screen);
-                    setShowMobileMenu(false);
-                  }}
-                  onMouseEnter={() => {
-                    if (item.screen === 'library') {
-                      handleLibraryHover();
-                    }
-                  }}
-                  className={cn(
-                    "w-full text-left rounded-xl px-4 py-3 font-sans text-sm font-semibold transition-all flex items-center justify-between",
-                    currentScreen === item.screen
-                      ? 'bg-primary/10 text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] border-l-2 border-primary'
-                      : 'text-on-surface-variant hover:text-primary hover:bg-white/5'
-                  )}
+                  onClick={() => { setShowNotifications(v => !v); setShowProfileMenu(false); }}
+                  className="relative text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5"
                 >
-                  <span>{item.label}</span>
-                  {currentScreen === item.screen && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <Bell className="w-[18px] sm:w-5 h-[18px] sm:h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] sm:min-w-[18px] h-4 sm:h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-[1.5px] border-surface shadow-lg animate-pulse">
+                      <span className="font-display text-[8px] sm:text-[9px] font-bold text-white leading-none">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    </span>
                   )}
                 </button>
-              ))}
-            </div>
 
-            {/* Language Selector inside mobile menu */}
-            <div className="my-2 border-t border-white/10" />
-            <div className="px-4 py-2 flex items-center justify-between">
-              <span className="font-sans text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
-                {t('settings.language')}
-              </span>
-              <LanguageSelector variant="dropdown" />
-            </div>
-            
-            {/* User Actions - Only show if NOT logged in */}
-            {!user && (
-              <>
-                <div className="my-2 border-t border-white/10" />
-                <div className="space-y-1">
+                <AnimatePresence>
+                  {showNotifications && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                      <NotificationDropdown
+                        userId={user.id}
+                        onNavigate={(screen) => { setScreen(screen); setShowNotifications(false); }}
+                        onClose={() => setShowNotifications(false)}
+                      />
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Profile avatar */}
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => { setShowProfileMenu(v => !v); setShowNotifications(false); }}
+                  className={cn(
+                    'rounded-full overflow-hidden border-2 transition-all flex items-center justify-center flex-shrink-0',
+                    'border-transparent hover:border-primary/60',
+                    'shadow-[0_0_12px_rgba(255,255,255,0.12)] hover:shadow-[0_0_20px_rgba(192,193,255,0.3)]',
+                    scrolled ? 'w-7 h-7 sm:w-8 sm:h-8' : 'w-8 h-8 sm:w-9 sm:h-9'
+                  )}
+                >
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-on-surface text-background hover:bg-primary hover:text-on-primary flex items-center justify-center transition-colors">
+                      <User className="w-4 h-4 flex-shrink-0" />
+                    </div>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                      <motion.div
+                        variants={dropdownVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className={cn(
+                          'fixed left-1/2 top-16 sm:top-[4.5rem] z-50',
+                          'w-[calc(100vw-2rem)] max-w-[380px] -translate-x-1/2',
+                          'md:absolute md:left-auto md:top-full md:mt-2 md:right-0 md:translate-x-0 md:w-60 md:max-w-none',
+                          'rounded-2xl border border-white/10 p-2',
+                          'bg-surface/96 backdrop-blur-2xl',
+                          'shadow-[0_24px_64px_rgba(0,0,0,0.7),0_0_0_1px_rgba(192,193,255,0.06)]',
+                          'max-h-[calc(100vh-5rem)] overflow-y-auto'
+                        )}
+                      >
+                        {/* User info */}
+                        <div className="px-3 py-2.5 border-b border-white/10 mb-1">
+                          <p className="font-display text-xs font-semibold text-white truncate">
+                            {user.email}
+                          </p>
+                          <p className="font-sans text-[10px] text-on-surface-variant mt-0.5">
+                            {t('profile.memberSince')}
+                          </p>
+                        </div>
+
+                        {/* Menu items */}
+                        {[
+                          { label: t('profile.memberArea'),    screen: 'member',   section: 'inicio',       icon: User },
+                          { label: t('profile.myLibrary'),     screen: 'member',   section: 'biblioteca',   icon: Heart,        hover: handleLibraryHover },
+                          { label: t('profile.myPurchases'),   screen: 'member',   section: 'compras',      icon: ShoppingBag },
+                          { label: t('profile.notifications'), screen: 'member',   section: 'notificacoes', icon: Bell },
+                          { label: t('profile.settings'),      screen: 'settings', section: undefined,      icon: Settings },
+                        ].map(({ label, screen, section, icon: Icon, hover }) => (
+                          <button
+                            key={label}
+                            onClick={() => { setScreen(screen, section); setShowProfileMenu(false); }}
+                            onMouseEnter={hover}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                          >
+                            <Icon className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
+                            <span className="truncate">{label}</span>
+                          </button>
+                        ))}
+
+                        {/* Affiliates + Collaborator */}
+                        <div className="border-t border-white/8 mt-1 pt-1">
+                          <button
+                            onClick={() => { setScreen('afiliados'); setShowProfileMenu(false); }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                          >
+                            <Percent className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
+                            <span className="truncate font-medium">Programa de Afiliados</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setScreen(collabStatus === 'approved' ? 'colaborador' : 'colaborador-candidatura');
+                              setShowProfileMenu(false);
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                          >
+                            <Briefcase className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
+                            <span className="truncate font-medium">
+                              {collabStatus === 'approved' ? 'Painel do Criador' : 'Seja um Colaborador'}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Logout */}
+                        <div className="border-t border-white/10 mt-1 pt-1">
+                          <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
+                          >
+                            <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span className="truncate">{t('profile.logout')}</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setShowMobileMenu(v => !v)}
+                className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5 flex-shrink-0"
+                aria-label={t('nav.openMenu')}
+              >
+                {showMobileMenu
+                  ? <X className="w-[18px] sm:w-5 h-[18px] sm:h-5" />
+                  : <Menu className="w-[18px] sm:w-5 h-[18px] sm:h-5" />
+                }
+              </button>
+            </>
+          ) : (
+            // Guest
+            <>
+              <button
+                onClick={() => setScreen('auth')}
+                className="hidden lg:block font-display text-[10px] xl:text-[11px] font-semibold tracking-widest uppercase text-on-surface-variant hover:text-primary transition-colors whitespace-nowrap"
+              >
+                {t('nav.signIn')}
+              </button>
+              <button
+                onClick={() => setScreen('signup')}
+                className="font-display text-[10px] xl:text-[11px] font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full bg-on-surface text-background hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_12px_rgba(255,255,255,0.15)] hover:shadow-[0_0_20px_rgba(192,193,255,0.35)] flex-shrink-0 whitespace-nowrap"
+              >
+                <span className="hidden lg:inline">{t('nav.becomeMember')}</span>
+                <span className="lg:hidden">{t('nav.signIn')}</span>
+              </button>
+              <button
+                onClick={() => setShowMobileMenu(v => !v)}
+                className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5 flex-shrink-0"
+                aria-label={t('nav.openMenu')}
+              >
+                {showMobileMenu
+                  ? <X className="w-[18px] sm:w-5 h-[18px] sm:h-5" />
+                  : <Menu className="w-[18px] sm:w-5 h-[18px] sm:h-5" />
+                }
+              </button>
+            </>
+          )}
+        </div>
+      </motion.nav>
+
+      {/* ── Mobile Menu ──────────────────────────────────────── */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <>
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowMobileMenu(false)}
+            />
+
+            <motion.div
+              key="mobile-menu"
+              variants={mobileMenuVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={cn(
+                'fixed left-1/2 z-50 w-[calc(100vw-2rem)] max-w-[420px] -translate-x-1/2',
+                'rounded-2xl border border-white/10 p-2',
+                'bg-surface/97 backdrop-blur-2xl',
+                'shadow-[0_24px_64px_rgba(0,0,0,0.75)]',
+                'max-h-[calc(100vh-5rem)] overflow-y-auto custom-scrollbar',
+                scrolled ? 'top-14 sm:top-[3.5rem]' : 'top-16 sm:top-[4.5rem]'
+              )}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-3 py-2 border-b border-white/10 mb-1">
+                <span className="font-display text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
+                  {t('nav.menu')}
+                </span>
+                <button
+                  onClick={() => setShowMobileMenu(false)}
+                  className="text-on-surface-variant hover:text-primary p-1 rounded-full hover:bg-white/5 transition-all"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Nav links */}
+              <div className="space-y-0.5">
+                {navLinks.map((item, i) => (
+                  <motion.button
+                    key={item.screen}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04, duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    onClick={() => { setScreen(item.screen); setShowMobileMenu(false); }}
+                    onMouseEnter={item.onHover}
+                    className={cn(
+                      'w-full text-left rounded-xl px-4 py-3 font-sans text-sm font-medium transition-all flex items-center justify-between',
+                      currentScreen === item.screen
+                        ? 'bg-primary/8 text-primary border-l-2 border-primary pl-[calc(1rem-2px)]'
+                        : 'text-on-surface-variant hover:text-on-surface hover:bg-white/4'
+                    )}
+                  >
+                    <span>{item.label}</span>
+                    {currentScreen === item.screen && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Language */}
+              <div className="border-t border-white/8 mt-2 pt-2 px-3 flex items-center justify-between">
+                <span className="font-sans text-[10px] font-semibold uppercase tracking-widest text-on-surface-variant">
+                  {t('settings.language')}
+                </span>
+                <LanguageSelector variant="dropdown" />
+              </div>
+
+              {/* Sign in (guest only) */}
+              {!user && (
+                <div className="border-t border-white/8 mt-2 pt-2">
                   <button
-                    onClick={() => {
-                      setScreen('auth');
-                      setShowMobileMenu(false);
-                    }}
+                    onClick={() => { setScreen('auth'); setShowMobileMenu(false); }}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left font-sans text-sm text-on-surface hover:text-primary hover:bg-white/5 rounded-xl transition-all"
                   >
                     <User className="w-4 h-4 flex-shrink-0" />
                     <span>{t('profile.signInOrCreate')}</span>
                   </button>
                 </div>
-              </>
-            )}
-          </div>
-        </>
-      )}
-    </nav>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

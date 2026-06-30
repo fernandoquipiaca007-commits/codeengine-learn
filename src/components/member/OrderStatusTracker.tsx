@@ -109,31 +109,31 @@ export function OrderStatusTracker() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-display font-bold text-on-surface text-lg flex items-center gap-2">
-          <Package className="w-5 h-5 text-orange-400" />
+        <h3 className="font-display font-bold text-on-surface text-sm flex items-center gap-1.5">
+          <Package className="w-4 h-4 text-orange-400" />
           {t('orderStatusTracker.title')}
         </h3>
         <button
           onClick={fetchOrders}
-          className="p-2 rounded-lg hover:bg-white/10 text-on-surface-variant transition-colors"
+          className="p-1 rounded hover:bg-white/10 text-on-surface-variant transition-colors"
           title={t('orderStatusTracker.refresh')}
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Filter */}
-      <div className="flex items-center gap-2">
-        <Filter className="w-4 h-4 text-on-surface-variant" />
+      <div className="flex items-center gap-1.5">
+        <Filter className="w-3.5 h-3.5 text-on-surface-variant" />
         {['all', 'pending', 'completed', 'failed'].map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
             className={`
-              px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+              px-2.5 py-1 rounded text-[10px] font-medium transition-all
               ${statusFilter === s
                 ? 'bg-primary/20 text-primary'
                 : 'bg-white/5 text-on-surface-variant hover:bg-white/10'
@@ -147,21 +147,21 @@ export function OrderStatusTracker() {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-          <AlertCircle className="w-4 h-4 text-red-400" />
-          <span className="text-sm text-red-400">{error}</span>
+        <div className="flex items-center gap-1.5 p-2 rounded bg-red-500/10 border border-red-500/20">
+          <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+          <span className="text-xs text-red-400">{error}</span>
         </div>
       )}
 
       {/* Orders list */}
       {orders.length === 0 ? (
-        <p className="text-sm text-on-surface-variant text-center py-4">
+        <p className="text-xs text-on-surface-variant text-center py-2">
           {statusFilter !== 'all' 
             ? t('orderStatusTracker.noOrdersWithStatus', { status: statusConfig[statusFilter as keyof typeof statusConfig]?.label })
             : t('orderStatusTracker.noOrders')}
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           {orders.map((order) => {
             const config = statusConfig[order.status];
             const StatusIcon = config.icon;
@@ -170,32 +170,32 @@ export function OrderStatusTracker() {
             return (
               <div
                 key={order.id}
-                className={`p-4 rounded-xl border ${config.border} ${config.bg}`}
+                className={`p-2.5 rounded-lg border ${config.border} ${config.bg}`}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2.5">
                   {/* Product cover */}
                   {order.product?.cover_url && (
                     <img
                       src={order.product.cover_url}
                       alt={order.product?.title}
-                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                      className="w-9 h-9 rounded object-cover flex-shrink-0"
                     />
                   )}
 
                   <div className="flex-1 min-w-0">
                     {/* Product name + status badge */}
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-display font-semibold text-on-surface text-sm truncate">
+                      <p className="font-display font-semibold text-on-surface text-xs truncate">
                         {order.product?.title || 'Produto'}
                       </p>
-                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${config.color} ${config.bg} flex-shrink-0`}>
-                        <StatusIcon className="w-3 h-3" />
+                      <span className={`flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-medium ${config.color} ${config.bg} flex-shrink-0`}>
+                        <StatusIcon className="w-2.5 h-2.5" />
                         {config.label}
                       </span>
                     </div>
 
                     {/* Details */}
-                    <div className="flex items-center gap-3 mt-1 text-xs text-on-surface-variant">
+                    <div className="flex items-center gap-2 mt-0.5 text-[10px] text-on-surface-variant">
                       <span>{order.amount.toFixed(2)} Kz</span>
                       <span>•</span>
                       <span>{date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : i18n.language === 'fr' ? 'fr-FR' : 'pt-BR')}</span>
@@ -203,7 +203,7 @@ export function OrderStatusTracker() {
                         <>
                           <span>•</span>
                           <span className="flex items-center gap-1">
-                            <Eye className="w-3 h-3" />
+                            <Eye className="w-2.5 h-2.5" />
                             {t('orderStatusTracker.proofSent')}
                           </span>
                         </>
@@ -212,22 +212,22 @@ export function OrderStatusTracker() {
 
                     {/* Status-specific messages */}
                     {order.status === 'pending' && (
-                      <p className="mt-2 text-xs text-yellow-300/80">
-                        <Clock className="w-3 h-3 inline mr-1" />
+                      <p className="mt-1 text-[9px] text-yellow-300/80">
+                        <Clock className="w-2.5 h-2.5 inline mr-0.5" />
                         {t('orderStatusTracker.pendingMessage')}
                       </p>
                     )}
 
                     {order.status === 'completed' && (
-                      <p className="mt-2 text-xs text-green-300/80">
-                        <CheckCircle className="w-3 h-3 inline mr-1" />
+                      <p className="mt-1 text-[9px] text-green-300/80">
+                        <CheckCircle className="w-2.5 h-2.5 inline mr-0.5" />
                         {t('orderStatusTracker.completedMessage')}
                       </p>
                     )}
 
                     {order.status === 'failed' && order.rejection_reason && (
-                      <p className="mt-2 text-xs text-red-300/80">
-                        <XCircle className="w-3 h-3 inline mr-1" />
+                      <p className="mt-1 text-[9px] text-red-300/80">
+                        <XCircle className="w-2.5 h-2.5 inline mr-0.5" />
                         {t('orderStatusTracker.rejectionReason', { reason: order.rejection_reason })}
                       </p>
                     )}

@@ -105,14 +105,14 @@ export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryPr
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1">
         {(['all', 'course', 'ebook', 'file'] as const).map((f) => (
           <button
             key={f}
             type="button"
             onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-full text-xs font-display font-semibold tracking-widest uppercase transition-all ${
+            className={`px-2.5 py-1 rounded-full text-[9px] font-display font-semibold tracking-widest uppercase transition-all ${
               filter === f
                 ? 'bg-primary text-on-primary'
                 : 'glass-panel border border-white/10 text-on-surface-variant hover:text-white'
@@ -123,36 +123,36 @@ export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryPr
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
         {filtered.map((item) => (
           <article
             key={item.id}
-            className="group glass-panel rounded-xl border border-white/10 overflow-hidden flex gap-4 p-4 hover:border-primary/30 hover:-translate-y-0.5 transition-all"
+            className="group glass-panel rounded-lg border border-white/10 overflow-hidden flex gap-2 p-2 hover:border-primary/30 transition-all"
           >
             <img
               src={getProductCoverUrl(item)}
               alt=""
-              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 bg-surface-highest"
+              className="w-10 h-10 rounded-md object-cover flex-shrink-0 bg-surface-highest"
               onError={(e) => {
-                e.currentTarget.src = `https://placehold.co/80x80/1a1a2e/c0c1ff?text=${encodeURIComponent((item.title || 'P').charAt(0))}`;
+                e.currentTarget.src = `https://placehold.co/60x60/1a1a2e/c0c1ff?text=${encodeURIComponent((item.title || 'P').charAt(0))}`;
               }}
             />
             <div className="flex-1 min-w-0 flex flex-col">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-display font-semibold tracking-widest uppercase text-primary">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-[9px] font-display font-semibold tracking-widest uppercase text-primary">
                   {typeLabel(item.product_type)}
                 </span>
                 {item.is_free && (
-                  <span className="text-[10px] font-display font-semibold tracking-widest uppercase text-green-400">
+                  <span className="text-[9px] font-display font-semibold tracking-widest uppercase text-green-400">
                     {t('library.status.free')}
                   </span>
                 )}
               </div>
-              <h3 className="font-display font-semibold text-white line-clamp-2 mb-2 min-h-[2.5rem]">
+              <h3 className="font-display font-semibold text-xs text-white truncate mb-0.5">
                 {item.title}
               </h3>
               {item.product_type !== 'file' && (
-                <div className="h-1.5 rounded-full bg-white/10 mb-3 overflow-hidden">
+                <div className="h-1 rounded-full bg-white/10 mb-1.5 overflow-hidden">
                   <div
                     className="h-full bg-primary rounded-full transition-all"
                     style={{ width: `${Math.min(100, item.percentComplete || 0)}%` }}
@@ -162,23 +162,23 @@ export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryPr
               <button
                 type="button"
                 onClick={() => handleOpen(item)}
-                className="mt-auto inline-flex items-center gap-2 text-sm font-display font-semibold text-primary group-hover:text-secondary"
+                className="mt-auto inline-flex items-center gap-1 text-[10px] font-display font-semibold text-primary group-hover:text-secondary"
               >
                 {item.product_type === 'course' && (
                   <>
-                    <Play className="w-4 h-4" />
+                    <Play className="w-3 h-3" />
                     {item.percentComplete > 0 ? t('library.actions.continue') : t('library.actions.start')}
                   </>
                 )}
                 {item.product_type === 'ebook' && (
                   <>
-                    <BookOpen className="w-4 h-4" />
+                    <BookOpen className="w-3 h-3" />
                     {item.percentComplete > 0 ? t('library.actions.continueReading') : t('library.actions.read')}
                   </>
                 )}
                 {item.product_type === 'file' && (
                   <>
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3 h-3" />
                     {t('library.actions.download')}
                   </>
                 )}

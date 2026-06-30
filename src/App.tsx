@@ -1,6 +1,7 @@
-import { useState, useEffect, lazy, Suspense, memo } from 'react';
+import { useState, useEffect, lazy, Suspense, memo, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { NavBar } from './components/NavBar';
+import { useAuthSession } from './hooks/useAuthSession';
 import { Footer } from './components/Footer';
 import { SearchModal } from './components/SearchModal';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
@@ -18,6 +19,7 @@ const Background3D = lazy(() =>
 // Each page is loaded on demand — not bundled into the initial JS payload.
 // This reduces the initial bundle size by ~70%.
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const Welcome = lazy(() => import('./pages/Welcome').then(m => ({ default: m.Welcome })));
 const Library = lazy(() => import('./pages/Library').then(m => ({ default: m.Library })));
 const Product = lazy(() => import('./pages/Product').then(m => ({ default: m.Product })));
 const Auth = lazy(() => import('./pages/Auth').then(m => ({ default: m.Auth })));
@@ -36,18 +38,23 @@ const Success = lazy(() => import('./pages/Success').then(m => ({ default: m.Suc
 const Cancel = lazy(() => import('./pages/Cancel').then(m => ({ default: m.Cancel })));
 const Rewards = lazy(() => import('./pages/Rewards').then(m => ({ default: m.Rewards })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword').then(m => ({ default: m.ResetPassword })));
+const CollaboratorApply = lazy(() => import('./pages/CollaboratorApply').then(m => ({ default: m.CollaboratorApply })));
+const CollaboratorDashboard = lazy(() => import('./pages/CollaboratorDashboard').then(m => ({ default: m.CollaboratorDashboard })));
+const CollaboratorProducts = lazy(() => import('./pages/CollaboratorProducts').then(m => ({ default: m.CollaboratorProducts })));
+const AffiliatesDashboard = lazy(() => import('./pages/AffiliatesDashboard').then(m => ({ default: m.AffiliatesDashboard })));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
 
 // ─── Page transition variants ─────────────────────────────────────────────────
 const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 },
+  initial: { opacity: 0, y: 6 },
+  in:      { opacity: 1, y: 0 },
+  out:     { opacity: 0, y: -4 },
 };
 
 const pageTransition: any = {
   type: 'tween',
-  ease: 'easeInOut',
-  duration: 0.3,
+  ease: [0.16, 1, 0.3, 1],
+  duration: 0.22,
 };
 
 // ─── Page loader skeleton ─────────────────────────────────────────────────────
@@ -71,6 +78,7 @@ const PageContent = memo(function PageContent({
   navigateToScreen,
   navigateToProduct,
   setIsImmersive,
+  onOnboardingComplete,
 }: {
   currentScreen: string;
   currentProductId: string | null;
@@ -78,9 +86,13 @@ const PageContent = memo(function PageContent({
   navigateToScreen: (screen: string, section?: string) => void;
   navigateToProduct: (id: string) => void;
   setIsImmersive: (v: boolean) => void;
+  onOnboardingComplete?: () => void;
 }) {
   return (
     <Suspense fallback={<PageLoader />}>
+      {currentScreen === 'welcome' && (
+        <Welcome setScreen={navigateToScreen} />
+      )}
       {currentScreen === 'home' && (
         <Home setScreen={navigateToScreen} onProductClick={navigateToProduct} />
       )}
@@ -117,13 +129,39 @@ const PageContent = memo(function PageContent({
       {currentScreen === 'success' && <Success setScreen={navigateToScreen} />}
       {currentScreen === 'cancel' && <Cancel setScreen={navigateToScreen} />}
       {currentScreen === 'rewards' && <Rewards setScreen={navigateToScreen} />}
+      {currentScreen === 'colaborador-candidatura' && (
+        <CollaboratorApply
+          setScreen={navigateToScreen}
+          onCandidacyApproved={() => navigateToScreen('colaborador')}
+        />
+      )}
+      {currentScreen === 'colaborador' && (
+        <CollaboratorDashboard
+          setScreen={navigateToScreen}
+          onGoToProducts={() => navigateToScreen('colaborador-produtos')}
+        />
+      )}
+      {currentScreen === 'colaborador-produtos' && (
+        <CollaboratorProducts
+          setScreen={navigateToScreen}
+          setIsImmersive={setIsImmersive}
+        />
+      )}
+      {currentScreen === 'afiliados' && (
+        <AffiliatesDashboard
+          setScreen={navigateToScreen}
+        />
+      )}
+      {currentScreen === 'onboarding' && (
+        <Onboarding onComplete={onOnboardingComplete || (() => navigateToScreen('home'))} />
+      )}
     </Suspense>
   );
 });
 
 // Screens that should NOT be persisted (always reset to home on refresh)
 const NON_PERSISTENT_SCREENS = new Set([
-  'auth', 'signup', 'reset-password', 'success', 'cancel',
+  'auth', 'signup', 'reset-password', 'success', 'cancel', 'onboarding'
 ]);
 
 // Read initial screen from sessionStorage (only when there are no URL params)
@@ -137,12 +175,12 @@ function getInitialScreen(): string {
     pathname !== '/' ||
     hash.includes('access_token=') ||
     hash.includes('type=recovery');
-  if (hasSpecialRoute) return 'home';
+  if (hasSpecialRoute) return 'welcome';
   const stored = sessionStorage.getItem('ce_last_screen');
-  const valid = ['home','library','member','about','releases','contact',
+  const valid = ['welcome','home','library','member','about','releases','contact',
     'favorites','news','settings','privacy','terms','licensing','support',
-    'rewards','product'];
-  return (stored && valid.includes(stored)) ? stored : 'home';
+    'rewards','product', 'colaborador-candidatura', 'colaborador', 'colaborador-produtos', 'afiliados'];
+  return (stored && valid.includes(stored)) ? stored : 'welcome';
 }
 
 function getInitialProductId(): string | null {
@@ -163,25 +201,82 @@ export default function App() {
   const [memberSection, setMemberSection] = useState<string>('inicio');
   const [showSearch, setShowSearch] = useState(false);
   const [isImmersive, setIsImmersive] = useState(false);
+  const { user, session, loading: authLoading } = useAuthSession();
+  const [member, setMember] = useState<any>(null);
+  const [loadingMember, setLoadingMember] = useState(true);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
+
+  const handleOnboardingComplete = () => {
+    setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : null);
+    navigateToScreen('home');
+  };
 
   const navigateToProduct = (productId: string) => {
     setCurrentProductId(productId);
     setScreen('product');
+    // Push state to browser history
+    const state = { screen: 'product', productId, section: 'inicio' };
+    window.history.pushState(state, '', `/product/${productId}`);
   };
 
   const navigateToScreen = (screen: string, section?: string) => {
+    const sect = section || 'inicio';
     if (screen !== 'product') {
       setCurrentProductId(null);
     }
 
     if (screen === 'member') {
-      setMemberSection(section || 'inicio');
+      setMemberSection(sect);
       setScreen(screen);
     } else {
       setMemberSection('inicio');
       setScreen(screen);
     }
+
+    // Push state to browser history
+    const state = { screen, productId: null, section: sect };
+    let path = '/';
+    if (screen !== 'welcome' && screen !== 'home') {
+      if (screen === 'news') {
+        path = '/news';
+      } else {
+        path = `/?screen=${screen}`;
+        if (screen === 'member' && sect !== 'inicio') {
+          path += `&section=${sect}`;
+        }
+      }
+    }
+    window.history.pushState(state, '', path);
   };
+
+  // Listen to popstate event for browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const state = e.state;
+      if (state) {
+        if (state.screen === 'product') {
+          setCurrentProductId(state.productId || null);
+          setScreen('product');
+        } else {
+          setCurrentProductId(null);
+          if (state.screen === 'member') {
+            setMemberSection(state.section || 'inicio');
+            setScreen('member');
+          } else {
+            setMemberSection('inicio');
+            setScreen(state.screen || 'welcome');
+          }
+        }
+      } else {
+        setCurrentProductId(null);
+        setMemberSection('inicio');
+        setScreen('welcome');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Persist current screen to sessionStorage so it survives page refreshes
   useEffect(() => {
@@ -194,6 +289,34 @@ export default function App() {
       }
     }
   }, [currentScreen, currentProductId]);
+
+  // Real-time Traffic Tracking (Page Views & Active Users)
+  useEffect(() => {
+    let sessionId = sessionStorage.getItem('ce_session_id');
+    if (!sessionId) {
+      sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      sessionStorage.setItem('ce_session_id', sessionId);
+    }
+
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const path = currentScreen === 'product' && currentProductId
+      ? `/product/${currentProductId}`
+      : `/${currentScreen}`;
+
+    const sendPing = () => {
+      fetch(`${backendUrl}/api/analytics/ping`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, sessionId }),
+      }).catch((err) => console.warn('[tracking] failed to send ping:', err));
+    };
+
+    sendPing();
+
+    const interval = setInterval(sendPing, 30 * 1000);
+    return () => clearInterval(interval);
+  }, [currentScreen, currentProductId]);
+
 
   useEffect(() => {
     // Listen for PWA installation prompt globally
@@ -218,8 +341,11 @@ export default function App() {
     if (pathname.startsWith('/product/')) {
       const productId = pathname.split('/product/')[1]?.split(/[?#/]/)[0];
       if (productId) {
-        navigateToProduct(productId);
-        window.history.replaceState({}, '', '/');
+        // Set state first
+        setCurrentProductId(productId);
+        setScreen('product');
+        // Set initial state representation in history
+        window.history.replaceState({ screen: 'product', productId, section: 'inicio' }, '', `/product/${productId}`);
         return;
       }
     }
@@ -230,12 +356,12 @@ export default function App() {
       if (newsId) {
         sessionStorage.setItem('pendingNewsId', newsId);
         setScreen('news');
-        window.history.replaceState({}, '', '/');
+        window.history.replaceState({ screen: 'news', productId: null, section: 'inicio' }, '', `/news/${newsId}`);
         return;
       }
     } else if (pathname === '/news' || pathname === '/news/') {
       setScreen('news');
-      window.history.replaceState({}, '', '/');
+      window.history.replaceState({ screen: 'news', productId: null, section: 'inicio' }, '', `/news`);
       return;
     }
 
@@ -254,6 +380,34 @@ export default function App() {
     if (ref) {
       const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
       localStorage.setItem('ce_referral_code', JSON.stringify({ code: ref, expiry }));
+    }
+
+    // Save founder invitation link if present (?invite=AUTH_USER_ID or ?invite=REFERRAL_CODE)
+    // This is separate from ?ref= which is for product affiliate tracking
+    const invite = params.get('invite');
+    if (invite) {
+      const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      if (invite.length === 36) {
+        localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: invite, expiry }));
+      } else {
+        // Query supabase to resolve referral_code to auth_id
+        supabase
+          .from('members')
+          .select('auth_id')
+          .eq('referral_code', invite)
+          .maybeSingle()
+          .then(({ data }) => {
+            if (data?.auth_id) {
+              localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: data.auth_id, expiry }));
+            }
+          });
+      }
+      // Clean the invite param from URL to avoid leaking auth IDs in browser history
+      params.delete('invite');
+      const cleanUrl = params.toString()
+        ? `${window.location.pathname}?${params}`
+        : window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
     }
 
     // Handle ?screen=success or ?screen=cancel
@@ -283,6 +437,31 @@ export default function App() {
     if (pathname === '/cancel' || pathname === '/cancel/') {
       setScreen('cancel');
       window.history.replaceState({}, '', '/');
+      return;
+    }
+
+    // Handle collaborator pathnames
+    if (pathname === '/colaborador' || pathname === '/colaborador/') {
+      setScreen('colaborador');
+      window.history.replaceState({}, '', '/');
+      return;
+    }
+    if (pathname === '/colaborador/candidatura' || pathname === '/colaborador/candidatura/') {
+      setScreen('colaborador-candidatura');
+      window.history.replaceState({}, '', '/');
+      return;
+    }
+    if (pathname === '/colaborador/produtos' || pathname === '/colaborador/produtos/') {
+      setScreen('colaborador-produtos');
+      window.history.replaceState({}, '', '/');
+      return;
+    }
+
+    // Handle affiliate pathnames
+    if (pathname === '/afiliados' || pathname === '/afiliados/' || pathname === '/afiliado' || pathname === '/afiliado/') {
+      setScreen('afiliados');
+      window.history.replaceState({}, '', '/');
+      return;
     }
 
     // Handle any ?screen= parameter
@@ -320,6 +499,64 @@ export default function App() {
     window.addEventListener('navigate-product', handler);
     return () => window.removeEventListener('navigate-product', handler);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    async function loadMember() {
+      if (user?.id) {
+        setLoadingMember(true);
+        try {
+          const { data: mem } = await supabase
+            .from('members')
+            .select('*')
+            .eq('auth_id', user.id)
+            .maybeSingle();
+          
+          if (!active) return;
+          
+          let currentMem = mem;
+          // Handle purchase flow flags if pendingCheckout exists
+          const hasPendingCheckout = sessionStorage.getItem('pendingCheckout') !== null;
+          if (hasPendingCheckout && mem && (!mem.onboarding_deferred || !mem.purchase_flow_started)) {
+            const { data: updatedMem } = await supabase
+              .from('members')
+              .update({
+                onboarding_deferred: true,
+                purchase_flow_started: true
+              })
+              .eq('auth_id', user.id)
+              .select()
+              .single();
+            if (updatedMem && active) currentMem = updatedMem;
+          }
+          setMember(currentMem);
+          lastFetchedUserIdRef.current = user.id;
+          setLoadingMember(false);
+        } catch (err) {
+          console.error('[App] Error loading member:', err);
+          if (active) {
+            setMember(null);
+            lastFetchedUserIdRef.current = user.id;
+            setLoadingMember(false);
+          }
+        }
+      } else {
+        if (active) {
+          setMember(null);
+          lastFetchedUserIdRef.current = null;
+          setLoadingMember(false);
+        }
+      }
+    }
+    if (!authLoading) {
+      void loadMember();
+    } else {
+      setLoadingMember(true);
+    }
+    return () => {
+      active = false;
+    };
+  }, [user?.id, authLoading]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -376,6 +613,20 @@ export default function App() {
     };
   }, [navigateToScreen, navigateToProduct]);
 
+  // Onboarding mandatory redirection lock
+  useEffect(() => {
+    if (authLoading || loadingMember) return;
+    if (user && lastFetchedUserIdRef.current === user.id) {
+      const isCompleted = member ? member.onboarding_completed === true : false;
+      if (!isCompleted) {
+        const isPurchase = sessionStorage.getItem('pendingCheckout') !== null;
+        if (!isPurchase && currentScreen !== 'onboarding') {
+          setScreen('onboarding');
+        }
+      }
+    }
+  }, [user, member, authLoading, loadingMember, currentScreen]);
+
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">
       {/* Background3D is lazy-loaded: Three.js ~500KB deferred after initial paint */}
@@ -387,7 +638,7 @@ export default function App() {
       }>
         <Background3D isImmersive={isImmersive} />
       </Suspense>
-      {!isImmersive && (
+      {!isImmersive && !['auth', 'signup', 'onboarding'].includes(currentScreen) && (
         <NavBar
           currentScreen={currentScreen}
           setScreen={navigateToScreen}
@@ -408,7 +659,7 @@ export default function App() {
         }}
       />
 
-      <main className={`flex-grow flex flex-col ${isImmersive ? 'pt-0' : 'pt-8'}`}>
+      <main className="flex-grow flex flex-col pt-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={
@@ -430,12 +681,15 @@ export default function App() {
               navigateToScreen={navigateToScreen}
               navigateToProduct={navigateToProduct}
               setIsImmersive={setIsImmersive}
+              onOnboardingComplete={handleOnboardingComplete}
             />
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {!isImmersive && <Footer setScreen={navigateToScreen} />}
+      {!isImmersive && !['welcome', 'member','colaborador','colaborador-candidatura','colaborador-produtos','afiliados','settings', 'onboarding'].includes(currentScreen) && (
+        <Footer setScreen={navigateToScreen} />
+      )}
       <PwaInstallBanner />
       <PushPermissionPrompt />
     </div>
