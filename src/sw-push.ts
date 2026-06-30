@@ -74,16 +74,32 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Handle skipWaiting messages from the client to successfully activate the service worker update
+// ─── Instant activation: skip waiting as soon as this SW is installed ───
+// This prevents the "stale version flash" where the old SW keeps serving
+// cached files even after a new deploy. With skipWaiting() here, the new
+// SW takes control immediately without requiring all tabs to be closed.
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
+
+// Also support manual SKIP_WAITING messages (fallback)
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// Claim clients immediately when the service worker becomes active
+// Claim all open clients immediately when this SW becomes active
+// so every open tab gets the new version without a manual reload.
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    self.clients.claim().then(() => {
+      // Notify all open tabs to reload silently so they pick up new assets
+      return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+        clients.forEach(client => client.postMessage({ type: 'SW_ACTIVATED' }));
+      });
+    })
+  );
 });
 
 

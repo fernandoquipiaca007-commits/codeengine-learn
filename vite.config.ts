@@ -11,7 +11,9 @@ export default defineConfig(({mode}) => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate',
+        // NOTE: registerType:'autoUpdate' is intentionally omitted here.
+        // It conflicts with strategies:'injectManifest' and has no effect when
+        // a custom SW is used. skipWaiting() is handled directly in sw-push.ts.
         includeAssets: ['icons/icon-192.svg', 'icons/icon-512.svg'],
         manifest: false,
         injectRegister: 'auto',
@@ -19,6 +21,7 @@ export default defineConfig(({mode}) => {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
           runtimeCaching: [
             {
+              // Supabase API calls: always try network first, fall back to cache
               urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
               handler: 'NetworkFirst',
               options: { cacheName: 'supabase-api', expiration: { maxEntries: 50, maxAgeSeconds: 300 } },
@@ -32,6 +35,7 @@ export default defineConfig(({mode}) => {
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         },
       }),
+
     ],
     // NOTE: GEMINI_API_KEY removed from define — never expose API keys in client bundle.
     // Use backend proxy endpoints to call Gemini instead.
