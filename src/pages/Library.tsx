@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowRight, ArrowLeft, Bot, Code2, Workflow, Megaphone, Cloud, Zap, DollarSign, LayoutDashboard, Database, Briefcase, CheckCircle, ShieldCheck, User, ChevronDown, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
@@ -46,6 +46,11 @@ export function Library({ setScreen, onProductClick }: {
   const { user } = useAuthSession();
   const { locale } = useLocale();
   const [onboardingData, setOnboardingData] = useState<any>(null);
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [selectedCategory, selectedSubcategory]);
 
   useEffect(() => {
     async function loadOnboarding() {
@@ -278,9 +283,11 @@ export function Library({ setScreen, onProductClick }: {
     });
 
   // Combine: sponsored ads first (up to max 2), then organic, avoiding duplicates
-  const sponsoredIds = new Set(matchedCategoryAds.map(a => a.id));
-  const organicWithoutDupes = organicFiltered.filter(p => !sponsoredIds.has(p.id));
-  const filteredProducts = [...matchedCategoryAds.slice(0, 2), ...organicWithoutDupes];
+  const filteredProducts = useMemo(() => {
+    const sponsoredIds = new Set(matchedCategoryAds.map(a => a.id));
+    const organicWithoutDupes = organicFiltered.filter(p => !sponsoredIds.has(p.id));
+    return [...matchedCategoryAds.slice(0, 2), ...organicWithoutDupes];
+  }, [matchedCategoryAds, organicFiltered]);
 
   // Track category ads impressions when visible products change
   useEffect(() => {
@@ -517,8 +524,9 @@ export function Library({ setScreen, onProductClick }: {
                       </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {filteredProducts.map((product) => {
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {filteredProducts.slice(0, visibleCount).map((product) => {
                         const category = categories.find((c) => c.id === product.category_id);
                         
                         return (
@@ -683,7 +691,19 @@ export function Library({ setScreen, onProductClick }: {
                         );
                       })}
                     </div>
-                  )}
+                    {filteredProducts.length > visibleCount && (
+                      <div className="flex justify-center mt-8">
+                        <button
+                          onClick={() => setVisibleCount((prev) => prev + 6)}
+                          className="flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-white/10 hover:border-primary/40 hover:bg-primary/5 bg-surface/50 text-[10px] font-bold uppercase tracking-wider text-white transition-all shadow-lg hover:shadow-primary/10 cursor-pointer"
+                        >
+                          {t('releases.actions.viewMore', 'Ver Mais')}
+                          <ChevronDown className="w-3.5 h-3.5 animate-bounce" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
                 </div>
               </motion.div>
           )}

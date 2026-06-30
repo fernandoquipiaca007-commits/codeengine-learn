@@ -382,8 +382,9 @@
     .collab-compact-wrapper .p-12 { padding: 1.5rem !important; }
     .collab-compact-wrapper .px-8 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
     .collab-compact-wrapper .py-16 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-    .collab-compact-wrapper .pt-20 { padding-top: 3.5rem !important; }
-    .collab-compact-wrapper .pt-16 { padding-top: 3rem !important; }
+    .collab-compact-wrapper .pt-20 { padding-top: 6.5rem !important; }
+    .collab-compact-wrapper .pt-16 { padding-top: 6.5rem !important; }
+    .collab-compact-wrapper .pt-10 { padding-top: 6rem !important; }
     .collab-compact-wrapper .pb-16 { padding-bottom: 2rem !important; }
     .collab-compact-wrapper .mb-6 { margin-bottom: 0.75rem !important; }
     .collab-compact-wrapper .mb-8 { margin-bottom: 1rem !important; }
@@ -415,6 +416,17 @@
     .collab-compact-wrapper label {
       font-size: 0.69rem !important;
       margin-bottom: 0.125rem !important;
+    }
+
+    /* Compensa o zoom de 0.88 para preencher 100% da altura física da tela */
+    .collab-compact-wrapper .h-screen {
+      height: 113.636vh !important;
+    }
+    .collab-compact-wrapper .max-h-screen {
+      max-height: 113.636vh !important;
+    }
+    .collab-compact-wrapper .min-h-screen {
+      min-height: 113.636vh !important;
     }
   }
 }

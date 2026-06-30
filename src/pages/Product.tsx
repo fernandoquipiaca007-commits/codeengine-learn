@@ -1157,26 +1157,26 @@ export function Product({ setScreen, productId }: ProductProps) {
       )}
 
       {/* Seção de Compra - Realocada para o Final */}
-      <section className="mt-16 pt-12 border-t border-white/10 max-w-2xl mx-auto w-full relative">
-        <div className="absolute inset-0 bg-primary/5 blur-[100px] rounded-full mix-blend-screen pointer-events-none"></div>
-        <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-white/10 relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-5">
+      <section className="mt-12 pt-8 border-t border-white/10 max-w-xl mx-auto w-full relative">
+        <div className="absolute inset-0 bg-primary/5 blur-[80px] rounded-full mix-blend-screen pointer-events-none"></div>
+        <div className="glass-panel rounded-2xl p-4 sm:p-6 border border-white/10 relative z-10 shadow-[0_15px_40px_rgba(0,0,0,0.5)] flex flex-col gap-4">
           <div className="text-center">
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2">
+            <h2 className="font-display text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-1.5">
               {SECTION_TITLES[currentLang]?.title || SECTION_TITLES.pt.title}
             </h2>
-            <p className="font-sans text-sm text-on-surface-variant max-w-md mx-auto">
+            <p className="font-sans text-xs text-on-surface-variant max-w-sm mx-auto">
               {SECTION_TITLES[currentLang]?.subtitle || SECTION_TITLES.pt.subtitle}
             </p>
           </div>
           
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col items-center justify-center gap-1.5 w-full">
+          <div className="flex flex-col gap-3.5">
+            <div className="flex flex-col items-center justify-center gap-1 w-full">
               {isAngola ? (
                 <>
-                  <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-amber-500 tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
+                  <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-amber-500 tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
                     Kz {Number(getFinalAoaPrice()).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
                   </span>
-                  <span className="font-sans text-xs text-on-surface-variant">
+                  <span className="font-sans text-[11px] text-on-surface-variant">
                     Equivalente a $ {getFinalPrice()} USD
                   </span>
                   {discount > 0 && (
@@ -1189,16 +1189,16 @@ export function Product({ setScreen, productId }: ProductProps) {
                 <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
                   {(campaignPrice || discount > 0) ? (
                     <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
-                      <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/50 line-through">
+                      <span className="text-sm sm:text-base font-semibold text-on-surface-variant/50 line-through">
                         {tDict.before} ${listPrice}
                       </span>
-                      <span className="text-base sm:text-lg md:text-xl font-semibold text-on-surface-variant/30">|</span>
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                      <span className="text-sm sm:text-base font-semibold text-on-surface-variant/30">|</span>
+                      <span className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
                         {tDict.now} ${getFinalPrice()}
                       </span>
                     </div>
                   ) : (
-                    <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                    <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
                       $ {getFinalPrice()}
                     </span>
                   )}

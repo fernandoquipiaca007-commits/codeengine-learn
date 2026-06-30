@@ -6,6 +6,8 @@ import { CustomSectionsLocalManager, CustomSectionState } from '../components/co
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 import { useUserCountry } from '../contexts/UserCountryContext';
+import { useLocale } from '../contexts/LocaleContext';
+import { useTranslation } from 'react-i18next';
 
 interface CollaboratorProductFormProps {
   productId?: string | null;
@@ -81,6 +83,8 @@ export function CollaboratorProductForm({
   collaboratorPlan
 }: CollaboratorProductFormProps) {
   const { isAngola } = useUserCountry();
+  const { locale } = useLocale();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [fetchingProduct, setFetchingProduct] = useState(false);
@@ -328,9 +332,11 @@ export function CollaboratorProductForm({
   const [isFree, setIsFree] = useState(false);
 
   const [translations, setTranslations] = useState<{
+    pt: TranslationFieldState;
     en: TranslationFieldState;
     fr: TranslationFieldState;
   }>({
+    pt: { title: '', description: '', cta_text: 'Comprar Agora', cover_url: '', preview_url: '', storage_url: '' },
     en: { title: '', description: '', cta_text: 'Buy Now', cover_url: '', preview_url: '', storage_url: '' },
     fr: { title: '', description: '', cta_text: 'Acheter Maintenant', cover_url: '', preview_url: '', storage_url: '' }
   });
@@ -616,14 +622,21 @@ export function CollaboratorProductForm({
 
           if (prod.products_translations) {
             const newTrans = {
-              en: { title: '', description: '', cta_text: 'Buy Now' },
-              fr: { title: '', description: '', cta_text: 'Acheter Maintenant' }
+              pt: { title: '', description: '', cta_text: 'Comprar Agora', cover_url: '', preview_url: '', storage_url: '' },
+              en: { title: '', description: '', cta_text: 'Buy Now', cover_url: '', preview_url: '', storage_url: '' },
+              fr: { title: '', description: '', cta_text: 'Acheter Maintenant', cover_url: '', preview_url: '', storage_url: '' }
             };
             prod.products_translations.forEach((t: any) => {
-              if (t.language === 'en') {
-                newTrans.en = { title: t.title || '', description: t.description || '', cta_text: t.cta_text || 'Buy Now' };
-              } else if (t.language === 'fr') {
-                newTrans.fr = { title: t.title || '', description: t.description || '', cta_text: t.cta_text || 'Acheter Maintenant' };
+              const langKey = t.language as 'pt' | 'en' | 'fr';
+              if (newTrans[langKey]) {
+                newTrans[langKey] = {
+                  title: t.title || '',
+                  description: t.description || '',
+                  cta_text: t.cta_text || (langKey === 'pt' ? 'Comprar Agora' : langKey === 'fr' ? 'Acheter Maintenant' : 'Buy Now'),
+                  cover_url: t.cover_url || '',
+                  preview_url: t.preview_url || '',
+                  storage_url: t.storage_url || ''
+                };
               }
             });
             setTranslations(newTrans);
@@ -863,7 +876,9 @@ export function CollaboratorProductForm({
         affiliateEnabled,
         affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
         themeVideoPath: themeVideoPath || null,
-        themeVideoConfig
+        themeVideoConfig,
+        primaryLanguage: locale,
+        translations
       };
 
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
@@ -942,6 +957,21 @@ export function CollaboratorProductForm({
   const removeBenefit = (index: number) => {
     setBenefits(prev => prev.filter((_, i) => i !== index).map((b, i) => ({ ...b, display_order: i })));
   };
+
+  const translationLanguages = locale === 'en'
+    ? [
+        { code: 'pt' as const, name: 'Português (Portuguese)', titleLabel: 'Título', descLabel: 'Descrição', ctaLabel: 'Texto do Botão CTA', exTitle: 'Ex: Guia Completo de CSS Flexbox', ctaDefault: 'Comprar Agora' },
+        { code: 'fr' as const, name: 'Francês (Français)', titleLabel: 'Titre', descLabel: 'Description', ctaLabel: 'Texte du Bouton CTA', exTitle: 'Ex: Guide complet de CSS Flexbox', ctaDefault: 'Acheter Maintenant' }
+      ]
+    : locale === 'fr'
+    ? [
+        { code: 'pt' as const, name: 'Português (Portuguese)', titleLabel: 'Título', descLabel: 'Descrição', ctaLabel: 'Texto do Botão CTA', exTitle: 'Ex: Guia Completo de CSS Flexbox', ctaDefault: 'Comprar Agora' },
+        { code: 'en' as const, name: 'Inglês (English)', titleLabel: 'Title', descLabel: 'Description', ctaLabel: 'CTA Button Text', exTitle: 'Ex: CSS Flexbox Complete Guide', ctaDefault: 'Buy Now' }
+      ]
+    : [
+        { code: 'en' as const, name: 'Inglês (English)', titleLabel: 'Title', descLabel: 'Description', ctaLabel: 'CTA Button Text', exTitle: 'Ex: CSS Flexbox Complete Guide', ctaDefault: 'Buy Now' },
+        { code: 'fr' as const, name: 'Francês (Français)', titleLabel: 'Titre', descLabel: 'Description', ctaLabel: 'Texte du Bouton CTA', exTitle: 'Ex: Guide complet de CSS Flexbox', ctaDefault: 'Acheter Maintenant' }
+      ];
 
   return (
     <div className="collab-compact-wrapper">
@@ -2263,203 +2293,105 @@ export function CollaboratorProductForm({
             <p className="text-xs text-on-surface-variant">Facilite a venda internacional localizando o conteúdo.</p>
 
             <div className="grid gap-6 md:grid-cols-2">
-              {/* English Section */}
-              <div className="p-5 border border-white/10 rounded-xl bg-white/5 space-y-4">
-                <span className="block text-sm font-bold text-white border-b border-white/10 pb-2">Inglês (English)</span>
+              {translationLanguages.map(lang => (
+                <div key={lang.code} className="p-5 border border-white/10 rounded-xl bg-white/5 space-y-4">
+                  <span className="block text-sm font-bold text-white border-b border-white/10 pb-2">{lang.name}</span>
 
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Title *</label>
-                  <input
-                    type="text"
-                    value={translations.en.title}
-                    onChange={e => setTranslations({
-                      ...translations,
-                      en: { ...translations.en, title: e.target.value }
-                    })}
-                    placeholder="Ex: CSS Flexbox Complete Guide"
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none"
-                  />
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">{lang.titleLabel} *</label>
+                    <input
+                      type="text"
+                      value={translations[lang.code]?.title || ''}
+                      onChange={e => setTranslations({
+                        ...translations,
+                        [lang.code]: { ...translations[lang.code], title: e.target.value }
+                      })}
+                      placeholder={lang.exTitle}
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">{lang.descLabel} *</label>
+                    <textarea
+                      value={translations[lang.code]?.description || ''}
+                      onChange={e => setTranslations({
+                        ...translations,
+                        [lang.code]: { ...translations[lang.code], description: e.target.value }
+                      })}
+                      placeholder={`${lang.descLabel}...`}
+                      rows={4}
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">{lang.ctaLabel}</label>
+                    <input
+                      type="text"
+                      value={translations[lang.code]?.cta_text || ''}
+                      onChange={e => setTranslations({
+                        ...translations,
+                        [lang.code]: { ...translations[lang.code], cta_text: e.target.value }
+                      })}
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Upload Capa */}
+                  <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
+                    <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+                      <Image size={16} className="text-on-surface-variant" /> {lang.code === 'pt' ? 'Imagem de Capa' : lang.code === 'fr' ? 'Image de Couverture' : 'Cover Image'} ({lang.name})
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={e => handleTranslationFileUpload(e, 'product-covers', lang.code, 'cover_url')}
+                      className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
+                    />
+                    {translations[lang.code]?.cover_url && (
+                      <div className="mt-3 relative w-32 h-20 rounded-lg overflow-hidden border border-white/10">
+                        <img src={translations[lang.code].cover_url} className="w-full h-full object-cover" alt="Preview Capa" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Ficheiro */}
+                  <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
+                    <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
+                      <FileText size={16} className="text-on-surface-variant" /> {lang.code === 'pt' ? 'Ficheiro do Produto' : lang.code === 'fr' ? 'Fichier du Produit' : 'Product File'} ({lang.name})
+                    </span>
+                    <input
+                      type="file"
+                      onChange={e => handleTranslationFileUpload(e, 'ebooks-private', lang.code, 'storage_url')}
+                      className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
+                    />
+                    {translations[lang.code]?.storage_url && (
+                      <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
+                        <ShieldCheck size={14} /> {lang.code === 'pt' ? 'Ficheiro carregado com sucesso' : lang.code === 'fr' ? 'Fichier téléchargé avec succès' : 'File uploaded successfully'} ({lang.name}).
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Preview */}
+                  <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
+                    <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+                      <Globe size={16} className="text-on-surface-variant" /> {lang.code === 'pt' ? 'Ficheiro de Amostra/Preview' : lang.code === 'fr' ? 'Fichier de Preview' : 'Preview File'} ({lang.name} - {lang.code === 'pt' ? 'Opcional' : lang.code === 'fr' ? 'Optionnel' : 'Optional'})
+                    </span>
+                    <input
+                      type="file"
+                      accept="application/pdf,image/jpeg,image/png"
+                      onChange={e => handleTranslationFileUpload(e, 'product-previews', lang.code, 'preview_url')}
+                      className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
+                    />
+                    {translations[lang.code]?.preview_url && (
+                      <div className="mt-2 text-xs text-on-surface-variant truncate">
+                        {lang.code === 'pt' ? 'Ficheiro de preview carregado' : lang.code === 'fr' ? 'Fichier de preview téléchargé' : 'Preview file uploaded'} ({lang.name}).
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Description *</label>
-                  <textarea
-                    value={translations.en.description}
-                    onChange={e => setTranslations({
-                      ...translations,
-                      en: { ...translations.en, description: e.target.value }
-                    })}
-                    placeholder="Detailed explanation in English..."
-                    rows={4}
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">CTA Button Text</label>
-                  <input
-                    type="text"
-                    value={translations.en.cta_text}
-                    onChange={e => setTranslations({
-                      ...translations,
-                      en: { ...translations.en, cta_text: e.target.value }
-                    })}
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none"
-                  />
-                </div>
-
-                {/* Upload Capa English */}
-                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                  <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
-                    <Image size={16} className="text-on-surface-variant" /> Cover Image (English)
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={e => handleTranslationFileUpload(e, 'product-covers', 'en', 'cover_url')}
-                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
-                  />
-                  {translations.en.cover_url && (
-                    <div className="mt-3 relative w-32 h-20 rounded-lg overflow-hidden border border-white/10">
-                      <img src={translations.en.cover_url} className="w-full h-full object-cover" alt="Preview Capa English" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Upload Ficheiro English */}
-                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                  <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
-                    <FileText size={16} className="text-on-surface-variant" /> Product File (English)
-                  </span>
-                  <input
-                    type="file"
-                    onChange={e => handleTranslationFileUpload(e, 'ebooks-private', 'en', 'storage_url')}
-                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
-                  />
-                  {translations.en.storage_url && (
-                    <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
-                      <ShieldCheck size={14} /> File uploaded successfully (English).
-                    </div>
-                  )}
-                </div>
-
-                {/* Upload Preview English */}
-                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                  <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
-                    <Globe size={16} className="text-on-surface-variant" /> Preview File (English - Optional)
-                  </span>
-                  <input
-                    type="file"
-                    accept="application/pdf,image/jpeg,image/png"
-                    onChange={e => handleTranslationFileUpload(e, 'product-previews', 'en', 'preview_url')}
-                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
-                  />
-                  {translations.en.preview_url && (
-                    <div className="mt-2 text-xs text-on-surface-variant truncate">
-                      Preview file uploaded (English).
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* French Section */}
-              <div className="p-5 border border-white/10 rounded-xl bg-white/5 space-y-4">
-                <span className="block text-sm font-bold text-white border-b border-white/10 pb-2">Francês (Français)</span>
-
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Titre *</label>
-                  <input
-                    type="text"
-                    value={translations.fr.title}
-                    onChange={e => setTranslations({
-                      ...translations,
-                      fr: { ...translations.fr, title: e.target.value }
-                    })}
-                    placeholder="Ex: Guide complet de CSS Flexbox"
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Description *</label>
-                  <textarea
-                    value={translations.fr.description}
-                    onChange={e => setTranslations({
-                      ...translations,
-                      fr: { ...translations.fr, description: e.target.value }
-                    })}
-                    placeholder="Detailed explanation in French..."
-                    rows={4}
-                    className="w-full rounded-xl bg-surface-high border border-white/15 px-4 py-2.5 text-sm text-white focus:outline-none resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Texte du Bouton CTA</label>
-                  <input
-                    type="text"
-                    value={translations.fr.cta_text}
-                    onChange={e => setTranslations({
-                      ...translations,
-                      fr: { ...translations.fr, cta_text: e.target.value }
-                    })}
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none"
-                  />
-                </div>
-
-                {/* Upload Capa French */}
-                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                  <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
-                    <Image size={16} className="text-on-surface-variant" /> Image de Couverture (Français)
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={e => handleTranslationFileUpload(e, 'product-covers', 'fr', 'cover_url')}
-                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
-                  />
-                  {translations.fr.cover_url && (
-                    <div className="mt-3 relative w-32 h-20 rounded-lg overflow-hidden border border-white/10">
-                      <img src={translations.fr.cover_url} className="w-full h-full object-cover" alt="Preview Capa French" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Upload Ficheiro French */}
-                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                  <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
-                    <FileText size={16} className="text-on-surface-variant" /> Fichier Produit (Français)
-                  </span>
-                  <input
-                    type="file"
-                    onChange={e => handleTranslationFileUpload(e, 'ebooks-private', 'fr', 'storage_url')}
-                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
-                  />
-                  {translations.fr.storage_url && (
-                    <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
-                      <ShieldCheck size={14} /> Fichier téléchargé avec succès (Français).
-                    </div>
-                  )}
-                </div>
-
-                {/* Upload Preview French */}
-                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                  <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
-                    <Globe size={16} className="text-on-surface-variant" /> Fichier d'Aperçu (Français - Optionnel)
-                  </span>
-                  <input
-                    type="file"
-                    accept="application/pdf,image/jpeg,image/png"
-                    onChange={e => handleTranslationFileUpload(e, 'product-previews', 'fr', 'preview_url')}
-                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
-                  />
-                  {translations.fr.preview_url && (
-                    <div className="mt-2 text-xs text-on-surface-variant truncate">
-                      Fichier d'aperçu téléchargé (Français).
-                    </div>
-                  )}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         )}

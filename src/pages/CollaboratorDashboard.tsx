@@ -980,25 +980,25 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           ) : (
             <div className="space-y-6">
               {/* Header explainer */}
-              <div className="glass-panel rounded-2xl p-6 border border-yellow-500/20 relative overflow-hidden">
+              <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-yellow-500/20 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 pointer-events-none" />
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
-                    <Award size={22} className="text-yellow-400" />
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                    <Award size={18} className="text-yellow-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white font-display">Programa Membro Fundador</h3>
-                    <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">
-                      Convide novos criadores de conteÃºdo para a plataforma. Quando eles fizerem vendas, vocÃª ganha
+                    <h3 className="text-base font-bold text-white font-display">Programa Membro Fundador</h3>
+                    <p className="text-xs text-on-surface-variant mt-0.5 leading-relaxed">
+                      Convide novos criadores de conteúdo para a plataforma. Quando eles fizerem vendas, você ganha
                       <span className="text-yellow-400 font-bold"> 1% do valor bruto </span>
-                      diretamente no seu saldo disponÃ­vel â€” sem tocar na margem deles.
+                      diretamente no seu saldo disponível — sem tocar na margem deles.
                     </p>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-on-surface-variant">
+                    <div className="mt-2.5 flex items-center gap-2 text-[10px] text-on-surface-variant">
                       <span className="inline-flex items-center gap-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2 py-0.5">
-                        <CheckCircle size={10} /> CrÃ©dito imediato no saldo disponÃ­vel
+                        <CheckCircle size={9} /> Crédito imediato no saldo disponível
                       </span>
                       <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2 py-0.5">
-                        <DollarSign size={10} /> Sai da margem da CodeEngine
+                        <DollarSign size={9} /> Sai da margem da CodeEngine
                       </span>
                     </div>
                   </div>
@@ -1006,12 +1006,12 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               </div>
 
               {/* Invite Link */}
-              <div className="glass-panel rounded-2xl p-6 border border-white/10">
-                <h4 className="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Seu Link de Convite</h4>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 flex items-center gap-2 bg-surface-high rounded-xl px-4 py-3 border border-white/10 font-mono text-xs text-on-surface-variant overflow-hidden">
-                    <ExternalLink size={13} className="text-yellow-400 flex-shrink-0" />
-                    <span className="truncate">
+              <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
+                <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">Seu Link de Convite</h4>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex-1 flex items-center gap-2 bg-surface-high rounded-xl px-3.5 py-2 border border-white/10 font-mono text-[11px] text-on-surface-variant overflow-hidden">
+                    <ExternalLink size={12} className="text-yellow-400 flex-shrink-0" />
+                    <span className="truncate font-medium">
                       {founderStats?.referralCode || founderStats?.authUserId
                         ? `${window.location.origin}/?invite=${founderStats.referralCode || founderStats.authUserId}`
                         : 'Carregando...'}
@@ -1020,64 +1020,63 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   <button
                     onClick={copyInviteLink}
                     disabled={!(founderStats?.referralCode || founderStats?.authUserId)}
-                    className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                       inviteLinkCopied
                         ? 'bg-green-500 text-white'
                         : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black hover:opacity-90'
                     }`}
                   >
-                    {inviteLinkCopied ? <CheckCircle size={15} /> : <ChevronRight size={15} />}
+                    {inviteLinkCopied ? <CheckCircle size={13} /> : <ChevronRight size={13} />}
                     {inviteLinkCopied ? 'Copiado!' : 'Copiar Link'}
                   </button>
                 </div>
-                <p className="mt-3 text-xs text-on-surface-variant">
-                  Partilhe este link com criadores de conteÃºdo. Quando se registarem atravÃ©s dele e obtiverem aprovaÃ§Ã£o como colaboradores, vocÃª comeÃ§a a ganhar automaticamente.
+                <p className="mt-2 text-[10px] text-on-surface-variant leading-normal">
+                  Partilhe este link com criadores de conteúdo. Quando se registarem através dele e obtiverem aprovação como colaboradores, você começa a ganhar automaticamente.
                 </p>
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="glass-card rounded-2xl p-5 border border-white/10 text-center">
-                  <div className="text-2xl font-bold text-white font-mono">{founderStats?.totalInvited ?? 0}</div>
-                  <div className="text-xs text-on-surface-variant mt-1">Membros Convidados</div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="glass-card rounded-2xl p-4 border border-white/10 text-center">
+                  <div className="text-xl font-bold text-white font-mono">{founderStats?.totalInvited ?? 0}</div>
+                  <div className="text-[10px] text-on-surface-variant mt-0.5">Membros Convidados</div>
                 </div>
-                <div className="glass-card rounded-2xl p-5 border border-white/10 text-center">
-                  <div className="text-2xl font-bold text-white font-mono">{founderStats?.totalInvitedCollaborators ?? 0}</div>
-                  <div className="text-xs text-on-surface-variant mt-1">Viraram Colaboradores</div>
+                <div className="glass-card rounded-2xl p-4 border border-white/10 text-center">
+                  <div className="text-xl font-bold text-white font-mono">{founderStats?.totalInvitedCollaborators ?? 0}</div>
+                  <div className="text-[10px] text-on-surface-variant mt-0.5">Viraram Colaboradores</div>
                 </div>
-                <div className="glass-card rounded-2xl p-5 border border-green-500/20 text-center">
-                  <div className="text-2xl font-bold text-green-400 font-mono">
+                <div className="glass-card rounded-2xl p-4 border border-green-500/20 text-center">
+                  <div className="text-xl font-bold text-green-400 font-mono">
                     {(founderStats?.totalEarnedUsd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                   </div>
-                  <div className="text-xs text-on-surface-variant mt-1">Ganho como Fundador (USD)</div>
+                  <div className="text-[10px] text-on-surface-variant mt-0.5">Ganho como Fundador (USD)</div>
                 </div>
                 {isAngola && (
-                  <div className="glass-card rounded-2xl p-5 border border-amber-500/20 text-center">
-                    <div className="text-2xl font-bold text-amber-400 font-mono">
+                  <div className="glass-card rounded-2xl p-4 border border-amber-500/20 text-center">
+                    <div className="text-xl font-bold text-amber-400 font-mono">
                       {(founderStats?.totalEarnedAoa || 0).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })}
                     </div>
-                    <div className="text-xs text-on-surface-variant mt-1">Ganho como Fundador (AOA)</div>
+                    <div className="text-[10px] text-on-surface-variant mt-0.5">Ganho como Fundador (AOA)</div>
                   </div>
                 )}
-
               </div>
 
               {/* Recent founder commissions */}
-              <div className="glass-panel rounded-2xl p-6 border border-white/10">
-                <h4 className="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">ComissÃµes Recentes de Fundador</h4>
+              <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
+                <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">Comissões Recentes de Fundador</h4>
                 {!founderStats?.recentCommissions?.length ? (
                   <div className="py-8 text-center text-on-surface-variant text-sm">
-                    Nenhuma comissÃ£o de fundador recebida ainda. Convide colaboradores para comeÃ§ar!
+                    Nenhuma comissão de fundador recebida ainda. Convide colaboradores para começar!
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm border-collapse">
                       <thead>
-                        <tr className="text-on-surface-variant font-semibold border-b border-white/10">
-                          <th className="pb-3 text-xs uppercase tracking-wider">Data</th>
-                          <th className="pb-3 text-xs uppercase tracking-wider">DescriÃ§Ã£o</th>
-                          <th className="pb-3 text-xs uppercase tracking-wider text-right">Valor</th>
-                          <th className="pb-3 text-xs uppercase tracking-wider text-right">Moeda</th>
+                        <tr className="text-on-surface-variant font-semibold border-b border-white/10 text-xs">
+                          <th className="pb-2.5 font-bold uppercase tracking-wider">Data</th>
+                          <th className="pb-2.5 font-bold uppercase tracking-wider">Descrição</th>
+                          <th className="pb-2.5 font-bold uppercase tracking-wider text-right">Valor</th>
+                          <th className="pb-2.5 font-bold uppercase tracking-wider text-right">Moeda</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
@@ -1639,7 +1638,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <Award className="text-primary w-5 h-5 animate-pulse" />
                 <h3 className="font-display text-sm font-bold text-white">
                   {pricingModalStep === 'plans' && 'Plano de Criador CodeEngine'}
-                  {pricingModalStep === 'select_method' && 'MÃ©todo de Pagamento'}
+                  {pricingModalStep === 'select_method' && 'Método de Pagamento'}
                   {pricingModalStep === 'fastpay_upload' && 'Pagamento via Facipay'}
                 </h3>
               </div>
@@ -1656,9 +1655,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             {pricingModalStep === 'plans' && (
               <div className="space-y-6">
                 <div className="text-center max-w-xl mx-auto space-y-1.5 mb-6">
-                  <h2 className="font-display text-xl font-bold text-white">PreÃ§os Simples que Acompanham Seu Sucesso</h2>
+                  <h2 className="font-display text-xl font-bold text-white">Preços Simples que Acompanham Seu Sucesso</h2>
                   <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
-                    Comece grÃ¡tis promovendo e vendendo e-books. FaÃ§a upgrade para o plano Pro para hospedar e comercializar cursos em vÃ­deo na CodeEngine.
+                    Comece grátis promovendo e vendendo e-books. Faça upgrade para o plano Pro para hospedar e comercializar cursos em vídeo na CodeEngine.
                   </p>
                 </div>
 
@@ -1667,30 +1666,30 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   <div className="rounded-xl border border-white/5 bg-white/5 p-4 flex flex-col justify-between min-h-[380px]">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-white font-display">GrÃ¡tis</span>
+                        <span className="text-sm font-bold text-white font-display">Grátis</span>
                         {profile?.plan !== 'course_creator' && (
                           <span className="px-2 py-0.5 rounded bg-primary/20 border border-primary/20 text-[9px] text-primary font-bold">Ativo</span>
                         )}
                       </div>
-                      <span className="my-3 block text-2xl font-black text-white font-display">$0 <span className="text-xs text-on-surface-variant font-medium">/ mÃªs</span></span>
-                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para comeÃ§ar a vender arquivos de e-book.</p>
+                      <span className="my-3 block text-2xl font-black text-white font-display">$0 <span className="text-xs text-on-surface-variant font-medium">/ mês</span></span>
+                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para começar a vender arquivos de e-book e scripts.</p>
                       <hr className="border-dashed border-white/10 my-3" />
                       <ul className="space-y-2.5 text-xs text-on-surface-variant font-sans">
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Painel de AnÃ¡lise BÃ¡sico</span>
+                          <span>Upload máximo de 50MB por arquivo</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>5GB de Armazenamento em Nuvem</span>
+                          <span>Apenas E-books e Scripts autorizados</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Suporte por E-mail e Chat</span>
+                          <span>Painel de Análise Básico</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Upload de E-books e Scripts</span>
+                          <span>Suporte por E-mail</span>
                         </li>
                       </ul>
                     </div>
@@ -1702,7 +1701,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                         </div>
                       ) : (
                         <div className="w-full text-center py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant cursor-default">
-                          Plano Base GrÃ¡tis
+                          Plano Base Grátis
                         </div>
                       )}
                     </div>
@@ -1721,22 +1720,26 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                       </div>
                       <span className="my-3 block text-2xl font-black text-white font-display">
                         {isAngola ? (
-                          <>8.000 Kz <span className="text-xs text-on-surface-variant font-medium">/ mÃªs</span></>
+                          <>8.000 Kz <span className="text-xs text-on-surface-variant font-medium">/ mês</span></>
                         ) : (
-                          <>$9 <span className="text-xs text-on-surface-variant font-medium">/ mÃªs</span></>
+                          <>$9 <span className="text-xs text-on-surface-variant font-medium">/ mês</span></>
                         )}
                       </span>
-                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para criadores profissionais de cursos e vÃ­deos.</p>
+                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para criadores profissionais de cursos e vídeos.</p>
                       <hr className="border-dashed border-white/10 my-3" />
                       <ul className="space-y-2.5 text-xs text-on-surface-variant font-sans">
-                        <li className="block font-bold text-white text-[10px] uppercase tracking-wider mb-1">Tudo no GrÃ¡tis, mais:</li>
+                        <li className="block font-bold text-white text-[10px] uppercase tracking-wider mb-1">Tudo no Grátis, mais:</li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Hospedagem de VÃ­deos Nativa e Segura</span>
+                          <span>Upload máximo de até 2GB por arquivo</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Taxas de ComissÃ£o Menores (Lucro Extra)</span>
+                          <span>Hospedagem de Cursos e Vídeos nativa</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
+                          <span>Taxas de comissão reduzidas (Lucro Extra)</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
@@ -1744,11 +1747,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Sem limite de tamanho de upload (atÃ© 2GB)</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Suporte VIP via WhatsApp/Chat</span>
+                          <span>Suporte VIP via WhatsApp</span>
                         </li>
                       </ul>
                     </div>
@@ -2139,23 +2138,13 @@ function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: numb
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible select-none">
         <defs>
           <linearGradient id="gV" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.38" />
-            <stop offset="75%" stopColor="#3b82f6" stopOpacity="0.06" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+            <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#34d399" stopOpacity="0.30" />
-            <stop offset="75%" stopColor="#22c55e" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+            <stop offset="0%" stopColor="#475569" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#475569" stopOpacity="0" />
           </linearGradient>
-          <filter id="fB" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="2.2" result="b" />
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <filter id="fG" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="2.2" result="b" />
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
         </defs>
 
         {/* Grid lines + Y labels */}
@@ -2164,18 +2153,27 @@ function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: numb
           const v = Math.round(maxVal * (1 - r));
           return (
             <g key={i}>
-              <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y}
-                stroke="white" strokeWidth={r === 0 ? 0.9 : 0.5}
-                strokeDasharray={r === 0 ? '' : '3.5 4'}
-                strokeOpacity={r === 0 ? 0.16 : 0.07}
-              />
-              <text x={paddingLeft - 5} y={y + 3.5} fill="white" fontSize="8"
-                textAnchor="end" fillOpacity="0.38" fontFamily="monospace" fontWeight="700">
+              {r < 1 && (
+                <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y}
+                  stroke="white" strokeWidth={0.5}
+                  strokeOpacity={0.06}
+                />
+              )}
+              <text x={paddingLeft - 8} y={y + 3} fill="white" fontSize="8"
+                textAnchor="end" fillOpacity="0.4" fontFamily="monospace" fontWeight="600">
                 {v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
               </text>
             </g>
           );
         })}
+
+        {/* Y Axis Vertical Line on the left */}
+        <line x1={paddingLeft} y1={paddingTop} x2={paddingLeft} y2={height - paddingBottom}
+          stroke="white" strokeOpacity="0.12" strokeWidth={0.8} />
+
+        {/* X Axis Horizontal Line at the bottom */}
+        <line x1={paddingLeft} y1={height - paddingBottom} x2={width - paddingRight} y2={height - paddingBottom}
+          stroke="white" strokeOpacity="0.12" strokeWidth={0.8} />
 
         {/* X axis labels */}
         {data.map((d, i) => {
@@ -2195,10 +2193,8 @@ function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: numb
         {areaC && <path d={areaC} fill="url(#gC)" />}
 
         {/* Smooth lines with glow */}
-        {lineV && <path d={lineV} fill="none" stroke="#60a5fa" strokeWidth="2.2"
-          strokeLinecap="round" filter="url(#fB)" />}
-        {lineC && <path d={lineC} fill="none" stroke="#34d399" strokeWidth="2.2"
-          strokeLinecap="round" filter="url(#fG)" />}
+        {lineV && <path d={lineV} fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />}
+        {lineC && <path d={lineC} fill="none" stroke="#475569" strokeWidth="1.8" strokeLinecap="round" />}
 
         {/* Interactive points */}
         {pV.map((p, i) => {
@@ -2218,21 +2214,13 @@ function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: numb
                   className="pointer-events-none" />
               )}
               {/* Views dot */}
-              <circle cx={p.x} cy={p.y} r={on ? 5.5 : 2.5} fill="#3b82f6"
-                stroke={on ? "white" : "rgba(59,130,246,0.35)"} strokeWidth={on ? 1.5 : 0.8}
-                filter={on ? "url(#fB)" : undefined}
+              <circle cx={p.x} cy={p.y} r={on ? 5 : 2} fill="#94a3b8"
+                stroke={on ? "white" : "rgba(148,163,184,0.35)"} strokeWidth={on ? 1.5 : 0.8}
                 className="pointer-events-none transition-all duration-150" />
-              {on && <circle cx={p.x} cy={p.y} r="10" fill="none"
-                stroke="#60a5fa" strokeWidth="0.7" strokeOpacity="0.28"
-                className="pointer-events-none" />}
               {/* Conversions dot */}
-              <circle cx={pc2.x} cy={pc2.y} r={on ? 5.5 : 2.5} fill="#22c55e"
-                stroke={on ? "white" : "rgba(34,197,94,0.35)"} strokeWidth={on ? 1.5 : 0.8}
-                filter={on ? "url(#fG)" : undefined}
+              <circle cx={pc2.x} cy={pc2.y} r={on ? 5 : 2} fill="#475569"
+                stroke={on ? "white" : "rgba(71,85,105,0.35)"} strokeWidth={on ? 1.5 : 0.8}
                 className="pointer-events-none transition-all duration-150" />
-              {on && <circle cx={pc2.x} cy={pc2.y} r="10" fill="none"
-                stroke="#34d399" strokeWidth="0.7" strokeOpacity="0.28"
-                className="pointer-events-none" />}
             </g>
           );
         })}
@@ -2247,15 +2235,15 @@ function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: numb
           </div>
           <div className="space-y-1.5">
             <div className="flex justify-between items-center gap-5">
-              <span className="flex items-center gap-1.5 text-blue-300 font-semibold text-[10.5px]">
-                <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" style={{boxShadow:'0 0 6px #3b82f6'}} />
+              <span className="flex items-center gap-1.5 text-slate-300 font-semibold text-[10.5px]">
+                <span className="w-2 h-2 rounded-full bg-[#94a3b8] flex-shrink-0" style={{boxShadow:'0 0 6px rgba(148,163,184,0.5)'}} />
                 Views
               </span>
               <span className="font-mono font-bold text-white">{hovered.data.views.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center gap-5">
-              <span className="flex items-center gap-1.5 text-emerald-300 font-semibold text-[10.5px]">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style={{boxShadow:'0 0 6px #22c55e'}} />
+              <span className="flex items-center gap-1.5 text-slate-400 font-semibold text-[10.5px]">
+                <span className="w-2 h-2 rounded-full bg-[#475569] flex-shrink-0" style={{boxShadow:'0 0 6px rgba(71,85,105,0.4)'}} />
                 Vendas
               </span>
               <span className="font-mono font-bold text-white">{hovered.data.conversions.toLocaleString()}</span>
@@ -2489,28 +2477,36 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
           </div>
 
           {/* Chart Container */}
-          <div className="glass-panel rounded-2xl p-2.5 border border-white/10 relative z-10">
-            <h4 className="text-xs font-bold text-white font-display mb-2">
-              {t('collaborator.analytics.chartTitle', 'TendÃªncia de Visitas e ConversÃµes')}
-            </h4>
+          <div className="bg-[#121214] rounded-2xl p-4 sm:p-5 border border-[#1c1c1f] relative z-10 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-display">
+                Monotone Smooth
+              </h4>
+              <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer">
+                <svg className="w-3 h-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
+                </svg>
+              </div>
+            </div>
             
             {chartData.length === 0 ? (
               <div className="py-12 text-center text-on-surface-variant text-sm font-sans">
-                {t('collaborator.analytics.noData', 'Nenhum dado encontrado para este perÃ­odo.')}
+                {t('collaborator.analytics.noData', 'Nenhum dado encontrado para este período.')}
               </div>
             ) : (
               <div className="space-y-4">
                 <PureSvgChart data={chartData} />
                 
                 {/* Custom chart legend */}
-                <div className="flex justify-center gap-6 pt-2 text-xs font-semibold">
-                  <div className="flex items-center gap-1.5 text-blue-400">
-                    <span className="w-3 h-1.5 rounded-full bg-blue-500" />
-                    <span>{t('collaborator.analytics.views', 'VisualizaÃ§Ãµes')}</span>
+                <div className="flex justify-center gap-6 pt-3 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#94a3b8]" style={{boxShadow:'0 0 6px rgba(148,163,184,0.5)'}} />
+                    <span>Organic</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-green-400">
-                    <span className="w-3 h-1.5 rounded-full bg-green-500" />
-                    <span>{t('collaborator.analytics.conversions', 'ConversÃµes (Vendas)')}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#475569]" style={{boxShadow:'0 0 6px rgba(71,85,105,0.4)'}} />
+                    <span>Paid</span>
                   </div>
                 </div>
               </div>
