@@ -351,7 +351,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
   // ─── ONBOARDING EXPLAINER SCREEN ───────────────────────────────────────────
   if (!seenExplainer) {
     return (
-      <div className="w-full flex-grow flex flex-col items-center justify-center px-4 md:px-8 py-10 bg-background text-on-surface">
+      <div className="w-full flex-grow flex flex-col items-center justify-center px-4 md:px-8 py-10 bg-[#050505] text-on-surface min-h-screen">
         <CountryRequiredModal />
         <div className="w-full max-w-4xl bg-surface/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-10 shadow-[0_0_50px_rgba(0,0,0,0.3)] relative overflow-hidden">
           {/* Subtle decoration glows */}
@@ -454,7 +454,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
   // ─── DASHBOARD CORE SCREEN ────────────────────────────────────────────────
   return (
     <div className="collab-compact-wrapper">
-    <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-6 pt-16 pb-4">
+    <div className="w-full flex-grow flex flex-col bg-[#050505] text-on-surface px-4 md:px-6 pt-16 pb-4 min-h-screen">
       <CountryRequiredModal />
       {/* Top Banner Row - 100% full width */}
       <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-b border-white/10 pb-2.5 mb-3">

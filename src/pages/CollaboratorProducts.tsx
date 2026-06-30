@@ -315,7 +315,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
       {/* Form Page-like Overlay (Fills the screen) */}
       <AnimatePresence>
         {isFormOpen && (
-          <div className="fixed inset-0 z-40 bg-[#050505] pt-0 pb-6 px-4 md:px-8 w-full h-full flex flex-col">
+          <div className="fixed inset-0 z-40 bg-[#050505] flex flex-col">
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}

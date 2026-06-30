@@ -58,16 +58,16 @@ const TRANSLATIONS = {
 
 const SECTION_TITLES = {
   pt: {
-    title: 'Adquira o seu exemplar',
-    subtitle: 'Escolha o melhor método de pagamento e comece a ler/assistir agora mesmo.'
+    title: 'Garanta o seu acesso',
+    subtitle: 'Escolha o método de pagamento e comece a usar agora mesmo.'
   },
   en: {
-    title: 'Get Your Copy',
-    subtitle: 'Choose the best payment method and start reading/watching right away.'
+    title: 'Get Your Access',
+    subtitle: 'Choose the best payment method and start using right away.'
   },
   fr: {
-    title: 'Obtenez votre exemplaire',
-    subtitle: 'Choisissez le meilleur mode de paiement et commencez à lire/regarder dès maintenant.'
+    title: 'Obtenez votre accès',
+    subtitle: 'Choisissez le meilleur mode de paiement et commencez à utiliser dès maintenant.'
   }
 };
 
