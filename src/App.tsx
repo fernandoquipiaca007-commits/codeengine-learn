@@ -207,7 +207,7 @@ export default function App() {
   const lastFetchedUserIdRef = useRef<string | null>(null);
 
   const handleOnboardingComplete = () => {
-    setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : null);
+    setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : { onboarding_completed: true });
     navigateToScreen('home');
   };
 
