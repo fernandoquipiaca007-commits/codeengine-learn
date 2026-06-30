@@ -1181,17 +1181,16 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 bg-primary/20 flex items-center justify-center">
                 <span className="font-display font-black text-xl text-white">{profile.displayName?.charAt(0)?.toUpperCase()}</span>
               </div>
-              <span
-                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
-                style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
-              >
-                <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
+              <img
+                src="/icons/vericado.ico"
+                alt="Verificado"
+                className="absolute -bottom-1 -right-1 w-5 h-5 object-contain"
+              />
             </div>
             <div className="space-y-1">
               <p className="font-display font-bold text-white text-sm">{profile.displayName}</p>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
-                <svg viewBox="0 0 24 24" className="w-2 h-2" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                <img src="/icons/vericado.ico" alt="" className="w-3 h-3 object-contain shrink-0" />
                 Verificado CodeEngine
               </span>
               {bioText && (

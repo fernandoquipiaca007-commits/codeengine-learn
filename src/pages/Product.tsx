@@ -891,16 +891,13 @@ export function Product({ setScreen, productId }: ProductProps) {
                       </div>
                     )}
                   </div>
-                  {/* Verified badge — green circle with checkmark (Instagram/Meta style) */}
-                  <span
+                  {/* Verified badge — official icon */}
+                  <img
+                    src="/icons/vericado.ico"
+                    alt="Verificado"
                     title="Criador Verificado pela CodeEngine"
-                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
-                    style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
-                  >
-                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  </span>
+                    className="absolute -bottom-1 -right-1 w-6 h-6 object-contain"
+                  />
                 </div>
 
                 <div className="text-center space-y-0.5">
@@ -908,8 +905,8 @@ export function Product({ setScreen, productId }: ProductProps) {
                   {collaboratorInfo.specialty && (
                     <p className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest">{collaboratorInfo.specialty}</p>
                   )}
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
-                    <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                    <img src="/icons/vericado.ico" alt="" className="w-3 h-3 object-contain shrink-0" />
                     Verificado
                   </span>
                 </div>
@@ -938,22 +935,19 @@ export function Product({ setScreen, productId }: ProductProps) {
                     />
                   </div>
                   {/* Always verified for CodeEngine */}
-                  <span
+                  <img
+                    src="/icons/vericado.ico"
+                    alt="Oficial"
                     title="Produto Oficial CodeEngine"
-                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
-                    style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
-                  >
-                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  </span>
+                    className="absolute -bottom-1 -right-1 w-6 h-6 object-contain"
+                  />
                 </div>
 
                 <div className="text-center space-y-0.5">
                   <p className="font-display font-bold text-white text-sm">CodeEngine</p>
                   <p className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest">Loja Oficial</p>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
-                    <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                    <img src="/icons/vericado.ico" alt="" className="w-3 h-3 object-contain shrink-0" />
                     Verificado
                   </span>
                 </div>
@@ -967,7 +961,6 @@ export function Product({ setScreen, productId }: ProductProps) {
           )}
         </div>
 
-
         <div className="flex flex-col gap-5 relative z-10 min-w-0 w-full">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel w-fit border border-primary/30">
@@ -978,11 +971,9 @@ export function Product({ setScreen, productId }: ProductProps) {
             </div>
 
             {/* Mobile: inline author badge */}
-            <div className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-emerald-500/30 text-xs font-semibold text-white font-display">
-              {/* green verified dot */}
-              <span className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}>
-                <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
+            <div className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-emerald-500/20 text-xs font-semibold text-white font-display">
+              {/* official verified icon */}
+              <img src="/icons/vericado.ico" alt="Verificado" className="w-4 h-4 object-contain shrink-0" />
               {(product as any).collaborator_id && collaboratorInfo ? collaboratorInfo.display_name : 'Oficial CodeEngine'}
             </div>
           </div>
