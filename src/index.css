@@ -373,6 +373,49 @@
     .collab-compact-wrapper .collab-no-zoom {
       zoom: 1.136; /* 1/0.88 to cancel out parent zoom */
     }
+
+    /* Compact padding overrides */
+    .collab-compact-wrapper .p-6 { padding: 1rem !important; }
+    .collab-compact-wrapper .p-8 { padding: 1.25rem !important; }
+    .collab-compact-wrapper .p-5 { padding: 0.75rem !important; }
+    .collab-compact-wrapper .p-4 { padding: 0.75rem !important; }
+    .collab-compact-wrapper .p-12 { padding: 1.5rem !important; }
+    .collab-compact-wrapper .px-8 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+    .collab-compact-wrapper .py-16 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+    .collab-compact-wrapper .pt-20 { padding-top: 3.5rem !important; }
+    .collab-compact-wrapper .pt-16 { padding-top: 3rem !important; }
+    .collab-compact-wrapper .pb-16 { padding-bottom: 2rem !important; }
+    .collab-compact-wrapper .mb-6 { margin-bottom: 0.75rem !important; }
+    .collab-compact-wrapper .mb-8 { margin-bottom: 1rem !important; }
+    .collab-compact-wrapper .mb-12 { margin-bottom: 1.25rem !important; }
+    
+    /* Compact gaps */
+    .collab-compact-wrapper .gap-6 { gap: 0.75rem !important; }
+    .collab-compact-wrapper .gap-8 { gap: 1rem !important; }
+    .collab-compact-wrapper .gap-12 { gap: 1.25rem !important; }
+    .collab-compact-wrapper .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+      margin-top: 0.75rem !important;
+    }
+    .collab-compact-wrapper .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+      margin-top: 1rem !important;
+    }
+    .collab-compact-wrapper .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+      margin-top: 0.5rem !important;
+    }
+    
+    /* Compact font sizes & heights for specific form items */
+    .collab-compact-wrapper input,
+    .collab-compact-wrapper select,
+    .collab-compact-wrapper textarea {
+      padding-top: 0.375rem !important;
+      padding-bottom: 0.375rem !important;
+      font-size: 0.77rem !important;
+    }
+    
+    .collab-compact-wrapper label {
+      font-size: 0.69rem !important;
+      margin-bottom: 0.125rem !important;
+    }
   }
 }
 
