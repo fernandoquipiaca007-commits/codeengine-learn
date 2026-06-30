@@ -329,6 +329,14 @@
     min-width: 44px;
   }
 
+  /* Desktop override: no forced 44px inside compact pages */
+  @media (min-width: 768px) {
+    .collab-compact-wrapper .touch-target {
+      min-height: unset;
+      min-width: unset;
+    }
+  }
+
   .text-safe-wrap {
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -345,6 +353,26 @@
   /* ── Responsive grid helper ── */
   .responsive-grid {
     @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5;
+  }
+
+  /* ── Compact UI wrapper (Collaborator + Member pages desktop) ── */
+  /* Applies zoom 88% on ≥768px so all content fits in a single viewport */
+  .collab-compact-wrapper {
+    /* Mobile-first: no scaling */
+  }
+
+  @media (min-width: 768px) {
+    .collab-compact-wrapper {
+      zoom: 0.88;
+      /* Firefox fallback via transform */
+      /* Firefox doesn't support zoom, so we leave it at natural size there */
+    }
+
+    /* Undo zoom on fixed/sticky children so they don't double-scale */
+    .collab-compact-wrapper [style*="position: fixed"],
+    .collab-compact-wrapper .collab-no-zoom {
+      zoom: 1.136; /* 1/0.88 to cancel out parent zoom */
+    }
   }
 }
 

@@ -944,6 +944,7 @@ export function CollaboratorProductForm({
   };
 
   return (
+    <div className="collab-compact-wrapper">
     <div className="text-white font-sans w-full h-screen max-h-screen flex flex-col overflow-hidden">
       <div className="p-2 sm:p-3 shrink-0 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10">
         <div>
@@ -2680,6 +2681,7 @@ export function CollaboratorProductForm({
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

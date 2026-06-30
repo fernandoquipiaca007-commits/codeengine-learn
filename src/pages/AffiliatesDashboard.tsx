@@ -453,6 +453,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
 
   // ─── DASHBOARD CORE SCREEN ────────────────────────────────────────────────
   return (
+    <div className="collab-compact-wrapper">
     <div className="w-full flex-grow flex flex-col bg-background text-on-surface px-4 md:px-6 pt-16 pb-4">
       <CountryRequiredModal />
       {/* Top Banner Row - 100% full width */}
@@ -1278,6 +1279,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
@@ -541,6 +541,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }
 
   return (
+    <div className="collab-compact-wrapper">
     <div className="pt-16 pb-6 px-4 md:px-8 w-full min-h-screen page-wrapper">
       <CountryRequiredModal />
       {/* Header */}
@@ -1897,6 +1898,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           </motion.div>
         </div>
       )}
+    </div>
     </div>
   );
 }

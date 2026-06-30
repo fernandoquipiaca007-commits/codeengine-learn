@@ -424,6 +424,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   ];
 
   return (
+    <div className="collab-compact-wrapper">
     <div className="pt-10 pb-3 px-3 sm:px-6 max-w-[min(100%,820px)] mx-auto min-h-[calc(100vh-80px)] page-wrapper">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
         <div>
@@ -546,6 +547,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
           productTitle={courseModalProduct.title}
         />
       )}
+    </div>
     </div>
   );
 }

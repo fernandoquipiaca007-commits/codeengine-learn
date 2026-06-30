@@ -169,6 +169,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
   };
 
   return (
+    <div className="collab-compact-wrapper">
     <div className="pt-20 pb-16 px-4 md:px-8 w-full min-h-screen page-wrapper">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -334,6 +335,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
           </div>
         )}
       </AnimatePresence>
+    </div>
     </div>
   );
 }
