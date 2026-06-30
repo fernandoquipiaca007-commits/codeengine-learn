@@ -276,7 +276,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
                     ) : (
                       <>
                         {isAngola 
-                          ? `Kz ${Number(product.aoa_price || product.aoaPrice || Math.round(product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`
+                          ? `Kz ${Number(product.aoa_price || Math.round(product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`
                           : `$ ${product.price}`}
                       </>
                     )}

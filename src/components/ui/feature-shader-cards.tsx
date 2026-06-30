@@ -158,7 +158,7 @@ export default function FeaturesCards() {
                     distortion={shaderConfig.distortion}
                     swirl={shaderConfig.swirl}
                     swirlIterations={shaderConfig.swirlIterations}
-                    shape={shaderConfig.shape}
+                    shape={shaderConfig.shape as any}
                     shapeScale={shaderConfig.shapeScale}
                     scale={1}
                     rotation={0}

@@ -556,13 +556,11 @@ export function Library({ setScreen, onProductClick }: {
                                 fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
                               />
                               
-                              {/* Favorite Button */}
                               {user && (
-                                <div className="absolute top-2 left-2 z-10">
+                                <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
                                   <FavoriteButton
                                     isFavorite={isFavorite(product.id)}
-                                    onToggle={(e) => {
-                                      e?.stopPropagation();
+                                    onToggle={() => {
                                       toggleFavorite(product.id);
                                     }}
                                     size="sm"

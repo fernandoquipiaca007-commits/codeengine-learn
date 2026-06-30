@@ -34,7 +34,7 @@ const dropdownVariants = {
     y: -4,
     transition: { duration: 0.12, ease: 'easeIn' }
   },
-};
+} as any;
 
 const mobileMenuVariants = {
   hidden: { opacity: 0, y: -8, scale: 0.97 },
@@ -50,7 +50,7 @@ const mobileMenuVariants = {
     scale: 0.98,
     transition: { duration: 0.14, ease: 'easeIn' }
   },
-};
+} as any;
 
 // ── Nav link component ────────────────────────────────────────
 function NavLink({

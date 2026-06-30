@@ -12,6 +12,7 @@ interface Product {
   cover_url: string;
   category_id: string;
   created_at: string;
+  isSponsored?: boolean;
 }
 
 interface SearchModalProps {

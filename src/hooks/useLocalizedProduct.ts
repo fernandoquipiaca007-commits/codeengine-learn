@@ -6,7 +6,7 @@ import { queryCache } from '../lib/queryCache';
 
 export interface LocalizedProduct {
   id: string;
-  product_id: string;
+  product_id?: string;
   language: string;
   title: string;
   subtitle?: string;
@@ -36,6 +36,10 @@ export interface LocalizedProduct {
   editor_choice?: boolean;
   featured_pick?: boolean;
   is_bestseller?: boolean;
+  product_type?: 'file' | 'course' | 'ebook';
+  isSponsored?: boolean;
+  theme_video_path?: string | null;
+  theme_video_config?: any;
 }
 
 export function useLocalizedProduct(productId: string | null) {

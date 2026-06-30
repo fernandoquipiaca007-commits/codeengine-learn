@@ -207,7 +207,7 @@ export function CategoryFeatureCard({ config, matchingCategoryId, onClick }: Cat
           distortion={config.shader.distortion}
           swirl={config.shader.swirl}
           swirlIterations={config.shader.swirlIterations}
-          shape={config.shader.shape}
+          shape={config.shader.shape as any}
           shapeScale={config.shader.shapeScale}
           scale={1}
           rotation={0}

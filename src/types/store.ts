@@ -27,6 +27,9 @@ export interface Product {
   created_at: string;
   updated_at: string;
   collaborator?: any;
+  isSponsored?: boolean;
+  theme_video_path?: string | null;
+  theme_video_config?: any;
 }
 
 export interface Category {

@@ -1,4 +1,4 @@
-import {StrictMode} from 'react';
+import {StrictMode, Component, type ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -15,6 +15,31 @@ if (typeof Node !== 'undefined' && Node.prototype) {
     }
     return originalRemoveChild.apply(this, [child]) as T;
   };
+}
+
+class RootErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; isChunkError: boolean }> {
+  state = { hasError: false, isChunkError: false };
+
+  static getDerivedStateFromError(error: any) {
+    const isChunkError = 
+      /failed to fetch dynamically imported module/i.test(error?.message || '') ||
+      /chunk load failed/i.test(error?.message || '') ||
+      /error loading dynamically imported module/i.test(error?.message || '');
+    return { hasError: true, isChunkError };
+  }
+
+  componentDidCatch(error: any) {
+    console.error('[RootErrorBoundary] caught fatal error:', error);
+    const isChunkError = 
+      /failed to fetch dynamically imported module/i.test(error?.message || '') ||
+      /chunk load failed/i.test(error?.message || '') ||
+      /error loading dynamically imported module/i.test(error?.message || '');
+      
+    if (isChunkError) {
+      console.warn('[RootErrorBoundary] Chunk load error detected. Reloading page to update app assets...');
+      window.location.reload();
+    }
+  }
 
   render() {
     if (this.state.hasError) {
@@ -59,8 +84,8 @@ if (typeof Node !== 'undefined' && Node.prototype) {
         </div>
       );
     }
-    return originalInsertBefore.apply(this, [newNode, referenceNode]) as T;
-  };
+    return this.props.children;
+  }
 }
 
 createRoot(document.getElementById('root')!).render(
