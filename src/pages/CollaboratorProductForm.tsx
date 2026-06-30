@@ -2456,13 +2456,26 @@ export function CollaboratorProductForm({
                 {themeVideoPath && (
                   <button
                     type="button"
-                    onClick={() => setShowPreview(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-white transition-all shadow-md active:scale-95 shrink-0 self-start sm:self-center"
+                    onClick={() => setShowPreview(v => !v)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all shadow-md active:scale-95 shrink-0 self-start sm:self-center ${showPreview ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30' : 'bg-primary hover:bg-primary/90 text-white'}`}
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    Visualizar Prévia
+                    {showPreview ? (
+                      <>
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        LIVE — Fechar
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-3.5 h-3.5" />
+                        Visualizar Prévia
+                      </>
+                    )}
                   </button>
                 )}
+
               </div>
 
               <CardFanCarousel 
@@ -2476,6 +2489,8 @@ export function CollaboratorProductForm({
                     brightness: preset.config.brightness ?? prev.brightness ?? 1.0,
                     contrast: preset.config.contrast ?? prev.contrast ?? 1.0,
                   }));
+                  // Auto-open preview on preset select so user sees changes instantly
+                  setShowPreview(true);
                 }}
               />
 
@@ -2490,19 +2505,19 @@ export function CollaboratorProductForm({
                           <span>Visibilidade do Vídeo</span>
                           <span className="text-primary font-mono">{Math.round(themeVideoConfig.videoOpacity * 100)}%</span>
                         </div>
-                        <input type="range" min="0.05" max="1" step="0.05"
+                        <input type="range" min="0" max="1" step="0.01"
                           value={themeVideoConfig.videoOpacity}
                           onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, videoOpacity: Number(e.target.value) }))}
                           className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                         />
-                        <span className="block text-[9px] text-on-surface-variant">Mais alto = vídeo mais evidente no fundo.</span>
+                        <span className="block text-[9px] text-on-surface-variant">0% = oculto · 100% = vídeo totalmente visível.</span>
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between items-center text-[11px] font-semibold text-white">
                           <span>Máscara Escura (Overlay)</span>
                           <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
                         </div>
-                        <input type="range" min="0" max="0.95" step="0.05"
+                        <input type="range" min="0" max="1" step="0.01"
                           value={themeVideoConfig.overlayOpacity}
                           onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
                           className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
@@ -2565,13 +2580,7 @@ export function CollaboratorProductForm({
                       </div>
                     </div>
                   </div>
-                  {/* Video preview thumbnail */}
-                  <div className="space-y-1">
-                    <span className="block text-[11px] font-semibold text-white">Pré-visualização do Vídeo</span>
-                    <div className="aspect-video w-full max-w-[240px] rounded-lg overflow-hidden bg-black border border-white/10">
-                      <video src={`/${themeVideoPath}`} className="w-full h-full object-cover" controls muted playsInline />
-                    </div>
-                  </div>
+
                 </div>
               )}
             </div>
@@ -2670,7 +2679,7 @@ export function CollaboratorProductForm({
                         <span>Visibilidade do Vídeo</span>
                         <span className="text-primary font-mono">{Math.round(themeVideoConfig.videoOpacity * 100)}%</span>
                       </div>
-                      <input type="range" min="0.05" max="1" step="0.05"
+                      <input type="range" min="0" max="1" step="0.01"
                         value={themeVideoConfig.videoOpacity}
                         onChange={e => setThemeVideoConfig(prev => ({ ...prev, videoOpacity: Number(e.target.value) }))}
                         className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
@@ -2682,12 +2691,12 @@ export function CollaboratorProductForm({
                         <span>Máscara Escura</span>
                         <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
                       </div>
-                      <input type="range" min="0" max="0.95" step="0.05"
+                      <input type="range" min="0" max="1" step="0.01"
                         value={themeVideoConfig.overlayOpacity}
                         onChange={e => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
                         className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
                       />
-                      <span className="text-[9px] text-on-surface-variant">Mín. 40% para garantir legibilidade.</span>
+                      <span className="text-[9px] text-on-surface-variant">0% = sem máscara · 100% = fundo totalmente preto.</span>
                     </div>
                     {/* Brilho */}
                     <div className="space-y-0.5">

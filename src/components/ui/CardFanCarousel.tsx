@@ -217,7 +217,7 @@ function getHeightMultiplier(width: number) {
 }
 
 const ARROW_CLASSES =
-  "relative flex items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white/70 cursor-pointer shrink-0 z-30 outline-none hover:border-primary/40 hover:text-primary active:opacity-70 transition-all duration-300 w-8 h-8";
+  "relative flex items-center justify-center rounded-full border border-white/15 bg-white/8 backdrop-blur-md text-white/80 cursor-pointer shrink-0 z-30 outline-none hover:border-primary/60 hover:text-primary hover:bg-primary/10 active:scale-90 transition-all duration-200 w-11 h-11 shadow-lg";
 
 export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: CardFanCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -420,8 +420,18 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
   }, [centerIndex, totalCards, getVisibleMap]);
 
   const chevron = (direction: "left" | "right") => (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points={direction === "left" ? "15 18 9 12 15 6" : "9 18 15 12 9 6"} />
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      {direction === "left" ? (
+        <>
+          <polyline points="17 18 11 12 17 6" />
+          <polyline points="13 18 7 12 13 6" />
+        </>
+      ) : (
+        <>
+          <polyline points="7 18 13 12 7 6" />
+          <polyline points="11 18 17 12 11 6" />
+        </>
+      )}
     </svg>
   );
 
@@ -499,23 +509,24 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
       </div>
 
       {/* Pagination controls */}
-      <div className="flex items-center justify-center gap-4 mt-2 z-30">
+      <div className="flex items-center justify-center gap-3 mt-3 z-30">
         <button 
           type="button"
           className={ARROW_CLASSES} 
           onClick={() => cycle("left")} 
-          aria-label="Previous"
+          aria-label="Anterior"
         >
           {chevron("left")}
         </button>
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-white/60 font-sans select-none">
-          {centerIndex + 1} / {totalCards}
+        <div className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-full bg-white/6 border border-white/12 backdrop-blur-md select-none min-w-[72px]">
+          <span className="text-sm font-bold text-white font-mono leading-none">{centerIndex + 1} / {totalCards}</span>
+          <span className="text-[9px] text-white/40 font-sans">{Math.round(((centerIndex + 1) / totalCards) * 100)}%</span>
         </div>
         <button 
           type="button"
           className={ARROW_CLASSES} 
           onClick={() => cycle("right")} 
-          aria-label="Next"
+          aria-label="Próximo"
         >
           {chevron("right")}
         </button>
