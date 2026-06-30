@@ -6,6 +6,7 @@ import { CustomSectionsLocalManager, CustomSectionState } from '../components/co
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 import { ShaderCanvas, DEFAULT_SHADER_CONFIG, ShaderConfig } from '../components/ui/ShaderCanvas';
+import { Product as ProductPage } from './Product';
 import { useUserCountry } from '../contexts/UserCountryContext';
 import { useLocale } from '../contexts/LocaleContext';
 import { useTranslation } from 'react-i18next';
@@ -314,6 +315,8 @@ export function CollaboratorProductForm({
   });
   const [shaderConfig, setShaderConfig] = useState<ShaderConfig>(DEFAULT_SHADER_CONFIG);
   const [showPreview, setShowPreview] = useState(false);
+  const [themeSaving, setThemeSaving] = useState(false);
+  const [themeSaved, setThemeSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
 
   const [campaign, setCampaign] = useState<CampaignState>({
@@ -910,6 +913,28 @@ export function CollaboratorProductForm({
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSaveTheme() {
+    if (!productId) return;
+    setThemeSaving(true);
+    setThemeSaved(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Sessão inválida');
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify({ themeVideoPath, themeVideoConfig })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setThemeSaved(true);
+        setTimeout(() => setThemeSaved(false), 3000);
+      }
+    } catch (_) {}
+    finally { setThemeSaving(false); }
   }
 
   // List manipulation helpers
@@ -2558,14 +2583,39 @@ export function CollaboratorProductForm({
             Voltar
           </button>
 
-          {/* ── Floating Shader Control Panel ── */}
+          {/* ── Floating Controls Panel ── */}
           <div className="fixed top-4 right-4 z-[110] w-64 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
-              <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
-                <span className="text-primary text-[10px] font-black">3D</span>
+            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
+                  <span className="text-primary text-[10px] font-black">3D</span>
+                </div>
+                <span className="text-white text-xs font-bold tracking-wide font-display uppercase">Tema Visual</span>
               </div>
-              <span className="text-white text-xs font-bold tracking-wide font-display uppercase">Tema 3D Glitch</span>
+              {/* Save Theme Button */}
+              {productId && (
+                <button
+                  type="button"
+                  onClick={handleSaveTheme}
+                  disabled={themeSaving}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-bold transition-all active:scale-95 disabled:opacity-60"
+                >
+                  {themeSaving ? (
+                    <span className="w-3 h-3 border-2 border-black/40 border-t-black rounded-full animate-spin" />
+                  ) : themeSaved ? (
+                    <>
+                      <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Salvo!
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3 h-3" />
+                      Guardar
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* Shader preview strip */}
@@ -2712,59 +2762,15 @@ export function CollaboratorProductForm({
             </div>
           </div>
           
-          {/* Preview Mockup Page Layout */}
-          <div 
+          {/* Real Product Page Preview */}
+          <div
             style={{
               '--glass-opacity': themeVideoConfig.sectionOpacity,
               '--glass-blur': `${themeVideoConfig.blurAmount}px`
             } as React.CSSProperties}
-            className={`pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto relative z-10 min-h-[150vh] ${
-              (themeVideoConfig as any).isLight ? 'light-theme-page' : ''
-            }`}
+            className="relative z-10"
           >
-            {/* Product Header Mockup */}
-            <div className="glass-panel p-8 rounded-2xl border border-white/10 mb-8 space-y-4">
-              <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-[10px] font-bold text-primary tracking-wide uppercase font-sans">
-                Modo de Visualização Prévia do Tema
-              </span>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white font-display">
-                {title || 'Nome do seu Produto'}
-              </h1>
-              <p className="text-sm text-on-surface-variant max-w-2xl leading-relaxed">
-                {description || 'Esta é uma prévia da descrição do seu produto. Configure as propriedades de opacidade e desfoque nos sliders ao lado e observe como elas alteram o estilo deste painel em tempo real. Role a página para testar a sincronização de rolagem do vídeo.'}
-              </p>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-3">
-              {/* Mockup Curriculum Grade */}
-              <div className="md:col-span-2 space-y-6">
-                <div className="glass-panel p-6 rounded-2xl border border-white/10">
-                  <h2 className="text-xl font-bold text-white font-display mb-4">Grade Curricular do Curso</h2>
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((num) => (
-                      <div key={num} className="flex justify-between items-center p-3 rounded-lg bg-white/5 border border-white/5">
-                        <span className="text-xs text-white/80">Módulo {num}: Conteúdo Exemplo do Curso</span>
-                        <span className="text-[10px] text-on-surface-variant">4 aulas (45m)</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Mockup Purchase Card */}
-              <div className="space-y-6">
-                <div className="glass-panel p-6 rounded-2xl border border-white/10 text-center space-y-4 font-sans">
-                  <span className="text-xs text-on-surface-variant">Acesso Vitalício</span>
-                  <div className="text-3xl font-extrabold text-white font-display">
-                    {priceAOA ? `${priceAOA} AOA` : 'Preço do Produto'}
-                  </div>
-                  <button type="button" className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-lg transition-all active:scale-[0.98]">
-                    Inscrever-se Agora
-                  </button>
-                  <span className="block text-[10px] text-on-surface-variant">Garantia de 7 dias • Suporte Completo</span>
-                </div>
-              </div>
-            </div>
+            <ProductPage productId={productId} />
           </div>
         </div>
       )}

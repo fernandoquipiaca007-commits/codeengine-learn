@@ -862,16 +862,106 @@ export function Product({ setScreen, productId }: ProductProps) {
       {setScreen && (
         <button
           onClick={() => setScreen('library')}
-          className="mb-5 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
+          className="mb-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="font-display text-xs font-semibold tracking-widest uppercase">{t('product.back')}</span>
         </button>
       )}
 
-      {/* Hero Section */}
-      <section ref={heroRef} className="grid gap-8 md:grid-cols-[1.15fr_0.85fr] md:gap-12 items-center mb-16 relative">
-        {/* Content Left */}
+      {/* Hero Section — 3 columns on md: [left-panel | content | cover] */}
+      <section ref={heroRef} className="grid gap-6 md:grid-cols-[220px_1fr_auto] md:gap-8 items-start mb-16 relative">
+
+        {/* ── LEFT: Creator / CodeEngine Panel ── */}
+        <div className="hidden md:flex flex-col gap-3">
+          {(product as any).collaborator_id && collaboratorInfo ? (
+            /* Collaborator Card */
+            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+              {/* Avatar circular + verified */}
+              <div className="flex flex-col items-center pt-6 pb-4 px-4 gap-3 relative">
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
+                    {collaboratorInfo.avatar_url ? (
+                      <img src={collaboratorInfo.avatar_url} alt={collaboratorInfo.display_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary font-bold text-2xl font-display">
+                        {collaboratorInfo.display_name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {/* Verified badge — green circle with checkmark (Instagram/Meta style) */}
+                  <span
+                    title="Criador Verificado pela CodeEngine"
+                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
+                    style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </span>
+                </div>
+
+                <div className="text-center space-y-0.5">
+                  <p className="font-display font-bold text-white text-sm leading-tight">{collaboratorInfo.display_name}</p>
+                  {collaboratorInfo.specialty && (
+                    <p className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest">{collaboratorInfo.specialty}</p>
+                  )}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                    <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Verificado
+                  </span>
+                </div>
+              </div>
+
+              {/* Bio */}
+              {collaboratorInfo.bio && (
+                <div className="px-4 pb-5 border-t border-white/5 pt-3">
+                  <p className="text-[11px] text-on-surface-variant font-sans leading-relaxed line-clamp-6">
+                    {collaboratorInfo.bio}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* CodeEngine Official Card */
+            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+              <div className="flex flex-col items-center pt-6 pb-4 px-4 gap-3">
+                {/* Logo placeholder */}
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/40 shadow-xl bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center">
+                    <span className="font-display font-black text-2xl text-white tracking-tight">CE</span>
+                  </div>
+                  {/* Always verified for CodeEngine */}
+                  <span
+                    title="Produto Oficial CodeEngine"
+                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
+                    style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </span>
+                </div>
+
+                <div className="text-center space-y-0.5">
+                  <p className="font-display font-bold text-white text-sm">CodeEngine</p>
+                  <p className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest">Loja Oficial</p>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                    <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Verificado
+                  </span>
+                </div>
+              </div>
+              <div className="px-4 pb-5 border-t border-white/5 pt-3">
+                <p className="text-[11px] text-on-surface-variant font-sans leading-relaxed">
+                  Produto oficial desenvolvido pelos especialistas da CodeEngine — conteúdo premium, curado e certificado pela nossa equipa.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+
         <div className="flex flex-col gap-5 relative z-10 min-w-0 w-full">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel w-fit border border-primary/30">
@@ -881,37 +971,19 @@ export function Product({ setScreen, productId }: ProductProps) {
               </span>
             </div>
 
-            {(product as any).collaborator_id && collaboratorInfo ? (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-white font-display">
-                {collaboratorInfo.avatar_url ? (
-                  <img
-                    src={collaboratorInfo.avatar_url}
-                    alt={collaboratorInfo.display_name}
-                    className="w-4.5 h-4.5 rounded-full object-cover border border-white/20"
-                  />
-                ) : (
-                  <span className="text-[10px]">👤</span>
-                )}
-                <span className="text-white">{collaboratorInfo.display_name}</span>
-                {collaboratorInfo.plan === 'course_creator' && (
-                  <span className="inline-flex items-center justify-center bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full p-0.5" title="Membro Pro">
-                    <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                    </svg>
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant font-display">
-                <span className="text-[10px]">⚙️</span>
-                Oficial CodeEngine
-              </div>
-            )}
+            {/* Mobile: inline author badge */}
+            <div className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-emerald-500/30 text-xs font-semibold text-white font-display">
+              {/* green verified dot */}
+              <span className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}>
+                <svg viewBox="0 0 24 24" className="w-2.5 h-2.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              {(product as any).collaborator_id && collaboratorInfo ? collaboratorInfo.display_name : 'Oficial CodeEngine'}
+            </div>
           </div>
-          
+
           <h1 className={`${
-            (product.title || '').length > 45 
-              ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[36px]' 
+            (product.title || '').length > 45
+              ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[36px]'
               : 'text-3xl sm:text-4xl md:text-[44px]'
           } font-display leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/70 break-words`}>
             {hasCopy(customCopy?.hero_headline) ? (
@@ -927,8 +999,8 @@ export function Product({ setScreen, productId }: ProductProps) {
               product.title || 'Produto'
             )}
           </h1>
-          
-          <div className="max-w-xl">
+
+          <div className="max-w-xl pl-1">
             {renderPersuasiveDescription(description)}
           </div>
 
@@ -948,10 +1020,10 @@ export function Product({ setScreen, productId }: ProductProps) {
               />
             </div>
           )}
-          
+
           {/* Tags */}
           {Array.isArray(product.tags) && product.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 pl-1">
               {product.tags.map((tag, index) => (
                 <span
                   key={index}
@@ -963,11 +1035,11 @@ export function Product({ setScreen, productId }: ProductProps) {
             </div>
           )}
         </div>
-        
-        {/* Image Right */}
-        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px]" style={{ perspective: '1200px' }}>
+
+        {/* ── RIGHT: Cover Image ── */}
+        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px] md:max-w-[320px]" style={{ perspective: '1200px' }}>
           <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
-          <div ref={coverRef} className="relative z-10 w-full max-w-full sm:max-w-[350px] will-change-transform">
+          <div ref={coverRef} className="relative z-10 w-full max-w-full sm:max-w-[300px] will-change-transform">
             <LazyImage
               src={getProductCoverUrl(product, locale)}
               alt={product.title}
@@ -978,66 +1050,7 @@ export function Product({ setScreen, productId }: ProductProps) {
         </div>
       </section>
 
-      {/* Creator Profile Section */}
-      {collaboratorInfo && (
-        <section className="mb-16 glass-panel rounded-3xl overflow-hidden border border-white/10 relative group">
-          {/* Creator Cover Banner */}
-          <div className="h-32 sm:h-40 w-full relative overflow-hidden bg-gradient-to-r from-primary/30 to-secondary/30">
-            {collaboratorInfo.cover_url ? (
-              <img 
-                src={collaboratorInfo.cover_url} 
-                alt="Creator Profile Cover" 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/45 via-surface-high/60 to-surface-lowest"></div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-surface-lowest to-transparent"></div>
-          </div>
-          
-          {/* Creator Profile Info */}
-          <div className="px-6 pb-6 relative flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center -mt-10 sm:-mt-12">
-            {/* Avatar */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 border-surface-lowest bg-surface-high shadow-xl flex-shrink-0 relative z-10">
-              {collaboratorInfo.avatar_url ? (
-                <img 
-                  src={collaboratorInfo.avatar_url} 
-                  alt={collaboratorInfo.display_name} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold text-2xl font-display">
-                  {collaboratorInfo.display_name?.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-            
-            {/* Name / Specialty / Bio */}
-            <div className="space-y-1 relative z-10 pt-2 sm:pt-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  {collaboratorInfo.display_name}
-                </h3>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-semibold text-primary uppercase tracking-wider font-display">
-                  Criador Parceiro
-                </span>
-              </div>
-              
-              {collaboratorInfo.specialty && (
-                <p className="text-xs font-semibold text-primary/80 uppercase tracking-widest font-display">
-                  {collaboratorInfo.specialty}
-                </p>
-              )}
-              
-              {collaboratorInfo.bio && (
-                <p className="text-sm text-on-surface-variant font-sans max-w-2xl leading-relaxed pt-1">
-                  {collaboratorInfo.bio}
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
+
 
       {/* Mobile sticky CTA */}
       <div className={`md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-3 bg-surface/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out ${

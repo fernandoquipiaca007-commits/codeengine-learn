@@ -61,7 +61,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const [aoaModalSuccess, setAoaModalSuccess] = useState<string | null>(null);
 
   // Currency filter for dashboard view
-  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder' | 'analytics' | 'ads'>('usd');
+  const [walletView, setWalletView] = useState<'usd' | 'aoa' | 'affiliates' | 'founder' | 'analytics' | 'ads' | 'profile'>('usd');
   const [hasDefaultedView, setHasDefaultedView] = useState(false);
 
   useEffect(() => {
@@ -78,6 +78,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   }, [isAngola]);
 
   const [affiliates, setAffiliates] = useState<any[]>([]);
+  const [bioText, setBioText] = useState('');
+  const [bioSaving, setBioSaving] = useState(false);
+  const [bioSaved, setBioSaved] = useState(false);
+  const [bioError, setBioError] = useState<string | null>(null);
 
   // Membro Fundador state
   const [founderStats, setFounderStats] = useState<any>(null);
@@ -171,6 +175,18 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         setLedger(data.ledger);
         setWithdrawals(data.withdrawals);
         setSettings(data.settings || {});
+
+        // Load existing bio from collaborators table
+        if (data.profile?.id) {
+          try {
+            const { data: collabRow } = await supabase
+              .from('collaborators')
+              .select('bio')
+              .eq('id', data.profile.id)
+              .maybeSingle();
+            if (collabRow?.bio) setBioText(collabRow.bio);
+          } catch (_) {}
+        }
 
         // Fetch affiliates
         try {
@@ -532,6 +548,28 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     }
   };
 
+  async function handleSaveBio() {
+    if (!profile) return;
+    setBioSaving(true);
+    setBioError(null);
+    setBioSaved(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Sessão inválida');
+      const { error } = await supabase
+        .from('collaborators')
+        .update({ bio: bioText })
+        .eq('id', profile.id);
+      if (error) throw error;
+      setBioSaved(true);
+      setTimeout(() => setBioSaved(false), 3000);
+    } catch (err: any) {
+      setBioError(err.message || 'Erro ao salvar.');
+    } finally {
+      setBioSaving(false);
+    }
+  }
+
   if (loading || countryLoading) {
     return (
       <div className="flex min-h-[500px] items-center justify-center">
@@ -731,7 +769,17 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Megaphone size={12} /> {t('collaborator.tabAds', 'AnÃºncios')}
+          <Megaphone size={12} /> {t('collaborator.tabAds', 'Anúncios')}
+        </button>
+        <button
+          onClick={() => { setWalletView('profile'); }}
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+            walletView === 'profile'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.25)]'
+              : 'text-on-surface-variant hover:text-white'
+          }`}
+        >
+          <ShieldCheck size={12} /> Meu Perfil
         </button>
       </div>
 
@@ -1114,6 +1162,80 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       )}
 
       {/* ====== ADS PLATFORM DASHBOARD VIEW ====== */}
+      {walletView === 'profile' && profile && (
+        <div className="space-y-6 max-w-2xl">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+              <ShieldCheck size={18} className="text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-white text-sm">Perfil Público do Criador</h3>
+              <p className="text-[11px] text-on-surface-variant">Estas informações aparecem em todos os seus produtos na loja.</p>
+            </div>
+          </div>
+
+          {/* Preview card */}
+          <div className="glass-panel rounded-2xl border border-white/10 p-5 flex gap-4 items-start">
+            <div className="relative shrink-0">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 bg-primary/20 flex items-center justify-center">
+                <span className="font-display font-black text-xl text-white">{profile.displayName?.charAt(0)?.toUpperCase()}</span>
+              </div>
+              <span
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center shadow-lg ring-2 ring-[#050505]"
+                style={{ background: 'linear-gradient(135deg,#00c853,#00e676)' }}
+              >
+                <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="font-display font-bold text-white text-sm">{profile.displayName}</p>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                <svg viewBox="0 0 24 24" className="w-2 h-2" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Verificado CodeEngine
+              </span>
+              {bioText && (
+                <p className="text-[11px] text-on-surface-variant leading-relaxed max-w-sm">{bioText.slice(0, 120)}{bioText.length > 120 ? '…' : ''}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Bio editor */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-white">Descrição / Bio Pública</label>
+            <p className="text-[11px] text-on-surface-variant">Apresente-se aos compradores. Mencione a sua experiência, área de especialidade e o que torna os seus produtos únicos. Máx. 500 caracteres.</p>
+            <textarea
+              value={bioText}
+              onChange={e => setBioText(e.target.value.slice(0, 500))}
+              rows={5}
+              placeholder="Ex: Sou especialista em marketing digital com 8 anos de experiência a ajudar empreendedores a crescer online..."
+              className="w-full rounded-xl bg-surface-high border border-white/10 text-white text-xs font-sans px-4 py-3 resize-none focus:outline-none focus:border-emerald-500/50 placeholder:text-on-surface-variant/50 transition-colors"
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-on-surface-variant">{bioText.length}/500 caracteres</span>
+              <button
+                onClick={handleSaveBio}
+                disabled={bioSaving}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all disabled:opacity-60 active:scale-95"
+              >
+                {bioSaving ? (
+                  <span className="w-3 h-3 border-2 border-black/40 border-t-black rounded-full animate-spin" />
+                ) : bioSaved ? (
+                  <><svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Salvo!</>
+                ) : (
+                  'Guardar Bio'
+                )}
+              </button>
+            </div>
+            {bioError && <p className="text-[11px] text-red-400">{bioError}</p>}
+          </div>
+
+          <p className="text-[10px] text-on-surface-variant/60 border-t border-white/5 pt-3">
+            O selo de verificação verde é atribuído automaticamente pela CodeEngine a todos os criadores aprovados.
+          </p>
+        </div>
+      )}
+
       {walletView === 'ads' && profile && (
         <AdsDashboard collaboratorId={profile.id} />
       )}
