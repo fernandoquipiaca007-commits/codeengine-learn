@@ -227,7 +227,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         }
 
         if (data.session?.access_token) {
-          fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/auth/welcome`, {
+          fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/auth/welcome`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` },
           }).catch(() => {});
@@ -285,7 +285,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         }
 
       } else if (mode === 'reset') {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
         if (!codeSent) {
           const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
             method: 'POST',

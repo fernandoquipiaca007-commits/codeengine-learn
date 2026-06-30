@@ -90,7 +90,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         return;
       }
       if (product.isSponsored && product.campaignId) {
-        fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+        fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/click`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ campaignId: product.campaignId })

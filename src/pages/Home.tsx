@@ -303,7 +303,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   useEffect(() => {
     if (featuredAds.length > 0) {
       featuredAds.forEach(ad => {
-        fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+        fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/impression`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ campaignId: ad.id })
@@ -316,7 +316,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   useEffect(() => {
     if (activeSlide >= 3 && heroAds[activeSlide - 3]) {
       const ad = heroAds[activeSlide - 3];
-      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+      fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/impression`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaignId: ad.id })
@@ -325,7 +325,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   }, [activeSlide, heroAds]);
 
   const handleHeroAdClick = (ad: any) => {
-    fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+    fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/click`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ campaignId: ad.id })

@@ -76,7 +76,7 @@ export default function AdsDashboard({ collaboratorId }: AdsDashboardProps) {
       const session = JSON.parse(sessionStr);
 
       // Fetch campaigns
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/campaigns`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/campaigns`, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       const data = await res.json();
@@ -110,7 +110,7 @@ export default function AdsDashboard({ collaboratorId }: AdsDashboardProps) {
       const session = JSON.parse(sessionStr);
 
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/calculate-price?placement=${placement}&duration_days=${durationDays}`,
+        `${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/calculate-price?placement=${placement}&duration_days=${durationDays}`,
         { headers: { Authorization: `Bearer ${session.access_token}` } }
       );
       const data = await res.json();
@@ -132,7 +132,7 @@ export default function AdsDashboard({ collaboratorId }: AdsDashboardProps) {
       if (!sessionStr) return;
       const session = JSON.parse(sessionStr);
 
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/campaigns`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/campaigns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ export default function AdsDashboard({ collaboratorId }: AdsDashboardProps) {
       if (!sessionStr) return;
       const session = JSON.parse(sessionStr);
 
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/campaigns/${campaignId}/toggle`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/campaigns/${campaignId}/toggle`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
@@ -189,7 +189,7 @@ export default function AdsDashboard({ collaboratorId }: AdsDashboardProps) {
       if (!sessionStr) return;
       const session = JSON.parse(sessionStr);
 
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/campaigns/${campaign.id}/analytics`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/campaigns/${campaign.id}/analytics`, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       const data = await res.json();
@@ -357,7 +357,7 @@ export default function AdsDashboard({ collaboratorId }: AdsDashboardProps) {
                               const sessionStr = localStorage.getItem('sb-ffdqqiunkzhtgbgaojay-auth-token');
                               if (!sessionStr) return;
                               const session = JSON.parse(sessionStr);
-                              fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/campaigns`, {
+                              fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/campaigns`, {
                                 method: 'POST',
                                 headers: {
                                   'Content-Type': 'application/json',

@@ -122,7 +122,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
         currentSession = activeSessionData.session;
       }
 
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
 
       // 2. Lookup member record
       let { data: member } = (await withTimeout(

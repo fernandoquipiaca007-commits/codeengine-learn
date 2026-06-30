@@ -49,7 +49,7 @@ export function Success({ setScreen }: SuccessProps) {
   }, []);
 
   const fetchSessionData = async (sessionId: string) => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
 
     try {
       // Garante registro da compra (webhook pode atrasar em dev local)

@@ -401,7 +401,7 @@ export function CollaboratorProductForm({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
       const res = await fetch(`${BACKEND_URL}/api/collaborators/products`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -487,7 +487,7 @@ export function CollaboratorProductForm({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
       const res = await fetch(`${BACKEND_URL}/api/collaborators/products`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -692,7 +692,7 @@ export function CollaboratorProductForm({
 
       if (bucket !== 'avatars') {
         try {
-          const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+          const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
           const token = session?.access_token;
           if (!token) throw new Error('Sessão expirada. Autentique-se novamente.');
 
@@ -785,7 +785,7 @@ export function CollaboratorProductForm({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
       const res = await fetch(`${BACKEND_URL}/api/collaborators/upgrade-checkout`, {
         method: 'POST',
         headers: {
@@ -886,7 +886,7 @@ export function CollaboratorProductForm({
         translations
       };
 
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
       const url = productId 
         ? `${BACKEND_URL}/api/collaborators/products/${productId}`
         : `${BACKEND_URL}/api/collaborators/products`;
@@ -922,7 +922,7 @@ export function CollaboratorProductForm({
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Sessão inválida');
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
       const res = await fetch(`${BACKEND_URL}/api/collaborators/products/${productId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },

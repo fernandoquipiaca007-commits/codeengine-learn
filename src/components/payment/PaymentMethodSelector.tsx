@@ -22,7 +22,7 @@ interface PaymentMethodSelectorProps {
   onClose: () => void;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
 
 export function PaymentMethodSelector({
   product,

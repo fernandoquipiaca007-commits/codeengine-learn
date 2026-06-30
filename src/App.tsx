@@ -298,7 +298,7 @@ export default function App() {
       sessionStorage.setItem('ce_session_id', sessionId);
     }
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
     const path = currentScreen === 'product' && currentProductId
       ? `/product/${currentProductId}`
       : `/${currentScreen}`;
@@ -572,7 +572,7 @@ export default function App() {
           sessionStorage.removeItem('ce_google_signing_in');
 
           // Welcome API call (fire-and-forget)
-          fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/auth/welcome`, {
+          fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/auth/welcome`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json', 

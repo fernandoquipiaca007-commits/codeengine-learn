@@ -27,7 +27,7 @@ interface FastPayFlowProps {
 
 type Step = 'instructions' | 'creating' | 'redirect' | 'upload' | 'waiting';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
 
 export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) {
   const { locale } = useLocale();

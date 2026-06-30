@@ -293,7 +293,7 @@ export function Library({ setScreen, onProductClick }: {
   useEffect(() => {
     filteredProducts.forEach(prod => {
       if ((prod as any).isSponsored && (prod as any).campaignId) {
-        fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+        fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/impression`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ campaignId: (prod as any).campaignId })
@@ -534,7 +534,7 @@ export function Library({ setScreen, onProductClick }: {
                             key={product.id}
                             onClick={() => {
                               if ((product as any).isSponsored && (product as any).campaignId) {
-                                fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+                                fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/click`, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ campaignId: (product as any).campaignId })

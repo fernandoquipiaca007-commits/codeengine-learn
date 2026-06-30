@@ -112,7 +112,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
       // Track impressions (fire-and-forget)
       combined.forEach(prod => {
         if (prod.isSponsored && prod.campaignId) {
-          fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/impression`, {
+          fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/impression`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ campaignId: prod.campaignId })
@@ -131,7 +131,7 @@ export function SearchModal({ isOpen, onClose, onNavigate }: SearchModalProps) {
     saveRecentSearch(query);
     if ((product as any).isSponsored && (product as any).campaignId) {
       // Track click (fire-and-forget)
-      fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/ads/track/click`, {
+      fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud'}/api/ads/track/click`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ campaignId: (product as any).campaignId })

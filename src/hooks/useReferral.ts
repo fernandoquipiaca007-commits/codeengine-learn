@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 
 const REFERRAL_COOKIE_KEY = 'ce_referral_code';
 const REFERRAL_EXPIRY_DAYS = 30;
-const API_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'https://api.srv1739567.hstgr.cloud';
 
 export function useReferral() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
