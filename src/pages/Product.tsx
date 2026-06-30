@@ -929,7 +929,11 @@ export function Product({ setScreen, productId }: ProductProps) {
                 {/* Logo placeholder */}
                 <div className="relative">
                   <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-primary/40 shadow-xl bg-gradient-to-br from-primary/30 to-secondary/20 flex items-center justify-center">
-                    <span className="font-display font-black text-2xl text-white tracking-tight">CE</span>
+                    <img
+                      src="/icons/icon-512.png"
+                      alt="CodeEngine"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   {/* Always verified for CodeEngine */}
                   <span

@@ -661,7 +661,7 @@ export function Library({ setScreen, onProductClick }: {
 
                               {/* Price and CTA */}
                               <div className="flex items-center justify-between mt-auto w-full gap-2.5 pt-2 border-t border-white/5">
-                                <span className="font-mono text-sm sm:text-base font-semibold text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] break-all min-w-0">
+                                <span className="font-mono text-sm sm:text-base font-semibold text-primary tracking-tight drop-shadow-[0_0_8px_rgba(192,193,255,0.3)] whitespace-nowrap shrink-0">
                                   {product.is_free ? t('library.free') : 
                                     isAngola 
                                       ? `Kz ${Number(product.aoa_price || product.aoaPrice || Math.round(product.price * 920)).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`

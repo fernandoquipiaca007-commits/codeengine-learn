@@ -898,7 +898,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
                       {/* Price and CTA */}
                       <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
-                        <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)]">
+                        <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
                           {formatPrice(product)}
                         </span>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-1 font-display">
@@ -983,7 +983,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
                     {/* Price and CTA */}
                     <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
-                      <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)]">
+                      <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
                         {formatPrice(product)}
                       </span>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-1 font-display">
@@ -1073,7 +1073,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
                       {/* Price and CTA */}
                       <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
-                        <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)]">
+                        <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
                           {formatPrice(product)}
                         </span>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-1 font-display">
