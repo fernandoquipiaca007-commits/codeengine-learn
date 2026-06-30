@@ -198,22 +198,22 @@ const FAN_POSITIONS = [
 ];
 
 function getResponsiveMultiplier(width: number) {
-  if (width < 480) return 0.32;
-  if (width < 640) return 0.42;
-  if (width < 768) return 0.55;
-  if (width < 1024) return 0.75;
-  return 1.0;
+  if (width < 480) return 0.24;
+  if (width < 640) return 0.32;
+  if (width < 768) return 0.42;
+  if (width < 1024) return 0.55;
+  return 0.75;
 }
 
 function getHeightMultiplier(width: number) {
-  if (width < 480) return 0.4;
-  if (width < 640) return 0.55;
-  if (width < 768) return 0.7;
-  return 1.0;
+  if (width < 480) return 0.3;
+  if (width < 640) return 0.4;
+  if (width < 768) return 0.5;
+  return 0.7;
 }
 
 const ARROW_CLASSES =
-  "relative flex items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white/70 cursor-pointer shrink-0 z-30 outline-none hover:border-primary/40 hover:text-primary active:opacity-70 transition-all duration-300 w-10 h-10";
+  "relative flex items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white/70 cursor-pointer shrink-0 z-30 outline-none hover:border-primary/40 hover:text-primary active:opacity-70 transition-all duration-300 w-8 h-8";
 
 export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: CardFanCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -424,9 +424,9 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
   const selectedPreset = THEME_PRESETS[centerIndex];
 
   return (
-    <section className="flex flex-col items-center w-full py-4 relative z-20 select-none">
+    <section className="flex flex-col items-center w-full py-2 relative z-20 select-none">
       <div className="flex items-center justify-center w-full max-w-[90rem]">
-        <div ref={containerRef} className="fan-layout flex relative justify-center items-center w-full min-h-[18rem] md:min-h-[22rem]">
+        <div ref={containerRef} className="fan-layout flex relative justify-center items-center w-full min-h-[12rem] md:min-h-[14rem]">
           {THEME_PRESETS.map((preset, index) => {
             const isSelected = 
               preset.videoPath === currentPath && 
@@ -442,7 +442,7 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
                 onClick={() => onSelectPreset(preset)}
                 onMouseEnter={(e) => handleVideoHover(e, true)}
                 onMouseLeave={(e) => handleVideoHover(e, false)}
-                className={`fan-card absolute w-[9.5rem] h-[13.5rem] md:w-[11.5rem] md:h-[16.5rem] rounded-2xl overflow-hidden cursor-pointer border transition-all ${
+                className={`fan-card absolute w-[6.5rem] h-[9.5rem] md:w-[8rem] md:h-[11.5rem] rounded-2xl overflow-hidden cursor-pointer border transition-all ${
                   isSelected 
                     ? "border-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] ring-2 ring-primary/40" 
                     : "border-white/10 hover:border-white/20 shadow-lg"
@@ -495,7 +495,7 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
       </div>
 
       {/* Pagination controls */}
-      <div className="flex items-center justify-center gap-4 mt-6 z-30">
+      <div className="flex items-center justify-center gap-4 mt-2 z-30">
         <button 
           type="button"
           className={ARROW_CLASSES} 
@@ -519,7 +519,7 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
 
       {/* Info panel of the fanned center/active theme */}
       {selectedPreset && (
-        <div className="mt-6 text-center max-w-md bg-white/5 border border-white/5 p-4 rounded-xl backdrop-blur-sm z-30">
+        <div className="mt-2 text-center max-w-md bg-white/5 border border-white/5 p-2 rounded-xl backdrop-blur-sm z-30">
           <h4 className="text-sm font-bold text-white font-display">{selectedPreset.name}</h4>
           <p className="text-xs text-on-surface-variant mt-1 font-sans">{selectedPreset.description}</p>
         </div>

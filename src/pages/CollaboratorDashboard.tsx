@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from 'react-i18next';
@@ -219,7 +219,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         setStripeError(data.error || 'Erro ao iniciar Stripe Checkout.');
       }
     } catch (err) {
-      setStripeError('Erro de conexão ao iniciar Stripe.');
+      setStripeError('Erro de conexÃ£o ao iniciar Stripe.');
     } finally {
       setSubmittingStripe(false);
     }
@@ -233,7 +233,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     setFastpayError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Utilizador não autenticado.');
+      if (!user) throw new Error('Utilizador nÃ£o autenticado.');
 
       const fileExt = file.name.split('.').pop();
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -257,7 +257,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
   async function handleFastpaySubmit() {
     if (!receiptUrl) {
-      setFastpayError('Faça o upload do comprovativo primeiro.');
+      setFastpayError('FaÃ§a o upload do comprovativo primeiro.');
       return;
     }
 
@@ -277,7 +277,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       });
       const data = await res.json();
       if (data.success) {
-        setFastpaySuccess('Comprovativo enviado com sucesso! Aguarde aprovação.');
+        setFastpaySuccess('Comprovativo enviado com sucesso! Aguarde aprovaÃ§Ã£o.');
         setTimeout(() => {
           loadDashboardData();
           setShowPlanBenefitsModal(false);
@@ -286,7 +286,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         setFastpayError(data.error || 'Erro ao enviar comprovativo.');
       }
     } catch (err) {
-      setFastpayError('Erro de conexão ao enviar.');
+      setFastpayError('Erro de conexÃ£o ao enviar.');
     }
   }
 
@@ -310,13 +310,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
     const amountNum = Number(withdrawAmount);
     if (isNaN(amountNum) || amountNum < 20) {
-      setModalError('O valor mínimo de saque é R$ 20.00 / $ 20.00 / 20.000 Kz.');
+      setModalError('O valor mÃ­nimo de saque Ã© R$ 20.00 / $ 20.00 / 20.000 Kz.');
       setSubmittingWithdraw(false);
       return;
     }
 
     if (amountNum > (Number(balance?.available_balance) || 0)) {
-      setModalError('Saldo disponível insuficiente.');
+      setModalError('Saldo disponÃ­vel insuficiente.');
       setSubmittingWithdraw(false);
       return;
     }
@@ -345,7 +345,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         setModalError(data.error || 'Erro ao solicitar saque.');
       }
     } catch (err) {
-      setModalError('Erro de conexão.');
+      setModalError('Erro de conexÃ£o.');
     } finally {
       setSubmittingWithdraw(false);
     }
@@ -362,19 +362,19 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     const amountNum = Number(withdrawAoaAmount);
 
     if (isNaN(amountNum) || amountNum < minSaque) {
-      setAoaModalError(`O valor mínimo de saque AOA é Kz ${minSaque.toLocaleString('pt-AO')}.`);
+      setAoaModalError(`O valor mÃ­nimo de saque AOA Ã© Kz ${minSaque.toLocaleString('pt-AO')}.`);
       setSubmittingWithdrawAoa(false);
       return;
     }
 
     if (amountNum > (Number(balance?.available_balance_aoa) || 0)) {
-      setAoaModalError('Saldo AOA disponível insuficiente.');
+      setAoaModalError('Saldo AOA disponÃ­vel insuficiente.');
       setSubmittingWithdrawAoa(false);
       return;
     }
 
     if (withdrawAoaMethod === 'facipay_p2p' && !facipayAccount && !profile?.facipayAccount) {
-      setAoaModalError('Configure o número da conta FaciPay em "Configurar Carteira" antes de usar este método.');
+      setAoaModalError('Configure o nÃºmero da conta FaciPay em "Configurar Carteira" antes de usar este mÃ©todo.');
       setSubmittingWithdrawAoa(false);
       return;
     }
@@ -402,7 +402,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         setAoaModalError(data.error || 'Erro ao solicitar saque AOA.');
       }
     } catch (err) {
-      setAoaModalError('Erro de conexão.');
+      setAoaModalError('Erro de conexÃ£o.');
     } finally {
       setSubmittingWithdrawAoa(false);
     }
@@ -429,14 +429,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
     const payoutInfo: any = {};
     if (tempPayoutMethod === 'paypal') {
       if (!paypalEmail.trim()) {
-        setWalletError('O e-mail do PayPal é obrigatório.');
+        setWalletError('O e-mail do PayPal Ã© obrigatÃ³rio.');
         setSavingWallet(false);
         return;
       }
       payoutInfo.email = paypalEmail.trim();
     } else {
       if (!bankName.trim() || !bankHolder.trim() || !iban.trim()) {
-        setWalletError('Banco, Titular da Conta e IBAN são obrigatórios.');
+        setWalletError('Banco, Titular da Conta e IBAN sÃ£o obrigatÃ³rios.');
         setSavingWallet(false);
         return;
       }
@@ -479,10 +479,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         await loadDashboardData();
         setTimeout(() => setShowWalletModal(false), 1500);
       } else {
-        setWalletError(data.error || 'Erro ao salvar configurações de carteira.');
+        setWalletError(data.error || 'Erro ao salvar configuraÃ§Ãµes de carteira.');
       }
     } catch (err) {
-      setWalletError('Erro de conexão ao salvar.');
+      setWalletError('Erro de conexÃ£o ao salvar.');
     } finally {
       setSavingWallet(false);
     }
@@ -505,7 +505,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
       case 'processing':
         return <span className="inline-flex items-center gap-1 rounded bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300"><Clock size={12} /> Processando (D4-D6)</span>;
       case 'available':
-        return <span className="inline-flex items-center gap-1 rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-xs font-medium text-green-300"><CheckCircle size={12} /> Disponível</span>;
+        return <span className="inline-flex items-center gap-1 rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-xs font-medium text-green-300"><CheckCircle size={12} /> DisponÃ­vel</span>;
       case 'pending':
         return <span className="rounded bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">Aguardando</span>;
       case 'refunded':
@@ -520,7 +520,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
   const getWithdrawalStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <span className="rounded bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-800">Concluído</span>;
+        return <span className="rounded bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-800">ConcluÃ­do</span>;
       case 'pending':
         return <span className="rounded bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-800">Aguardando</span>;
       case 'processing':
@@ -556,7 +556,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             )}
           </h1>
           <p className="mt-0.5 text-on-surface-variant font-sans text-xs">
-            {t('collaborator.dashboardSubtitle', { name: profile?.displayName, defaultValue: `Olá, ${profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.` })}
+            {t('collaborator.dashboardSubtitle', { name: profile?.displayName, defaultValue: `OlÃ¡, ${profile?.displayName}! Gerencie seu saldo e acompanhe seu extrato.` })}
           </p>
         </div>
         <div className="flex gap-1.5 flex-wrap items-center">
@@ -591,7 +591,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           <button
             onClick={() => setShowWithdrawModal(true)}
             disabled={(Number(balance?.available_balance) || 0) < 50}
-            title={(Number(balance?.available_balance) || 0) < 50 ? 'Saldo mínimo de $50.00 necessário para sacar' : 'Solicitar saque'}
+            title={(Number(balance?.available_balance) || 0) < 50 ? 'Saldo mÃ­nimo de $50.00 necessÃ¡rio para sacar' : 'Solicitar saque'}
             className="flex items-center gap-1 rounded-full bg-on-surface px-3 py-1.5 font-semibold text-background hover:bg-primary hover:text-on-primary transition-all text-[11px] shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(192,193,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <PlusCircle size={13} />
@@ -616,11 +616,11 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex gap-3 items-start animate-pulse">
                 <AlertCircle className="text-red-400 w-5 h-5 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-white">Período de Tolerância Ativo (Expiração Crítica)</h4>
+                  <h4 className="text-sm font-bold text-white">PerÃ­odo de TolerÃ¢ncia Ativo (ExpiraÃ§Ã£o CrÃ­tica)</h4>
                   <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
                     Sua assinatura do plano <strong>Course Creator</strong> via {profile.upgradeMethod === 'fastpay' ? 'Facipay' : 'Stripe'} expirou em {expiresAt.toLocaleDateString()}. 
-                    Você tem um prazo limite de tolerância de até 2 dias para regularizar seu pagamento. 
-                    Se não realizar a renovação hoje, seus cursos e hospedagens de vídeos serão desativados.
+                    VocÃª tem um prazo limite de tolerÃ¢ncia de atÃ© 2 dias para regularizar seu pagamento. 
+                    Se nÃ£o realizar a renovaÃ§Ã£o hoje, seus cursos e hospedagens de vÃ­deos serÃ£o desativados.
                   </p>
                 </div>
               </div>
@@ -632,8 +632,8 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <div>
                   <h4 className="text-sm font-bold text-white">Plano Expirado - Cursos Desativados</h4>
                   <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                    Sua assinatura expirou e o período de tolerância encerrou. Seus cursos foram marcados como inativos. 
-                    Realize o pagamento de renovação para reativar todos os seus conteúdos imediatamente.
+                    Sua assinatura expirou e o perÃ­odo de tolerÃ¢ncia encerrou. Seus cursos foram marcados como inativos. 
+                    Realize o pagamento de renovaÃ§Ã£o para reativar todos os seus conteÃºdos imediatamente.
                   </p>
                 </div>
               </div>
@@ -646,7 +646,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div>
                 <h4 className="text-sm font-bold text-white">Sua Assinatura Expira em {daysDiff} {daysDiff === 1 ? 'dia' : 'dias'}</h4>
                 <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                  Lembrete: Como seu plano foi ativado via {profile.upgradeMethod === 'fastpay' ? 'Facipay (Manual)' : 'Stripe'}, certifique-se de regularizar a renovação antes de {expiresAt.toLocaleDateString()} para que não ocorra a suspensão de uploads de vídeos dos seus produtos.
+                  Lembrete: Como seu plano foi ativado via {profile.upgradeMethod === 'fastpay' ? 'Facipay (Manual)' : 'Stripe'}, certifique-se de regularizar a renovaÃ§Ã£o antes de {expiresAt.toLocaleDateString()} para que nÃ£o ocorra a suspensÃ£o de uploads de vÃ­deos dos seus produtos.
                 </p>
               </div>
             </div>
@@ -667,7 +667,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   : 'text-on-surface-variant hover:text-white'
               }`}
             >
-              <Landmark size={10} /> {t('collaborator.tabWalletAoa', 'AOA · FaciPay')}
+              <Landmark size={10} /> {t('collaborator.tabWalletAoa', 'AOA Â· FaciPay')}
             </button>
             <button
               onClick={() => setWalletView('usd')}
@@ -677,7 +677,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   : 'text-on-surface-variant hover:text-white'
               }`}
             >
-              <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
+              <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD Â· Stripe')}
             </button>
           </>
         ) : (
@@ -689,7 +689,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 : 'text-on-surface-variant hover:text-white'
             }`}
           >
-            <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD · Stripe')}
+            <DollarSign size={12} /> {t('collaborator.tabWalletUsd', 'USD Â· Stripe')}
           </button>
         )}
         <button
@@ -720,7 +720,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <TrendingUp size={12} /> {t('collaborator.tabAnalytics', 'Análise')}
+          <TrendingUp size={12} /> {t('collaborator.tabAnalytics', 'AnÃ¡lise')}
         </button>
         <button
           onClick={() => setWalletView('ads')}
@@ -730,7 +730,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               : 'text-on-surface-variant hover:text-white'
           }`}
         >
-          <Megaphone size={12} /> {t('collaborator.tabAds', 'Anúncios')}
+          <Megaphone size={12} /> {t('collaborator.tabAds', 'AnÃºncios')}
         </button>
       </div>
 
@@ -741,11 +741,11 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <DollarSign size={14} className="text-primary" />
-                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD · Stripe</span>
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema USD Â· Stripe</span>
               </div>
               {country && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-semibold text-on-surface-variant">
-                  País Registado: <span className="text-white font-bold">{country === 'AO' ? '🇦🇴 AO' : country === 'PT' ? '🇵🇹 PT' : country === 'BR' ? '🇧🇷 BR' : country === 'FR' ? '🇫🇷 FR' : country === 'US' ? '🇺🇸 US' : `🌐 ${country}`}</span>
+                  PaÃ­s Registado: <span className="text-white font-bold">{country === 'AO' ? 'ðŸ‡¦ðŸ‡´ AO' : country === 'PT' ? 'ðŸ‡µðŸ‡¹ PT' : country === 'BR' ? 'ðŸ‡§ðŸ‡· BR' : country === 'FR' ? 'ðŸ‡«ðŸ‡· FR' : country === 'US' ? 'ðŸ‡ºðŸ‡¸ US' : `ðŸŒ ${country}`}</span>
                 </span>
               )}
             </div>
@@ -763,7 +763,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <span className="block text-xl font-bold text-white font-mono">
                   {(Number(balance?.guarantee_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </span>
-                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Período de reembolso do cliente. Fundos bloqueados por segurança.</p>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">PerÃ­odo de reembolso do cliente. Fundos bloqueados por seguranÃ§a.</p>
               </div>
 
               {/* Estado 2: Em Processamento (D4-D6) */}
@@ -779,10 +779,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <span className="block text-xl font-bold text-white font-mono">
                   {(Number(balance?.processing_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </span>
-                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidação Stripe. Liberado em breve.</p>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidaÃ§Ã£o Stripe. Liberado em breve.</p>
               </div>
 
-              {/* Estado 3: Disponível para Saque */}
+              {/* Estado 3: DisponÃ­vel para Saque */}
               <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-green-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-2">
@@ -791,14 +791,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   </div>
                   <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
                 </div>
-                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque</span>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">DisponÃ­vel para Saque</span>
                 <span className="block text-xl font-bold text-white font-mono">
                   {(Number(balance?.available_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </span>
                 <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">
                   {(Number(balance?.available_balance) || 0) >= 50
-                    ? '✓ Saldo suficiente para saque (mín. $50.00)'
-                    : `Mínimo $50.00 para sacar. Faltam $${Math.max(0, 50 - (Number(balance?.available_balance) || 0)).toFixed(2)}`
+                    ? 'âœ“ Saldo suficiente para saque (mÃ­n. $50.00)'
+                    : `MÃ­nimo $50.00 para sacar. Faltam $${Math.max(0, 50 - (Number(balance?.available_balance) || 0)).toFixed(2)}`
                   }
                 </p>
               </div>
@@ -813,7 +813,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/15">
                   <TrendingUp size={16} />
                 </div>
-                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">Histórico</span>
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">HistÃ³rico</span>
               </div>
               <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado (USD)</span>
               <span className="block text-xl font-bold text-white font-mono mt-1">
@@ -843,13 +843,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-base">🏦</span>
-                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema AOA · FaciPay (Kwanza)</span>
+                <span className="text-base">ðŸ¦</span>
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Ecossistema AOA Â· FaciPay (Kwanza)</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {country && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-semibold text-on-surface-variant">
-                    País Registado: <span className="text-white font-bold">{country === 'AO' ? '🇦🇴 AO' : country === 'PT' ? '🇵🇹 PT' : country === 'BR' ? '🇧🇷 BR' : country === 'FR' ? '🇫🇷 FR' : country === 'US' ? '🇺🇸 US' : `🌐 ${country}`}</span>
+                    PaÃ­s Registado: <span className="text-white font-bold">{country === 'AO' ? 'ðŸ‡¦ðŸ‡´ AO' : country === 'PT' ? 'ðŸ‡µðŸ‡¹ PT' : country === 'BR' ? 'ðŸ‡§ðŸ‡· BR' : country === 'FR' ? 'ðŸ‡«ðŸ‡· FR' : country === 'US' ? 'ðŸ‡ºðŸ‡¸ US' : `ðŸŒ ${country}`}</span>
                   </span>
                 )}
                 <button
@@ -862,7 +862,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   }}
                   disabled={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')}
                   title={(Number(balance?.available_balance_aoa) || 0) < Number(settings['MINIMO_SAQUE_AOA'] || '20000')
-                    ? `Saldo mínimo de Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} necessário`
+                    ? `Saldo mÃ­nimo de Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} necessÃ¡rio`
                     : 'Solicitar saque AOA'
                   }
                   className="flex items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 font-bold text-black text-xs hover:bg-amber-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
@@ -885,7 +885,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <span className="block text-xl font-bold text-white font-mono">
                   Kz {(Number(balance?.guarantee_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
                 </span>
-                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Período de reembolso. Fundos bloqueados por segurança.</p>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">PerÃ­odo de reembolso. Fundos bloqueados por seguranÃ§a.</p>
               </div>
 
               {/* AOA Estado 2: Em Processamento */}
@@ -901,10 +901,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <span className="block text-xl font-bold text-white font-mono">
                   Kz {(Number(balance?.processing_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
                 </span>
-                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidação FaciPay.</p>
+                <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Aguardando liquidaÃ§Ã£o FaciPay.</p>
               </div>
 
-              {/* AOA Estado 3: Disponível */}
+              {/* AOA Estado 3: DisponÃ­vel */}
               <div className="glass-card rounded-2xl p-4 relative overflow-hidden border border-green-500/15">
                 <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(34,197,94,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0" />
                 <div className="flex items-center justify-between mb-2">
@@ -913,14 +913,14 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   </div>
                   <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">Dia 7+</span>
                 </div>
-                <span className="block text-xs font-semibold text-on-surface-variant mb-1">Disponível para Saque (AOA)</span>
+                <span className="block text-xs font-semibold text-on-surface-variant mb-1">DisponÃ­vel para Saque (AOA)</span>
                 <span className="block text-xl font-bold text-white font-mono">
                   Kz {(Number(balance?.available_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
                 </span>
                 <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">
                   {(Number(balance?.available_balance_aoa) || 0) >= Number(settings['MINIMO_SAQUE_AOA'] || '20000')
-                    ? `✓ Saldo suficiente para saque (mín. Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')})`
-                    : `Mínimo Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} para sacar.`
+                    ? `âœ“ Saldo suficiente para saque (mÃ­n. Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')})`
+                    : `MÃ­nimo Kz ${Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')} para sacar.`
                   }
                 </p>
               </div>
@@ -935,7 +935,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/15">
                   <TrendingUp size={16} />
                 </div>
-                <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Histórico</span>
+                <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">HistÃ³rico</span>
               </div>
               <span className="block text-sm font-medium text-on-surface-variant">Total Acumulado (AOA)</span>
               <span className="block text-xl font-bold text-white font-mono mt-1">
@@ -988,13 +988,13 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   <div>
                     <h3 className="text-lg font-bold text-white font-display">Programa Membro Fundador</h3>
                     <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">
-                      Convide novos criadores de conteúdo para a plataforma. Quando eles fizerem vendas, você ganha
+                      Convide novos criadores de conteÃºdo para a plataforma. Quando eles fizerem vendas, vocÃª ganha
                       <span className="text-yellow-400 font-bold"> 1% do valor bruto </span>
-                      diretamente no seu saldo disponível — sem tocar na margem deles.
+                      diretamente no seu saldo disponÃ­vel â€” sem tocar na margem deles.
                     </p>
                     <div className="mt-3 flex items-center gap-2 text-xs text-on-surface-variant">
                       <span className="inline-flex items-center gap-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2 py-0.5">
-                        <CheckCircle size={10} /> Crédito imediato no saldo disponível
+                        <CheckCircle size={10} /> CrÃ©dito imediato no saldo disponÃ­vel
                       </span>
                       <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2 py-0.5">
                         <DollarSign size={10} /> Sai da margem da CodeEngine
@@ -1030,7 +1030,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   </button>
                 </div>
                 <p className="mt-3 text-xs text-on-surface-variant">
-                  Partilhe este link com criadores de conteúdo. Quando se registarem através dele e obtiverem aprovação como colaboradores, você começa a ganhar automaticamente.
+                  Partilhe este link com criadores de conteÃºdo. Quando se registarem atravÃ©s dele e obtiverem aprovaÃ§Ã£o como colaboradores, vocÃª comeÃ§a a ganhar automaticamente.
                 </p>
               </div>
 
@@ -1063,10 +1063,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
               {/* Recent founder commissions */}
               <div className="glass-panel rounded-2xl p-6 border border-white/10">
-                <h4 className="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Comissões Recentes de Fundador</h4>
+                <h4 className="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">ComissÃµes Recentes de Fundador</h4>
                 {!founderStats?.recentCommissions?.length ? (
                   <div className="py-8 text-center text-on-surface-variant text-sm">
-                    Nenhuma comissão de fundador recebida ainda. Convide colaboradores para começar!
+                    Nenhuma comissÃ£o de fundador recebida ainda. Convide colaboradores para comeÃ§ar!
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -1074,7 +1074,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                       <thead>
                         <tr className="text-on-surface-variant font-semibold border-b border-white/10">
                           <th className="pb-3 text-xs uppercase tracking-wider">Data</th>
-                          <th className="pb-3 text-xs uppercase tracking-wider">Descrição</th>
+                          <th className="pb-3 text-xs uppercase tracking-wider">DescriÃ§Ã£o</th>
                           <th className="pb-3 text-xs uppercase tracking-wider text-right">Valor</th>
                           <th className="pb-3 text-xs uppercase tracking-wider text-right">Moeda</th>
                         </tr>
@@ -1118,21 +1118,21 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
         <AdsDashboard collaboratorId={profile.id} />
       )}
 
-      {/* Main Grid: Extrato e Solicitações */}
+      {/* Main Grid: Extrato e SolicitaÃ§Ãµes */}
       {walletView !== 'affiliates' && walletView !== 'founder' && walletView !== 'analytics' && walletView !== 'ads' && (
         <div className="grid gap-4 lg:grid-cols-3 relative z-10">
         {/* Ledger Extrato */}
         <div className="lg:col-span-2 glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
-          <h3 className="mb-4 text-base font-bold text-white font-display">Extrato Contábil Recente</h3>
+          <h3 className="mb-4 text-base font-bold text-white font-display">Extrato ContÃ¡bil Recente</h3>
           {ledger.length === 0 ? (
-            <div className="py-6 text-center text-on-surface-variant text-xs font-sans">Nenhum lançamento contábil registrado ainda.</div>
+            <div className="py-6 text-center text-on-surface-variant text-xs font-sans">Nenhum lanÃ§amento contÃ¡bil registrado ainda.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="text-on-surface-variant font-semibold border-b border-white/10">
                     <th className="pb-2 text-[10px] uppercase tracking-wider">Data</th>
-                    <th className="pb-2 text-[10px] uppercase tracking-wider">Descrição</th>
+                    <th className="pb-2 text-[10px] uppercase tracking-wider">DescriÃ§Ã£o</th>
                     <th className="pb-2 text-[10px] uppercase tracking-wider">Tipo</th>
                     <th className="pb-2 text-[10px] uppercase tracking-wider text-right">Valor</th>
                     <th className="pb-2 text-[10px] uppercase tracking-wider text-right">Status</th>
@@ -1152,7 +1152,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-red-400 text-xs font-semibold">
-                            <ArrowDownRight size={13} /> Saída
+                            <ArrowDownRight size={13} /> SaÃ­da
                           </span>
                         )}
                       </td>
@@ -1172,9 +1172,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
         {/* Fila de Retiradas */}
         <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
-          <h3 className="mb-4 text-base font-bold text-white font-display">Solicitações de Saque</h3>
+          <h3 className="mb-4 text-base font-bold text-white font-display">SolicitaÃ§Ãµes de Saque</h3>
           {withdrawals.length === 0 ? (
-            <div className="py-6 text-center text-on-surface-variant text-xs font-sans">Nenhuma solicitação de saque enviada.</div>
+            <div className="py-6 text-center text-on-surface-variant text-xs font-sans">Nenhuma solicitaÃ§Ã£o de saque enviada.</div>
           ) : (
             <div className="space-y-4">
               {withdrawals.map((w) => (
@@ -1184,7 +1184,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     {getWithdrawalStatusBadge(w.status)}
                   </div>
                   <div className="flex items-center justify-between text-xs text-on-surface-variant mb-1 font-sans">
-                    <span>Método: {String(w.payout_method_details?.method || '').toUpperCase()}</span>
+                    <span>MÃ©todo: {String(w.payout_method_details?.method || '').toUpperCase()}</span>
                     <span className="font-mono">{new Date(w.created_at).toLocaleDateString('pt-BR')}</span>
                   </div>
                   
@@ -1249,7 +1249,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
             <form onSubmit={handleWithdrawSubmit} className="space-y-4 font-sans">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Saldo Disponível para Saque</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Saldo DisponÃ­vel para Saque</label>
                 <div className="text-2xl font-bold text-green-400 font-mono">
                   {(Number(balance?.available_balance) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </div>
@@ -1270,10 +1270,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     className="w-full rounded-xl border-none pl-10 pr-4 py-3 text-sm font-bold font-mono text-white focus:outline-none focus:ring-0 focus:border-none bg-transparent"
                   />
                 </div>
-                <span className="mt-1 block text-xs text-on-surface-variant">Mínimo: $50.00 USD.</span>
+                <span className="mt-1 block text-xs text-on-surface-variant">MÃ­nimo: $50.00 USD.</span>
               </div>
 
-              {/* Prévia de taxas em tempo real */}
+              {/* PrÃ©via de taxas em tempo real */}
               {withdrawAmount && Number(withdrawAmount) >= 50 && (() => {
                 const gross = Number(withdrawAmount);
                 const paypalFee = Number(settings?.PAYPAL_WITHDRAWAL_FEE_USD || '3.99');
@@ -1298,7 +1298,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                       <span className="font-mono font-semibold text-red-400">-${fee.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between border-t border-white/10 pt-2">
-                      <span className="font-bold text-white">Você receberá (estimativa):</span>
+                      <span className="font-bold text-white">VocÃª receberÃ¡ (estimativa):</span>
                       <span className="font-mono font-bold text-green-400">${net.toFixed(2)}</span>
                     </div>
                   </div>
@@ -1325,7 +1325,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               >
                 {submittingWithdraw ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
-                ) : 'Confirmar Solicitação'}
+                ) : 'Confirmar SolicitaÃ§Ã£o'}
               </button>
             </form>
           </motion.div>
@@ -1365,22 +1365,22 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
             <form onSubmit={handleWithdrawAoaSubmit} className="space-y-4 font-sans">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Saldo Disponível AOA</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Saldo DisponÃ­vel AOA</label>
                 <div className="text-2xl font-bold text-amber-400 font-mono">
                   Kz {(Number(balance?.available_balance_aoa) || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Método de Envio</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">MÃ©todo de Envio</label>
                 <select
                   value={withdrawAoaMethod}
                   onChange={(e) => setWithdrawAoaMethod(e.target.value as any)}
                   className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                 >
-                  <option value="iban_aoa">Conta Bancária (IBAN) — Taxa 1% + IVA</option>
-                  <option value="facipay_p2p">Conta FaciPay (P2P) — Isento</option>
-                  <option value="paypal_aoa">PayPal (Câmbio AOA→USD) — Taxa variável</option>
+                  <option value="iban_aoa">Conta BancÃ¡ria (IBAN) â€” Taxa 1% + IVA</option>
+                  <option value="facipay_p2p">Conta FaciPay (P2P) â€” Isento</option>
+                  <option value="paypal_aoa">PayPal (CÃ¢mbio AOAâ†’USD) â€” Taxa variÃ¡vel</option>
                 </select>
               </div>
 
@@ -1399,10 +1399,10 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     className="w-full rounded-xl border-none pl-12 pr-4 py-3 text-sm font-bold font-mono text-white focus:outline-none focus:ring-0 bg-transparent"
                   />
                 </div>
-                <span className="mt-1 block text-xs text-on-surface-variant">Mínimo: Kz {Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')}</span>
+                <span className="mt-1 block text-xs text-on-surface-variant">MÃ­nimo: Kz {Number(settings['MINIMO_SAQUE_AOA'] || '20000').toLocaleString('pt-AO')}</span>
               </div>
 
-              {/* Prévia de taxas AOA em tempo real */}
+              {/* PrÃ©via de taxas AOA em tempo real */}
               {withdrawAoaAmount && Number(withdrawAoaAmount) >= Number(settings['MINIMO_SAQUE_AOA'] || '20000') && (() => {
                 const gross = Number(withdrawAoaAmount);
                 const ivaRate = Number(settings['TAXA_FACIPAY_IVA'] || '0.14');
@@ -1419,7 +1419,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 } else if (withdrawAoaMethod === 'paypal_aoa') {
                   const paypalRate = Number(settings['TAXA_CAMBIO_PAYPAL_AOA'] || '0.05');
                   fee = gross * paypalRate;
-                  feeLabel = `Taxa Câmbio PayPal (${(paypalRate*100).toFixed(0)}%)`;
+                  feeLabel = `Taxa CÃ¢mbio PayPal (${(paypalRate*100).toFixed(0)}%)`;
                 }
                 fee = Math.round(fee * 100) / 100;
                 const net = Math.max(0, gross - fee);
@@ -1438,7 +1438,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                       <span className="font-mono font-semibold text-red-400">-Kz {fee.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between border-t border-amber-500/20 pt-2">
-                      <span className="font-bold text-white">Você receberá (estimativa):</span>
+                      <span className="font-bold text-white">VocÃª receberÃ¡ (estimativa):</span>
                       <span className="font-mono font-bold text-green-400">Kz {net.toLocaleString('pt-AO', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
@@ -1468,7 +1468,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             className="w-full max-w-md rounded-2xl border border-white/15 bg-surface/95 backdrop-blur-xl p-6 shadow-2xl overlay-premium"
           >
             <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-lg font-bold text-white font-display">Configurações de Carteira</h3>
+              <h3 className="text-lg font-bold text-white font-display">ConfiguraÃ§Ãµes de Carteira</h3>
               <button
                 type="button"
                 onClick={() => {
@@ -1498,7 +1498,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
 
             <form onSubmit={handleWalletSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-2 uppercase tracking-wider">Método de Destino</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2 uppercase tracking-wider">MÃ©todo de Destino</label>
                 <div className={`grid gap-3 font-sans ${isAngola ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <button
                     type="button"
@@ -1523,7 +1523,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                       }`}
                     >
                       <Landmark size={16} />
-                      IBAN Bancário
+                      IBAN BancÃ¡rio
                     </button>
                   )}
                 </div>
@@ -1583,11 +1583,11 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               {isAngola && (
                 <div className="mt-2 pt-4 border-t border-white/10">
                   <label className="block text-xs font-semibold text-amber-400 mb-1 uppercase tracking-wider flex items-center gap-1.5">
-                    <Landmark size={12} /> Conta FaciPay (Opcional — para saques AOA)
+                    <Landmark size={12} /> Conta FaciPay (Opcional â€” para saques AOA)
                   </label>
                   <input
                     type="text"
-                    placeholder="Nº da conta FaciPay"
+                    placeholder="NÂº da conta FaciPay"
                     value={facipayAccount}
                     onChange={(e) => setFacipayAccount(e.target.value)}
                     className="w-full rounded-xl bg-surface-high border border-amber-500/20 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/50 font-mono"
@@ -1638,7 +1638,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                 <Award className="text-primary w-5 h-5 animate-pulse" />
                 <h3 className="font-display text-sm font-bold text-white">
                   {pricingModalStep === 'plans' && 'Plano de Criador CodeEngine'}
-                  {pricingModalStep === 'select_method' && 'Método de Pagamento'}
+                  {pricingModalStep === 'select_method' && 'MÃ©todo de Pagamento'}
                   {pricingModalStep === 'fastpay_upload' && 'Pagamento via Facipay'}
                 </h3>
               </div>
@@ -1655,9 +1655,9 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             {pricingModalStep === 'plans' && (
               <div className="space-y-6">
                 <div className="text-center max-w-xl mx-auto space-y-1.5 mb-6">
-                  <h2 className="font-display text-xl font-bold text-white">Preços Simples que Acompanham Seu Sucesso</h2>
+                  <h2 className="font-display text-xl font-bold text-white">PreÃ§os Simples que Acompanham Seu Sucesso</h2>
                   <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
-                    Comece grátis promovendo e vendendo e-books. Faça upgrade para o plano Pro para hospedar e comercializar cursos em vídeo na CodeEngine.
+                    Comece grÃ¡tis promovendo e vendendo e-books. FaÃ§a upgrade para o plano Pro para hospedar e comercializar cursos em vÃ­deo na CodeEngine.
                   </p>
                 </div>
 
@@ -1666,18 +1666,18 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   <div className="rounded-xl border border-white/5 bg-white/5 p-4 flex flex-col justify-between min-h-[380px]">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-white font-display">Grátis</span>
+                        <span className="text-sm font-bold text-white font-display">GrÃ¡tis</span>
                         {profile?.plan !== 'course_creator' && (
                           <span className="px-2 py-0.5 rounded bg-primary/20 border border-primary/20 text-[9px] text-primary font-bold">Ativo</span>
                         )}
                       </div>
-                      <span className="my-3 block text-2xl font-black text-white font-display">$0 <span className="text-xs text-on-surface-variant font-medium">/ mês</span></span>
-                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para começar a vender arquivos de e-book.</p>
+                      <span className="my-3 block text-2xl font-black text-white font-display">$0 <span className="text-xs text-on-surface-variant font-medium">/ mÃªs</span></span>
+                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para comeÃ§ar a vender arquivos de e-book.</p>
                       <hr className="border-dashed border-white/10 my-3" />
                       <ul className="space-y-2.5 text-xs text-on-surface-variant font-sans">
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Painel de Análise Básico</span>
+                          <span>Painel de AnÃ¡lise BÃ¡sico</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
@@ -1701,7 +1701,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                         </div>
                       ) : (
                         <div className="w-full text-center py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-on-surface-variant cursor-default">
-                          Plano Base Grátis
+                          Plano Base GrÃ¡tis
                         </div>
                       )}
                     </div>
@@ -1720,22 +1720,22 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                       </div>
                       <span className="my-3 block text-2xl font-black text-white font-display">
                         {isAngola ? (
-                          <>8.000 Kz <span className="text-xs text-on-surface-variant font-medium">/ mês</span></>
+                          <>8.000 Kz <span className="text-xs text-on-surface-variant font-medium">/ mÃªs</span></>
                         ) : (
-                          <>$9 <span className="text-xs text-on-surface-variant font-medium">/ mês</span></>
+                          <>$9 <span className="text-xs text-on-surface-variant font-medium">/ mÃªs</span></>
                         )}
                       </span>
-                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para criadores profissionais de cursos e vídeos.</p>
+                      <p className="text-[11px] text-on-surface-variant font-sans mb-4">Para criadores profissionais de cursos e vÃ­deos.</p>
                       <hr className="border-dashed border-white/10 my-3" />
                       <ul className="space-y-2.5 text-xs text-on-surface-variant font-sans">
-                        <li className="block font-bold text-white text-[10px] uppercase tracking-wider mb-1">Tudo no Grátis, mais:</li>
+                        <li className="block font-bold text-white text-[10px] uppercase tracking-wider mb-1">Tudo no GrÃ¡tis, mais:</li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Hospedagem de Vídeos Nativa e Segura</span>
+                          <span>Hospedagem de VÃ­deos Nativa e Segura</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Taxas de Comissão Menores (Lucro Extra)</span>
+                          <span>Taxas de ComissÃ£o Menores (Lucro Extra)</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
@@ -1743,7 +1743,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
-                          <span>Sem limite de tamanho de upload (até 2GB)</span>
+                          <span>Sem limite de tamanho de upload (atÃ© 2GB)</span>
                         </li>
                         <li className="flex items-center gap-2">
                           <Check className="text-primary w-3.5 h-3.5 shrink-0" />
@@ -1776,7 +1776,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
             {pricingModalStep === 'select_method' && (
               <div className="space-y-4">
                 <div className="text-center space-y-1 mb-2">
-                  <h2 className="font-display text-base font-bold text-white">Escolha a Opção de Upgrade</h2>
+                  <h2 className="font-display text-base font-bold text-white">Escolha a OpÃ§Ã£o de Upgrade</h2>
                   <p className="font-sans text-xs text-on-surface-variant">Selecione o seu meio de pagamento para ativar o plano Pro.</p>
                 </div>
 
@@ -1785,12 +1785,12 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-primary/30 transition-all flex flex-col justify-between space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-sm font-bold text-white">Opção 1: Cartão de Crédito / Stripe (Cobrança em Dólar)</h4>
+                        <h4 className="text-sm font-bold text-white">OpÃ§Ã£o 1: CartÃ£o de CrÃ©dito / Stripe (CobranÃ§a em DÃ³lar)</h4>
                         <p className="text-xs text-on-surface-variant mt-1 leading-normal">
-                          Pague de forma segura com qualquer cartão internacional. Ativação instantânea na conta.
+                          Pague de forma segura com qualquer cartÃ£o internacional. AtivaÃ§Ã£o instantÃ¢nea na conta.
                         </p>
                       </div>
-                      <span className="text-sm font-black text-primary font-mono shrink-0">$9.00 USD/mês</span>
+                      <span className="text-sm font-black text-primary font-mono shrink-0">$9.00 USD/mÃªs</span>
                     </div>
 
                     <button
@@ -1808,12 +1808,12 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-green-600/30 transition-all flex flex-col justify-between space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-sm font-bold text-white">Opção 2: Facipay / Transferência (Cobrança em Kwanza)</h4>
+                        <h4 className="text-sm font-bold text-white">OpÃ§Ã£o 2: Facipay / TransferÃªncia (CobranÃ§a em Kwanza)</h4>
                         <p className="text-xs text-on-surface-variant mt-1 leading-normal">
-                          Método preferencial para Angola. Transferência ou depósito manual. Liberação após validação.
+                          MÃ©todo preferencial para Angola. TransferÃªncia ou depÃ³sito manual. LiberaÃ§Ã£o apÃ³s validaÃ§Ã£o.
                         </p>
                       </div>
-                      <span className="text-sm font-black text-green-400 font-mono shrink-0">8.000 Kz/mês</span>
+                      <span className="text-sm font-black text-green-400 font-mono shrink-0">8.000 Kz/mÃªs</span>
                     </div>
 
                     <button
@@ -1833,28 +1833,28 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
               <div className="space-y-4">
                 <div className="text-center space-y-1 mb-2">
                   <h2 className="font-display text-base font-bold text-white">Coordenadas e Envio de Comprovativo</h2>
-                  <p className="font-sans text-xs text-on-surface-variant">Realize a transferência bancária e anexe a foto ou PDF do comprovativo.</p>
+                  <p className="font-sans text-xs text-on-surface-variant">Realize a transferÃªncia bancÃ¡ria e anexe a foto ou PDF do comprovativo.</p>
                 </div>
 
                 <div className="rounded-xl bg-black/30 p-3 text-[11px] text-on-surface-variant space-y-1.5 font-sans border border-white/5">
-                  <p className="font-bold text-white">Coordenadas Bancárias para Depósito (CodeEngine):</p>
+                  <p className="font-bold text-white">Coordenadas BancÃ¡rias para DepÃ³sito (CodeEngine):</p>
                   <p>Banco: <strong className="text-white">BAI</strong></p>
                   <p>IBAN: <strong className="text-white">AO06.0040.0000.1234.5678.9012.3</strong></p>
-                  <p>Valor da Assinatura: <strong className="text-white">8.000 Kz / mês</strong></p>
+                  <p>Valor da Assinatura: <strong className="text-white">8.000 Kz / mÃªs</strong></p>
                   <p className="text-yellow-400/90 text-[10px] mt-1 font-semibold leading-normal">
-                    * Atenção: A validação e ativação manual é feita pela nossa equipe e pode levar até 24 horas úteis.
+                    * AtenÃ§Ã£o: A validaÃ§Ã£o e ativaÃ§Ã£o manual Ã© feita pela nossa equipe e pode levar atÃ© 24 horas Ãºteis.
                   </p>
                 </div>
 
                 {profile?.upgradeStatus === 'pending_approval' ? (
                   <div className="bg-orange-500/20 text-orange-400 p-3 rounded-lg text-xs border border-orange-500/30 text-center font-medium font-sans">
-                    Seu comprovativo já foi enviado e está em análise. O plano Pro será ativado em breve!
+                    Seu comprovativo jÃ¡ foi enviado e estÃ¡ em anÃ¡lise. O plano Pro serÃ¡ ativado em breve!
                   </div>
                 ) : (
                   <div className="space-y-4 pt-1 border-t border-white/5">
                     {profile?.upgradeStatus === 'rejected' && (
                       <div className="bg-red-500/20 text-red-400 p-2 rounded-lg text-xs border border-red-500/30 text-center font-semibold font-sans">
-                        Seu comprovativo anterior foi rejeitado. Envie um novo comprovativo válido.
+                        Seu comprovativo anterior foi rejeitado. Envie um novo comprovativo vÃ¡lido.
                       </div>
                     )}
                     
@@ -1868,7 +1868,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                     </a>
                     
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] text-gray-400 font-sans">2. Faça o upload do Comprovativo:</label>
+                      <label className="block text-[11px] text-gray-400 font-sans">2. FaÃ§a o upload do Comprovativo:</label>
                       <input
                         type="file"
                         accept="image/*,application/pdf"
@@ -1885,7 +1885,7 @@ export function CollaboratorDashboard({ setScreen, onGoToProducts }: Collaborato
                       onClick={handleFastpaySubmit}
                       className="w-full rounded-lg bg-primary py-2 text-center text-xs font-bold text-white hover:bg-primary-high transition-colors uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Enviar Comprovativo para Validação
+                      Enviar Comprovativo para ValidaÃ§Ã£o
                     </button>
                     
                     {fastpaySuccess && <p className="text-green-500 text-xs text-center mt-1 font-semibold">{fastpaySuccess}</p>}
@@ -1952,7 +1952,7 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
           <span className="block text-xl font-bold text-white font-mono">
             {totalClicks} <span className="text-xs text-on-surface-variant">/</span> {totalConversions}
           </span>
-          <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">Conversão Média: <strong className="text-blue-400 font-mono">{avgCR}%</strong></p>
+          <p className="text-[10px] text-on-surface-variant mt-2 leading-relaxed">ConversÃ£o MÃ©dia: <strong className="text-blue-400 font-mono">{avgCR}%</strong></p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 relative overflow-hidden border border-green-500/15">
@@ -1977,9 +1977,9 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <Percent size={18} />
             </div>
-            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">Comissões</span>
+            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wider">ComissÃµes</span>
           </div>
-          <span className="block text-xs font-semibold text-on-surface-variant mb-1">Comissões de Afiliados</span>
+          <span className="block text-xs font-semibold text-on-surface-variant mb-1">ComissÃµes de Afiliados</span>
           <div className="space-y-0.5 font-mono">
             <span className="block text-sm font-bold text-white">${totalCommUSD.toFixed(2)}</span>
             {isAngola && <span className="block text-xs font-semibold text-amber-400">Kz {totalCommAOA.toLocaleString('pt-AO')}</span>}
@@ -1993,7 +1993,7 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h3 className="text-lg font-bold text-white font-display">Afiliados dos Meus Produtos</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">Veja quem está a vender seus produtos e o desempenho individual.</p>
+            <p className="text-xs text-on-surface-variant mt-0.5">Veja quem estÃ¡ a vender seus produtos e o desempenho individual.</p>
           </div>
           
           <div className="relative w-full md:max-w-xs">
@@ -2010,7 +2010,7 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
 
         {filtered.length === 0 ? (
           <div className="py-12 text-center text-on-surface-variant text-sm font-sans">
-            Nenhum afiliado encontrado. Certifique-se de habilitar o programa de afiliados nas configurações do seu produto!
+            Nenhum afiliado encontrado. Certifique-se de habilitar o programa de afiliados nas configuraÃ§Ãµes do seu produto!
           </div>
         ) : (
           <div className="overflow-x-auto w-full">
@@ -2022,8 +2022,8 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
                   <th className="pb-3 text-xs uppercase tracking-wider">Cliques / Vendas</th>
                   <th className="pb-3 text-xs uppercase tracking-wider">Taxa CR %</th>
                   <th className="pb-3 text-xs uppercase tracking-wider text-right">Volume Vendido</th>
-                  <th className="pb-3 text-xs uppercase tracking-wider text-right">Comissão Afiliado</th>
-                  <th className="pb-3 text-xs uppercase tracking-wider text-right">Data Início</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider text-right">ComissÃ£o Afiliado</th>
+                  <th className="pb-3 text-xs uppercase tracking-wider text-right">Data InÃ­cio</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -2093,169 +2093,194 @@ function CollaboratorAffiliatesPanel({ affiliates }: { affiliates: any[] }) {
 }
 
 function PureSvgChart({ data }: { data: Array<{ displayDate: string; views: number; conversions: number; revenueUsd: number; revenueAoa: number }> }) {
-  // SVG dimensions
   const width = 500;
-  const height = 140;
-  const paddingLeft = 40;
+  const height = 160;
+  const paddingLeft = 42;
   const paddingRight = 20;
-  const paddingTop = 15;
-  const paddingBottom = 25;
-
+  const paddingTop = 16;
+  const paddingBottom = 28;
   const chartWidth = width - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
-
   const maxViews = Math.max(...data.map(d => d.views), 1);
   const maxConversions = Math.max(...data.map(d => d.conversions), 1);
   const maxVal = Math.max(maxViews, maxConversions);
 
-  // Generate points
-  const pointsViews = data.map((d, index) => {
-    const x = paddingLeft + (index / (data.length - 1 || 1)) * chartWidth;
-    const y = paddingTop + chartHeight - (d.views / maxVal) * chartHeight;
-    return { x, y, data: d };
-  });
+  const pts = (getter: (d: any) => number) =>
+    data.map((d, i) => ({
+      x: paddingLeft + (i / (data.length - 1 || 1)) * chartWidth,
+      y: paddingTop + chartHeight - (getter(d) / maxVal) * chartHeight,
+      data: d
+    }));
 
-  const pointsConvs = data.map((d, index) => {
-    const x = paddingLeft + (index / (data.length - 1 || 1)) * chartWidth;
-    const y = paddingTop + chartHeight - (d.conversions / maxVal) * chartHeight;
-    return { x, y, data: d };
-  });
+  const pV = pts(d => d.views);
+  const pC = pts(d => d.conversions);
 
-  // SVG paths
-  const viewsPath = pointsViews.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  const viewsAreaPath = data.length > 0 
-    ? `${viewsPath} L ${pointsViews[pointsViews.length - 1].x} ${height - paddingBottom} L ${pointsViews[0].x} ${height - paddingBottom} Z` 
-    : '';
+  const bezier = (ps: { x: number; y: number }[]) => {
+    if (ps.length < 2) return '';
+    let d = `M ${ps[0].x.toFixed(2)} ${ps[0].y.toFixed(2)}`;
+    for (let i = 0; i < ps.length - 1; i++) {
+      const dx = (ps[i + 1].x - ps[i].x) * 0.42;
+      d += ` C ${(ps[i].x + dx).toFixed(2)} ${ps[i].y.toFixed(2)}, ${(ps[i + 1].x - dx).toFixed(2)} ${ps[i + 1].y.toFixed(2)}, ${ps[i + 1].x.toFixed(2)} ${ps[i + 1].y.toFixed(2)}`;
+    }
+    return d;
+  };
 
-  const convsPath = pointsConvs.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const lineV = bezier(pV);
+  const lineC = bezier(pC);
+  const areaV = lineV ? `${lineV} L ${pV[pV.length-1].x} ${height-paddingBottom} L ${pV[0].x} ${height-paddingBottom} Z` : '';
+  const areaC = lineC ? `${lineC} L ${pC[pC.length-1].x} ${height-paddingBottom} L ${pC[0].x} ${height-paddingBottom} Z` : '';
 
-  // Hover state
-  const [hoveredPoint, setHoveredPoint] = useState<any>(null);
+  const [hovered, setHovered] = useState<any>(null);
 
   return (
     <div className="relative w-full">
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible select-none">
-        {/* Horizontal grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
-          const y = paddingTop + chartHeight * ratio;
-          const val = Math.round(maxVal * (1 - ratio));
+        <defs>
+          <linearGradient id="gV" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.38" />
+            <stop offset="75%" stopColor="#3b82f6" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#34d399" stopOpacity="0.30" />
+            <stop offset="75%" stopColor="#22c55e" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+          </linearGradient>
+          <filter id="fB" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="2.2" result="b" />
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="fG" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="2.2" result="b" />
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        {/* Grid lines + Y labels */}
+        {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
+          const y = paddingTop + chartHeight * r;
+          const v = Math.round(maxVal * (1 - r));
           return (
-            <g key={i} className="opacity-10">
-              <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y} stroke="white" strokeWidth="0.5" strokeDasharray="3 3" />
-              <text x={paddingLeft - 8} y={y + 4} fill="white" fontSize="9" textAnchor="end" className="font-mono">{val}</text>
+            <g key={i}>
+              <line x1={paddingLeft} y1={y} x2={width - paddingRight} y2={y}
+                stroke="white" strokeWidth={r === 0 ? 0.9 : 0.5}
+                strokeDasharray={r === 0 ? '' : '3.5 4'}
+                strokeOpacity={r === 0 ? 0.16 : 0.07}
+              />
+              <text x={paddingLeft - 5} y={y + 3.5} fill="white" fontSize="8"
+                textAnchor="end" fillOpacity="0.38" fontFamily="monospace" fontWeight="700">
+                {v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
+              </text>
             </g>
           );
         })}
 
-        {/* X Axis dates (only show 6 dates to avoid crowding) */}
+        {/* X axis labels */}
         {data.map((d, i) => {
           const step = Math.ceil(data.length / 6) || 1;
           if (i % step !== 0 && i !== data.length - 1) return null;
           const x = paddingLeft + (i / (data.length - 1 || 1)) * chartWidth;
           return (
-            <text key={i} x={x} y={height - 8} fill="white" fontSize="9" textAnchor="middle" className="opacity-40 font-semibold font-mono">
+            <text key={i} x={x} y={height - 7} fill="white" fontSize="8"
+              textAnchor="middle" fillOpacity="0.33" fontFamily="monospace" fontWeight="600">
               {d.displayDate}
             </text>
           );
         })}
 
-        {/* Views Area & Line */}
-        {viewsAreaPath && (
-          <path d={viewsAreaPath} fill="url(#viewsAreaGrad)" className="transition-all duration-300" />
-        )}
-        {viewsPath && (
-          <path d={viewsPath} fill="none" stroke="#3b82f6" strokeWidth="2" className="transition-all duration-300" />
-        )}
+        {/* Area fills */}
+        {areaV && <path d={areaV} fill="url(#gV)" />}
+        {areaC && <path d={areaC} fill="url(#gC)" />}
 
-        {/* Conversions Line */}
-        {convsPath && (
-          <path d={convsPath} fill="none" stroke="#22c55e" strokeWidth="2" className="transition-all duration-300" />
-        )}
+        {/* Smooth lines with glow */}
+        {lineV && <path d={lineV} fill="none" stroke="#60a5fa" strokeWidth="2.2"
+          strokeLinecap="round" filter="url(#fB)" />}
+        {lineC && <path d={lineC} fill="none" stroke="#34d399" strokeWidth="2.2"
+          strokeLinecap="round" filter="url(#fG)" />}
 
-        {/* Interactive hover overlays / pings */}
-        {pointsViews.map((pv, i) => {
-          const pc = pointsConvs[i];
-          const isHovered = hoveredPoint && hoveredPoint.index === i;
+        {/* Interactive points */}
+        {pV.map((p, i) => {
+          const pc2 = pC[i];
+          const on = hovered && hovered.i === i;
+          const colW = data.length > 1 ? chartWidth / (data.length - 1) : chartWidth;
           return (
             <g key={i}>
-              {/* Invisible touch/hover columns */}
-              <rect
-                x={pv.x - (chartWidth / (data.length - 1 || 1)) / 2}
-                y={paddingTop}
-                width={chartWidth / (data.length - 1 || 1)}
-                height={chartHeight}
-                fill="transparent"
-                onMouseEnter={() => setHoveredPoint({ index: i, x: pv.x, data: pv.data, yViews: pv.y, yConvs: pc.y })}
-                onMouseLeave={() => setHoveredPoint(null)}
-                className="cursor-crosshair"
+              <rect x={p.x - colW/2} y={paddingTop} width={colW} height={chartHeight}
+                fill="transparent" className="cursor-crosshair"
+                onMouseEnter={() => setHovered({ i, x: p.x, data: p.data, yV: p.y, yC: pc2.y })}
+                onMouseLeave={() => setHovered(null)}
               />
-              
-              {/* Highlight line on hover */}
-              {isHovered && (
-                <line x1={pv.x} y1={paddingTop} x2={pv.x} y2={height - paddingBottom} stroke="white" strokeWidth="0.5" className="opacity-30 pointer-events-none" />
+              {on && (
+                <line x1={p.x} y1={paddingTop} x2={p.x} y2={height - paddingBottom}
+                  stroke="white" strokeWidth="0.8" strokeDasharray="3 3" strokeOpacity="0.22"
+                  className="pointer-events-none" />
               )}
-
-              {/* Data dots on hover */}
-              {isHovered && (
-                <>
-                  <circle cx={pv.x} cy={pv.y} r="4" fill="#3b82f6" stroke="white" strokeWidth="1.5" className="pointer-events-none shadow" />
-                  <circle cx={pc.x} cy={pc.y} r="4" fill="#22c55e" stroke="white" strokeWidth="1.5" className="pointer-events-none shadow" />
-                </>
-              )}
+              {/* Views dot */}
+              <circle cx={p.x} cy={p.y} r={on ? 5.5 : 2.5} fill="#3b82f6"
+                stroke={on ? "white" : "rgba(59,130,246,0.35)"} strokeWidth={on ? 1.5 : 0.8}
+                filter={on ? "url(#fB)" : undefined}
+                className="pointer-events-none transition-all duration-150" />
+              {on && <circle cx={p.x} cy={p.y} r="10" fill="none"
+                stroke="#60a5fa" strokeWidth="0.7" strokeOpacity="0.28"
+                className="pointer-events-none" />}
+              {/* Conversions dot */}
+              <circle cx={pc2.x} cy={pc2.y} r={on ? 5.5 : 2.5} fill="#22c55e"
+                stroke={on ? "white" : "rgba(34,197,94,0.35)"} strokeWidth={on ? 1.5 : 0.8}
+                filter={on ? "url(#fG)" : undefined}
+                className="pointer-events-none transition-all duration-150" />
+              {on && <circle cx={pc2.x} cy={pc2.y} r="10" fill="none"
+                stroke="#34d399" strokeWidth="0.7" strokeOpacity="0.28"
+                className="pointer-events-none" />}
             </g>
           );
         })}
-
-        {/* Gradients */}
-        <defs>
-          <linearGradient id="viewsAreaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-          </linearGradient>
-        </defs>
       </svg>
 
-      {/* Tooltip Overlay */}
-      {hoveredPoint && (
-        <div 
-          className="absolute z-30 pointer-events-none bg-surface-high border border-white/10 rounded-xl p-3 shadow-2xl text-[11px] min-w-[120px] transition-all"
-          style={{ 
-            left: `${Math.min(80, Math.max(5, (hoveredPoint.x / width) * 100))}%`, 
-            top: `-20px` 
-          }}
-        >
-          <div className="font-bold text-white mb-1.5 border-b border-white/5 pb-1 font-mono">{hoveredPoint.data.displayDate}</div>
-          <div className="flex justify-between gap-4 text-on-surface-variant font-sans">
-            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Views:</span>
-            <span className="font-mono font-bold text-white">{hoveredPoint.data.views}</span>
+      {/* Tooltip */}
+      {hovered && (
+        <div className="absolute z-30 pointer-events-none backdrop-blur-2xl bg-[#0c0e18]/95 border border-white/10 rounded-2xl px-3.5 py-3 shadow-2xl text-[11px] min-w-[152px]"
+          style={{ left: `${Math.min(73, Math.max(5, (hovered.x / width) * 100))}%`, top: '-14px', transform: 'translateX(-50%)' }}>
+          <div className="font-mono text-[9.5px] tracking-widest uppercase text-white/40 font-bold mb-2 pb-1.5 border-b border-white/8">
+            {hovered.data.displayDate}
           </div>
-          <div className="flex justify-between gap-4 text-on-surface-variant font-sans">
-            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Vendas:</span>
-            <span className="font-mono font-bold text-white">{hoveredPoint.data.conversions}</span>
-          </div>
-          {(hoveredPoint.data.revenueUsd > 0 || hoveredPoint.data.revenueAoa > 0) && (
-            <div className="mt-1.5 border-t border-white/5 pt-1.5 space-y-0.5">
-              <span className="block text-[9px] uppercase tracking-wider text-gray-400 font-semibold">Receita Bruta:</span>
-              {hoveredPoint.data.revenueUsd > 0 && (
-                <div className="flex justify-between text-white font-mono font-bold text-[10px]">
-                  <span>USD:</span>
-                  <span>${hoveredPoint.data.revenueUsd.toFixed(2)}</span>
-                </div>
-              )}
-              {hoveredPoint.data.revenueAoa > 0 && (
-                <div className="flex justify-between text-green-400 font-mono font-bold text-[10px]">
-                  <span>AOA:</span>
-                  <span>Kz {hoveredPoint.data.revenueAoa.toLocaleString('pt-AO')}</span>
-                </div>
-              )}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center gap-5">
+              <span className="flex items-center gap-1.5 text-blue-300 font-semibold text-[10.5px]">
+                <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" style={{boxShadow:'0 0 6px #3b82f6'}} />
+                Views
+              </span>
+              <span className="font-mono font-bold text-white">{hovered.data.views.toLocaleString()}</span>
             </div>
-          )}
+            <div className="flex justify-between items-center gap-5">
+              <span className="flex items-center gap-1.5 text-emerald-300 font-semibold text-[10.5px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style={{boxShadow:'0 0 6px #22c55e'}} />
+                Vendas
+              </span>
+              <span className="font-mono font-bold text-white">{hovered.data.conversions.toLocaleString()}</span>
+            </div>
+            {(hovered.data.revenueUsd > 0 || hovered.data.revenueAoa > 0) && (
+              <div className="mt-2 pt-2 border-t border-white/8 space-y-1">
+                <span className="block text-[8.5px] uppercase tracking-widest text-white/25 font-bold mb-1">Receita</span>
+                {hovered.data.revenueUsd > 0 && (
+                  <div className="flex justify-between font-mono text-[10px]">
+                    <span className="text-white/40">USD</span>
+                    <span className="font-bold text-white">${hovered.data.revenueUsd.toFixed(2)}</span>
+                  </div>
+                )}
+                {hovered.data.revenueAoa > 0 && (
+                  <div className="flex justify-between font-mono text-[10px]">
+                    <span className="text-white/40">AOA</span>
+                    <span className="font-bold text-emerald-400">Kz {hovered.data.revenueAoa.toLocaleString('pt-AO')}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 }
-
 function CollaboratorAnalyticsPanel({ t }: { t: any }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -2308,10 +2333,10 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
       <div className="glass-panel rounded-2xl p-2.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 relative z-10">
         <div>
           <h3 className="text-sm font-bold text-white font-display">
-            {t('collaborator.analytics.title', 'Análise de Tráfego e Vendas')}
+            {t('collaborator.analytics.title', 'AnÃ¡lise de TrÃ¡fego e Vendas')}
           </h3>
           <p className="text-[10px] text-on-surface-variant mt-0.5">
-            {t('collaborator.analytics.description', 'Monitore as visitas, conversões e o faturamento total gerado pelas páginas de seus produtos.')}
+            {t('collaborator.analytics.description', 'Monitore as visitas, conversÃµes e o faturamento total gerado pelas pÃ¡ginas de seus produtos.')}
           </p>
         </div>
 
@@ -2336,7 +2361,7 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
           {/* Period selector */}
           <div className="flex flex-col gap-0.5">
             <span className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">
-              {t('collaborator.analytics.periodSelector', 'Período')}
+              {t('collaborator.analytics.periodSelector', 'PerÃ­odo')}
             </span>
             <div className="flex items-center gap-1 p-0.5 bg-surface-high rounded-xl border border-white/10">
               {(['7d', '30d', '90d'] as const).map(p => (
@@ -2359,11 +2384,11 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
 
       {loading && !summary ? (
         <div className="flex justify-center items-center py-12 text-on-surface-variant">
-          <RefreshCw size={16} className="animate-spin mr-2" /> {t('collaborator.analytics.loading', 'Carregando dados de análise...')}
+          <RefreshCw size={16} className="animate-spin mr-2" /> {t('collaborator.analytics.loading', 'Carregando dados de anÃ¡lise...')}
         </div>
       ) : error ? (
         <div className="glass-panel rounded-2xl p-6 border border-red-500/20 text-center text-red-400 text-sm">
-          {t('collaborator.analytics.errorLoading', 'Erro ao carregar análise. Tente novamente.')}
+          {t('collaborator.analytics.errorLoading', 'Erro ao carregar anÃ¡lise. Tente novamente.')}
         </div>
       ) : (
         <>
@@ -2377,11 +2402,11 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
                   <Eye size={13} />
                 </div>
                 <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 uppercase tracking-wider">
-                  {t('collaborator.tabAnalytics', 'Análise')}
+                  {t('collaborator.tabAnalytics', 'AnÃ¡lise')}
                 </span>
               </div>
               <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
-                {t('collaborator.analytics.views', 'Visualizações')}
+                {t('collaborator.analytics.views', 'VisualizaÃ§Ãµes')}
               </span>
               <span className="block text-base font-bold text-white font-mono">{summary?.totalViews ?? 0}</span>
             </div>
@@ -2394,11 +2419,11 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
                   <CheckCircle size={13} />
                 </div>
                 <span className="text-[9px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 uppercase tracking-wider">
-                  {t('collaborator.analytics.conversions', 'Conversões (Vendas)')}
+                  {t('collaborator.analytics.conversions', 'ConversÃµes (Vendas)')}
                 </span>
               </div>
               <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
-                {t('collaborator.analytics.conversions', 'Conversões (Vendas)')}
+                {t('collaborator.analytics.conversions', 'ConversÃµes (Vendas)')}
               </span>
               <span className="block text-base font-bold text-white font-mono">{summary?.totalConversions ?? 0}</span>
             </div>
@@ -2415,7 +2440,7 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
                 </span>
               </div>
               <span className="block text-[10px] font-semibold text-on-surface-variant mb-0.5">
-                {t('collaborator.analytics.conversionRate', 'Taxa de Conversão')}
+                {t('collaborator.analytics.conversionRate', 'Taxa de ConversÃ£o')}
               </span>
               <span className="block text-base font-bold text-white font-mono">
                 {Number(summary?.conversionRate || 0).toFixed(1)}%
@@ -2464,12 +2489,12 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
           {/* Chart Container */}
           <div className="glass-panel rounded-2xl p-2.5 border border-white/10 relative z-10">
             <h4 className="text-xs font-bold text-white font-display mb-2">
-              {t('collaborator.analytics.chartTitle', 'Tendência de Visitas e Conversões')}
+              {t('collaborator.analytics.chartTitle', 'TendÃªncia de Visitas e ConversÃµes')}
             </h4>
             
             {chartData.length === 0 ? (
               <div className="py-12 text-center text-on-surface-variant text-sm font-sans">
-                {t('collaborator.analytics.noData', 'Nenhum dado encontrado para este período.')}
+                {t('collaborator.analytics.noData', 'Nenhum dado encontrado para este perÃ­odo.')}
               </div>
             ) : (
               <div className="space-y-4">
@@ -2479,11 +2504,11 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
                 <div className="flex justify-center gap-6 pt-2 text-xs font-semibold">
                   <div className="flex items-center gap-1.5 text-blue-400">
                     <span className="w-3 h-1.5 rounded-full bg-blue-500" />
-                    <span>{t('collaborator.analytics.views', 'Visualizações')}</span>
+                    <span>{t('collaborator.analytics.views', 'VisualizaÃ§Ãµes')}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-green-400">
                     <span className="w-3 h-1.5 rounded-full bg-green-500" />
-                    <span>{t('collaborator.analytics.conversions', 'Conversões (Vendas)')}</span>
+                    <span>{t('collaborator.analytics.conversions', 'ConversÃµes (Vendas)')}</span>
                   </div>
                 </div>
               </div>

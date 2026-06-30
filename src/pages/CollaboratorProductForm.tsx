@@ -944,21 +944,21 @@ export function CollaboratorProductForm({
   };
 
   return (
-    <div className="text-white font-sans w-full h-full flex flex-col overflow-hidden">
-      <div className="p-4 sm:p-6 shrink-0 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/10">
+    <div className="text-white font-sans w-full h-screen max-h-screen flex flex-col overflow-hidden">
+      <div className="p-2 sm:p-3 shrink-0 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-white font-display">
+          <h2 className="text-base sm:text-lg font-bold text-white font-display">
             {productId ? 'Editar Produto' : 'Adicionar Novo Produto'}
           </h2>
-          <p className="text-[10px] sm:text-xs text-on-surface-variant mt-0.5 sm:mt-1">
+          <p className="text-[9px] sm:text-[10px] text-on-surface-variant mt-0.5">
             Os produtos salvos serão enviados como rascunhos para aprovação da administração.
           </p>
         </div>
-        <div className="flex items-center gap-2.5 sm:gap-3 self-end sm:self-center">
+        <div className="flex items-center gap-2 self-end sm:self-center">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-on-surface transition-all cursor-pointer whitespace-nowrap"
+            className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-on-surface transition-all cursor-pointer whitespace-nowrap"
           >
             Sair sem Salvar
           </button>
@@ -966,11 +966,11 @@ export function CollaboratorProductForm({
             type="submit"
             form="product-form"
             disabled={loading}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
           >
             {loading ? (
-              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
-            ) : <Save size={13} />}
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+            ) : <Save size={12} />}
             <span>Salvar Rascunho</span>
           </button>
         </div>
@@ -985,17 +985,17 @@ export function CollaboratorProductForm({
 
       {/* Tabs navigation */}
       <div 
-        className="px-4 py-2 shrink-0 border-b border-white/10 flex flex-row overflow-x-auto whitespace-nowrap bg-surface-container/10 gap-1.5 scrollbar-none flex-nowrap"
+        className="px-2 py-1 shrink-0 border-b border-white/10 flex flex-row overflow-x-auto whitespace-nowrap bg-surface-container/10 gap-1 scrollbar-none flex-nowrap"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <button
           type="button"
           onClick={() => setActiveTab('details')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'details' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Info size={14} className="inline mr-1.5" /> Detalhes & Preços
+          <Info size={13} className="inline mr-1" /> Detalhes & Preços
         </button>
 
         {(() => {
@@ -1020,11 +1020,11 @@ export function CollaboratorProductForm({
                   alert('Por favor, salve os detalhes básicos do produto primeiro antes de editar a grade curricular.');
                 }
               }}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === 'curriculum' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
               } ${!productId ? 'opacity-50' : ''}`}
             >
-              <BookOpen size={14} className="inline mr-1.5" /> Grade Curricular {!productId && '(Salvar 1º)'}
+              <BookOpen size={13} className="inline mr-1" /> Grade Curricular {!productId && '(Salvar 1º)'}
             </button>
           );
         })()}
@@ -1032,80 +1032,80 @@ export function CollaboratorProductForm({
         <button
           type="button"
           onClick={() => setActiveTab('sections')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'sections' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Layers size={14} className="inline mr-1.5" /> Seções Extras
+          <Layers size={13} className="inline mr-1" /> Seções Extras
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('campaigns')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'campaigns' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Gift size={14} className="inline mr-1.5" /> Campanhas
+          <Gift size={13} className="inline mr-1" /> Campanhas
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('coupons')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'coupons' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Tag size={14} className="inline mr-1.5" /> Cupons
+          <Tag size={13} className="inline mr-1" /> Cupons
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('faqs')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'faqs' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Globe size={14} className="inline mr-1.5" /> FAQs
+          <Globe size={13} className="inline mr-1" /> FAQs
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('bonuses')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'bonuses' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Award size={14} className="inline mr-1.5" /> Bônus
+          <Award size={13} className="inline mr-1" /> Bônus
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('benefits')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'benefits' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <ListFilter size={14} className="inline mr-1.5" /> Vantagens
+          <ListFilter size={13} className="inline mr-1" /> Vantagens
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('translations')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'translations' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Globe2 size={14} className="inline mr-1.5" /> Traduções
+          <Globe2 size={13} className="inline mr-1" /> Traduções
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('theme')}
-          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
             activeTab === 'theme' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
           }`}
         >
-          <Video size={14} className="inline mr-1.5" /> Tema 3D
+          <Video size={13} className="inline mr-1" /> Tema 3D
         </button>
       </div>
 
       <form id="product-form" onSubmit={handleSave} className="flex-grow flex flex-col overflow-hidden min-h-0">
-        <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex-grow overflow-y-auto p-2 sm:p-3 space-y-3 sm:space-y-4">
           {activeTab === 'details' && (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Lado Esquerdo: Metadados */}
@@ -2479,12 +2479,12 @@ export function CollaboratorProductForm({
 
         {/* Theme Editor tab */}
         {activeTab === 'theme' && (
-          <div className="space-y-6">
-            <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-3">
+            <div className="glass-panel p-3 rounded-xl border border-white/10 space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-lg font-bold text-white font-display">Tema Visual da Página de Vendas</h3>
-                  <p className="text-xs text-on-surface-variant mt-1">
+                  <h3 className="text-sm font-bold text-white font-display">Tema Visual da Página de Vendas</h3>
+                  <p className="text-[10px] text-on-surface-variant mt-0.5">
                     Selecione um tema de fundo dinâmico para a página do seu produto. Temas de vídeo interativos reagem dinamicamente à rolagem da tela (scroll scrubbing) para criar uma experiência cinematográfica incrível.
                   </p>
                 </div>
@@ -2492,9 +2492,9 @@ export function CollaboratorProductForm({
                   <button
                     type="button"
                     onClick={() => setShowPreview(true)}
-                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white transition-all shadow-md active:scale-95 shrink-0 self-start sm:self-center"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-white transition-all shadow-md active:scale-95 shrink-0 self-start sm:self-center"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-3.5 h-3.5" />
                     Visualizar Prévia
                   </button>
                 )}
@@ -2510,11 +2510,11 @@ export function CollaboratorProductForm({
               />
 
               {themeVideoPath && (
-                <div className="pt-4 border-t border-white/10 space-y-6">
+                <div className="pt-2 border-t border-white/10 space-y-3">
                   {/* Controles de Visibilidade e Opacidade */}
-                  <div className="grid gap-6 sm:grid-cols-2 bg-white/5 p-4 rounded-xl border border-white/5">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                  <div className="grid gap-3 sm:grid-cols-2 bg-white/5 p-2 rounded-lg border border-white/5">
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
                         <span>Opacidade do Vídeo</span>
                         <span className="text-primary font-mono">{Math.round(themeVideoConfig.videoOpacity * 100)}%</span>
                       </div>
@@ -2527,11 +2527,11 @@ export function CollaboratorProductForm({
                         onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, videoOpacity: Number(e.target.value) }))}
                         className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
-                      <span className="block text-[10px] text-on-surface-variant">Controla quão visível o vídeo de fundo fica na página.</span>
+                      <span className="block text-[9px] text-on-surface-variant">Controla quão visível o vídeo de fundo fica na página.</span>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
                         <span>Escuridão da Máscara (Overlay)</span>
                         <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
                       </div>
@@ -2544,11 +2544,11 @@ export function CollaboratorProductForm({
                         onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
                         className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
-                      <span className="block text-[10px] text-on-surface-variant">Controla a escuridão do filtro sobre o vídeo de fundo para garantir contraste do texto.</span>
+                      <span className="block text-[9px] text-on-surface-variant">Controla a escuridão do filtro sobre o vídeo de fundo para garantir contraste do texto.</span>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
                         <span>Opacidade dos Painéis (Glassmorphism)</span>
                         <span className="text-primary font-mono">{Math.round(themeVideoConfig.sectionOpacity * 100)}%</span>
                       </div>
@@ -2561,11 +2561,11 @@ export function CollaboratorProductForm({
                         onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, sectionOpacity: Number(e.target.value) }))}
                         className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
-                      <span className="block text-[10px] text-on-surface-variant">Controla a opacidade dos painéis (menor opacidade = componentes mais invisíveis/transparentes).</span>
+                      <span className="block text-[9px] text-on-surface-variant">Controla a opacidade dos painéis (menor opacidade = componentes mais invisíveis/transparentes).</span>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-xs font-semibold text-white">
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
                         <span>Intensidade do Desfoque (Blur)</span>
                         <span className="text-primary font-mono">{themeVideoConfig.blurAmount}px</span>
                       </div>
@@ -2578,13 +2578,13 @@ export function CollaboratorProductForm({
                         onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, blurAmount: Number(e.target.value) }))}
                         className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                       />
-                      <span className="block text-[10px] text-on-surface-variant">Intensidade do desfoque dos painéis com efeito de vidro fosco.</span>
+                      <span className="block text-[9px] text-on-surface-variant">Intensidade do desfoque dos painéis com efeito de vidro fosco.</span>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <span className="block text-xs font-semibold text-white">Prévia do Vídeo de Fundo</span>
-                    <div className="aspect-video w-full max-w-md rounded-xl overflow-hidden bg-black border border-white/10 relative">
+                  <div className="space-y-1">
+                    <span className="block text-[11px] font-semibold text-white">Prévia do Vídeo de Fundo</span>
+                    <div className="aspect-video w-full max-w-[240px] rounded-lg overflow-hidden bg-black border border-white/10 relative">
                       <video 
                         src={`/${themeVideoPath}`} 
                         className="w-full h-full object-cover" 
@@ -2640,7 +2640,7 @@ export function CollaboratorProductForm({
                 Modo de Visualização Prévia do Tema
               </span>
               <h1 className="text-3xl md:text-4xl font-extrabold text-white font-display">
-                {name || 'Nome do seu Produto'}
+                {title || 'Nome do seu Produto'}
               </h1>
               <p className="text-sm text-on-surface-variant max-w-2xl leading-relaxed">
                 {description || 'Esta é uma prévia da descrição do seu produto. Configure as propriedades de opacidade e desfoque nos sliders ao lado e observe como elas alteram o estilo deste painel em tempo real. Role a página para testar a sincronização de rolagem do vídeo.'}
@@ -2668,7 +2668,7 @@ export function CollaboratorProductForm({
                 <div className="glass-panel p-6 rounded-2xl border border-white/10 text-center space-y-4 font-sans">
                   <span className="text-xs text-on-surface-variant">Acesso Vitalício</span>
                   <div className="text-3xl font-extrabold text-white font-display">
-                    {price ? `${price} AOA` : 'Preço do Produto'}
+                    {priceAOA ? `${priceAOA} AOA` : 'Preço do Produto'}
                   </div>
                   <button type="button" className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-lg transition-all active:scale-[0.98]">
                     Inscrever-se Agora
