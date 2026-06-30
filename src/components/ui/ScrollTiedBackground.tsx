@@ -4,14 +4,18 @@ interface ScrollTiedBackgroundProps {
   videoPath: string;
   videoOpacity?: number;
   overlayOpacity?: number;
+  brightness?: number;
+  contrast?: number;
   backgroundStyle?: string;
 }
 
-export function ScrollTiedBackground({ 
+export function ScrollTiedBackground({
   videoPath,
   videoOpacity = 0.25,
   overlayOpacity = 0.7,
-  backgroundStyle
+  brightness = 1.0,
+  contrast = 1.0,
+  backgroundStyle,
 }: ScrollTiedBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const requestRef = useRef<number | null>(null);
@@ -93,11 +97,14 @@ export function ScrollTiedBackground({
 
   const isColorTheme = videoPath.startsWith('color:');
 
+  // Build video CSS filter from brightness & contrast
+  const videoFilter = `brightness(${brightness}) contrast(${contrast})`;
+
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none select-none overflow-hidden z-0 bg-black">
       {isColorTheme ? (
-        <div 
-          style={{ background: backgroundStyle }} 
+        <div
+          style={{ background: backgroundStyle }}
           className="w-full h-full"
         />
       ) : (
@@ -110,15 +117,18 @@ export function ScrollTiedBackground({
           playsInline
           webkit-playsinline="true"
           onLoadedMetadata={() => setIsLoaded(true)}
-          style={{ opacity: isLoaded ? videoOpacity : 0 }}
+          style={{
+            opacity: isLoaded ? videoOpacity : 0,
+            filter: videoFilter,
+          }}
           className="w-full h-full object-cover transition-opacity duration-700"
         />
       )}
       {/* Dark gradient mask to ensure text readability */}
       {!isColorTheme && (
-        <div 
+        <div
           style={{ opacity: overlayOpacity }}
-          className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/95 z-1" 
+          className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/95 z-1"
         />
       )}
     </div>

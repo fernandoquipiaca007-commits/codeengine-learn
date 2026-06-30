@@ -5,7 +5,7 @@ import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
-import { ShaderCanvas, DEFAULT_SHADER_CONFIG, ShaderConfig } from '../components/ui/ShaderCanvas';
+
 import { Product as ProductPage } from './Product';
 import { useUserCountry } from '../contexts/UserCountryContext';
 import { useLocale } from '../contexts/LocaleContext';
@@ -311,10 +311,13 @@ export function CollaboratorProductForm({
     videoOpacity: 0.25,
     overlayOpacity: 0.7,
     sectionOpacity: 0.1,
-    blurAmount: 8
+    blurAmount: 8,
+    brightness: 1.0,
+    contrast: 1.0,
   });
-  const [shaderConfig, setShaderConfig] = useState<ShaderConfig>(DEFAULT_SHADER_CONFIG);
+
   const [showPreview, setShowPreview] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [themeSaving, setThemeSaving] = useState(false);
   const [themeSaved, setThemeSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
@@ -535,11 +538,13 @@ export function CollaboratorProductForm({
           setCtaText(prod.cta_text || 'Comprar Agora');
           setThemeVideoPath(prod.theme_video_path || '');
           if (prod.theme_video_config) {
-            setThemeVideoConfig({
+          setThemeVideoConfig({
               videoOpacity: prod.theme_video_config.videoOpacity ?? 0.25,
               overlayOpacity: prod.theme_video_config.overlayOpacity ?? 0.7,
               sectionOpacity: prod.theme_video_config.sectionOpacity ?? 0.1,
-              blurAmount: prod.theme_video_config.blurAmount ?? 8
+              blurAmount: prod.theme_video_config.blurAmount ?? 8,
+              brightness: prod.theme_video_config.brightness ?? 1.0,
+              contrast: prod.theme_video_config.contrast ?? 1.0,
             });
           }
 
@@ -2465,93 +2470,106 @@ export function CollaboratorProductForm({
                 currentConfig={themeVideoConfig}
                 onSelectPreset={(preset) => {
                   setThemeVideoPath(preset.videoPath);
-                  setThemeVideoConfig(preset.config);
+                  setThemeVideoConfig(prev => ({
+                    ...prev,
+                    ...preset.config,
+                    brightness: preset.config.brightness ?? prev.brightness ?? 1.0,
+                    contrast: preset.config.contrast ?? prev.contrast ?? 1.0,
+                  }));
                 }}
               />
 
               {themeVideoPath && (
-                <div className="pt-2 border-t border-white/10 space-y-3">
-                  {/* Controles de Visibilidade e Opacidade */}
-                  <div className="grid gap-3 sm:grid-cols-2 bg-white/5 p-2 rounded-lg border border-white/5">
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
-                        <span>Opacidade do Vídeo</span>
-                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.videoOpacity * 100)}%</span>
+                <div className="pt-2 border-t border-white/10 space-y-4">
+                  {/* Group 1 - Fundo */}
+                  <div>
+                    <span className="text-[10px] font-bold text-primary/70 uppercase tracking-wider">Fundo (Vídeo)</span>
+                    <div className="grid gap-3 sm:grid-cols-2 mt-1.5 bg-white/5 p-2.5 rounded-lg border border-white/5">
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-white">
+                          <span>Visibilidade do Vídeo</span>
+                          <span className="text-primary font-mono">{Math.round(themeVideoConfig.videoOpacity * 100)}%</span>
+                        </div>
+                        <input type="range" min="0.05" max="1" step="0.05"
+                          value={themeVideoConfig.videoOpacity}
+                          onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, videoOpacity: Number(e.target.value) }))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="block text-[9px] text-on-surface-variant">Mais alto = vídeo mais evidente no fundo.</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="0.05" 
-                        max="1" 
-                        step="0.05" 
-                        value={themeVideoConfig.videoOpacity}
-                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, videoOpacity: Number(e.target.value) }))}
-                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                      />
-                      <span className="block text-[9px] text-on-surface-variant">Controla quão visível o vídeo de fundo fica na página.</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
-                        <span>Escuridão da Máscara (Overlay)</span>
-                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-white">
+                          <span>Máscara Escura (Overlay)</span>
+                          <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
+                        </div>
+                        <input type="range" min="0" max="0.95" step="0.05"
+                          value={themeVideoConfig.overlayOpacity}
+                          onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="block text-[9px] text-on-surface-variant">Filtro escuro sobre o vídeo — garante contraste do texto.</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="0.95" 
-                        step="0.05" 
-                        value={themeVideoConfig.overlayOpacity}
-                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
-                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                      />
-                      <span className="block text-[9px] text-on-surface-variant">Controla a escuridão do filtro sobre o vídeo de fundo para garantir contraste do texto.</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
-                        <span>Opacidade dos Painéis (Glassmorphism)</span>
-                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.sectionOpacity * 100)}%</span>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-white">
+                          <span>Brilho do Fundo</span>
+                          <span className="text-primary font-mono">{Math.round(themeVideoConfig.brightness * 100)}%</span>
+                        </div>
+                        <input type="range" min="0.2" max="2" step="0.05"
+                          value={themeVideoConfig.brightness}
+                          onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, brightness: Number(e.target.value) }))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="block text-[9px] text-on-surface-variant">Luminosidade geral do vídeo de fundo.</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="0.02" 
-                        max="0.5" 
-                        step="0.01" 
-                        value={themeVideoConfig.sectionOpacity}
-                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, sectionOpacity: Number(e.target.value) }))}
-                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                      />
-                      <span className="block text-[9px] text-on-surface-variant">Controla a opacidade dos painéis (menor opacidade = componentes mais invisíveis/transparentes).</span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[11px] font-semibold text-white">
-                        <span>Intensidade do Desfoque (Blur)</span>
-                        <span className="text-primary font-mono">{themeVideoConfig.blurAmount}px</span>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-white">
+                          <span>Contraste do Fundo</span>
+                          <span className="text-primary font-mono">{Math.round(themeVideoConfig.contrast * 100)}%</span>
+                        </div>
+                        <input type="range" min="0.5" max="2" step="0.05"
+                          value={themeVideoConfig.contrast}
+                          onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, contrast: Number(e.target.value) }))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="block text-[9px] text-on-surface-variant">Cores mais intensas vs. mais suaves no fundo.</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="24" 
-                        step="1" 
-                        value={themeVideoConfig.blurAmount}
-                        onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, blurAmount: Number(e.target.value) }))}
-                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                      />
-                      <span className="block text-[9px] text-on-surface-variant">Intensidade do desfoque dos painéis com efeito de vidro fosco.</span>
                     </div>
                   </div>
-
+                  {/* Group 2 - Painéis */}
+                  <div>
+                    <span className="text-[10px] font-bold text-primary/70 uppercase tracking-wider">Painéis (Glassmorphism)</span>
+                    <div className="grid gap-3 sm:grid-cols-2 mt-1.5 bg-white/5 p-2.5 rounded-lg border border-white/5">
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-white">
+                          <span>Opacidade dos Painéis</span>
+                          <span className="text-primary font-mono">{Math.round(themeVideoConfig.sectionOpacity * 100)}%</span>
+                        </div>
+                        <input type="range" min="0.02" max="0.5" step="0.01"
+                          value={themeVideoConfig.sectionOpacity}
+                          onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, sectionOpacity: Number(e.target.value) }))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="block text-[9px] text-on-surface-variant">Menor = mais transparente; maior = mais opaco.</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-white">
+                          <span>Desfoque dos Painéis</span>
+                          <span className="text-primary font-mono">{themeVideoConfig.blurAmount}px</span>
+                        </div>
+                        <input type="range" min="0" max="24" step="1"
+                          value={themeVideoConfig.blurAmount}
+                          onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, blurAmount: Number(e.target.value) }))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="block text-[9px] text-on-surface-variant">Efeito de vidro fosco nos painéis sobrepostos.</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Video preview thumbnail */}
                   <div className="space-y-1">
-                    <span className="block text-[11px] font-semibold text-white">Prévia do Vídeo de Fundo</span>
-                    <div className="aspect-video w-full max-w-[240px] rounded-lg overflow-hidden bg-black border border-white/10 relative">
-                      <video 
-                        src={`/${themeVideoPath}`} 
-                        className="w-full h-full object-cover" 
-                        controls 
-                        muted
-                        playsInline
-                      />
+                    <span className="block text-[11px] font-semibold text-white">Pré-visualização do Vídeo</span>
+                    <div className="aspect-video w-full max-w-[240px] rounded-lg overflow-hidden bg-black border border-white/10">
+                      <video src={`/${themeVideoPath}`} className="w-full h-full object-cover" controls muted playsInline />
                     </div>
                   </div>
                 </div>
@@ -2566,11 +2584,13 @@ export function CollaboratorProductForm({
 
       {showPreview && (
         <div className="fixed inset-0 w-full h-full z-[100] bg-black overflow-y-auto font-sans">
-          {/* Live Background */}
+          {/* Live Background — 100% same as real page */}
           <ScrollTiedBackground
             videoPath={themeVideoPath}
             videoOpacity={themeVideoConfig.videoOpacity}
             overlayOpacity={themeVideoConfig.overlayOpacity}
+            brightness={themeVideoConfig.brightness}
+            contrast={themeVideoConfig.contrast}
             backgroundStyle={(themeVideoConfig as any).backgroundStyle}
           />
           
@@ -2584,185 +2604,154 @@ export function CollaboratorProductForm({
           </button>
 
           {/* ── Floating Controls Panel ── */}
-          <div className="fixed top-4 right-4 z-[110] w-64 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+          {/* On mobile: bottom sheet; on desktop: right sidebar */}
+          <div className={`fixed z-[110] transition-all duration-300
+            md:top-4 md:right-4 md:bottom-auto md:left-auto md:w-64
+            bottom-0 left-0 right-0 md:rounded-2xl rounded-t-2xl
+            bg-black/85 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden`}
+          >
             {/* Header */}
-            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between gap-2">
+            <div className="px-3 py-2.5 border-b border-white/10 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
-                  <span className="text-primary text-[10px] font-black">3D</span>
+                <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center shrink-0">
+                  <span className="text-primary text-[9px] font-black">3D</span>
                 </div>
                 <span className="text-white text-xs font-bold tracking-wide font-display uppercase">Tema Visual</span>
               </div>
-              {/* Save Theme Button */}
-              {productId && (
+              <div className="flex items-center gap-1.5">
+                {/* Collapse toggle (visible on mobile too) */}
                 <button
                   type="button"
-                  onClick={handleSaveTheme}
-                  disabled={themeSaving}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-bold transition-all active:scale-95 disabled:opacity-60"
+                  onClick={() => setPanelCollapsed(c => !c)}
+                  className="flex items-center justify-center w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                  title={panelCollapsed ? 'Expandir painel' : 'Recolher painel'}
                 >
-                  {themeSaving ? (
-                    <span className="w-3 h-3 border-2 border-black/40 border-t-black rounded-full animate-spin" />
-                  ) : themeSaved ? (
-                    <>
-                      <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      Salvo!
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-3 h-3" />
-                      Guardar
-                    </>
-                  )}
+                  <svg viewBox="0 0 24 24" className={`w-3.5 h-3.5 transition-transform duration-200 ${panelCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
                 </button>
-              )}
-            </div>
-
-            {/* Shader preview strip */}
-            <div className="h-20 w-full relative">
-              <ShaderCanvas config={shaderConfig} className="absolute inset-0" />
-            </div>
-
-            {/* Controls */}
-            <div className="p-3 space-y-3 max-h-[calc(100vh-240px)] overflow-y-auto">
-
-              {/* Overlay escuridão (texto sempre legível) */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-semibold text-white">
-                  <span>Escuridão da Sobreposição</span>
-                  <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
-                </div>
-                <input type="range" min="0.4" max="0.95" step="0.05"
-                  value={themeVideoConfig.overlayOpacity}
-                  onChange={e => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
-                  className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
-                />
-                <span className="text-[9px] text-on-surface-variant">Mín. 40% para garantir legibilidade.</span>
-              </div>
-
-              {/* Painéis (glassmorphism) */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-semibold text-white">
-                  <span>Opacidade dos Painéis</span>
-                  <span className="text-primary font-mono">{Math.round(themeVideoConfig.sectionOpacity * 100)}%</span>
-                </div>
-                <input type="range" min="0.02" max="0.5" step="0.01"
-                  value={themeVideoConfig.sectionOpacity}
-                  onChange={e => setThemeVideoConfig(prev => ({ ...prev, sectionOpacity: Number(e.target.value) }))}
-                  className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
-                />
-              </div>
-
-              {/* Blur dos painéis */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-semibold text-white">
-                  <span>Desfoque dos Painéis</span>
-                  <span className="text-primary font-mono">{themeVideoConfig.blurAmount}px</span>
-                </div>
-                <input type="range" min="0" max="24" step="1"
-                  value={themeVideoConfig.blurAmount}
-                  onChange={e => setThemeVideoConfig(prev => ({ ...prev, blurAmount: Number(e.target.value) }))}
-                  className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
-                />
-              </div>
-
-              <div className="border-t border-white/10 pt-2">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-wide">Efeito 3D Shader</span>
-              </div>
-
-              {/* Intensidade Glitch */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-semibold text-white">
-                  <span>Intensidade Glitch</span>
-                  <span className="text-primary font-mono">{Math.round(shaderConfig.glitchIntensity * 100)}%</span>
-                </div>
-                <input type="range" min="0" max="1" step="0.05"
-                  value={shaderConfig.glitchIntensity}
-                  onChange={e => setShaderConfig(prev => ({ ...prev, glitchIntensity: Number(e.target.value) }))}
-                  className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
-                />
-              </div>
-
-              {/* RGB Shift */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-semibold text-white">
-                  <span>Deslocamento RGB</span>
-                  <span className="text-primary font-mono">{Math.round(shaderConfig.rgbShift * 100)}%</span>
-                </div>
-                <input type="range" min="0" max="1" step="0.05"
-                  value={shaderConfig.rgbShift}
-                  onChange={e => setShaderConfig(prev => ({ ...prev, rgbShift: Number(e.target.value) }))}
-                  className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
-                />
-              </div>
-
-              {/* Scanlines */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-semibold text-white">
-                  <span>Densidade Scanlines</span>
-                  <span className="text-primary font-mono">{shaderConfig.scanlineDensity}</span>
-                </div>
-                <input type="range" min="10" max="200" step="10"
-                  value={shaderConfig.scanlineDensity}
-                  onChange={e => setShaderConfig(prev => ({ ...prev, scanlineDensity: Number(e.target.value) }))}
-                  className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
-                />
-              </div>
-
-              {/* Opacidade Scanlines */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[10px] font-semibold text-white">
-                  <span>Opacidade Scanlines</span>
-                  <span className="text-primary font-mono">{Math.round(shaderConfig.scanlineOpacity * 100)}%</span>
-                </div>
-                <input type="range" min="0" max="1" step="0.05"
-                  value={shaderConfig.scanlineOpacity}
-                  onChange={e => setShaderConfig(prev => ({ ...prev, scanlineOpacity: Number(e.target.value) }))}
-                  className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
-                />
-              </div>
-
-              {/* Cor Base */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-semibold text-white">Cor Base do Shader</span>
-                <div className="flex gap-2 items-center">
-                  <input
-                    type="color"
-                    value={`#${Math.round(shaderConfig.baseColor[0] * 255).toString(16).padStart(2,'0')}${Math.round(shaderConfig.baseColor[1] * 255).toString(16).padStart(2,'0')}${Math.round(shaderConfig.baseColor[2] * 255).toString(16).padStart(2,'0')}`}
-                    onChange={e => {
-                      const hex = e.target.value;
-                      const r = parseInt(hex.slice(1,3), 16) / 255;
-                      const g = parseInt(hex.slice(3,5), 16) / 255;
-                      const b = parseInt(hex.slice(5,7), 16) / 255;
-                      setShaderConfig(prev => ({ ...prev, baseColor: [r, g, b] }));
-                    }}
-                    className="w-8 h-8 rounded cursor-pointer border border-white/10 bg-transparent p-0.5"
-                  />
-                  <span className="text-[9px] text-on-surface-variant">Clique para abrir o seletor de cor</span>
-                </div>
-              </div>
-
-              {/* Presets rápidos */}
-              <div className="border-t border-white/10 pt-2 space-y-1">
-                <span className="text-[10px] font-bold text-white uppercase tracking-wide">Presets</span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { label: 'Digital', cfg: DEFAULT_SHADER_CONFIG },
-                    { label: 'Sutil', cfg: { glitchIntensity: 0.05, rgbShift: 0.1, scanlineDensity: 40, scanlineOpacity: 0.2, baseColor: [0.58, 0.60, 1.0] as [number,number,number] } },
-                    { label: 'Cyberpunk', cfg: { glitchIntensity: 0.8, rgbShift: 0.9, scanlineDensity: 120, scanlineOpacity: 0.8, baseColor: [1.0, 0.1, 0.6] as [number,number,number] } },
-                    { label: 'VCR', cfg: { glitchIntensity: 0.5, rgbShift: 0.3, scanlineDensity: 60, scanlineOpacity: 0.9, baseColor: [0.5, 1.0, 0.5] as [number,number,number] } },
-                  ].map(p => (
-                    <button key={p.label} type="button"
-                      onClick={() => setShaderConfig(p.cfg)}
-                      className="px-2 py-1 rounded-lg text-[10px] font-semibold border border-white/10 hover:border-primary/40 hover:bg-primary/10 text-white transition-all"
-                    >{p.label}</button>
-                  ))}
-                </div>
+                {/* Save Theme Button */}
+                {productId && (
+                  <button
+                    type="button"
+                    onClick={handleSaveTheme}
+                    disabled={themeSaving}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-bold transition-all active:scale-95 disabled:opacity-60"
+                  >
+                    {themeSaving ? (
+                      <span className="w-3 h-3 border-2 border-black/40 border-t-black rounded-full animate-spin" />
+                    ) : themeSaved ? (
+                      <>
+                        <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Salvo!
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-3 h-3" />
+                        Guardar
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
+
+            {/* Collapsible Controls Body */}
+            {!panelCollapsed && (
+              <div className="p-3 space-y-3 max-h-[50vh] md:max-h-[calc(100vh-130px)] overflow-y-auto">
+
+                {/* ── Group: Fundo ── */}
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-bold text-primary/70 uppercase tracking-widest">Fundo (Vídeo)</span>
+                  <div className="space-y-2 pt-1">
+                    {/* Visibilidade */}
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between text-[10px] font-semibold text-white">
+                        <span>Visibilidade do Vídeo</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.videoOpacity * 100)}%</span>
+                      </div>
+                      <input type="range" min="0.05" max="1" step="0.05"
+                        value={themeVideoConfig.videoOpacity}
+                        onChange={e => setThemeVideoConfig(prev => ({ ...prev, videoOpacity: Number(e.target.value) }))}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
+                      />
+                    </div>
+                    {/* Overlay */}
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between text-[10px] font-semibold text-white">
+                        <span>Máscara Escura</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.overlayOpacity * 100)}%</span>
+                      </div>
+                      <input type="range" min="0" max="0.95" step="0.05"
+                        value={themeVideoConfig.overlayOpacity}
+                        onChange={e => setThemeVideoConfig(prev => ({ ...prev, overlayOpacity: Number(e.target.value) }))}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
+                      />
+                      <span className="text-[9px] text-on-surface-variant">Mín. 40% para garantir legibilidade.</span>
+                    </div>
+                    {/* Brilho */}
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between text-[10px] font-semibold text-white">
+                        <span>Brilho do Fundo</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.brightness * 100)}%</span>
+                      </div>
+                      <input type="range" min="0.2" max="2" step="0.05"
+                        value={themeVideoConfig.brightness}
+                        onChange={e => setThemeVideoConfig(prev => ({ ...prev, brightness: Number(e.target.value) }))}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
+                      />
+                    </div>
+                    {/* Contraste */}
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between text-[10px] font-semibold text-white">
+                        <span>Contraste do Fundo</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.contrast * 100)}%</span>
+                      </div>
+                      <input type="range" min="0.5" max="2" step="0.05"
+                        value={themeVideoConfig.contrast}
+                        onChange={e => setThemeVideoConfig(prev => ({ ...prev, contrast: Number(e.target.value) }))}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Group: Painéis ── */}
+                <div className="border-t border-white/10 pt-2 space-y-0.5">
+                  <span className="text-[9px] font-bold text-primary/70 uppercase tracking-widest">Painéis (Glassmorphism)</span>
+                  <div className="space-y-2 pt-1">
+                    {/* Opacidade Painéis */}
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between text-[10px] font-semibold text-white">
+                        <span>Opacidade dos Painéis</span>
+                        <span className="text-primary font-mono">{Math.round(themeVideoConfig.sectionOpacity * 100)}%</span>
+                      </div>
+                      <input type="range" min="0.02" max="0.5" step="0.01"
+                        value={themeVideoConfig.sectionOpacity}
+                        onChange={e => setThemeVideoConfig(prev => ({ ...prev, sectionOpacity: Number(e.target.value) }))}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
+                      />
+                    </div>
+                    {/* Blur Painéis */}
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between text-[10px] font-semibold text-white">
+                        <span>Desfoque dos Painéis</span>
+                        <span className="text-primary font-mono">{themeVideoConfig.blurAmount}px</span>
+                      </div>
+                      <input type="range" min="0" max="24" step="1"
+                        value={themeVideoConfig.blurAmount}
+                        onChange={e => setThemeVideoConfig(prev => ({ ...prev, blurAmount: Number(e.target.value) }))}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
           </div>
-          
-          {/* Real Product Page Preview */}
+
+          {/* Real Product Page Preview — same CSS vars as production */}
           <div
             style={{
               '--glass-opacity': themeVideoConfig.sectionOpacity,

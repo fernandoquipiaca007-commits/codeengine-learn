@@ -11,6 +11,8 @@ export interface ThemePreset {
     overlayOpacity: number;
     sectionOpacity: number;
     blurAmount: number;
+    brightness?: number;
+    contrast?: number;
     backgroundStyle?: string;
     textColor?: string;
     accentColor?: string;
@@ -89,7 +91,7 @@ const generatedPresets: ThemePreset[] = VIDEO_FILES.map(file => {
     name: formattedName + " 3D",
     description: `Vídeo 3D interativo loop "${formattedName}".`,
     videoPath: `temas/${file}`,
-    config: { videoOpacity: 0.25, overlayOpacity: 0.70, sectionOpacity: 0.10, blurAmount: 8 },
+    config: { videoOpacity: 0.25, overlayOpacity: 0.70, sectionOpacity: 0.10, blurAmount: 8, brightness: 1.0, contrast: 1.0 },
     imgUrl: "/theme_3d_interactive.png"
   };
 });
@@ -178,6 +180,8 @@ interface CardFanCarouselProps {
     overlayOpacity: number;
     sectionOpacity: number;
     blurAmount: number;
+    brightness?: number;
+    contrast?: number;
     backgroundStyle?: string;
     textColor?: string;
     accentColor?: string;

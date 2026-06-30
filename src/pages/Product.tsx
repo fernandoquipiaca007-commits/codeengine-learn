@@ -825,10 +825,12 @@ export function Product({ setScreen, productId }: ProductProps) {
   return (
     <ProductPurchaseProvider productId={product.id}>
       {hasTheme && (
-        <ScrollTiedBackground 
-          videoPath={product.theme_video_path} 
+        <ScrollTiedBackground
+          videoPath={product.theme_video_path}
           videoOpacity={themeConfig.videoOpacity}
           overlayOpacity={themeConfig.overlayOpacity}
+          brightness={themeConfig.brightness ?? 1.0}
+          contrast={themeConfig.contrast ?? 1.0}
           backgroundStyle={themeConfig.backgroundStyle}
         />
       )}
