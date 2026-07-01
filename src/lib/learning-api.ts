@@ -67,11 +67,15 @@ export async function getMemberLibrary() {
 }
 
 export async function getEbookReadUrl(productId: string, locale: AppLocale = 'pt') {
-  const headers = await authHeaders();
-  const res = await fetch(`${BACKEND_URL}/api/ebooks/${productId}/read?lang=${locale}`, { headers });
-  if (!res.ok) throw new Error('Failed to load ebook');
-  const data = await res.json();
-  return data as { url: string; format: string };
+  // Get session token for the auth query param
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) throw new Error('Not authenticated');
+
+  // Return the backend proxy URL directly — the backend will stream the PDF.
+  // This avoids CORS issues with Supabase signed URLs being loaded by PDF.js in the browser.
+  const url = `${BACKEND_URL}/api/ebooks/${productId}/stream?lang=${locale}&token=${encodeURIComponent(token)}`;
+  return { url, format: 'pdf' };
 }
 
 export interface LibraryItem {
