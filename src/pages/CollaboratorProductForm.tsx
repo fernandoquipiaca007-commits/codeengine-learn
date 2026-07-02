@@ -2593,15 +2593,6 @@ export function CollaboratorProductForm({
 
       {showPreview && (
         <div className="fixed inset-0 w-full h-full z-[100] bg-black overflow-y-auto font-sans">
-          {/* Live Background — 100% same as real page */}
-          <ScrollTiedBackground
-            videoPath={themeVideoPath}
-            videoOpacity={themeVideoConfig.videoOpacity}
-            overlayOpacity={themeVideoConfig.overlayOpacity}
-            brightness={themeVideoConfig.brightness}
-            contrast={themeVideoConfig.contrast}
-            backgroundStyle={(themeVideoConfig as any).backgroundStyle}
-          />
           
           <button
             type="button"
@@ -2760,16 +2751,12 @@ export function CollaboratorProductForm({
             )}
           </div>
 
-          {/* Real Product Page Preview — same CSS vars as production */}
-          <div
-            style={{
-              '--glass-opacity': themeVideoConfig.sectionOpacity,
-              '--glass-blur': `${themeVideoConfig.blurAmount}px`
-            } as React.CSSProperties}
-            className="relative z-10"
-          >
-            <ProductPage productId={productId} />
-          </div>
+          {/* Real Product Page Preview with live theme overrides */}
+          <ProductPage 
+            productId={productId} 
+            overrideThemePath={themeVideoPath}
+            overrideThemeConfig={themeVideoConfig}
+          />
         </div>
       )}
     </div>

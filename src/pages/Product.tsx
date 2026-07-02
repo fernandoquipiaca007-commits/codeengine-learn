@@ -35,6 +35,8 @@ import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 interface ProductProps {
   setScreen?: (screen: string, section?: string) => void;
   productId?: string | null;
+  overrideThemePath?: string;
+  overrideThemeConfig?: any;
 }
 
 function hasCopy(value: unknown): value is string {
@@ -122,7 +124,12 @@ function ProductCouponSection({ productId, originalPrice, onCouponApplied }: Pro
   );
 }
 
-export function Product({ setScreen, productId }: ProductProps) {
+export function Product({
+  setScreen,
+  productId,
+  overrideThemePath,
+  overrideThemeConfig,
+}: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
   const { isAngola } = useUserCountry();
   const { t } = useTranslation(['pages', 'common'], { lng: locale });
@@ -818,15 +825,16 @@ export function Product({ setScreen, productId }: ProductProps) {
     );
   }
 
-  const themeConfig = (product as any).theme_video_config || {};
-  const hasTheme = !!product.theme_video_path;
+  const themePath = overrideThemePath !== undefined ? overrideThemePath : product.theme_video_path;
+  const themeConfig = overrideThemeConfig !== undefined ? overrideThemeConfig : ((product as any).theme_video_config || {});
+  const hasTheme = !!themePath;
   const isLight = !!themeConfig.isLight;
 
   return (
     <ProductPurchaseProvider productId={product.id}>
       {hasTheme && (
         <ScrollTiedBackground
-          videoPath={product.theme_video_path}
+          videoPath={themePath}
           videoOpacity={themeConfig.videoOpacity}
           overlayOpacity={themeConfig.overlayOpacity}
           brightness={themeConfig.brightness ?? 1.0}
