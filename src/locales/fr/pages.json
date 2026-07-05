@@ -512,6 +512,76 @@
       "chartTitle": "Tendance des Visites & Conversions",
       "loading": "Chargement des données d'analyse...",
       "noData": "Aucune donnée trouvée pour cette période."
+    },
+    "wallet": {
+      "inGuarantee": "En Garantie (AOA)",
+      "guaranteeDesc": "Période de remboursement. Fonds bloqués pour la sécurité.",
+      "inProcessing": "En Cours de Traitement (AOA)",
+      "processingDesc": "En attente du règlement FaciPay.",
+      "available": "Disponible pour Retrait (AOA)",
+      "minWithdrawal": "Minimum Kz {{min}} à retirer.",
+      "totalEarned": "Total Accumulé (AOA)",
+      "totalWithdrawn": "Total Retiré (AOA)",
+      "history": "Historique",
+      "requestWithdrawal": "Demander un Retrait",
+      "requestWithdrawalAoa": "Demander un Retrait AOA",
+      "configureWallet": "Configurer le Portefeuille",
+      "myProducts": "Mes Produits",
+      "premiumPlan": "Plan Premium",
+      "configureRequired": "Veuillez configurer vos détails de paiement dans \"Configurer le Portefeuille\" avant de demander un retrait.",
+      "insufficientBalance": "Solde disponible insuffisant.",
+      "insufficientAoaBalance": "Solde AOA insuffisant.",
+      "withdrawalSuccess": "Retrait demandé avec succès !",
+      "configureFacipayRequired": "Configurez votre numéro de compte FaciPay dans \"Configurer le Portefeuille\" avant d'utiliser cette méthode.",
+      "aoaWithdrawalSuccess": "Retrait AOA demandé avec succès !"
+    },
+    "ledger": {
+      "title": "Extrait Comptable Récent",
+      "noData": "Aucune écriture comptable enregistrée pour le moment.",
+      "date": "DATE",
+      "description": "DESCRIPTION",
+      "type": "TYPE",
+      "amount": "MONTANT",
+      "status": "STATUT",
+      "entry": "Entrée",
+      "exit": "Sortie",
+      "statusAvailable": "Disponible",
+      "statusPending": "En Garantie"
+    },
+    "withdrawals": {
+      "title": "Demandes de Retrait",
+      "noData": "Aucune demande de retrait soumise."
+    },
+    "withdrawalModal": {
+      "method": "Méthode d'Envoi",
+      "ibanAoa": "Compte Bancaire (IBAN) — Frais 1% + TVA",
+      "facipayP2p": "Compte FaciPay (P2P) — Gratuit",
+      "paypalAoa": "PayPal (Change AOA→USD) — Frais variables",
+      "amount": "Montant du Retrait (AOA)",
+      "facipayHint": "Si vous avez un compte FaciPay, vous pouvez retirer des AOA via P2P sans frais.",
+      "submit": "Envoyer la Demande",
+      "cancel": "Annuler"
+    },
+    "walletSetup": {
+      "title": "Configuration du Portefeuille",
+      "countryLabel": "Pays de Résidence Financière",
+      "countryPlaceholder": "Sélectionnez votre pays...",
+      "bankName": "Nom de la Banque",
+      "bankHolder": "Titulaire du Compte",
+      "iban": "IBAN",
+      "facipayLabel": "Compte FaciPay (Optionnel — pour retraits AOA)",
+      "facipayPlaceholder": "Numéro de compte FaciPay",
+      "save": "Sauvegarder le Portefeuille",
+      "success": "Portefeuille sauvegardé avec succès !",
+      "requiredFields": "La banque, le titulaire du compte et l'IBAN sont obligatoires."
+    },
+    "profile": {
+      "bioLabel": "Description Publique / Bio",
+      "bioHelp": "Présentez-vous aux acheteurs. Mentionnez votre expérience, votre domaine d'expertise et ce qui rend vos produits uniques. Max 500 caractères.",
+      "bioPlaceholder": "Ex. : Je suis un spécialiste du marketing numérique avec 8 ans d'expérience pour aider les entrepreneurs à se développer en ligne...",
+      "characters": "caractères",
+      "saveBio": "Enregistrer la Bio",
+      "saved": "Enregistré !"
     }
   },
   "countryModal": {

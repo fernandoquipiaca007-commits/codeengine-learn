@@ -541,6 +541,76 @@
       "chartTitle": "Tendência de Visitas e Conversões",
       "loading": "Carregando dados de análise...",
       "noData": "Nenhum dado encontrado para este período."
+    },
+    "wallet": {
+      "inGuarantee": "Em Garantia (AOA)",
+      "guaranteeDesc": "Período de reembolso. Fundos bloqueados por segurança.",
+      "inProcessing": "Em Processamento (AOA)",
+      "processingDesc": "Aguardando liquidação FaciPay.",
+      "available": "Disponível para Saque (AOA)",
+      "minWithdrawal": "Mínimo Kz {{min}} para sacar.",
+      "totalEarned": "Total Acumulado (AOA)",
+      "totalWithdrawn": "Total Sacado (AOA)",
+      "history": "Histórico",
+      "requestWithdrawal": "Solicitar Saque",
+      "requestWithdrawalAoa": "Solicitar Saque AOA",
+      "configureWallet": "Configurar Carteira",
+      "myProducts": "Meus Produtos",
+      "premiumPlan": "Plano Premium",
+      "configureRequired": "Por favor, configure seus dados de destino em \"Configurar Carteira\" antes de solicitar um saque.",
+      "insufficientBalance": "Saldo disponível insuficiente.",
+      "insufficientAoaBalance": "Saldo AOA disponível insuficiente.",
+      "withdrawalSuccess": "Saque solicitado com sucesso!",
+      "configureFacipayRequired": "Configure o número da conta FaciPay em \"Configurar Carteira\" antes de usar este método.",
+      "aoaWithdrawalSuccess": "Saque AOA solicitado com sucesso!"
+    },
+    "ledger": {
+      "title": "Extrato Contábil Recente",
+      "noData": "Nenhum lançamento contábil registrado ainda.",
+      "date": "DATA",
+      "description": "DESCRIÇÃO",
+      "type": "TIPO",
+      "amount": "VALOR",
+      "status": "STATUS",
+      "entry": "Entrada",
+      "exit": "Saída",
+      "statusAvailable": "Disponível",
+      "statusPending": "Em Garantia"
+    },
+    "withdrawals": {
+      "title": "Solicitações de Saque",
+      "noData": "Nenhuma solicitação de saque enviada."
+    },
+    "withdrawalModal": {
+      "method": "Método de Envio",
+      "ibanAoa": "Conta Bancária (IBAN) — Taxa 1% + IVA",
+      "facipayP2p": "Conta FaciPay (P2P) — Isento",
+      "paypalAoa": "PayPal (Câmbio AOA→USD) — Taxa variável",
+      "amount": "Valor do Saque (AOA)",
+      "facipayHint": "Se tiver conta FaciPay, pode sacar AOA via P2P sem taxas.",
+      "submit": "Enviar Solicitação",
+      "cancel": "Cancelar"
+    },
+    "walletSetup": {
+      "title": "Configurações de Carteira",
+      "countryLabel": "País de Residência Financeira",
+      "countryPlaceholder": "Selecione seu país...",
+      "bankName": "Nome do Banco",
+      "bankHolder": "Titular da Conta",
+      "iban": "IBAN",
+      "facipayLabel": "Conta FaciPay (Opcional — para saques AOA)",
+      "facipayPlaceholder": "Nº da conta FaciPay",
+      "save": "Salvar Carteira",
+      "success": "Carteira salva com sucesso!",
+      "requiredFields": "Banco, Titular da Conta e IBAN são obrigatórios."
+    },
+    "profile": {
+      "bioLabel": "Descrição / Bio Pública",
+      "bioHelp": "Apresente-se aos compradores. Mencione a sua experiência, área de especialidade e o que torna os seus produtos únicos. Máx. 500 caracteres.",
+      "bioPlaceholder": "Ex: Sou especialista em marketing digital com 8 anos de experiência a ajudar empreendedores a crescer online...",
+      "characters": "caracteres",
+      "saveBio": "Guardar Bio",
+      "saved": "Salvo!"
     }
   },
   "countryModal": {

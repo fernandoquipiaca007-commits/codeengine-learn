@@ -537,6 +537,76 @@
       "chartTitle": "Visits & Conversions Trend",
       "loading": "Loading analytics data...",
       "noData": "No data found for this period."
+    },
+    "wallet": {
+      "inGuarantee": "In Guarantee (AOA)",
+      "guaranteeDesc": "Refund period. Funds locked for security.",
+      "inProcessing": "In Processing (AOA)",
+      "processingDesc": "Awaiting FaciPay settlement.",
+      "available": "Available for Withdrawal (AOA)",
+      "minWithdrawal": "Minimum Kz {{min}} to withdraw.",
+      "totalEarned": "Total Accumulated (AOA)",
+      "totalWithdrawn": "Total Withdrawn (AOA)",
+      "history": "History",
+      "requestWithdrawal": "Request Withdrawal",
+      "requestWithdrawalAoa": "Request AOA Withdrawal",
+      "configureWallet": "Configure Wallet",
+      "myProducts": "My Products",
+      "premiumPlan": "Premium Plan",
+      "configureRequired": "Please configure your payout details in \"Configure Wallet\" before requesting a withdrawal.",
+      "insufficientBalance": "Insufficient available balance.",
+      "insufficientAoaBalance": "Insufficient AOA balance.",
+      "withdrawalSuccess": "Withdrawal requested successfully!",
+      "configureFacipayRequired": "Configure your FaciPay account number in \"Configure Wallet\" before using this method.",
+      "aoaWithdrawalSuccess": "AOA withdrawal requested successfully!"
+    },
+    "ledger": {
+      "title": "Recent Ledger",
+      "noData": "No ledger entries recorded yet.",
+      "date": "DATE",
+      "description": "DESCRIPTION",
+      "type": "TYPE",
+      "amount": "AMOUNT",
+      "status": "STATUS",
+      "entry": "Deposit",
+      "exit": "Withdrawal",
+      "statusAvailable": "Available",
+      "statusPending": "In Guarantee"
+    },
+    "withdrawals": {
+      "title": "Withdrawal Requests",
+      "noData": "No withdrawal requests submitted."
+    },
+    "withdrawalModal": {
+      "method": "Payout Method",
+      "ibanAoa": "Bank Account (IBAN) — 1% Fee + VAT",
+      "facipayP2p": "FaciPay Account (P2P) — Free",
+      "paypalAoa": "PayPal (AOA→USD Exchange) — Variable fee",
+      "amount": "Withdrawal Amount (AOA)",
+      "facipayHint": "If you have a FaciPay account, you can withdraw AOA via P2P with no fees.",
+      "submit": "Submit Request",
+      "cancel": "Cancel"
+    },
+    "walletSetup": {
+      "title": "Wallet Settings",
+      "countryLabel": "Country of Financial Residence",
+      "countryPlaceholder": "Select your country...",
+      "bankName": "Bank Name",
+      "bankHolder": "Account Holder",
+      "iban": "IBAN",
+      "facipayLabel": "FaciPay Account (Optional — for AOA withdrawals)",
+      "facipayPlaceholder": "FaciPay account number",
+      "save": "Save Wallet",
+      "success": "Wallet saved successfully!",
+      "requiredFields": "Bank, Account Holder, and IBAN are required."
+    },
+    "profile": {
+      "bioLabel": "Public Description / Bio",
+      "bioHelp": "Introduce yourself to buyers. Mention your experience, area of expertise, and what makes your products unique. Max 500 characters.",
+      "bioPlaceholder": "E.g., I'm a digital marketing specialist with 8 years of experience helping entrepreneurs grow online...",
+      "characters": "characters",
+      "saveBio": "Save Bio",
+      "saved": "Saved!"
     }
   },
   "countryModal": {
