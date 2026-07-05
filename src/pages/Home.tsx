@@ -774,24 +774,24 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
         {recentlyRead.length > 0 && (
           <section className="flex flex-col gap-6 w-full">
             <div className="flex justify-between items-center w-full">
-              <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center gap-2">
+              <h2 className="font-display font-extrabold text-xl md:text-3xl text-white tracking-tight flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-primary" />
                 {text.sections.recentlyRead}
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {recentlyRead.map((product) => (
                 <article
                   key={product.id}
                   onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
                   onMouseEnter={() => prefetchProduct(product.id, locale)}
-                  className="glass-card glass-card-hover rounded-2xl p-2.5 relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                  className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                 >
                   <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
                   
                   {/* Product Image */}
-                  <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                  <div className="aspect-[4/3] rounded-xl mb-2 sm:mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                     <LazyImage
                       src={getProductCoverUrl(product)}
                       alt={product.title}
@@ -800,23 +800,23 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     />
                     
                     {/* Continue Reading / Playing badge */}
-                    <span className="absolute top-2.5 left-2.5 bg-primary border border-primary/20 text-black px-2.5 py-0.5 rounded-full font-display text-[9px] font-black tracking-widest uppercase shadow animate-pulse">
+                    <span className="absolute top-2.5 left-2.5 bg-primary border border-primary/20 text-black px-2 py-0.5 rounded-full font-display text-[8px] sm:text-[9px] font-black tracking-widest uppercase shadow animate-pulse">
                       {product.product_type === 'course' ? 'Assistir' : 'Ler'}
                     </span>
                   </div>
 
                   {/* Product Info */}
                   <div className="flex-grow flex flex-col z-10 relative">
-                    <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
+                    <h3 className="font-display text-xs sm:text-base font-bold text-white line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-primary transition-colors">
                       {product.title}
                     </h3>
-                    <p className="font-sans text-[10px] text-muted-foreground mt-1 line-clamp-2 leading-normal">
+                    <p className="font-sans text-[10px] text-muted-foreground mt-1 line-clamp-2 leading-normal hidden sm:block">
                       {product.description}
                     </p>
-                    <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-primary group-hover:text-white flex items-center gap-1 font-display">
+                    <div className="flex items-center justify-between mt-3 sm:mt-4 pt-1.5 sm:pt-2 border-t border-white/5 gap-1">
+                      <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-primary group-hover:text-white flex items-center gap-0.5 sm:gap-1 font-display font-mono">
                         {product.product_type === 'course' ? 'Continuar Curso' : 'Continuar Ebook'}
-                        <Play className="w-3 h-3 fill-current" />
+                        <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
                       </span>
                     </div>
                   </div>
@@ -834,7 +834,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <Award className="w-5 h-5 text-primary" />
               {text.sections.mostSold}
             </h2>
-            <div className="flex items-center gap-1.5">
+            <div className="hidden sm:flex items-center gap-1.5">
               <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll left">
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -845,13 +845,13 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="glass-card rounded-2xl p-2 h-[260px] animate-pulse flex flex-col justify-between">
+                <div key={n} className="glass-card rounded-2xl p-2 h-[210px] sm:h-[260px] w-[155px] sm:w-auto flex-shrink-0 snap-start flex flex-col justify-between animate-pulse">
                   <div className="aspect-[4/3] rounded-xl bg-white/5 w-full" />
-                  <div className="h-4 bg-white/10 rounded w-2/3 my-2" />
-                  <div className="h-3 bg-white/5 rounded w-1/2" />
-                  <div className="h-6 bg-white/5 rounded w-1/3 mt-2" />
+                  <div className="h-3 bg-white/10 rounded w-2/3 my-2" />
+                  <div className="h-2 bg-white/5 rounded w-1/2" />
+                  <div className="h-5 bg-white/5 rounded w-1/3 mt-2" />
                 </div>
               ))}
             </div>
@@ -860,20 +860,20 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {mostSoldProducts.map((product, idx) => {
                 return (
                   <article
                     key={product.id}
                     onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
                     onMouseEnter={() => prefetchProduct(product.id, locale)}
-                    className="glass-card glass-card-hover rounded-2xl p-2.5 relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                    className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                   >
                     {/* Glowing background card element */}
                     <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
 
                     {/* Product Image */}
-                    <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                    <div className="aspect-[4/3] rounded-xl mb-2 sm:mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                       <LazyImage
                         src={getProductCoverUrl(product)}
                         alt={product.title}
@@ -883,7 +883,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                       
                       {/* Product Type Badge */}
                       {product.product_type && (
-                        <span className="absolute top-2.5 right-2.5 bg-surface/80 backdrop-blur-md border border-white/10 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase shadow">
+                        <span className="absolute top-2.5 right-2.5 bg-surface/80 backdrop-blur-md border border-white/10 text-white px-1.5 py-0.5 rounded-full font-display text-[8px] sm:text-[9px] font-bold tracking-widest uppercase shadow">
                           {product.product_type === 'course' ? 'Curso' : 'Ebook'}
                         </span>
                       )}
@@ -891,19 +891,19 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
                     {/* Product Info */}
                     <div className="flex-grow flex flex-col z-10 relative">
-                      <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
+                      <h3 className="font-display text-xs sm:text-base font-bold text-white line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-primary transition-colors">
                         {product.title}
                       </h3>
 
 
                       {/* Price and CTA */}
-                      <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
-                        <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
+                      <div className="flex items-center justify-between mt-3 sm:mt-4 pt-1.5 sm:pt-2 border-t border-white/5 gap-1">
+                        <span className="font-mono text-xs sm:text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
                           {formatPrice(product)}
                         </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-1 font-display">
+                        <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-0.5 sm:gap-1 font-display">
                           {text.sections.viewProduct}
-                          <ArrowRight className="w-3 h-3" />
+                          <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         </span>
                       </div>
                     </div>
@@ -922,7 +922,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <Sparkles className="w-5 h-5 text-primary" />
               {text.sections.recommended}
             </h2>
-            <div className="flex items-center gap-1.5">
+            <div className="hidden sm:flex items-center gap-1.5">
               <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll left">
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -933,13 +933,13 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="glass-card rounded-2xl p-2 h-[260px] animate-pulse flex flex-col justify-between">
+                <div key={n} className="glass-card rounded-2xl p-2 h-[210px] sm:h-[260px] w-[155px] sm:w-auto flex-shrink-0 snap-start flex flex-col justify-between animate-pulse">
                   <div className="aspect-[4/3] rounded-xl bg-white/5 w-full" />
-                  <div className="h-4 bg-white/10 rounded w-2/3 my-2" />
-                  <div className="h-3 bg-white/5 rounded w-1/2" />
-                  <div className="h-6 bg-white/5 rounded w-1/3 mt-2" />
+                  <div className="h-3 bg-white/10 rounded w-2/3 my-2" />
+                  <div className="h-2 bg-white/5 rounded w-1/2" />
+                  <div className="h-5 bg-white/5 rounded w-1/3 mt-2" />
                 </div>
               ))}
             </div>
@@ -948,18 +948,18 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {recommendedProducts.map((product) => (
                 <article
                   key={product.id}
                   onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
                   onMouseEnter={() => prefetchProduct(product.id, locale)}
-                  className="glass-card glass-card-hover rounded-2xl p-2.5 relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                  className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                 >
                   <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
                   
                   {/* Product Image */}
-                  <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                  <div className="aspect-[4/3] rounded-xl mb-2 sm:mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                     <LazyImage
                       src={getProductCoverUrl(product)}
                       alt={product.title}
@@ -968,7 +968,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                     />
                     
                     {product.product_type && (
-                      <span className="absolute top-2.5 right-2.5 bg-surface/80 backdrop-blur-md border border-white/10 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase shadow">
+                      <span className="absolute top-2.5 right-2.5 bg-surface/80 backdrop-blur-md border border-white/10 text-white px-1.5 py-0.5 rounded-full font-display text-[8px] sm:text-[9px] font-bold tracking-widest uppercase shadow">
                         {product.product_type === 'course' ? 'Curso' : 'Ebook'}
                       </span>
                     )}
@@ -976,19 +976,19 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
                   {/* Product Info */}
                   <div className="flex-grow flex flex-col z-10 relative">
-                    <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
+                    <h3 className="font-display text-xs sm:text-base font-bold text-white line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-primary transition-colors">
                       {product.title}
                     </h3>
 
 
                     {/* Price and CTA */}
-                    <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
-                      <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
+                    <div className="flex items-center justify-between mt-3 sm:mt-4 pt-1.5 sm:pt-2 border-t border-white/5 gap-1">
+                      <span className="font-mono text-xs sm:text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
                         {formatPrice(product)}
                       </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-1 font-display">
+                      <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-0.5 sm:gap-1 font-display">
                         {text.sections.viewProduct}
-                        <ArrowRight className="w-3 h-3" />
+                        <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       </span>
                     </div>
                   </div>
@@ -1006,7 +1006,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <Zap className="w-5 h-5 text-primary animate-pulse" />
               {text.sections.newReleases}
             </h2>
-            <div className="flex items-center gap-1.5">
+            <div className="hidden sm:flex items-center gap-1.5">
               <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll left">
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -1017,13 +1017,13 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="glass-card rounded-2xl p-2 h-[260px] animate-pulse flex flex-col justify-between">
+                <div key={n} className="glass-card rounded-2xl p-2 h-[210px] sm:h-[260px] w-[155px] sm:w-auto flex-shrink-0 snap-start flex flex-col justify-between animate-pulse">
                   <div className="aspect-[4/3] rounded-xl bg-white/5 w-full" />
-                  <div className="h-4 bg-white/10 rounded w-2/3 my-2" />
-                  <div className="h-3 bg-white/5 rounded w-1/2" />
-                  <div className="h-6 bg-white/5 rounded w-1/3 mt-2" />
+                  <div className="h-3 bg-white/10 rounded w-2/3 my-2" />
+                  <div className="h-2 bg-white/5 rounded w-1/2" />
+                  <div className="h-5 bg-white/5 rounded w-1/3 mt-2" />
                 </div>
               ))}
             </div>
@@ -1032,19 +1032,19 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {newReleasesProducts.map((product) => {
                 return (
                   <article
                     key={product.id}
                     onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
                     onMouseEnter={() => prefetchProduct(product.id, locale)}
-                    className="glass-card glass-card-hover rounded-2xl p-2.5 relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                    className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                   >
                     <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
 
                     {/* Product Image */}
-                    <div className="aspect-[4/3] rounded-xl mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
+                    <div className="aspect-[4/3] rounded-xl mb-2 sm:mb-3 overflow-hidden relative bg-black/40 flex items-center justify-center">
                       <LazyImage
                         src={getProductCoverUrl(product)}
                         alt={product.title}
@@ -1054,7 +1054,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                       
                       {/* Product Type Badge */}
                       {product.product_type && (
-                        <span className="absolute top-2.5 right-2.5 bg-surface/80 backdrop-blur-md border border-white/10 text-white px-2 py-0.5 rounded-full font-display text-[9px] font-bold tracking-widest uppercase shadow">
+                        <span className="absolute top-2.5 right-2.5 bg-surface/80 backdrop-blur-md border border-white/10 text-white px-1.5 py-0.5 rounded-full font-display text-[8px] sm:text-[9px] font-bold tracking-widest uppercase shadow">
                           {product.product_type === 'course' ? 'Curso' : 'Ebook'}
                         </span>
                       )}
@@ -1062,23 +1062,23 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
                     {/* Product Info */}
                     <div className="flex-grow flex flex-col z-10 relative">
-                      <h3 className="font-display text-sm sm:text-base font-bold text-white line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
+                      <h3 className="font-display text-xs sm:text-base font-bold text-white line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-primary transition-colors">
                         {product.title}
                       </h3>
                       
                       {/* Description clip */}
-                      <p className="text-xs text-muted-foreground/80 line-clamp-2 mt-1 min-h-[2rem]">
+                      <p className="text-[10px] text-muted-foreground/80 line-clamp-2 mt-1 min-h-[1.5rem] sm:min-h-[2rem] hidden sm:block">
                         {product.description}
                       </p>
 
                       {/* Price and CTA */}
-                      <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
-                        <span className="font-mono text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
+                      <div className="flex items-center justify-between mt-3 sm:mt-4 pt-1.5 sm:pt-2 border-t border-white/5 gap-1">
+                        <span className="font-mono text-xs sm:text-sm font-semibold text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.2)] whitespace-nowrap">
                           {formatPrice(product)}
                         </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-1 font-display">
+                        <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all flex items-center gap-0.5 sm:gap-1 font-display">
                           {text.sections.viewProduct}
-                          <ArrowRight className="w-3 h-3" />
+                          <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         </span>
                       </div>
                     </div>

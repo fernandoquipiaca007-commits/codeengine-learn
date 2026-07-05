@@ -19,6 +19,7 @@ import {
   AlertCircle,
   RefreshCw,
   ChevronRight,
+  ChevronDown,
   FileText,
   ExternalLink,
   Award,
@@ -33,6 +34,7 @@ import {
   Check,
   ArrowLeft,
   Megaphone,
+  Smartphone,
 } from "lucide-react";
 
 import { useUserCountry } from "../contexts/UserCountryContext";
@@ -211,6 +213,8 @@ export function CollaboratorDashboard({
   const [fastpaySuccess, setFastpaySuccess] = useState<string | null>(null);
 
   const [fastpayError, setFastpayError] = useState<string | null>(null);
+
+  const [showWalletTabsDropdown, setShowWalletTabsDropdown] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -1124,9 +1128,9 @@ export function CollaboratorDashboard({
           return null;
         })()}
 
-        {/* Currency Filter Toggle */}
+        {/* Currency Filter Toggle - Desktop */}
 
-        <div className="mb-2 flex items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10 flex-wrap sm:flex-nowrap">
+        <div className="hidden sm:flex mb-2 items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10 flex-wrap sm:flex-nowrap">
           {isAngola ? (
             <>
               <button
@@ -1236,6 +1240,165 @@ export function CollaboratorDashboard({
           >
             <ShieldCheck size={12} /> Meu Perfil
           </button>
+        </div>
+
+        {/* Currency Filter Toggle - Mobile Dropdown */}
+        <div className="flex sm:hidden relative mb-4">
+          <button
+            type="button"
+            onClick={() => setShowWalletTabsDropdown(!showWalletTabsDropdown)}
+            className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-surface-high border border-white/10 text-xs font-bold text-white shadow-md active:scale-[0.98] transition-all"
+          >
+            <span className="flex items-center gap-2">
+              {walletView === "aoa" && (
+                <>
+                  <Landmark size={12} className="text-amber-400" />
+                  <span>{t("collaborator.tabWalletAoa", "AOA · FaciPay")}</span>
+                </>
+              )}
+              {walletView === "usd" && (
+                <>
+                  <DollarSign size={12} className="text-primary" />
+                  <span>{t("collaborator.tabWalletUsd", "USD · Stripe")}</span>
+                </>
+              )}
+              {walletView === "affiliates" && (
+                <>
+                  <Users size={12} className="text-purple-400" />
+                  <span>{t("collaborator.tabAffiliates", "Meus Afiliados")}</span>
+                </>
+              )}
+              {walletView === "founder" && (
+                <>
+                  <Award size={12} className="text-amber-500" />
+                  <span>{t("collaborator.tabFounder", "Membro Fundador")}</span>
+                </>
+              )}
+              {walletView === "analytics" && (
+                <>
+                  <TrendingUp size={12} className="text-blue-400" />
+                  <span>{t("collaborator.tabAnalytics", "Análise")}</span>
+                </>
+              )}
+              {walletView === "ads" && (
+                <>
+                  <Megaphone size={12} className="text-pink-400" />
+                  <span>{t("collaborator.tabAds", "Anúncios")}</span>
+                </>
+              )}
+              {walletView === "profile" && (
+                <>
+                  <ShieldCheck size={12} className="text-emerald-400" />
+                  <span>Meu Perfil</span>
+                </>
+              )}
+            </span>
+            <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${showWalletTabsDropdown ? "rotate-180" : ""}`} />
+          </button>
+
+          {showWalletTabsDropdown && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setShowWalletTabsDropdown(false)}
+              />
+              <div className="absolute left-0 right-0 mt-1.5 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-40 max-h-[300px] overflow-y-auto">
+                {isAngola && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWalletView("aoa");
+                      setShowWalletTabsDropdown(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors ${
+                      walletView === "aoa" ? "text-amber-400 bg-amber-500/10" : "text-on-surface-variant"
+                    }`}
+                  >
+                    <Landmark size={12} /> {t("collaborator.tabWalletAoa", "AOA · FaciPay")}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("usd");
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                    walletView === "usd" ? "text-primary bg-primary/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <DollarSign size={12} /> {t("collaborator.tabWalletUsd", "USD · Stripe")}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("affiliates");
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                    walletView === "affiliates" ? "text-purple-400 bg-purple-500/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <Users size={12} /> {t("collaborator.tabAffiliates", "Meus Afiliados")}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("founder");
+                    loadFounderStats();
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                    walletView === "founder" ? "text-yellow-400 bg-yellow-500/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <Award size={12} /> {t("collaborator.tabFounder", "Membro Fundador")}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("analytics");
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                    walletView === "analytics" ? "text-blue-400 bg-blue-500/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <TrendingUp size={12} /> {t("collaborator.tabAnalytics", "Análise")}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("ads");
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                    walletView === "ads" ? "text-pink-400 bg-pink-500/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <Megaphone size={12} /> {t("collaborator.tabAds", "Anúncios")}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("profile");
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                    walletView === "profile" ? "text-emerald-400 bg-emerald-500/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <ShieldCheck size={12} /> Meu Perfil
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ====== USD WALLET VIEW ====== */}
@@ -1459,7 +1622,7 @@ export function CollaboratorDashboard({
                                 ? "🇫🇷 FR"
                                 : country === "US"
                                   ? "🇺🇸 US"
-                                  : `ðŸŒ ${country}`}
+                                  : `🌐 ${country}`}
                       </span>
                     </span>
                   )}
@@ -3223,40 +3386,37 @@ export function CollaboratorDashboard({
                 <div className="space-y-4">
                   <div className="text-center space-y-1 mb-2">
                     <h2 className="font-display text-base font-bold text-white">
-                      Coordenadas e Envio de Comprovativo
+                      Pagamento via Facipay
                     </h2>
 
                     <p className="font-sans text-xs text-on-surface-variant">
-                      Realize a transferência bancária e anexe a foto ou PDF do
-                      comprovativo.
+                      Efetue o pagamento através do link direto e anexe o comprovativo.
                     </p>
                   </div>
 
-                  <div className="rounded-xl bg-black/30 p-3 text-[11px] text-on-surface-variant space-y-1.5 font-sans border border-white/5">
-                    <p className="font-bold text-white">
-                      Coordenadas Bancárias para Depósito (CodeEngine):
-                    </p>
+                  <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-left">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Smartphone className="w-5 h-5 text-orange-400" />
+                      <span className="font-display font-bold text-orange-300 text-sm">
+                        Como funciona o Pagamento via Facipay
+                      </span>
+                    </div>
+                    <ol className="space-y-2 text-xs text-on-surface-variant list-decimal list-inside font-sans leading-relaxed">
+                      <li>Você será redirecionado para o link de pagamento</li>
+                      <li>Efetue o pagamento via Multicaixa Express, TPA ou Transferência</li>
+                      <li>Faça upload do comprovativo de pagamento abaixo</li>
+                      <li>Aguarde a validação e ativação pela nossa equipe (até 24h úteis)</li>
+                    </ol>
+                  </div>
 
-                    <p>
-                      Banco: <strong className="text-white">BAI</strong>
-                    </p>
-
-                    <p>
-                      IBAN:{" "}
-                      <strong className="text-white">
-                        AO06.0040.0000.1234.5678.9012.3
-                      </strong>
-                    </p>
-
-                    <p>
-                      Valor da Assinatura:{" "}
-                      <strong className="text-white">8.000 Kz / mês</strong>
-                    </p>
-
-                    <p className="text-yellow-400/90 text-[10px] mt-1 font-semibold leading-normal">
-                      * Atenção: A validação e ativação manual é feita pela
-                      nossa equipe e pode levar até 24 horas úteis.
-                    </p>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10 text-left">
+                    <ShieldCheck className="w-5 h-5 text-primary flex-shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-medium text-on-surface-variant uppercase tracking-wider">Valor a pagar</p>
+                      <p className="text-base font-display font-bold text-primary font-mono">
+                        8.000 Kz
+                      </p>
+                    </div>
                   </div>
 
                   {profile?.upgradeStatus === "pending_approval" ? (
