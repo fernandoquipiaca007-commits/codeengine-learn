@@ -21,10 +21,10 @@ export default defineConfig(({mode}) => {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
           runtimeCaching: [
             {
-              // Supabase API calls: always try network first, fall back to cache
+              // Supabase API calls: serve from cache instantly, update in background (SWR)
               urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-              handler: 'NetworkFirst',
-              options: { cacheName: 'supabase-api', expiration: { maxEntries: 50, maxAgeSeconds: 300 } },
+              handler: 'StaleWhileRevalidate',
+              options: { cacheName: 'supabase-api', expiration: { maxEntries: 100, maxAgeSeconds: 86400 } }, // cache for 1 day, revalidated in bg
             },
           ],
         },
@@ -54,6 +54,14 @@ export default defineConfig(({mode}) => {
                 id.includes('@react-three/fiber') ||
                 id.includes('@react-three/drei')) {
               return 'vendor-3d';
+            }
+            // Shaders / WebGL effects
+            if (id.includes('node_modules/@paper-design/')) {
+              return 'vendor-shaders';
+            }
+            // GSAP Animations
+            if (id.includes('node_modules/gsap/')) {
+              return 'vendor-gsap';
             }
             // PDF.js — ~480KB — used only in EbookReaderPro (lazy via Member page)
             if (id.includes('node_modules/pdfjs-dist') ||

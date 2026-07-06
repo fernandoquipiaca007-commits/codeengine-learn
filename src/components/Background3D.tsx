@@ -8,7 +8,10 @@ function Stars(props: any) {
   // Generate random particles within a sphere (memoized to avoid regeneration)
   const positions = useMemo(() => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const count = isMobile ? 1500 : 5000;
+    const connection = typeof navigator !== 'undefined' && (navigator as any).connection;
+    const isSlow = connection && (connection.saveData || ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
+    
+    const count = isSlow ? 300 : (isMobile ? 800 : 2500);
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const r = 1.5 * Math.cbrt(Math.random());
@@ -43,14 +46,32 @@ export function Background3D({ isImmersive = false }: { isImmersive?: boolean })
   const [isTabVisible, setIsTabVisible] = useState(true);
 
   useEffect(() => {
+    // 1. Check for reduced motion
     const mediaReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotion = () => {
+      if (mediaReducedMotion.matches) {
+        setIsLowPowerMode(true);
+      }
+    };
+    updateMotion();
+    mediaReducedMotion.addEventListener('change', updateMotion);
 
-    const update = () => setIsLowPowerMode(mediaReducedMotion.matches);
-    update();
+    // 2. WebGL Support Check
+    try {
+      const canvas = document.createElement('canvas');
+      const supportsWebGL = !!(
+        window.WebGLRenderingContext &&
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+      );
+      if (!supportsWebGL) {
+        setIsLowPowerMode(true);
+      }
+    } catch (e) {
+      setIsLowPowerMode(true);
+    }
 
-    mediaReducedMotion.addEventListener('change', update);
     return () => {
-      mediaReducedMotion.removeEventListener('change', update);
+      mediaReducedMotion.removeEventListener('change', updateMotion);
     };
   }, []);
 
@@ -64,6 +85,14 @@ export function Background3D({ isImmersive = false }: { isImmersive?: boolean })
     };
   }, []);
 
+  const dpr = useMemo(() => {
+    if (typeof window === 'undefined') return 1;
+    const isMobile = window.innerWidth < 768;
+    const connection = (navigator as any).connection;
+    const isSlowConnection = connection && (connection.saveData || ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
+    return (isMobile || isSlowConnection) ? 1 : 1.5;
+  }, []);
+
   const shouldRenderCanvas = !isLowPowerMode && !isImmersive && isTabVisible;
 
   return (
@@ -73,7 +102,7 @@ export function Background3D({ isImmersive = false }: { isImmersive?: boolean })
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[150px] opacity-50"></div>
       
       {shouldRenderCanvas && (
-        <Canvas camera={{ position: [0, 0, 1] }} dpr={[1, 1.5]}>
+        <Canvas camera={{ position: [0, 0, 1] }} dpr={dpr}>
           <Stars />
         </Canvas>
       )}

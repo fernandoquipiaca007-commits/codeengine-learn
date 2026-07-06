@@ -15,6 +15,26 @@ class QueryCacheManager {
   private subscribers = new Map<string, Set<Subscriber>>();
   private pendingRequests = new Map<string, Promise<any>>();
 
+  constructor() {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('ce_cache_')) {
+            const val = sessionStorage.getItem(key);
+            if (val) {
+              const entry = JSON.parse(val);
+              const cleanKey = key.substring(9); // remove 'ce_cache_'
+              this.cache.set(cleanKey, entry);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[QueryCache] Failed to hydrate cache from sessionStorage:', e);
+    }
+  }
+
   /**
    * Retrieves data from cache if fresh, otherwise fetches with stale-while-revalidate (SWR) support.
    */
@@ -55,7 +75,15 @@ class QueryCacheManager {
 
     const promise = fetcher()
       .then((data) => {
-        this.cache.set(key, { data, timestamp: Date.now() });
+        const entry = { data, timestamp: Date.now() };
+        this.cache.set(key, entry);
+        try {
+          if (typeof window !== 'undefined' && window.sessionStorage) {
+            sessionStorage.setItem(`ce_cache_${key}`, JSON.stringify(entry));
+          }
+        } catch (e) {
+          // Silent catch in case of quota exceeded or private mode
+        }
         this.pendingRequests.delete(key);
         this.notify(key, data);
         return data;
@@ -116,6 +144,11 @@ class QueryCacheManager {
    */
   invalidate(key: string) {
     this.cache.delete(key);
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        sessionStorage.removeItem(`ce_cache_${key}`);
+      }
+    } catch (e) {}
   }
 
   /**
@@ -124,6 +157,18 @@ class QueryCacheManager {
   clear() {
     this.cache.clear();
     this.pendingRequests.clear();
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          if (k && k.startsWith('ce_cache_')) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach(k => sessionStorage.removeItem(k));
+      }
+    } catch (e) {}
   }
 }
 

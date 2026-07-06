@@ -20,9 +20,23 @@ export function ScrollTiedBackground({
   const videoRef = useRef<HTMLVideoElement>(null);
   const requestRef = useRef<number | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(true);
 
   useEffect(() => {
-    if (videoPath.startsWith('color:')) {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 768;
+      const connection = (navigator as any).connection;
+      const isSlow = connection && (connection.saveData || ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
+      if (isMobile || isSlow) {
+        setShouldLoadVideo(false);
+      }
+    }
+  }, []);
+
+  const isColorTheme = videoPath.startsWith('color:') || !shouldLoadVideo;
+
+  useEffect(() => {
+    if (isColorTheme) {
       setIsLoaded(true);
       return;
     }
@@ -46,10 +60,10 @@ export function ScrollTiedBackground({
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [videoPath]);
+  }, [videoPath, isColorTheme]);
 
   useEffect(() => {
-    if (videoPath.startsWith('color:')) return;
+    if (isColorTheme) return;
     const video = videoRef.current;
     if (!video) return;
 
@@ -93,9 +107,7 @@ export function ScrollTiedBackground({
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [isLoaded, videoPath]);
-
-  const isColorTheme = videoPath.startsWith('color:');
+  }, [isLoaded, videoPath, isColorTheme]);
 
   // Build video CSS filter from brightness & contrast
   const videoFilter = `brightness(${brightness}) contrast(${contrast})`;
