@@ -60,7 +60,7 @@ export function useOwnedProducts(userId: string | undefined) {
       }
     });
 
-    return owned;
+    return Array.from(owned);
   }, [userId]);
 
   const load = useCallback(async (revalidate = true) => {
@@ -71,7 +71,7 @@ export function useOwnedProducts(userId: string | undefined) {
     }
     try {
       const data = await queryCache.get(`owned-products-${userId}`, fetcher, { revalidate });
-      setOwnedProductIds(data);
+      setOwnedProductIds(new Set(data || []));
     } catch (err) {
       console.error('Error loading owned products:', err);
     } finally {
@@ -86,7 +86,7 @@ export function useOwnedProducts(userId: string | undefined) {
 
     // Subscribe to Cache changes for reactive updates
     const unsubscribeCache = queryCache.subscribe(`owned-products-${userId}`, (data) => {
-      setOwnedProductIds(data);
+      setOwnedProductIds(new Set(data || []));
       setLoading(false);
     });
 
