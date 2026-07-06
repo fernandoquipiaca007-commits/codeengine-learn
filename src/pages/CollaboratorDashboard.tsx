@@ -131,7 +131,7 @@ export function CollaboratorDashboard({
   // Currency filter for dashboard view
 
   const [walletView, setWalletView] = useState<
-    "usd" | "aoa" | "affiliates" | "founder" | "analytics" | "ads" | "profile"
+    "usd" | "aoa" | "affiliates" | "founder" | "analytics" | "ads" | "profile" | "community"
   >("usd");
 
   const [hasDefaultedView, setHasDefaultedView] = useState(false);
