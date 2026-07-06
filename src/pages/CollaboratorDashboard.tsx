@@ -373,7 +373,8 @@ export function CollaboratorDashboard({
         return;
       }
 
-      if (session.user?.email === "fernandoquipiaca007@gmail.com") {
+      const email = session.user?.email || session.user?.user_metadata?.email || "";
+      if (email === "fernandoquipiaca007@gmail.com") {
         setIsAdmin(true);
       } else {
         const { data: mem } = await supabase
@@ -761,6 +762,38 @@ export function CollaboratorDashboard({
       setAoaModalError("Erro de conexão.");
     } finally {
       setSubmittingWithdrawAoa(false);
+    }
+  }
+
+  const [cancellingWithdrawalId, setCancellingWithdrawalId] = useState<string | null>(null);
+
+  async function handleCancelWithdrawal(id: string) {
+    if (!window.confirm("Tem certeza que deseja cancelar esta solicitação de saque? O valor será estornado para o seu saldo disponível.")) {
+      return;
+    }
+    setCancellingWithdrawalId(id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(`${BACKEND_URL}/api/collaborators/withdraw/${id}/cancel`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Solicitação de saque cancelada com sucesso!");
+        await loadDashboardData();
+      } else {
+        alert(data.error || "Erro ao cancelar solicitação.");
+      }
+    } catch (err) {
+      console.error("Error cancelling withdrawal:", err);
+      alert("Erro de conexão ao cancelar.");
+    } finally {
+      setCancellingWithdrawalId(null);
     }
   }
 
@@ -2590,6 +2623,17 @@ export function CollaboratorDashboard({
                             <strong>{t('collaborator.withdrawals.rejected', 'Rejeitado')}:</strong> {w.rejection_reason}
                           </div>
                         )}
+
+                        {w.status === "pending" && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancelWithdrawal(w.id)}
+                            disabled={cancellingWithdrawalId === w.id}
+                            className="mt-3 w-full sm:w-auto px-4 py-1.5 rounded-full border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-[10px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 inline-flex items-center justify-center gap-1"
+                          >
+                            {cancellingWithdrawalId === w.id ? "Cancelando..." : "Cancelar Solicitação"}
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -3098,6 +3142,11 @@ export function CollaboratorDashboard({
                   <span>{walletError}</span>
                 </div>
               )}
+
+              {/* Conselho para aprovação imediata */}
+              <div className="mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-[11px] text-amber-300 leading-relaxed font-sans">
+                <strong>💡 Conselho para Aprovação Imediata:</strong> Recomenda-se vivamente que a conta de pagamento (PayPal) ou os dados bancários (IBAN/Titular) correspondam exatamente ao mesmo e-mail e nome completo que cadastrou nesta plataforma. Esta consistência acelera a verificação e garante a aprovação imediata dos seus saques pela administração.
+              </div>
 
               <form onSubmit={handleWalletSubmit} className="space-y-4">
                 <div>
