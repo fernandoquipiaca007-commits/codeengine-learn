@@ -83,6 +83,15 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
         return;
       }
 
+      // Read stored founder referral if present
+      let inviteCode: string | null = null;
+      try {
+        const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
+        if (stored && stored.expiry > Date.now()) {
+          inviteCode = stored.userId;
+        }
+      } catch { /* ignore */ }
+
       // Detailed payout info will be configured in the Wallet settings after approval.
       const payoutInfo = {}; 
 
@@ -103,7 +112,8 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
           specialty,
           payoutMethod,
           payoutInfo,
-          survey
+          survey,
+          inviteCode
         })
       });
       const data = await res.json();
@@ -111,6 +121,9 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
       if (data.success) {
         setCandidacyStatus('pending');
         setMessage({ type: 'success', text: data.message });
+        try {
+          localStorage.removeItem('ce_founder_ref');
+        } catch { /* ignore */ }
       } else {
         setMessage({ type: 'error', text: data.error || 'Erro ao enviar candidatura.' });
       }
