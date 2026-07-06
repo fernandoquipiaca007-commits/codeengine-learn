@@ -208,7 +208,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
                   src={getProductCoverUrl(product)}
                   alt={product.title}
                   className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                  fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                  fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
                 />
               </div>
               

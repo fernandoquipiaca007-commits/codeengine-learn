@@ -553,7 +553,7 @@ export function Library({ setScreen, onProductClick }: {
                                 src={getProductCoverUrl(product)}
                                 alt={product.title}
                                 className="max-w-full max-h-full object-contain"
-                                fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                                fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
                               />
                               
                               {user && (

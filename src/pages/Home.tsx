@@ -811,7 +811,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                       src={getProductCoverUrl(product)}
                       alt={product.title}
                       className="max-w-full max-h-full object-contain"
-                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
                     />
                     
                     {/* Continue Reading / Playing badge */}
@@ -901,7 +901,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                         src={getProductCoverUrl(product)}
                         alt={product.title}
                         className="max-w-full max-h-full object-contain"
-                        fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                        fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
                       />
                       
                       {/* Product Type Badge */}
@@ -995,7 +995,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                       src={getProductCoverUrl(product)}
                       alt={product.title}
                       className="max-w-full max-h-full object-contain"
-                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                      fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
                     />
                     
                     {product.product_type && (
@@ -1088,7 +1088,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                         src={getProductCoverUrl(product)}
                         alt={product.title}
                         className="max-w-full max-h-full object-contain"
-                        fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+                        fallback={`https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
                       />
                       
                       {/* Product Type Badge */}

@@ -134,7 +134,7 @@ export function MyLibrary({ onOpenCourse, onOpenEbook, onDownload }: MyLibraryPr
               alt=""
               className="w-10 h-10 rounded-md object-cover flex-shrink-0 bg-surface-highest"
               onError={(e) => {
-                e.currentTarget.src = `https://placehold.co/60x60/1a1a2e/c0c1ff?text=${encodeURIComponent((item.title || 'P').charAt(0))}`;
+                e.currentTarget.src = `https://placehold.co/60x60/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(item.title || 'P')[0])}`;
               }}
             />
             <div className="flex-1 min-w-0 flex flex-col">

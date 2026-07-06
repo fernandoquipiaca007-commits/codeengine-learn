@@ -166,7 +166,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                     loading="eager"
                     className="absolute inset-0 w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`;
+                      (e.target as HTMLImageElement).src = `https://placeholder.co/400x300/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`;
                     }}
                   />
                   

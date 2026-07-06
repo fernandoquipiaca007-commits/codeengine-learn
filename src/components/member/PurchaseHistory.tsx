@@ -329,7 +329,7 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                     alt={purchase.products?.title || 'Produto'}
                     className="w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
                     onError={(e) => {
-                      e.currentTarget.src = `https://placehold.co/48x48/1a1a2e/c0c1ff?text=${encodeURIComponent((purchase.products?.title || 'P').charAt(0))}`;
+                      e.currentTarget.src = `https://placehold.co/48x48/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(purchase.products?.title || 'P')[0])}`;
                     }}
                   />
                 </div>

@@ -1049,7 +1049,7 @@ export function Product({
               src={getProductCoverUrl(product, locale)}
               alt={product.title}
               className="w-full h-auto rounded-xl shadow-[20px_20px_60px_rgba(0,0,0,0.8),_0_0_40px_rgba(192,193,255,0.2)] border border-white/10"
-              fallback={`https://placehold.co/600x600/1a1a2e/c0c1ff?text=${encodeURIComponent(product.title?.charAt(0) || 'P')}`}
+              fallback={`https://placehold.co/600x600/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
             />
           </div>
         </div>
