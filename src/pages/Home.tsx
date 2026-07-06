@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { 
   ArrowRight, 
   Sparkles, 
@@ -204,7 +204,20 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
+  const bestsellersRef = useRef<HTMLDivElement>(null);
+  const recommendedRef = useRef<HTMLDivElement>(null);
+  const releasesRef = useRef<HTMLDivElement>(null);
+
+  const scrollContainer = (ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
+    if (ref.current) {
+      const scrollAmount = ref.current.clientWidth * 0.75;
+      ref.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
 
   // Responsive check for CircularGallery radius
   useEffect(() => {
@@ -332,7 +345,8 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     }).catch(() => {});
 
     if (ad.product_id) {
-      onProductClick ? onProductClick(ad.product_id) : setScreen('product');
+      const prod = products.find(p => p.id === ad.product_id);
+      onProductClick ? onProductClick(ad.product_id, prod?.title) : setScreen('product');
     }
   };
 
@@ -784,7 +798,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {recentlyRead.map((product) => (
                 <article
                   key={product.id}
-                  onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                  onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
                   onMouseEnter={() => prefetchProduct(product.id, locale)}
                   className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                 >
@@ -834,11 +848,19 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <Award className="w-5 h-5 text-primary" />
               {text.sections.mostSold}
             </h2>
-            <div className="hidden sm:flex items-center gap-1.5">
-              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll left">
+            <div className="flex items-center gap-1.5">
+              <button 
+                onClick={() => scrollContainer(bestsellersRef, 'left')}
+                className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" 
+                aria-label="Scroll left"
+              >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll right">
+              <button 
+                onClick={() => scrollContainer(bestsellersRef, 'right')}
+                className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" 
+                aria-label="Scroll right"
+              >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -860,12 +882,12 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
+            <div ref={bestsellersRef} className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {mostSoldProducts.map((product, idx) => {
                 return (
                   <article
                     key={product.id}
-                    onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                    onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
                     onMouseEnter={() => prefetchProduct(product.id, locale)}
                     className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                   >
@@ -922,11 +944,19 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <Sparkles className="w-5 h-5 text-primary" />
               {text.sections.recommended}
             </h2>
-            <div className="hidden sm:flex items-center gap-1.5">
-              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll left">
+            <div className="flex items-center gap-1.5">
+              <button 
+                onClick={() => scrollContainer(recommendedRef, 'left')}
+                className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" 
+                aria-label="Scroll left"
+              >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll right">
+              <button 
+                onClick={() => scrollContainer(recommendedRef, 'right')}
+                className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" 
+                aria-label="Scroll right"
+              >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -948,11 +978,11 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
+            <div ref={recommendedRef} className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {recommendedProducts.map((product) => (
                 <article
                   key={product.id}
-                  onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                  onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
                   onMouseEnter={() => prefetchProduct(product.id, locale)}
                   className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                 >
@@ -1006,11 +1036,19 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               <Zap className="w-5 h-5 text-primary animate-pulse" />
               {text.sections.newReleases}
             </h2>
-            <div className="hidden sm:flex items-center gap-1.5">
-              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll left">
+            <div className="flex items-center gap-1.5">
+              <button 
+                onClick={() => scrollContainer(releasesRef, 'left')}
+                className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" 
+                aria-label="Scroll left"
+              >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <button className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Scroll right">
+              <button 
+                onClick={() => scrollContainer(releasesRef, 'right')}
+                className="w-8 h-8 rounded-full bg-white/3 border border-white/5 flex items-center justify-center text-muted-foreground hover:text-white hover:bg-white/10 active:scale-95 transition-all" 
+                aria-label="Scroll right"
+              >
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -1032,12 +1070,12 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
+            <div ref={releasesRef} className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
               {newReleasesProducts.map((product) => {
                 return (
                   <article
                     key={product.id}
-                    onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+                    onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
                     onMouseEnter={() => prefetchProduct(product.id, locale)}
                     className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                   >
@@ -1065,11 +1103,6 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                       <h3 className="font-display text-xs sm:text-base font-bold text-white line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-primary transition-colors">
                         {product.title}
                       </h3>
-                      
-                      {/* Description clip */}
-                      <p className="text-[10px] text-muted-foreground/80 line-clamp-2 mt-1 min-h-[1.5rem] sm:min-h-[2rem] hidden sm:block">
-                        {product.description}
-                      </p>
 
                       {/* Price and CTA */}
                       <div className="flex items-center justify-between mt-3 sm:mt-4 pt-1.5 sm:pt-2 border-t border-white/5 gap-1">

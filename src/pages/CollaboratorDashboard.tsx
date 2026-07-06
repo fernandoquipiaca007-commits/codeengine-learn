@@ -252,7 +252,7 @@ export function CollaboratorDashboard({
 
     if (!inviteCode) return;
 
-    const link = `${window.location.origin}/?invite=${inviteCode}`;
+    const link = `${window.location.origin}/convite/${inviteCode}`;
 
     try {
       await navigator.clipboard.writeText(link);
@@ -1429,7 +1429,7 @@ export function CollaboratorDashboard({
                               ? "🇫🇷 FR"
                               : country === "US"
                                 ? "🇺🇸 US"
-                                : `ðŸŒ ${country}`}
+                                : `🌐 ${country}`}
                     </span>
                   </span>
                 )}
@@ -1600,7 +1600,7 @@ export function CollaboratorDashboard({
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">ðŸ¦</span>
+                  <Landmark size={14} className="text-amber-400" />
 
                   <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
                     {t('collaborator.tabWalletAoa', 'Ecossistema AOA · FaciPay (Kwanza)')}
@@ -1892,7 +1892,7 @@ export function CollaboratorDashboard({
 
                       <span className="truncate font-medium">
                         {founderStats?.referralCode || founderStats?.authUserId
-                          ? `${window.location.origin}/?invite=${founderStats.referralCode || founderStats.authUserId}`
+                          ? `${window.location.origin}/convite/${founderStats.referralCode || founderStats.authUserId}`
                           : "Carregando..."}
                       </span>
                     </div>

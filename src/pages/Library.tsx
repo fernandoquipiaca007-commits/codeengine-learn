@@ -540,7 +540,7 @@ export function Library({ setScreen, onProductClick }: {
                                   body: JSON.stringify({ campaignId: (product as any).campaignId })
                                 }).catch(() => {});
                               }
-                              onProductClick ? onProductClick(product.id) : setScreen('product');
+                              onProductClick ? onProductClick(product.id, product.title) : setScreen('product');
                             }}
                             onMouseEnter={() => prefetchProduct(product.id, locale)}
                             className="glass-card glass-card-hover rounded-xl p-3 relative group flex flex-col justify-between cursor-pointer transition-all duration-300 hover:border-primary/20 bg-surface/50 border border-white/5 min-h-[300px] h-full text-left"

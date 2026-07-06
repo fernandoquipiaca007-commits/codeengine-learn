@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
-import { Plus, ArrowLeft, Edit2, ShieldAlert, CheckCircle, Clock, FileText, ExternalLink, Trash2 } from 'lucide-react';
+import { Plus, ArrowLeft, Edit2, ShieldAlert, CheckCircle, Clock, FileText, ExternalLink, Trash2, Copy } from 'lucide-react';
 import { CollaboratorProductForm } from './CollaboratorProductForm';
 
 interface CollaboratorProductsProps {
@@ -168,6 +168,25 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
     void loadProducts();
   };
 
+  const handleCopyLink = (title: string) => {
+    const slug = title
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/&/g, '-and-')
+      .replace(/[^\w\-]+/g, '')
+      .replace(/\-\-+/g, '-');
+      
+    const url = `${window.location.origin}/product/${slug}`;
+    navigator.clipboard.writeText(url)
+      .then(() => alert('Link copiado para a área de transferência!'))
+      .catch((err) => console.error('Erro ao copiar link:', err));
+  };
+
+
   return (
     <div className="collab-compact-wrapper">
     <div className="pt-20 pb-16 px-4 md:px-8 w-full min-h-screen page-wrapper">
@@ -282,10 +301,17 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
                         >
                           <Trash2 size={13} /> Excluir
                         </button>
+
+                        <button
+                          onClick={() => handleCopyLink(prod.title)}
+                          className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer"
+                        >
+                          <Copy size={13} className="text-yellow-400" /> Copiar Link
+                        </button>
                         
                         {prod.approval_status === 'approved' && prod.status === 'active' ? (
                           <a
-                            href={`/product/${prod.id}?name=${encodeURIComponent(prod.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}`}
+                            href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer"
@@ -294,7 +320,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
                           </a>
                         ) : (
                           <a
-                            href={`/product/${prod.id}?name=${encodeURIComponent(prod.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}&preview=true`}
+                            href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}?preview=true`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 rounded-full bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/25 transition-all cursor-pointer animate-pulse"

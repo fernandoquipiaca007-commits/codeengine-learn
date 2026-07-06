@@ -177,7 +177,7 @@ export function Releases({ setScreen, onProductClick }: ReleasesProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
-              onClick={() => onProductClick ? onProductClick(product.id) : setScreen('product')}
+              onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
               className="glass-card glass-card-hover rounded-2xl overflow-hidden cursor-pointer relative group"
             >
               <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>

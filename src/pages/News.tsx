@@ -669,32 +669,36 @@ export function News({ setScreen }: NewsProps) {
     const urlNewsId = params.get('newsId') || sessionStorage.getItem('pendingNewsId');
     if (urlNewsId) {
       sessionStorage.removeItem('pendingNewsId');
-      const art = news.find(n => n.id === urlNewsId);
+      const art = news.find(n => n.id === urlNewsId || n.slug === urlNewsId);
       if (art) {
         setSelectedArticle(art);
         void trackView(art.id);
-        // Clean URL parameter
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
+        if (params.get('newsId')) {
+          // If came from query param, rewrite to clean slug URL
+          window.history.replaceState({ screen: 'news', newsSlug: art.slug }, '', `/news/${art.slug}`);
+        }
       } else {
-        // Fallback: Se o artigo não estiver no array carregado inicialmente (devido a filtros ou paginação),
+        // Fallback: Se o artigo não estiver no array carregado inicialmente,
         // buscamos diretamente no banco de dados para abrir o artigo correto!
-        async function fetchSingleArticle(id: string) {
+        async function fetchSingleArticle(idOrSlug: string) {
           try {
+            const isUuid = idOrSlug.length === 36 && idOrSlug.includes('-');
+            const column = isUuid ? 'id' : 'slug';
             const { data, error } = await supabase
               .from('news')
               .select('*')
-              .eq('id', id)
+              .eq(column, idOrSlug)
               .maybeSingle();
             
             if (data && !error) {
               let art = data;
+              const newsId = art.id;
               if (locale !== 'pt') {
                 const langOrder = locale === 'fr' ? ['fr', 'en'] : [locale];
                 const { data: trans } = await supabase
                   .from('news_translations')
                   .select('*')
-                  .eq('news_id', id)
+                  .eq('news_id', newsId)
                   .in('language', langOrder);
 
                 if (trans && trans.length > 0) {
@@ -710,18 +714,61 @@ export function News({ setScreen }: NewsProps) {
               }
               setSelectedArticle(art);
               void trackView(art.id);
+              if (params.get('newsId')) {
+                window.history.replaceState({ screen: 'news', newsSlug: art.slug }, '', `/news/${art.slug}`);
+              }
             }
           } catch (e) {
             console.error('Error fetching single deep-linked news article:', e);
           }
         }
         fetchSingleArticle(urlNewsId);
-        // Clean URL parameter
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
       }
     }
   }, [news, locale]);
+
+  // Synchronize selected article with URL path
+  useEffect(() => {
+    if (selectedArticle) {
+      const path = `/news/${selectedArticle.slug}`;
+      if (window.location.pathname !== path) {
+        window.history.pushState({ screen: 'news', newsSlug: selectedArticle.slug }, '', path);
+      }
+    } else {
+      if (window.location.pathname.startsWith('/news/')) {
+        window.history.pushState({ screen: 'news', newsSlug: null }, '', '/news');
+      }
+    }
+  }, [selectedArticle]);
+
+  // Synchronize browser history back/forward navigation with selected article state
+  useEffect(() => {
+    const handleNewsPopState = () => {
+      const path = window.location.pathname;
+      if (path === '/news' || path === '/news/') {
+        setSelectedArticle(null);
+      } else if (path.startsWith('/news/')) {
+        const slug = path.split('/news/')[1]?.split(/[?#/]/)[0];
+        if (slug) {
+          const art = news.find(n => n.slug === slug || n.id === slug);
+          if (art) {
+            setSelectedArticle(art);
+          } else {
+            supabase
+              .from('news')
+              .select('*')
+              .eq(slug.length === 36 && slug.includes('-') ? 'id' : 'slug', slug)
+              .maybeSingle()
+              .then(({ data }) => {
+                if (data) setSelectedArticle(data);
+              });
+          }
+        }
+      }
+    };
+    window.addEventListener('popstate', handleNewsPopState);
+    return () => window.removeEventListener('popstate', handleNewsPopState);
+  }, [news]);
 
   useEffect(() => {
     if (!selectedArticle) return;

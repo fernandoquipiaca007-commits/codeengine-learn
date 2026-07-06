@@ -57,6 +57,19 @@ const pageTransition: any = {
   duration: 0.22,
 };
 
+export const slugify = (text: string) => {
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/&/g, '-and-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-');
+};
+
 // ─── Page loader skeleton ─────────────────────────────────────────────────────
 function PageLoader() {
   return (
@@ -84,7 +97,7 @@ const PageContent = memo(function PageContent({
   currentProductId: string | null;
   memberSection: string;
   navigateToScreen: (screen: string, section?: string) => void;
-  navigateToProduct: (id: string) => void;
+  navigateToProduct: (id: string, title?: string) => void;
   setIsImmersive: (v: boolean) => void;
   onOnboardingComplete?: () => void;
 }) {
@@ -211,12 +224,13 @@ export default function App() {
     navigateToScreen('home');
   };
 
-  const navigateToProduct = (productId: string) => {
+  const navigateToProduct = (productId: string, productTitle?: string) => {
     setCurrentProductId(productId);
     setScreen('product');
     // Push state to browser history
+    const slug = productTitle ? slugify(productTitle) : productId;
     const state = { screen: 'product', productId, section: 'inicio' };
-    window.history.pushState(state, '', `/product/${productId}`);
+    window.history.pushState(state, '', `/product/${slug}`);
   };
 
   const navigateToScreen = (screen: string, section?: string) => {
@@ -339,13 +353,27 @@ export default function App() {
     const hash = window.location.hash;
     // Handle /product/XYZ direct link (e.g. from web push)
     if (pathname.startsWith('/product/')) {
-      const productId = pathname.split('/product/')[1]?.split(/[?#/]/)[0];
-      if (productId) {
-        // Set state first
-        setCurrentProductId(productId);
-        setScreen('product');
-        // Set initial state representation in history
-        window.history.replaceState({ screen: 'product', productId, section: 'inicio' }, '', `/product/${productId}`);
+      const slug = pathname.split('/product/')[1]?.split(/[?#/]/)[0];
+      if (slug) {
+        if (slug.length === 36 && slug.includes('-')) {
+          // If it is a direct UUID, use it directly
+          setCurrentProductId(slug);
+          setScreen('product');
+          window.history.replaceState({ screen: 'product', productId: slug, section: 'inicio' }, '', `/product/${slug}`);
+        } else {
+          // Fetch products from database to match slug to ID
+          supabase.from('products').select('id, title').then(({ data }) => {
+            const found = data?.find(p => slugify(p.title) === slug);
+            if (found) {
+              setCurrentProductId(found.id);
+              setScreen('product');
+              window.history.replaceState({ screen: 'product', productId: found.id, section: 'inicio' }, '', `/product/${slug}`);
+            } else {
+              // Fallback
+              setScreen('home');
+            }
+          });
+        }
         return;
       }
     }
@@ -363,6 +391,33 @@ export default function App() {
       setScreen('news');
       window.history.replaceState({ screen: 'news', productId: null, section: 'inicio' }, '', `/news`);
       return;
+    }
+
+    // Handle /convite/:inviteCode or /invite/:inviteCode direct links
+    if (pathname.startsWith('/convite/') || pathname.startsWith('/invite/')) {
+      const parts = pathname.split('/');
+      const inviteCode = parts[parts.length - 1]?.split(/[?#/]/)[0];
+      if (inviteCode) {
+        const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+        if (inviteCode.length === 36) {
+          localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: inviteCode, expiry }));
+        } else {
+          supabase
+            .from('members')
+            .select('auth_id')
+            .eq('referral_code', inviteCode)
+            .maybeSingle()
+            .then(({ data }) => {
+              if (data?.auth_id) {
+                localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: data.auth_id, expiry }));
+              }
+            });
+        }
+        // Redirect to welcome screen cleanly
+        setScreen('welcome');
+        window.history.replaceState({ screen: 'welcome', productId: null, section: 'inicio' }, '', '/');
+        return;
+      }
     }
 
     // Detect recovery sessions or reset password routes
