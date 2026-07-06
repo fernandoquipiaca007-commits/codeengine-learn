@@ -179,7 +179,7 @@ export function CollaboratorProductForm({
   // ============================================================
   // AOA PRICING: Two-Way Binding — Taxa CE (10%/15%) + FaciPay
   // ============================================================
-  const AOA_CE_RATE = collaboratorPlan === 'course_creator' ? 0.15 : 0.10;
+  const AOA_CE_RATE = collaboratorPlan === 'course_creator' ? 0.10 : 0.15;
   const AOA_FACIPAY_RATE = 0.007;   // 0.7%
   const AOA_FACIPAY_MIN  = 300;     // Kz 300 piso
   const AOA_IVA          = 1.14;    // 14% IVA sobre FaciPay

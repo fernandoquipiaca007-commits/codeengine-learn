@@ -53,7 +53,7 @@ export function About({ setScreen }: AboutProps) {
   ];
 
   return (
-    <div className="pt-14 pb-4 px-4 sm:px-6 md:px-12 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden">
+    <div className="pt-14 pb-4 px-4 sm:px-6 md:px-12 max-w-[1080px] mx-auto overflow-x-hidden">
       {/* Hero Section */}
       <header className="mb-3 flex flex-col items-start max-w-4xl">
         <motion.div

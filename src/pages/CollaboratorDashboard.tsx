@@ -160,6 +160,17 @@ export function CollaboratorDashboard({
 
   const [bioError, setBioError] = useState<string | null>(null);
 
+  // Communities State & Forms
+  const [communities, setCommunities] = useState<any[]>([]);
+  const [loadingCommunities, setLoadingCommunities] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [newCommTitle, setNewCommTitle] = useState("");
+  const [newCommDesc, setNewCommDesc] = useState("");
+  const [newCommLink, setNewCommLink] = useState("");
+  const [submittingComm, setSubmittingComm] = useState(false);
+  const [commError, setCommError] = useState<string | null>(null);
+  const [commSuccess, setCommSuccess] = useState<string | null>(null);
+
   // Membro Fundador state
 
   const [founderStats, setFounderStats] = useState<any>(null);
@@ -219,6 +230,75 @@ export function CollaboratorDashboard({
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  async function fetchCommunities() {
+    setLoadingCommunities(true);
+    setCommError(null);
+    try {
+      const { data, error } = await supabase
+        .from("communities")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setCommunities(data || []);
+    } catch (err: any) {
+      console.error("Error fetching communities:", err);
+      setCommError(err.message || "Erro ao carregar comunidades.");
+    } finally {
+      setLoadingCommunities(false);
+    }
+  }
+
+  async function handleAddCommunity(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newCommTitle || !newCommLink) {
+      setCommError("Título e Link são obrigatórios");
+      return;
+    }
+    setSubmittingComm(true);
+    setCommError(null);
+    setCommSuccess(null);
+    try {
+      const { error } = await supabase
+        .from("communities")
+        .insert({
+          title: newCommTitle,
+          description: newCommDesc,
+          link: newCommLink
+        });
+      if (error) throw error;
+      setCommSuccess("Comunidade adicionada com sucesso!");
+      setNewCommTitle("");
+      setNewCommDesc("");
+      setNewCommLink("");
+      fetchCommunities();
+    } catch (err: any) {
+      setCommError(err.message || "Erro ao adicionar comunidade.");
+    } finally {
+      setSubmittingComm(false);
+    }
+  }
+
+  async function handleDeleteCommunity(id: string) {
+    if (!window.confirm("Tem certeza que deseja remover esta comunidade?")) return;
+    try {
+      const { error } = await supabase
+        .from("communities")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setCommSuccess("Comunidade removida com sucesso!");
+      fetchCommunities();
+    } catch (err: any) {
+      setCommError(err.message || "Erro ao remover comunidade.");
+    }
+  }
+
+  useEffect(() => {
+    if (walletView === "community") {
+      fetchCommunities();
+    }
+  }, [walletView]);
 
   async function loadFounderStats() {
     setFounderLoading(true);
@@ -291,6 +371,19 @@ export function CollaboratorDashboard({
         setScreen("auth");
 
         return;
+      }
+
+      if (session.user?.email === "fernandoquipiaca007@gmail.com") {
+        setIsAdmin(true);
+      } else {
+        const { data: mem } = await supabase
+          .from("members")
+          .select("role")
+          .eq("auth_id", session.user?.id)
+          .maybeSingle();
+        if (mem?.role === "admin" || mem?.role === "owner") {
+          setIsAdmin(true);
+        }
       }
 
       const res = await fetch(`${BACKEND_URL}/api/collaborators/dashboard`, {
@@ -1240,6 +1333,17 @@ export function CollaboratorDashboard({
           >
             <ShieldCheck size={12} /> Meu Perfil
           </button>
+
+          <button
+            onClick={() => setWalletView("community")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+              walletView === "community"
+                ? "bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-[0_0_10px_rgba(139,92,246,0.25)]"
+                : "text-on-surface-variant hover:text-white"
+            }`}
+          >
+            <Users size={12} /> Comunidade
+          </button>
         </div>
 
         {/* Currency Filter Toggle - Mobile Dropdown */}
@@ -1286,10 +1390,16 @@ export function CollaboratorDashboard({
                   <span>{t("collaborator.tabAds", "Anúncios")}</span>
                 </>
               )}
-              {walletView === "profile" && (
+               {walletView === "profile" && (
                 <>
                   <ShieldCheck size={12} className="text-emerald-400" />
                   <span>Meu Perfil</span>
+                </>
+              )}
+              {walletView === "community" && (
+                <>
+                  <Users size={12} className="text-purple-400" />
+                  <span>{t("collaborator.tabCommunity", "Comunidade")}</span>
                 </>
               )}
             </span>
@@ -1395,6 +1505,19 @@ export function CollaboratorDashboard({
                   }`}
                 >
                   <ShieldCheck size={12} /> Meu Perfil
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("community");
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors mt-0.5 ${
+                    walletView === "community" ? "text-purple-400 bg-purple-500/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <Users size={12} /> Comunidade
                 </button>
               </div>
             </>
@@ -2208,6 +2331,113 @@ export function CollaboratorDashboard({
           </div>
         )}
 
+        {walletView === "community" && (
+          <div className="space-y-6 max-w-4xl relative z-10 animate__animated animate__fadeIn">
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
+                <Users size={18} className="text-purple-400" />
+              </div>
+
+              <div>
+                <h3 className="font-display font-bold text-white text-sm">
+                  Comunidades de Formação
+                </h3>
+
+                <p className="text-[11px] text-on-surface-variant">
+                  Aceda às comunidades oficiais para receber suporte, partilhar conhecimento e expandir as suas competências.
+                </p>
+              </div>
+            </div>
+
+            {/* Admin Add Form */}
+            {isAdmin && (
+              <form onSubmit={handleAddCommunity} className="glass-panel p-4 rounded-2xl border border-white/10 space-y-3">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Adicionar Nova Comunidade (Admin)</h4>
+                
+                {commError && <p className="text-[11px] text-red-400">{commError}</p>}
+                {commSuccess && <p className="text-[11px] text-green-400">{commSuccess}</p>}
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Título da Comunidade"
+                    value={newCommTitle}
+                    onChange={(e) => setNewCommTitle(e.target.value)}
+                    className="rounded-xl bg-surface-high border border-white/10 text-white text-xs font-sans px-3 py-2 focus:outline-none"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Descrição Curta"
+                    value={newCommDesc}
+                    onChange={(e) => setNewCommDesc(e.target.value)}
+                    className="rounded-xl bg-surface-high border border-white/10 text-white text-xs font-sans px-3 py-2 focus:outline-none"
+                  />
+                  <input
+                    type="url"
+                    placeholder="Link de Acesso (WhatsApp, Telegram, etc.)"
+                    value={newCommLink}
+                    onChange={(e) => setNewCommLink(e.target.value)}
+                    className="rounded-xl bg-surface-high border border-white/10 text-white text-xs font-sans px-3 py-2 focus:outline-none"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={submittingComm}
+                  className="px-4 py-1.5 rounded-full bg-purple-500 hover:bg-purple-400 text-black text-xs font-bold transition-all disabled:opacity-60"
+                >
+                  {submittingComm ? "Adicionando..." : "Adicionar Comunidade"}
+                </button>
+              </form>
+            )}
+
+            {/* Communities List */}
+            {loadingCommunities ? (
+              <div className="py-8 text-center">
+                <span className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin inline-block" />
+              </div>
+            ) : communities.length === 0 ? (
+              <div className="glass-panel p-6 text-center text-on-surface-variant text-xs rounded-2xl border border-white/10">
+                Nenhuma comunidade de formação registada no momento.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {communities.map((comm) => (
+                  <div key={comm.id} className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-purple-500/30 transition-all flex flex-col justify-between items-start gap-3">
+                    <div className="space-y-1">
+                      <h4 className="font-display font-bold text-white text-sm">{comm.title}</h4>
+                      {comm.description && (
+                        <p className="text-[11px] text-on-surface-variant leading-relaxed">{comm.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between w-full mt-2">
+                      <a
+                        href={comm.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-[0_0_15px_rgba(139,92,246,0.2)]"
+                      >
+                        Entrar na Comunidade
+                        <ArrowUpRight size={13} />
+                      </a>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDeleteCommunity(comm.id)}
+                          className="text-[10px] text-red-400 hover:text-red-300 font-bold transition-colors uppercase tracking-wider"
+                        >
+                          Remover
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {walletView === "ads" && profile && (
           <AdsDashboard collaboratorId={profile.id} />
         )}
@@ -2217,7 +2447,9 @@ export function CollaboratorDashboard({
         {walletView !== "affiliates" &&
           walletView !== "founder" &&
           walletView !== "analytics" &&
-          walletView !== "ads" && (
+          walletView !== "ads" &&
+          walletView !== "profile" &&
+          walletView !== "community" && (
             <div className="grid gap-4 lg:grid-cols-3 relative z-10">
               {/* Ledger Extrato */}
 
