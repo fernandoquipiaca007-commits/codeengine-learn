@@ -407,7 +407,7 @@ export function Library({ setScreen, onProductClick }: {
                           className="fixed inset-0 z-30" 
                           onClick={() => setShowCategoriesDropdown(false)} 
                         />
-                        <div className="absolute right-0 mt-2 w-64 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 max-h-[250px] overflow-y-auto">
+                        <div className="absolute left-0 mt-2 w-64 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 max-h-[250px] overflow-y-auto">
                           <button
                             type="button"
                             onClick={() => {
@@ -473,7 +473,7 @@ export function Library({ setScreen, onProductClick }: {
                             className="fixed inset-0 z-30" 
                             onClick={() => setShowSubcategoriesDropdown(false)} 
                           />
-                          <div className="absolute right-0 mt-2 w-64 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 max-h-[250px] overflow-y-auto">
+                          <div className="absolute left-0 mt-2 w-64 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-40 max-h-[250px] overflow-y-auto">
                             <button
                               type="button"
                               onClick={() => {
