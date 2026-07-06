@@ -14,7 +14,7 @@ import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface ReleasesProps {
   setScreen: (screen: string) => void;
-  onProductClick?: (productId: string) => void;
+  onProductClick?: (productId: string, productTitle?: string) => void;
 }
 
 export function Releases({ setScreen, onProductClick }: ReleasesProps) {

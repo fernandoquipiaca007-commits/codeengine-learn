@@ -29,7 +29,7 @@ interface Subcategory {
 
 export function Library({ setScreen, onProductClick }: { 
   setScreen: (s: string) => void;
-  onProductClick?: (productId: string) => void;
+  onProductClick?: (productId: string, productTitle?: string) => void;
 }) {
   const { t } = useTranslation('pages');
   const { t: tCommon } = useTranslation();

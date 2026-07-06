@@ -194,7 +194,7 @@ const getRecentlyReadProducts = (allProducts: LocalizedProduct[]) => {
 
 interface HomeProps {
   setScreen: (s: string) => void;
-  onProductClick?: (productId: string) => void;
+  onProductClick?: (productId: string, productTitle?: string) => void;
 }
 
 export function Home({ setScreen, onProductClick }: HomeProps) {
@@ -204,6 +204,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const bestsellersRef = useRef<HTMLDivElement>(null);
   const recommendedRef = useRef<HTMLDivElement>(null);
   const releasesRef = useRef<HTMLDivElement>(null);

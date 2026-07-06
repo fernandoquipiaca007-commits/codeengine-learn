@@ -84,9 +84,23 @@ export function PushPermissionPrompt() {
   }
 
   async function handleAllow() {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') await subscribe();
-    setShow(false);
+    try {
+      const permission = await new Promise<NotificationPermission>((resolve) => {
+        try {
+          const p = Notification.requestPermission(resolve);
+          if (p && typeof p.then === 'function') {
+            p.then(resolve).catch(() => resolve('default'));
+          }
+        } catch (e) {
+          resolve('default');
+        }
+      });
+      if (permission === 'granted') await subscribe();
+    } catch (err) {
+      console.error('Request permission failed:', err);
+    } finally {
+      setShow(false);
+    }
   }
 
   function handleDeny() {
