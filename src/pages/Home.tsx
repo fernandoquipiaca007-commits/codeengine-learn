@@ -484,13 +484,13 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-transparent text-on-surface pt-20 pb-16 flex flex-col items-center">
+    <div className="relative w-full min-h-screen bg-transparent text-on-surface pt-16 sm:pt-20 pb-10 sm:pb-16 flex flex-col items-center">
       
       {/* Homepage container with premium spacing guidelines to let cards breathe */}
-      <div className="w-full max-w-[1200px] px-6 flex flex-col gap-14 sm:gap-18 z-10 relative">
+      <div className="w-full max-w-[1200px] px-4 sm:px-6 flex flex-col gap-4 sm:gap-14 lg:gap-18 z-10 relative">
 
         {/* ─── Hero Carousel / Slider Section ─── */}
-        <section className="relative w-full glass-card rounded-3xl p-6 md:p-8 border border-white/8 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[320px] md:min-h-[390px]">
+        <section className="relative w-full glass-card rounded-3xl p-4 sm:p-6 md:p-8 border border-white/8 shadow-2xl overflow-hidden flex flex-col justify-between min-h-[200px] sm:min-h-[280px] md:min-h-[390px]">
           {/* Internal slider glow */}
           <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-primary/3 to-transparent z-0 pointer-events-none" />
 
@@ -501,7 +501,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
             <div className="lg:col-span-7 flex flex-col justify-center items-start text-left gap-4 max-w-xl">
               {activeSlide === 0 && (
                 <>
-                  <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
+                  <h1 className="font-display font-black tracking-tight text-xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
                     {text.hero.slide0.title}
                   </h1>
                   <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80">
@@ -529,7 +529,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
               {activeSlide === 1 && (
                 <>
-                  <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
+                  <h1 className="font-display font-black tracking-tight text-xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
                     {text.hero.slide1.title}
                   </h1>
                   <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80">
@@ -555,7 +555,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
               {activeSlide === 2 && (
                 <>
-                  <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
+                  <h1 className="font-display font-black tracking-tight text-xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white">
                     {text.hero.slide2.title}
                   </h1>
                   <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80">
@@ -590,7 +590,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
                           Patrocinado
                         </span>
                       </div>
-                      <h1 className="font-display font-black tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white line-clamp-2">
+                      <h1 className="font-display font-black tracking-tight text-xl sm:text-3xl md:text-4xl lg:text-5xl leading-[1.05] text-white line-clamp-2">
                         {prod.title || 'Anúncio Premium'}
                       </h1>
                       <p className="font-sans text-xs sm:text-sm text-on-surface-variant/80 line-clamp-3">
@@ -611,8 +611,8 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               )}
             </div>
 
-            {/* Right Side: Visual Mockup Showcase */}
-            <div className="lg:col-span-5 flex items-center justify-center select-none w-full">
+            {/* Right Side: Visual Mockup Showcase — hidden on mobile to save vertical space */}
+            <div className="hidden lg:flex lg:col-span-5 items-center justify-center select-none w-full">
               {activeSlide === 0 && (
                 <div className="glass-card p-4 rounded-xl border border-white/10 w-full max-w-[280px] sm:max-w-[320px] shadow-2xl relative overflow-hidden text-left bg-[#101015]/90">
                   <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
@@ -725,7 +725,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           </div>
 
           {/* Dots Indicator & Navigation Controls */}
-          <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/5 relative z-10">
+          <div className="flex items-center justify-between mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-white/5 relative z-10">
             {/* Dots */}
             <div className="flex gap-2">
               {Array.from({ length: totalSlides }).map((_, idx) => (
@@ -764,7 +764,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
         {/* ─── Featured Products 3D Carousel Section ─── */}
         {circularGalleryItems.length >= 3 && (
-          <section className="w-full flex flex-col items-center justify-center py-6 my-4 overflow-visible relative min-h-[380px] sm:min-h-[420px]">
+          <section className="w-full flex flex-col items-center justify-center py-3 sm:py-6 my-1 sm:my-4 overflow-visible relative min-h-[280px] sm:min-h-[380px] lg:min-h-[420px]">
             <div className="text-center mb-6 z-10">
               <h2 className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight flex items-center justify-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />

@@ -879,8 +879,8 @@ export function Product({
         </button>
       )}
 
-      {/* Hero Section — 3 columns on md: [left-panel | content | cover] */}
-      <section ref={heroRef} className="grid gap-6 md:grid-cols-[220px_1fr_auto] md:gap-8 items-start mb-16 relative">
+      {/* Hero Section — on mobile: cover thumbnail inline with title; on md+: 3-col [left | content | cover] */}
+      <section ref={heroRef} className="grid gap-6 md:grid-cols-[220px_1fr_auto] md:gap-8 items-start mb-10 md:mb-16 relative">
 
         {/* ── LEFT: Creator / CodeEngine Panel ── */}
         <div className="hidden md:flex flex-col gap-3">
@@ -986,7 +986,40 @@ export function Product({
             </div>
           </div>
 
-          <h1 className={`${
+          {/* Mobile: compact cover thumbnail + title in one row */}
+          <div className="md:hidden flex items-start gap-3 mb-1">
+            <div className="shrink-0 w-[88px] h-[116px] rounded-lg overflow-hidden border border-white/10 shadow-lg">
+              <LazyImage
+                src={getProductCoverUrl(product, locale)}
+                alt={product.title}
+                className="w-full h-full object-contain"
+                fallback={`https://placehold.co/200x260/1a1a2e/c0c1ff?text=${encodeURIComponent(Array.from(product.title || '')[0] || 'P')}`}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className={`${
+                (product.title || '').length > 45
+                  ? 'text-xl'
+                  : 'text-2xl'
+              } font-display leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/70 break-words`}>
+                {hasCopy(customCopy?.hero_headline) ? (
+                  <>
+                    {safeText(customCopy.hero_headline)}{' '}
+                    {hasCopy(customCopy?.hero_subheadline) && (
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                        {safeText(customCopy.hero_subheadline)}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  product.title || 'Produto'
+                )}
+              </h1>
+            </div>
+          </div>
+
+          {/* Desktop-only title */}
+          <h1 className={`hidden md:block ${
             (product.title || '').length > 45
               ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[36px]'
               : 'text-3xl sm:text-4xl md:text-[44px]'
@@ -1041,9 +1074,9 @@ export function Product({
           )}
         </div>
 
-        {/* ── RIGHT: Cover Image ── */}
-        <div className="relative w-full flex items-center justify-center min-h-[300px] md:min-h-[400px] md:max-w-[320px]" style={{ perspective: '1200px' }}>
-          <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full mix-blend-screen z-0 pointer-events-none"></div>
+        {/* ── RIGHT: Cover Image — hidden on mobile (shown inline above) ── */}
+        <div className="hidden md:flex relative items-center justify-center min-h-[400px] md:max-w-[320px]" style={{ perspective: '1200px' }}>
+          <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full mix-blend-screen z-0 pointer-events-none" />
           <div ref={coverRef} className="relative z-10 w-full max-w-full sm:max-w-[300px] will-change-transform">
             <LazyImage
               src={getProductCoverUrl(product, locale)}
