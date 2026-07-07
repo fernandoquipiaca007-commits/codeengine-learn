@@ -18,22 +18,31 @@ export function ScrollTiedBackground({
   backgroundStyle,
 }: ScrollTiedBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const requestRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(true);
 
+  // Refs used inside RAF / event listeners — avoids stale closure issues
+  const targetProgressRef = useRef(0);
+  const displayProgressRef = useRef(0);
+  const isSeeking = useRef(false);
+  const pendingSeek = useRef(false);
+
+  // ── Connection check (skip video on data-saver / 2G connections) ──────────
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const connection = (navigator as any).connection;
-      const isSlow = connection && (connection.saveData || ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
-      if (isSlow) {
-        setShouldLoadVideo(false);
-      }
+      const isSlow =
+        connection &&
+        (connection.saveData ||
+          ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
+      if (isSlow) setShouldLoadVideo(false);
     }
   }, []);
 
   const isColorTheme = videoPath.startsWith('color:') || !shouldLoadVideo;
 
+  // ── Video loading ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (isColorTheme) {
       setIsLoaded(true);
@@ -42,73 +51,129 @@ export function ScrollTiedBackground({
     const video = videoRef.current;
     if (!video) return;
 
-    // Reset loading state on path change
     setIsLoaded(false);
+    isSeeking.current = false;
+    pendingSeek.current = false;
+    targetProgressRef.current = 0;
+    displayProgressRef.current = 0;
     video.load();
 
-    const handleLoadedMetadata = () => {
-      setIsLoaded(true);
-    };
+    const onReady = () => setIsLoaded(true);
 
-    // If metadata is already loaded (common on cached files)
     if (video.readyState >= 1) {
       setIsLoaded(true);
     }
 
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-    };
+    video.addEventListener('loadedmetadata', onReady);
+    return () => video.removeEventListener('loadedmetadata', onReady);
   }, [videoPath, isColorTheme]);
 
+  // ── Scroll scrubbing engine ───────────────────────────────────────────────
   useEffect(() => {
-    if (isColorTheme) return;
+    if (isColorTheme || !isLoaded) return;
     const video = videoRef.current;
     if (!video) return;
 
-    let targetProgress = 0;
-    let currentProgress = 0;
+    // Drain any previous RAF
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
 
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      targetProgress = scrollHeight > 0 ? Math.max(0, Math.min(1, scrollTop / scrollHeight)) : 0;
+    // --- Helpers ---
+
+    /** Returns the current scroll fraction [0, 1] */
+    const getScrollFraction = () => {
+      const scrollH =
+        document.documentElement.scrollHeight - window.innerHeight;
+      return scrollH > 0
+        ? Math.max(0, Math.min(1, window.scrollY / scrollH))
+        : 0;
     };
 
-    // Smooth LERP (Linear Interpolation) loop for 60fps scrubbing
-    const updateScrub = () => {
-      if (video && video.readyState >= 2 && video.duration) {
-        const diff = targetProgress - currentProgress;
-        if (Math.abs(diff) > 0.0005) {
-          currentProgress += diff * 0.16; // Snappy, responsive catch-up (16% per frame)
-        } else {
-          currentProgress = targetProgress; // Snap to target when extremely close
-        }
+    /** Perform a video seek. Handles overlapping seeks with a "pending" flag */
+    const seekTo = (fraction: number) => {
+      if (!video.duration) return;
+      const targetTime = fraction * video.duration;
+      if (Math.abs(video.currentTime - targetTime) < 0.008) return; // < 8ms — skip
 
-        const targetTime = currentProgress * video.duration;
-        // Only seek if target time differs by more than 15ms (approx. 1/60s frame duration)
-        if (Math.abs(video.currentTime - targetTime) > 0.015) {
-          video.currentTime = targetTime;
+      if (isSeeking.current) {
+        // Another seek is in flight — store the latest target and bail
+        pendingSeek.current = true;
+        displayProgressRef.current = fraction;
+        return;
+      }
+
+      isSeeking.current = true;
+      displayProgressRef.current = fraction;
+      video.currentTime = targetTime;
+    };
+
+    // When a seek finishes, immediately apply any pending seek that arrived
+    // while the previous one was still in-flight — this keeps the video frame
+    // exactly matched to the latest scroll position.
+    const onSeeked = () => {
+      isSeeking.current = false;
+      if (pendingSeek.current) {
+        pendingSeek.current = false;
+        seekTo(targetProgressRef.current);
+      }
+    };
+    video.addEventListener('seeked', onSeeked);
+
+    // --- Scroll listener: direct, zero-latency seek on every scroll event ---
+    const onScroll = () => {
+      const fraction = getScrollFraction();
+      targetProgressRef.current = fraction;
+      // Direct seek — no LERP — gives frame-perfect sync with scroll position
+      seekTo(fraction);
+    };
+
+    // --- RAF loop: only runs for tiny residual corrections (< 8ms gap) ---
+    // This matters when the browser delivers scroll events at a lower rate
+    // than the display refresh (e.g. touchpad inertia or passive coalescing).
+    const rafLoop = () => {
+      if (
+        video.readyState >= 2 &&
+        video.duration &&
+        !isSeeking.current
+      ) {
+        const target = targetProgressRef.current;
+        const diff = target - displayProgressRef.current;
+
+        if (Math.abs(diff) > 0.0002) {
+          // Blend remaining gap in a single frame — not LERP chasing across
+          // multiple frames. The factor is intentionally high (0.9) so it
+          // resolves in ≤ 2 frames with no visible lag.
+          const next = displayProgressRef.current + diff * 0.9;
+          seekTo(next);
         }
       }
-      requestRef.current = requestAnimationFrame(updateScrub);
+      rafRef.current = requestAnimationFrame(rafLoop);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    requestRef.current = requestAnimationFrame(updateScrub);
+    // Seed initial position
+    const initialFraction = getScrollFraction();
+    targetProgressRef.current = initialFraction;
+    displayProgressRef.current = initialFraction;
+    if (video.readyState >= 2 && video.duration) {
+      video.currentTime = initialFraction * video.duration;
+    }
 
-    // Initial calculation
-    handleScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    rafRef.current = requestAnimationFrame(rafLoop);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
+      window.removeEventListener('scroll', onScroll);
+      video.removeEventListener('seeked', onSeeked);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
     };
   }, [isLoaded, videoPath, isColorTheme]);
 
-  // Build video CSS filter from brightness & contrast
+  // Build video CSS filter
   const videoFilter = `brightness(${brightness}) contrast(${contrast})`;
 
   return (
@@ -119,7 +184,6 @@ export function ScrollTiedBackground({
           className="w-full h-full"
         />
       ) : (
-        /* Background Video */
         <video
           ref={videoRef}
           src={`/${videoPath}`}
@@ -131,6 +195,7 @@ export function ScrollTiedBackground({
           style={{
             opacity: isLoaded ? videoOpacity : 0,
             filter: videoFilter,
+            willChange: 'opacity',
           }}
           className="w-full h-full object-cover transition-opacity duration-700"
         />
