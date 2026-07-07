@@ -1072,7 +1072,7 @@ export function CollaboratorDashboard({
 
   return (
     <div className="collab-compact-wrapper">
-      <div className="pt-16 pb-6 px-4 md:px-8 w-full min-h-screen page-wrapper">
+      <div className="pt-20 pb-6 px-4 md:px-8 w-full min-h-screen page-wrapper">
         <CountryRequiredModal />
 
         {/* Header */}

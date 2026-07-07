@@ -454,7 +454,7 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
   // ─── DASHBOARD CORE SCREEN ────────────────────────────────────────────────
   return (
     <div className="collab-compact-wrapper">
-    <div className="w-full flex-grow flex flex-col bg-[#050505] text-on-surface px-4 md:px-6 pt-16 pb-4 min-h-screen">
+    <div className="w-full flex-grow flex flex-col bg-[#050505] text-on-surface px-4 md:px-6 pt-20 pb-4 min-h-screen">
       <CountryRequiredModal />
       {/* Top Banner Row - 100% full width */}
       <div className="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-2 border-b border-white/10 pb-2.5 mb-3">

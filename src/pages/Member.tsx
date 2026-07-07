@@ -425,19 +425,12 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
   return (
     <div className="collab-compact-wrapper">
-    <div className="pt-10 pb-3 px-3 sm:px-6 max-w-[min(100%,820px)] mx-auto min-h-[calc(100vh-80px)] page-wrapper">
+    <div className="pt-20 pb-3 px-3 sm:px-6 max-w-[min(100%,820px)] mx-auto min-h-[calc(100vh-80px)] page-wrapper">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
         <div>
           <h1 className="font-display text-lg font-bold text-white">{t('member.title')}</h1>
           <p className="font-sans text-[10px] text-on-surface-variant">{memberData.email}</p>
         </div>
-        <button
-          onClick={handleLogout}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-panel border border-white/10 hover:border-red-400/30 transition-all text-on-surface-variant hover:text-red-400 text-[10px]"
-        >
-          <LogOut className="w-3 h-3" />
-          <span className="font-display text-[9px] font-semibold tracking-widest uppercase">{t('member.logout')}</span>
-        </button>
       </div>
 
       <motion.div
