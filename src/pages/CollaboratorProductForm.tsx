@@ -307,7 +307,18 @@ export function CollaboratorProductForm({
 
   // Customizations
   const [themeVideoPath, setThemeVideoPath] = useState('');
-  const [themeVideoConfig, setThemeVideoConfig] = useState({
+  const [themeVideoConfig, setThemeVideoConfig] = useState<{
+    videoOpacity: number;
+    overlayOpacity: number;
+    sectionOpacity: number;
+    blurAmount: number;
+    brightness: number;
+    contrast: number;
+    backgroundStyle?: string;
+    textColor?: string;
+    accentColor?: string;
+    isLight?: boolean;
+  }>({
     videoOpacity: 0.25,
     overlayOpacity: 0.7,
     sectionOpacity: 0.1,
@@ -538,13 +549,17 @@ export function CollaboratorProductForm({
           setCtaText(prod.cta_text || 'Comprar Agora');
           setThemeVideoPath(prod.theme_video_path || '');
           if (prod.theme_video_config) {
-          setThemeVideoConfig({
+            setThemeVideoConfig({
               videoOpacity: prod.theme_video_config.videoOpacity ?? 0.25,
               overlayOpacity: prod.theme_video_config.overlayOpacity ?? 0.7,
               sectionOpacity: prod.theme_video_config.sectionOpacity ?? 0.1,
               blurAmount: prod.theme_video_config.blurAmount ?? 8,
               brightness: prod.theme_video_config.brightness ?? 1.0,
               contrast: prod.theme_video_config.contrast ?? 1.0,
+              backgroundStyle: prod.theme_video_config.backgroundStyle,
+              textColor: prod.theme_video_config.textColor,
+              accentColor: prod.theme_video_config.accentColor,
+              isLight: prod.theme_video_config.isLight,
             });
           }
 

@@ -248,7 +248,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
       ) : (
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-surface/90 shadow-2xl glass-panel">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
+            <table className="w-full min-w-[850px] text-left text-sm border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-white/5 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                   <th className="px-6 py-4">Produto</th>

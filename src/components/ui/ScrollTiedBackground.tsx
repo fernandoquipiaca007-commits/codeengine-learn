@@ -24,10 +24,9 @@ export function ScrollTiedBackground({
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const isMobile = window.innerWidth < 768;
       const connection = (navigator as any).connection;
       const isSlow = connection && (connection.saveData || ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
-      if (isMobile || isSlow) {
+      if (isSlow) {
         setShouldLoadVideo(false);
       }
     }

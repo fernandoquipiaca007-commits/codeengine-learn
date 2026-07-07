@@ -367,7 +367,11 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
               {/* Notification bell */}
               <div className="relative flex-shrink-0">
                 <button
-                  onClick={() => { setShowNotifications(v => !v); setShowProfileMenu(false); }}
+                  onClick={() => {
+                    setShowNotifications(v => !v);
+                    setShowProfileMenu(false);
+                    setShowMobileMenu(false);
+                  }}
                   className="relative text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5"
                 >
                   <Bell className="w-[18px] sm:w-5 h-[18px] sm:h-5" />
@@ -397,7 +401,11 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
               {/* Profile avatar */}
               <div className="relative flex-shrink-0">
                 <button
-                  onClick={() => { setShowProfileMenu(v => !v); setShowNotifications(false); }}
+                  onClick={() => {
+                    setShowProfileMenu(v => !v);
+                    setShowNotifications(false);
+                    setShowMobileMenu(false);
+                  }}
                   className={cn(
                     'rounded-full overflow-hidden border-2 transition-all flex items-center justify-center flex-shrink-0',
                     'border-transparent hover:border-primary/60',
@@ -503,7 +511,11 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
 
               {/* Mobile menu button */}
               <button
-                onClick={() => setShowMobileMenu(v => !v)}
+                onClick={() => {
+                  setShowMobileMenu(v => !v);
+                  setShowNotifications(false);
+                  setShowProfileMenu(false);
+                }}
                 className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5 flex-shrink-0"
                 aria-label={t('nav.openMenu')}
               >
@@ -530,7 +542,11 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                 <span className="lg:hidden">{t('nav.signIn')}</span>
               </button>
               <button
-                onClick={() => setShowMobileMenu(v => !v)}
+                onClick={() => {
+                  setShowMobileMenu(v => !v);
+                  setShowNotifications(false);
+                  setShowProfileMenu(false);
+                }}
                 className="xl:hidden text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5 flex-shrink-0"
                 aria-label={t('nav.openMenu')}
               >
