@@ -11,7 +11,7 @@ interface CheckoutButtonProps {
   variant?: 'primary' | 'mobile';
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://api.srv1739567.hstgr.cloud';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
 
 export function CheckoutButton({
   productId,
