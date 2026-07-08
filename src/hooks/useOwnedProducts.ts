@@ -70,6 +70,7 @@ export function useOwnedProducts(userId: string | undefined) {
       return;
     }
     try {
+      const data = await queryCache.get(`owned-products-${userId}`, fetcher, { revalidate });
       const safeData = Array.isArray(data) ? data : [];
       setOwnedProductIds(new Set(safeData));
     } catch (err) {
