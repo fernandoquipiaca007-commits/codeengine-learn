@@ -2080,8 +2080,8 @@ export function CollaboratorDashboard({
 
                   <p className="mt-2 text-[10px] text-on-surface-variant leading-normal">
                     Partilhe este link com criadores de conteúdo. Quando se
-                    registarem através dele e obtiverem aprovação como
-                    colaboradores, você começa a ganhar automaticamente.
+                    registarem através dele como criadores,
+                    você começa a ganhar automaticamente.
                   </p>
                 </div>
 
@@ -2104,7 +2104,7 @@ export function CollaboratorDashboard({
                     </div>
 
                     <div className="text-[10px] text-on-surface-variant mt-0.5">
-                      Viraram Colaboradores
+                      Viraram Criadores
                     </div>
                   </div>
 
@@ -2151,7 +2151,7 @@ export function CollaboratorDashboard({
                   {!founderStats?.recentCommissions?.length ? (
                     <div className="py-8 text-center text-on-surface-variant text-sm">
                       Nenhuma comissão de fundador recebida ainda. Convide
-                      colaboradores para começar!
+                      criadores para começar!
                     </div>
                   ) : (
                     <div className="overflow-x-auto">

@@ -100,6 +100,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
   const [unreadCount, setUnreadCount]           = useState(0);
   const [avatarUrl, setAvatarUrl]               = useState<string | null>(null);
   const [collabStatus, setCollabStatus]         = useState<string>('not_applied');
+  const [userRole, setUserRole]                 = useState<'aluno' | 'criador' | null>(null);
 
   // ── Scroll behaviour ─────────────────────────────────────────
   const [scrolled, setScrolled]   = useState(false);
@@ -152,9 +153,9 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
     prefetchLibrary(locale, memberLevel, isLoggedIn);
   };
 
-  // ── Avatar ───────────────────────────────────────────────────
+  // ── Avatar + Role ────────────────────────────────────────────
   useEffect(() => {
-    if (!user?.id) { setAvatarUrl(null); return; }
+    if (!user?.id) { setAvatarUrl(null); setUserRole(null); return; }
 
     const loadAvatar = async () => {
       try {
@@ -164,6 +165,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
           .eq('auth_id', user.id)
           .maybeSingle();
         setAvatarUrl(data?.profile_data?.avatar_url ?? null);
+        setUserRole(data?.profile_data?.role ?? null);
       } catch (err) {
         console.error('Error loading avatar in navbar:', err);
       }
@@ -176,6 +178,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
         { event: 'UPDATE', schema: 'public', table: 'members', filter: `auth_id=eq.${user.id}` },
         (payload: any) => {
           setAvatarUrl(payload.new?.profile_data?.avatar_url ?? null);
+          setUserRole(payload.new?.profile_data?.role ?? null);
         }
       )
       .subscribe();
@@ -451,27 +454,42 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                           </p>
                         </div>
 
-                        {/* Menu items */}
-                        {[
-                          { label: t('profile.memberArea'),    screen: 'member',   section: 'inicio',       icon: User },
-                          { label: t('profile.myLibrary'),     screen: 'member',   section: 'biblioteca',   icon: Heart,        hover: handleLibraryHover },
-                          { label: t('profile.myPurchases'),   screen: 'member',   section: 'compras',      icon: ShoppingBag },
-                          { label: t('profile.notifications'), screen: 'member',   section: 'notificacoes', icon: Bell },
-                          { label: t('profile.settings'),      screen: 'settings', section: undefined,      icon: Settings },
-                        ].map(({ label, screen, section, icon: Icon, hover }) => (
+                        {/* Menu items — condicionais por role */}
+                        {userRole === 'criador' ? (
+                          // Criador: apenas definições
                           <button
-                            key={label}
-                            onClick={() => { setScreen(screen, section); setShowProfileMenu(false); }}
-                            onMouseEnter={hover}
+                            onClick={() => { setScreen('settings'); setShowProfileMenu(false); }}
                             className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
                           >
-                            <Icon className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
-                            <span className="truncate">{label}</span>
+                            <Settings className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
+                            <span className="truncate">{t('profile.settings')}</span>
                           </button>
-                        ))}
+                        ) : (
+                          // Aluno (ou sem role): menu completo da área do membro
+                          <>
+                            {[
+                              { label: t('profile.memberArea'),    screen: 'member',   section: 'inicio',       icon: User },
+                              { label: t('profile.myLibrary'),     screen: 'member',   section: 'biblioteca',   icon: Heart,        hover: handleLibraryHover },
+                              { label: t('profile.myPurchases'),   screen: 'member',   section: 'compras',      icon: ShoppingBag },
+                              { label: t('profile.notifications'), screen: 'member',   section: 'notificacoes', icon: Bell },
+                              { label: t('profile.settings'),      screen: 'settings', section: undefined,      icon: Settings },
+                            ].map(({ label, screen, section, icon: Icon, hover }) => (
+                              <button
+                                key={label}
+                                onClick={() => { setScreen(screen, section); setShowProfileMenu(false); }}
+                                onMouseEnter={hover}
+                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                              >
+                                <Icon className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
+                                <span className="truncate">{label}</span>
+                              </button>
+                            ))}
+                          </>
+                        )}
 
-                        {/* Affiliates + Collaborator */}
+                        {/* Affiliates + Collaborator — conditional by role */}
                         <div className="border-t border-white/8 mt-1 pt-1">
+                          {/* Afiliados: visível para todos */}
                           <button
                             onClick={() => { setScreen('afiliados'); setShowProfileMenu(false); }}
                             className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
@@ -479,18 +497,19 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                             <Percent className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
                             <span className="truncate font-medium">Programa de Afiliados</span>
                           </button>
-                          <button
-                            onClick={() => {
-                              setScreen(collabStatus === 'approved' ? 'colaborador' : 'colaborador-candidatura');
-                              setShowProfileMenu(false);
-                            }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                          >
-                            <Briefcase className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
-                            <span className="truncate font-medium">
-                              {collabStatus === 'approved' ? 'Painel do Criador' : 'Seja um Colaborador'}
-                            </span>
-                          </button>
+                          {/* Painel do Criador: só para criadores */}
+                          {userRole === 'criador' && (
+                            <button
+                              onClick={() => {
+                                setScreen(collabStatus === 'approved' ? 'colaborador' : 'colaborador');
+                                setShowProfileMenu(false);
+                              }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                            >
+                              <Briefcase className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
+                              <span className="truncate font-medium">Painel do Criador</span>
+                            </button>
+                          )}
                         </div>
 
                         {/* Logout */}

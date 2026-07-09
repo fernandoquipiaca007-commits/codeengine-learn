@@ -132,6 +132,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [country, setCountry] = useState('AO');
+  const [registrationRole, setRegistrationRole] = useState<'aluno' | 'criador'>('aluno');
 
   // OTP Password Recovery
   const [codeSent, setCodeSent] = useState(false);
@@ -215,6 +216,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
             data: {
               name,
               country,
+              role: registrationRole,
               ...(referredByUserId ? { referred_by: referredByUserId } : {}),
             },
           },
@@ -237,6 +239,12 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           setSuccess('Cadastro realizado com sucesso! Entrando...');
           void setLocale(countryToLocale(country));
           setTimeout(() => {
+            // Criador vai directamente para o painel do criador (sem onboarding)
+            if (registrationRole === 'criador') {
+              setScreen('colaborador');
+              return;
+            }
+            // Aluno: verificar se há checkout pendente, senão vai para onboarding/member
             const raw = sessionStorage.getItem('pendingCheckout');
             if (raw) {
               try {
@@ -369,7 +377,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           </div>
 
           {/* Heading */}
-          <div className={isSignup ? 'mb-4' : 'mb-6'}>
+          <div className={isSignup ? 'mb-3' : 'mb-6'}>
             <h1 className="font-display text-2xl font-bold text-white mb-0.5 leading-tight">
               {mode === 'login' && t('welcomeTitleLogin')}
               {mode === 'signup' && t('welcomeTitleSignup')}
@@ -381,6 +389,39 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
               {mode === 'reset' && t('resetPasswordSubtitle')}
             </p>
           </div>
+
+          {/* Role toggle — signup only */}
+          {mode === 'signup' && (
+            <div className="mb-4">
+              <p className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-2 font-display">
+                {t('registrationRoleTitle')}
+              </p>
+              <div className="flex rounded-lg border border-white/10 overflow-hidden bg-white/5">
+                <button
+                  type="button"
+                  onClick={() => setRegistrationRole('aluno')}
+                  className={`flex-1 py-2 text-xs font-semibold font-display tracking-wide transition-all duration-200 ${
+                    registrationRole === 'aluno'
+                      ? 'bg-primary text-white shadow-[inset_0_0_12px_rgba(0,0,0,0.2)]'
+                      : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                  }`}
+                >
+                  {t('roleAluno')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRegistrationRole('criador')}
+                  className={`flex-1 py-2 text-xs font-semibold font-display tracking-wide transition-all duration-200 ${
+                    registrationRole === 'criador'
+                      ? 'bg-primary text-white shadow-[inset_0_0_12px_rgba(0,0,0,0.2)]'
+                      : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                  }`}
+                >
+                  {t('roleCriador')}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Alerts */}
           <AnimatePresence>

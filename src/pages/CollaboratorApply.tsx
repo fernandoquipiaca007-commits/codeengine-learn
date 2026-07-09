@@ -212,7 +212,7 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary">
             <ShieldCheck size={28} />
           </div>
-          <h1 className="text-3xl font-bold font-display text-white">Candidatar-se a Colaborador</h1>
+          <h1 className="text-3xl font-bold font-display text-white">Candidatar-se a Criador</h1>
           <p className="mt-2 text-white/60 text-sm">
             Publique seus e-books e cursos digitais no ecossistema da Codeengine
           </p>

@@ -1129,7 +1129,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
           
           {/* Card 1: Creator Partnership */}
           <div 
-            onClick={() => setScreen('colaborador-candidatura')}
+            onClick={() => setScreen('colaborador')}
             className="glass-card p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col justify-between gap-6 text-left group aspect-square cursor-pointer transition-all duration-300 hover:border-primary/20"
             style={{
               aspectRatio: '1/1',

@@ -92,6 +92,7 @@ const PageContent = memo(function PageContent({
   navigateToProduct,
   setIsImmersive,
   onOnboardingComplete,
+  member,
 }: {
   currentScreen: string;
   currentProductId: string | null;
@@ -100,25 +101,39 @@ const PageContent = memo(function PageContent({
   navigateToProduct: (id: string, title?: string) => void;
   setIsImmersive: (v: boolean) => void;
   onOnboardingComplete?: () => void;
+  member: any;
 }) {
+  // Determine user role from member profile
+  const userRole: 'aluno' | 'criador' | null = member?.profile_data?.role ?? null;
+  const isCriador = userRole === 'criador';
+  const isAluno = !isCriador; // default: treat as student if no role set
+
+  // Route guard: criador cannot access member area, aluno cannot access colaborador panel
+  const resolvedScreen = (() => {
+    if (isCriador && currentScreen === 'member') return 'colaborador';
+    if (isAluno && member && currentScreen === 'colaborador') return 'member';
+    if (isAluno && member && currentScreen === 'colaborador-produtos') return 'member';
+    return currentScreen;
+  })();
+
   return (
     <Suspense fallback={<PageLoader />}>
       {currentScreen === 'welcome' && (
         <Welcome setScreen={navigateToScreen} />
       )}
-      {currentScreen === 'home' && (
+      {resolvedScreen === 'home' && (
         <Home setScreen={navigateToScreen} onProductClick={navigateToProduct} />
       )}
-      {currentScreen === 'library' && (
+      {resolvedScreen === 'library' && (
         <Library setScreen={navigateToScreen} onProductClick={navigateToProduct} />
       )}
-      {currentScreen === 'product' && (
+      {resolvedScreen === 'product' && (
         <Product setScreen={navigateToScreen} productId={currentProductId} />
       )}
-      {currentScreen === 'auth' && <Auth setScreen={navigateToScreen} />}
-      {currentScreen === 'signup' && <Auth setScreen={navigateToScreen} initialMode="signup" />}
-      {currentScreen === 'reset-password' && <ResetPassword setScreen={navigateToScreen} />}
-      {currentScreen === 'member' && (
+      {resolvedScreen === 'auth' && <Auth setScreen={navigateToScreen} />}
+      {resolvedScreen === 'signup' && <Auth setScreen={navigateToScreen} initialMode="signup" />}
+      {resolvedScreen === 'reset-password' && <ResetPassword setScreen={navigateToScreen} />}
+      {resolvedScreen === 'member' && (
         <Member
           key={memberSection}
           setScreen={navigateToScreen}
@@ -127,45 +142,45 @@ const PageContent = memo(function PageContent({
           onLearnViewChange={setIsImmersive}
         />
       )}
-      {currentScreen === 'about' && <About setScreen={navigateToScreen} />}
-      {currentScreen === 'releases' && (
+      {resolvedScreen === 'about' && <About setScreen={navigateToScreen} />}
+      {resolvedScreen === 'releases' && (
         <Releases setScreen={navigateToScreen} onProductClick={navigateToProduct} />
       )}
-      {currentScreen === 'contact' && <Contact setScreen={navigateToScreen} />}
-      {currentScreen === 'favorites' && <Favorites setScreen={navigateToScreen} />}
-      {currentScreen === 'news' && <News setScreen={navigateToScreen} />}
-      {currentScreen === 'settings' && <Settings setScreen={navigateToScreen} />}
-      {currentScreen === 'privacy' && <Privacy setScreen={navigateToScreen} />}
-      {currentScreen === 'terms' && <Terms setScreen={navigateToScreen} />}
-      {currentScreen === 'licensing' && <Licensing setScreen={navigateToScreen} />}
-      {currentScreen === 'support' && <Support setScreen={navigateToScreen} />}
-      {currentScreen === 'success' && <Success setScreen={navigateToScreen} />}
-      {currentScreen === 'cancel' && <Cancel setScreen={navigateToScreen} />}
-      {currentScreen === 'rewards' && <Rewards setScreen={navigateToScreen} />}
-      {currentScreen === 'colaborador-candidatura' && (
+      {resolvedScreen === 'contact' && <Contact setScreen={navigateToScreen} />}
+      {resolvedScreen === 'favorites' && <Favorites setScreen={navigateToScreen} />}
+      {resolvedScreen === 'news' && <News setScreen={navigateToScreen} />}
+      {resolvedScreen === 'settings' && <Settings setScreen={navigateToScreen} />}
+      {resolvedScreen === 'privacy' && <Privacy setScreen={navigateToScreen} />}
+      {resolvedScreen === 'terms' && <Terms setScreen={navigateToScreen} />}
+      {resolvedScreen === 'licensing' && <Licensing setScreen={navigateToScreen} />}
+      {resolvedScreen === 'support' && <Support setScreen={navigateToScreen} />}
+      {resolvedScreen === 'success' && <Success setScreen={navigateToScreen} />}
+      {resolvedScreen === 'cancel' && <Cancel setScreen={navigateToScreen} />}
+      {resolvedScreen === 'rewards' && <Rewards setScreen={navigateToScreen} />}
+      {resolvedScreen === 'colaborador-candidatura' && (
         <CollaboratorApply
           setScreen={navigateToScreen}
           onCandidacyApproved={() => navigateToScreen('colaborador')}
         />
       )}
-      {currentScreen === 'colaborador' && (
+      {resolvedScreen === 'colaborador' && (
         <CollaboratorDashboard
           setScreen={navigateToScreen}
           onGoToProducts={() => navigateToScreen('colaborador-produtos')}
         />
       )}
-      {currentScreen === 'colaborador-produtos' && (
+      {resolvedScreen === 'colaborador-produtos' && (
         <CollaboratorProducts
           setScreen={navigateToScreen}
           setIsImmersive={setIsImmersive}
         />
       )}
-      {currentScreen === 'afiliados' && (
+      {resolvedScreen === 'afiliados' && (
         <AffiliatesDashboard
           setScreen={navigateToScreen}
         />
       )}
-      {currentScreen === 'onboarding' && (
+      {resolvedScreen === 'onboarding' && (
         <Onboarding onComplete={onOnboardingComplete || (() => navigateToScreen('home'))} />
       )}
     </Suspense>
@@ -669,9 +684,13 @@ export default function App() {
   }, [navigateToScreen, navigateToProduct]);
 
   // Onboarding mandatory redirection lock
+  // Criadores são isentos do onboarding
   useEffect(() => {
     if (authLoading || loadingMember) return;
     if (user && lastFetchedUserIdRef.current === user.id) {
+      const userRole = member?.profile_data?.role;
+      // Criadores não passam pelo onboarding
+      if (userRole === 'criador') return;
       const isCompleted = member ? member.onboarding_completed === true : false;
       if (!isCompleted) {
         const isPurchase = sessionStorage.getItem('pendingCheckout') !== null;
@@ -737,6 +756,7 @@ export default function App() {
               navigateToProduct={navigateToProduct}
               setIsImmersive={setIsImmersive}
               onOnboardingComplete={handleOnboardingComplete}
+              member={member}
             />
           </motion.div>
         </AnimatePresence>
