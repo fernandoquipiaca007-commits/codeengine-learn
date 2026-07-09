@@ -5,6 +5,7 @@ import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
+import { queryCache } from '../lib/queryCache';
 
 import { Product as ProductPage } from './Product';
 import { useUserCountry } from '../contexts/UserCountryContext';
@@ -924,6 +925,9 @@ export function CollaboratorProductForm({
 
       const data = await res.json();
       if (data.success) {
+        if (productId) {
+          queryCache.invalidatePrefix(`product-detail-${productId}`);
+        }
         onSaveSuccess();
       } else {
         setFormError(data.error || 'Erro ao guardar o produto.');
@@ -950,10 +954,16 @@ export function CollaboratorProductForm({
       });
       const data = await res.json();
       if (data.success) {
+        queryCache.invalidatePrefix(`product-detail-${productId}`);
         setThemeSaved(true);
         setTimeout(() => setThemeSaved(false), 3000);
+      } else {
+        alert('Erro ao guardar o tema: ' + (data.error || 'Erro desconhecido'));
       }
-    } catch (_) {}
+    } catch (err: any) {
+      console.error('Error saving theme:', err);
+      alert('Erro de conexão ao salvar o tema.');
+    }
     finally { setThemeSaving(false); }
   }
 

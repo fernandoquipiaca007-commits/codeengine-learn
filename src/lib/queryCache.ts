@@ -152,6 +152,31 @@ class QueryCacheManager {
   }
 
   /**
+   * Invalidates all keys starting with the specified prefix to force fresh queries.
+   */
+  invalidatePrefix(prefix: string) {
+    // 1. Clear from memory cache
+    for (const key of Array.from(this.cache.keys())) {
+      if (key.startsWith(prefix)) {
+        this.cache.delete(key);
+      }
+    }
+    // 2. Clear from sessionStorage
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          if (k && k.startsWith(`ce_cache_${prefix}`)) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach(k => sessionStorage.removeItem(k));
+      }
+    } catch (e) {}
+  }
+
+  /**
    * Clears the entire cache.
    */
   clear() {
