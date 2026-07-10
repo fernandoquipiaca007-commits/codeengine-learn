@@ -113,11 +113,10 @@ const PageContent = memo(function PageContent({
   const isCriador = userRole === 'criador' || collabStatus === 'approved';
   const isAluno = !isCriador; // default: treat as student if no role set
 
-  // Route guard: criador cannot access member area, aluno cannot access colaborador panel
+  // Route guard: criador cannot access member area or candidacy page, aluno cannot access colaborador panels
   const resolvedScreen = (() => {
-    if (isCriador && currentScreen === 'member') return 'colaborador';
-    if (isAluno && member && currentScreen === 'colaborador') return 'member';
-    if (isAluno && member && currentScreen === 'colaborador-produtos') return 'member';
+    if (isCriador && (currentScreen === 'member' || currentScreen === 'colaborador-candidatura')) return 'colaborador';
+    if (isAluno && member && (currentScreen === 'colaborador' || currentScreen === 'colaborador-produtos')) return 'member';
     return currentScreen;
   })();
 
