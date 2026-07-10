@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Sparkles, Target, Rocket, Users, Zap, Globe } from 'lucide-react';
+import { Target, Rocket, Sparkles, Zap, Users, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface AboutProps {
@@ -27,13 +27,6 @@ export function About({ setScreen }: AboutProps) {
     }
   ];
 
-  const stats = [
-    { number: '10K+', label: t('about.stats.activeMembers') },
-    { number: '500+', label: t('about.stats.premiumContent') },
-    { number: '98%', label: t('about.stats.satisfaction') },
-    { number: '24/7', label: t('about.stats.support') }
-  ];
-
   const features = [
     {
       icon: Zap,
@@ -53,72 +46,28 @@ export function About({ setScreen }: AboutProps) {
   ];
 
   return (
-    <div className="pt-14 pb-4 px-4 sm:px-6 md:px-12 max-w-[1080px] mx-auto overflow-x-hidden">
+    <div className="pt-20 pb-4 px-4 sm:px-6 md:px-12 max-w-[1080px] mx-auto">
       {/* Hero Section */}
-      <header className="mb-3 flex flex-col items-start max-w-4xl">
+      <header className="mb-6 flex flex-col items-start max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
-          <h1 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-on-surface-variant mb-2">
+          <h1 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-[1.1] tracking-[-0.04em] font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white to-white/70 mb-2">
             {t('about.heroTitle')}
           </h1>
-          <p className="font-sans text-xs sm:text-sm text-on-surface-variant max-w-3xl leading-relaxed">
+          <p className="font-sans text-xs sm:text-sm text-white/70 max-w-3xl leading-relaxed">
             {t('about.heroSubtitle')}
           </p>
         </motion.div>
       </header>
 
-      {/* Stats Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="mb-6"
-      >
-        <motion.div 
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.08,
-                delayChildren: 0.2,
-              },
-            },
-          }}
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              variants={{
-                hidden: { opacity: 0, y: 15 },
-                visible: { opacity: 1, y: 0 },
-              }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
-              className="glass-panel rounded-xl p-3.5 text-center relative group hover:scale-105 transition-transform duration-300"
-            >
-              <div className="absolute w-[120px] h-[120px] bg-[radial-gradient(circle,rgba(192,193,255,0.12)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="font-display text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-primary to-white mb-0.5">
-                {stat.number}
-              </div>
-              <div className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider">
-                {stat.label}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </motion.section>
-
       {/* Values Section */}
       <motion.section
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
         className="mb-6"
       >
         <h2 className="font-display text-lg sm:text-xl font-bold text-white mb-4">
@@ -128,7 +77,7 @@ export function About({ setScreen }: AboutProps) {
           {values.map((value, index) => (
             <div
               key={index}
-              className="glass-card glass-card-hover rounded-xl p-4 relative group"
+              className="overlay-elevated rounded-xl p-4 relative group"
             >
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.12)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0"></div>
               
@@ -140,7 +89,7 @@ export function About({ setScreen }: AboutProps) {
                 {value.title}
               </h3>
               
-              <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
+              <p className="font-sans text-xs text-white/70 leading-relaxed">
                 {value.description}
               </p>
             </div>
@@ -150,9 +99,9 @@ export function About({ setScreen }: AboutProps) {
 
       {/* Features Section */}
       <motion.section
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
         className="mb-6"
       >
         <h2 className="font-display text-lg sm:text-xl font-bold text-white mb-4">
@@ -162,7 +111,7 @@ export function About({ setScreen }: AboutProps) {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="glass-panel rounded-xl p-4 relative group hover:scale-105 transition-transform duration-300"
+              className="overlay-dark rounded-xl p-4 relative group hover:scale-105 transition-transform duration-300"
             >
               <div className="absolute w-[150px] h-[150px] bg-[radial-gradient(circle,rgba(192,193,255,0.12)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 right-0"></div>
               
@@ -174,7 +123,7 @@ export function About({ setScreen }: AboutProps) {
                 {feature.title}
               </h3>
               
-              <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
+              <p className="font-sans text-xs text-white/70 leading-relaxed">
                 {feature.description}
               </p>
             </div>
@@ -184,19 +133,19 @@ export function About({ setScreen }: AboutProps) {
 
       {/* Manifesto Section */}
       <motion.section
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
         className="mb-6"
       >
-        <div className="glass-panel rounded-xl p-5 md:p-6 relative overflow-hidden">
+        <div className="overlay-dark rounded-xl p-5 md:p-6 relative overflow-hidden">
           <div className="absolute w-[300px] h-[300px] bg-[radial-gradient(circle,rgba(192,193,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
           
           <h2 className="font-display text-lg font-bold text-white mb-3">
             {t('about.manifesto')}
           </h2>
           
-          <div className="space-y-2.5 font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed max-w-3xl">
+          <div className="space-y-2.5 font-sans text-xs sm:text-sm text-white/70 leading-relaxed max-w-3xl">
             <p>{t('about.manifestoP1')}</p>
             <p>{t('about.manifestoP2')}</p>
             <p>{t('about.manifestoP3')}</p>
@@ -209,15 +158,15 @@ export function About({ setScreen }: AboutProps) {
 
       {/* CTA Section */}
       <motion.section
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
+        transition={{ duration: 0.5, delay: 0.25 }}
         className="text-center"
       >
         <h2 className="font-display text-lg font-bold text-white mb-2">
           {t('about.readyToStart')}
         </h2>
-        <p className="font-sans text-xs sm:text-sm text-on-surface-variant mb-3 max-w-2xl mx-auto">
+        <p className="font-sans text-xs sm:text-sm text-white/70 mb-3 max-w-2xl mx-auto">
           {t('about.readyToStartDesc')}
         </p>
         <button

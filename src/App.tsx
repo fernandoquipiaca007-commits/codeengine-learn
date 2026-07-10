@@ -115,7 +115,18 @@ const PageContent = memo(function PageContent({
   // Determine user role from member profile or existing approved collaborator status
   const userRole: 'aluno' | 'criador' | null = member?.profile_data?.role ?? null;
   const isCriador = userRole === 'criador' || collabStatus === 'approved';
-  const isAluno = !isCriador; // default: treat as student if no role set
+  const isAluno = !isCriador;
+
+  // While loading, for creator-only screens show a transparent spinner to avoid
+  // the white flash that happens when Suspense switches from loading → loaded state
+  const isCreatorScreen = currentScreen === 'colaborador' || currentScreen === 'colaborador-produtos';
+  if ((loadingMember || loadingCollabStatus) && isCreatorScreen) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
+      </div>
+    );
+  }
 
   // Route guard: criador cannot access candidacy page, aluno cannot access colaborador panels
   const resolvedScreen = (() => {
@@ -169,7 +180,14 @@ const PageContent = memo(function PageContent({
       {resolvedScreen === 'colaborador-candidatura' && (
         <CollaboratorApply
           setScreen={navigateToScreen}
-          onCandidacyApproved={() => navigateToScreen('colaborador')}
+          onCandidacyApproved={() => {
+            setCollabStatus('approved');
+            setMember((prev: any) => prev ? {
+              ...prev,
+              profile_data: { ...prev.profile_data, role: 'criador' }
+            } : prev);
+            navigateToScreen('colaborador');
+          }}
         />
       )}
       {resolvedScreen === 'colaborador' && (

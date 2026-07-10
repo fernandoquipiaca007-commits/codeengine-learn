@@ -4544,7 +4544,6 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
 
   async function fetchAnalytics() {
     setLoading(true);
-
     setError(false);
 
     try {
@@ -4552,37 +4551,52 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session) return;
+      if (!session) {
+        setLoading(false);
+        return;
+      }
 
       let url = `${BACKEND_URL}/api/collaborators/analytics?period=${period}`;
-
       if (selectedProduct) {
         url += `&productId=${selectedProduct}`;
       }
 
       const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
+
+      if (!res.ok) {
+        // API returned an error — show zeros gracefully, not a blocking error
+        console.warn('[CollaboratorAnalyticsPanel] analytics API error:', res.status);
+        setSummary({ totalViews: 0, totalConversions: 0, totalRevenueUsd: 0, totalRevenueAoa: 0, conversionRate: 0 });
+        setChartData([]);
+        setProducts([]);
+        return;
+      }
 
       const data = await res.json();
 
       if (data.success) {
         setSummary(data.summary);
-
         setChartData(data.chartData);
-
         setProducts(data.products || []);
       } else {
-        setError(true);
+        // API returned success:false — show zeros gracefully
+        setSummary({ totalViews: 0, totalConversions: 0, totalRevenueUsd: 0, totalRevenueAoa: 0, conversionRate: 0 });
+        setChartData([]);
+        setProducts([]);
       }
     } catch (err) {
-      setError(true);
+      // Network error — show zeros gracefully
+      console.warn('[CollaboratorAnalyticsPanel] network error:', err);
+      setSummary({ totalViews: 0, totalConversions: 0, totalRevenueUsd: 0, totalRevenueAoa: 0, conversionRate: 0 });
+      setChartData([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="space-y-3 animate-in fade-in duration-300">
