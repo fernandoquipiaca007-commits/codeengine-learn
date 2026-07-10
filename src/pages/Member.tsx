@@ -132,7 +132,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
         currentSession = activeSessionData.session;
       }
 
-      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
       // 2. Lookup member record
       let { data: member } = (await withTimeout(

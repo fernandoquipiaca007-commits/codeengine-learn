@@ -71,7 +71,7 @@ export const slugify = (text: string) => {
 };
 
 // ─── Module-level backend URL (shared across all hooks/effects) ───────────────
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
 // ─── Page loader skeleton ─────────────────────────────────────────────────────
 function PageLoader() {
@@ -333,7 +333,7 @@ export default function App() {
       sessionStorage.setItem('ce_session_id', sessionId);
     }
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
     const path = currentScreen === 'product' && currentProductId
       ? `/product/${currentProductId}`
       : `/${currentScreen}`;

@@ -90,7 +90,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         return;
       }
       if (product.isSponsored && product.campaignId) {
-        fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app'}/api/ads/track/click`, {
+        fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app'}/api/ads/track/click`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ campaignId: product.campaignId })

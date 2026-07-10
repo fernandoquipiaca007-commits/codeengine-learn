@@ -9,7 +9,7 @@ interface CollaboratorApplyProps {
   onCandidacyApproved: () => void;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
 export function CollaboratorApply({ setScreen, onCandidacyApproved }: CollaboratorApplyProps) {
   const { isAngola } = useUserCountry();

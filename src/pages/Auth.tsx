@@ -230,7 +230,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         }
 
         if (data.session?.access_token) {
-          fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app'}/api/auth/welcome`, {
+          fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app'}/api/auth/welcome`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` },
           }).catch(() => {});
@@ -313,7 +313,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         }
 
       } else if (mode === 'reset') {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
         if (!codeSent) {
           const response = await fetch(`${backendUrl}/api/auth/forgot-password`, {
             method: 'POST',

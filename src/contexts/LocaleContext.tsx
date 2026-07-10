@@ -12,7 +12,7 @@ import {
   LOCALE_STORAGE_KEY,
 } from '../lib/locale';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
 interface LocaleContextValue {
   locale: AppLocale;

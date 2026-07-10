@@ -49,7 +49,7 @@ export function Success({ setScreen }: SuccessProps) {
   }, []);
 
   const fetchSessionData = async (sessionId: string) => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
     try {
       // Garante registro da compra (webhook pode atrasar em dev local)

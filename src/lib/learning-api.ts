@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { AppLocale } from './locale';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
 async function authHeaders() {
   const { data: { session } } = await supabase.auth.getSession();

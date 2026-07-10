@@ -50,7 +50,7 @@ interface CollaboratorDashboardProps {
 }
 
 const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "https://codeengine-api-production.up.railway.app";
+  import.meta.env.VITE_BACKEND_URL || "https://codeengine-api-production-cb0c.up.railway.app";
 
 interface CollaboratorProfile {
   id: string;

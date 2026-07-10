@@ -15,7 +15,7 @@ interface AffiliatesDashboardProps {
   setScreen: (screen: string, section?: string) => void;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
 export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
   const { t } = useTranslation('pages');

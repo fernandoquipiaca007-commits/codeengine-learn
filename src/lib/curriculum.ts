@@ -93,7 +93,7 @@ export async function saveLesson(
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (token) {
-        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
         const presignedResponse = await fetch(`${BACKEND_URL}/api/admin/storage/presigned-upload`, {
           method: 'POST',
           headers: {
