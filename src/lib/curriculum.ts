@@ -81,22 +81,69 @@ export async function saveLesson(
   const lessonType = lesson.lesson_type || 'video';
 
   if (mediaFile) {
-    const lessonId = lesson.id || crypto.randomUUID();
-    const path = `${productId}/lessons/${lessonId}/${mediaFile.name}`;
-
+    const lessonId = lesson.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36));
+    const sanitizedName = mediaFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = `${productId}/lessons/${lessonId}/${sanitizedName}`;
     const bucketName = 'ebooks-private';
-    const { data: uploadData, error: uploadErr } = await supabase.storage
-      .from(bucketName)
-      .upload(path, mediaFile, { cacheControl: '3600', upsert: true });
 
-    if (uploadErr) throw uploadErr;
+    let uploadSuccess = false;
+    let finalPath = '';
 
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (token) {
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+        const presignedResponse = await fetch(`${BACKEND_URL}/api/admin/storage/presigned-upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            bucketName,
+            filePath,
+            contentType: mediaFile.type || 'application/octet-stream'
+          })
+        });
+
+        if (presignedResponse.ok) {
+          const { uploadUrl, dbPath } = await presignedResponse.json();
+          if (uploadUrl) {
+            const putRes = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': mediaFile.type || 'application/octet-stream',
+              },
+              body: mediaFile
+            });
+
+            if (putRes.ok) {
+              finalPath = dbPath;
+              uploadSuccess = true;
+            }
+          }
+        }
+      }
+    } catch (r2Err) {
+      console.warn('R2 upload failed for lesson media, falling back to Supabase:', r2Err);
+    }
+
+    if (!uploadSuccess) {
+      const supabasePath = `${productId}/lessons/${lessonId}/${mediaFile.name}`;
+      const { data: uploadData, error: uploadErr } = await supabase.storage
+        .from(bucketName)
+        .upload(supabasePath, mediaFile, { cacheControl: '3600', upsert: true });
+
+      if (uploadErr) throw uploadErr;
+      finalPath = uploadData.path;
+    }
+
+    duration = await getMediaDuration(mediaFile);
     if (lessonType === 'audio') {
-      audioPath = uploadData.path;
-      duration = await getMediaDuration(mediaFile);
+      audioPath = finalPath;
     } else {
-      videoPath = uploadData.path;
-      duration = await getMediaDuration(mediaFile);
+      videoPath = finalPath;
     }
   }
 
