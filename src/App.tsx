@@ -714,7 +714,32 @@ export default function App() {
               
               let role = memData?.profile_data?.role;
               
-              if (!role && oauthRole) {
+              if (oauthRole === 'criador' && role !== 'criador') {
+                if (memData) {
+                  const updatedProfile = { ...(memData.profile_data || {}), role: 'criador' };
+                  await supabase
+                    .from('members')
+                    .update({ profile_data: updatedProfile })
+                    .eq('id', memData.id);
+                  role = 'criador';
+                } else {
+                  // Retry if trigger/welcome hasn't created the member row yet
+                  await new Promise(resolve => setTimeout(resolve, 800));
+                  const { data: retryMem } = await supabase
+                    .from('members')
+                    .select('id, profile_data')
+                    .eq('auth_id', session.user.id)
+                    .maybeSingle();
+                  if (retryMem) {
+                    const updatedProfile = { ...(retryMem.profile_data || {}), role: 'criador' };
+                    await supabase
+                      .from('members')
+                      .update({ profile_data: updatedProfile })
+                      .eq('id', retryMem.id);
+                    role = 'criador';
+                  }
+                }
+              } else if (!role && oauthRole) {
                 if (memData) {
                   const updatedProfile = { ...(memData.profile_data || {}), role: oauthRole };
                   await supabase

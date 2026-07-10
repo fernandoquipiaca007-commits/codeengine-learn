@@ -233,6 +233,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app'}/api/auth/welcome`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` },
+            body: JSON.stringify({ role: registrationRole })
           }).catch(() => {});
         }
 
