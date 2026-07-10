@@ -123,7 +123,7 @@ const PageContent = memo(function PageContent({
 
   // While loading, for creator-only screens show a transparent spinner to avoid
   // the white flash that happens when Suspense switches from loading → loaded state
-  const isCreatorScreen = currentScreen === 'colaborador' || currentScreen === 'colaborador-produtos';
+  const isCreatorScreen = currentScreen === 'colaborador' || currentScreen === 'colaborador-produtos' || currentScreen === 'member';
   if ((loadingMember || loadingCollabStatus) && isCreatorScreen) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -821,10 +821,17 @@ export default function App() {
         const isPurchase = sessionStorage.getItem('pendingCheckout') !== null;
         if (!isPurchase && currentScreen !== 'onboarding') {
           setScreen('onboarding');
+          return;
         }
       }
+      // NEW: redirect criador away from member area to avoid flash
+      const userRole = member?.profile_data?.role ?? null;
+      const isCriador = userRole === 'criador' || collabStatus === 'approved';
+      if (isCriador && currentScreen === 'member') {
+        navigateToScreen('colaborador');
+      }
     }
-  }, [user, member, authLoading, loadingMember, loadingCollabStatus, currentScreen, collabStatus]);
+  }, [user, member, authLoading, loadingMember, loadingCollabStatus, currentScreen, collabStatus, navigateToScreen]);
 
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">

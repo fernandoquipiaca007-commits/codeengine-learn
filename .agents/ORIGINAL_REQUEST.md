@@ -54,3 +54,56 @@ Reduzir as proporções de inputs, botões, margens, padding e cartões em todas
 ### Themes Preview
 - [ ] O clique em "pré-visualização do fundo" abre a tela cheia de testes de rolagem sem quebrar o estado do React ou causar falhas no console.
 - [ ] A velocidade e fluidez de rolagem do vídeo estão sincronizadas em todos os presets.
+
+## Follow-up — 2026-07-10T18:23:05Z
+
+Implementar o fluxo simplificado "Conte mais sobre você" para criadores com aprovação automática, auto-publicação de produtos (incluindo opções de publicação agendada e instantânea), e corrigir bugs de layout, contraste de texto e legibilidade no painel e na página "Sobre".
+
+Diretório de trabalho: c:\Users\Dell\Documents\codeengine1.2
+Modo de integridade: development
+
+## Requisitos
+
+### R1. Fluxo Simplificado de Registro de Criador ("Conte mais sobre você")
+- Substituir a página/tela de "Candidatar-se a Criador" (`CollaboratorApply.tsx`) por um painel simples intitulado **"Conte mais sobre você"**.
+- O formulário deve conter **apenas as 3 perguntas de Perfil Profissional**:
+  1. Nome de Exibição / Canal
+  2. Área de Especialização / Especialidade
+  3. Minibiografia / Descrição
+- As seções de "Preferências de Repasse Financeiro" (PayPal/IBAN) e "Estimativa de Armazenamento" (pesquisa estratégica de storage) devem ser completamente removidas do formulário.
+- Ao enviar o formulário:
+  - O backend deve registrar o colaborador imediatamente com status de aprovado (`status: 'approved'`).
+  - O papel do membro no seu `profile_data.role` deve ser atualizado para `'criador'` no mesmo momento.
+  - A carteira e o saldo do criador (`collaborator_balances`) devem ser inicializados automaticamente no banco de dados.
+  - O criador deve ser redirecionado imediatamente para o Painel do Criador, sem telas de pendente/aguardando aprovação ou rejeição.
+- Remover todas as telas e estados de "Candidatura em Análise" (pendente) e "Candidatura Recusada" do frontend.
+
+### R2. Auto-Publicação e Agendamento de Produtos
+- O criação de produtos pelo criador deve ignorar qualquer aprovação do administrador, salvando diretamente como `approval_status: 'approved'` e `status: 'active'` (a menos que seja agendado).
+- Suporte para publicação agendada: se um carimbo de data/hora `scheduled_publish_at` for fornecido no cadastro, o produto permanece como `status: 'draft'` até o horário especificado, passando então automaticamente para `active`.
+- Sincronizar automaticamente produtos USD com o Stripe (criar Stripe Product + Price) imediatamente após a publicação ativa.
+- Notificar o administrador quando um novo produto for publicado (via sistema de notificação) para que ele possa adicionar o link do FassePay para Angola.
+- Permitir a edição de produtos sem redefinir seu status para rascunho ou revisão pendente.
+
+### R3. Correções de Bugs de UI/UX
+- Corrigir o erro "Erro ao carregar análise. Tente novamente." na seção de análise de tráfego e vendas do Painel do Criador.
+- Corrigir a mensagem "Access denied. Approved collaborator account required." na tela de gerenciamento de produtos do criador.
+- Melhorar a legibilidade das descrições e marcadores na página "Sobre" (About), substituindo classes de texto de baixo contraste por classes de alto contraste (`text-white/70`, `text-white/50`).
+- Garantir que não existam desvios de layout ou problemas de alinhamento de barra de rolagem na visualização da página Sobre.
+
+## Critérios de Aceitação
+
+### Fluxo do Criador
+- [ ] O formulário do criador exibe apenas os 3 campos de Perfil Profissional sob o título "Conte mais sobre você".
+- [ ] Ao enviar o formulário, o usuário é registrado como criador aprovado, seu saldo é ativado no banco, e ele é levado diretamente para o painel de controle.
+- [ ] O painel do criador e a lista de produtos carregam sem erros de autorização ou de acesso negado.
+
+### Publicação e Edição de Produtos
+- [ ] Novos produtos ficam instantaneamente ativos e synced com o Stripe (para USD).
+- [ ] O administrador recebe notificações de novas publicações.
+- [ ] As edições nos produtos preservam seu status ativo.
+
+### Polimento de UI
+- [ ] Todo o texto na página Sobre é totalmente legível com contraste adequado.
+- [ ] O painel de estatísticas (analytics) carrega dados de tráfego com sucesso sem erros.
+

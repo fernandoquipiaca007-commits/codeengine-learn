@@ -106,9 +106,15 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'active') {
-      return <span className="rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-[10px] font-bold text-green-400 uppercase">Ativo</span>;
+  const getStatusBadge = (prod: any) => {
+    if (prod.status === 'active') {
+      return <span className="rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-[10px] font-bold text-green-400 uppercase">Publicado</span>;
+    }
+    if (prod.status === 'draft' && prod.scheduled_publish_at) {
+      const date = new Date(prod.scheduled_publish_at);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return <span className="rounded bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400 uppercase">Agendado: {day}/{month}</span>;
     }
     return <span className="rounded bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-bold text-on-surface-variant uppercase">Rascunho</span>;
   };
@@ -279,7 +285,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
                       {getApprovalBadge(prod.approval_status)}
                     </td>
                     <td className="px-6 py-4">
-                      {getStatusBadge(prod.status)}
+                      {getStatusBadge(prod)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft } from 'lucide-react';
+import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft, Zap, Calendar } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
@@ -386,6 +386,11 @@ export function CollaboratorProductForm({
   // Upload progress/status
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Publish flow state
+  const [showPublishOptions, setShowPublishOptions] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const publishBtnRef = useRef<HTMLDivElement>(null);
 
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [subcategoryId, setSubcategoryId] = useState('');
@@ -939,6 +944,126 @@ export function CollaboratorProductForm({
     }
   }
 
+  // Close publish dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (publishBtnRef.current && !publishBtnRef.current.contains(e.target as Node)) {
+        setShowPublishOptions(false);
+      }
+    }
+    if (showPublishOptions) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPublishOptions]);
+
+  async function handlePublishNow(e: React.MouseEvent) {
+    e.preventDefault();
+    setShowPublishOptions(false);
+    setSubmitAttempted(true);
+    setLoading(true);
+    setFormError(null);
+    const finalVideoUrl = collaboratorPlan === 'course_creator' ? videoUrl : youtubeVideoUrl;
+    const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || !storageUrl) {
+      setFormError('Por favor preencha todos os campos obrigatórios.');
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setFormError('Sessão expirada.'); setLoading(false); return; }
+      const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
+      const licensingInfo = { type: licenseType, lifetime: isLifetime, duration_days: isLifetime ? null : Number(durationDays) };
+      const payload = {
+        title, description, categoryId, subcategoryId: subcategoryId || null,
+        price: isFree ? 0 : Number(priceUSD),
+        aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
+        basePrice: isFree ? 0 : Number(basePrice), baseCurrency,
+        convertedPrice: isFree ? 0 : (baseCurrency === 'USD' ? Number(priceAOA) : Number(priceUSD)),
+        exchangeRateUsed: usdToAoaRate, isFree,
+        coverUrl, previewUrl, videoUrl: finalVideoUrl, storageUrl,
+        tags, ctaText, licensingInfo,
+        campaign: campaign.banner_text ? campaign : null,
+        coupons, faqs, bonuses, benefits, customSections,
+        affiliateEnabled, affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
+        themeVideoPath: themeVideoPath || null, themeVideoConfig,
+        primaryLanguage: locale, translations,
+        status: 'active',
+        approval_status: 'approved',
+        scheduled_publish_at: null
+      };
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
+      const url = productId ? `${BACKEND_URL}/api/collaborators/products/${productId}` : `${BACKEND_URL}/api/collaborators/products`;
+      const method = productId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (data.success) {
+        if (productId) queryCache.invalidatePrefix(`product-detail-${productId}`);
+        onSaveSuccess();
+      } else {
+        setFormError(data.error || 'Erro ao publicar o produto.');
+      }
+    } catch (err: any) {
+      setFormError('Erro de conexão ao servidor.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSchedulePublish(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!scheduledDate) return;
+    setShowPublishOptions(false);
+    setSubmitAttempted(true);
+    setLoading(true);
+    setFormError(null);
+    const finalVideoUrl = collaboratorPlan === 'course_creator' ? videoUrl : youtubeVideoUrl;
+    const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || !storageUrl) {
+      setFormError('Por favor preencha todos os campos obrigatórios.');
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setFormError('Sessão expirada.'); setLoading(false); return; }
+      const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
+      const licensingInfo = { type: licenseType, lifetime: isLifetime, duration_days: isLifetime ? null : Number(durationDays) };
+      const payload = {
+        title, description, categoryId, subcategoryId: subcategoryId || null,
+        price: isFree ? 0 : Number(priceUSD),
+        aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
+        basePrice: isFree ? 0 : Number(basePrice), baseCurrency,
+        convertedPrice: isFree ? 0 : (baseCurrency === 'USD' ? Number(priceAOA) : Number(priceUSD)),
+        exchangeRateUsed: usdToAoaRate, isFree,
+        coverUrl, previewUrl, videoUrl: finalVideoUrl, storageUrl,
+        tags, ctaText, licensingInfo,
+        campaign: campaign.banner_text ? campaign : null,
+        coupons, faqs, bonuses, benefits, customSections,
+        affiliateEnabled, affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
+        themeVideoPath: themeVideoPath || null, themeVideoConfig,
+        primaryLanguage: locale, translations,
+        scheduled_publish_at: new Date(scheduledDate).toISOString()
+      };
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
+      const url = productId ? `${BACKEND_URL}/api/collaborators/products/${productId}` : `${BACKEND_URL}/api/collaborators/products`;
+      const method = productId ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (data.success) {
+        if (productId) queryCache.invalidatePrefix(`product-detail-${productId}`);
+        onSaveSuccess();
+      } else {
+        setFormError(data.error || 'Erro ao agendar a publicação.');
+      }
+    } catch (err: any) {
+      setFormError('Erro de conexão ao servidor.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleSaveTheme() {
     if (!productId) return;
     setThemeSaving(true);
@@ -1054,13 +1179,50 @@ export function CollaboratorProductForm({
             type="submit"
             form="product-form"
             disabled={loading}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/15 disabled:opacity-50 text-xs font-bold transition-all cursor-pointer whitespace-nowrap text-white"
           >
             {loading ? (
-              <div className="h-3 w-3 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
             ) : <Save size={12} />}
             <span>Salvar Rascunho</span>
           </button>
+          <div className="relative" ref={publishBtnRef}>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => setShowPublishOptions(v => !v)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
+            >
+              <Zap size={12} className="text-green-600" />
+              <span>Publicar</span>
+            </button>
+            {showPublishOptions && (
+              <div className="absolute bottom-full mb-2 right-0 w-64 glass-panel rounded-xl border border-white/10 p-3 space-y-2 z-50">
+                <button onClick={handlePublishNow} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white hover:bg-white/10 transition">
+                  <Zap size={14} className="text-green-400" />
+                  Publicação Instantânea
+                </button>
+                <div className="border-t border-white/10" />
+                <div className="space-y-1.5">
+                  <label className="text-xs text-white/60">Agendar para:</label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledDate}
+                    onChange={e => setScheduledDate(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
+                  />
+                  <button
+                    onClick={handleSchedulePublish}
+                    disabled={!scheduledDate}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-white/10 transition disabled:opacity-40"
+                  >
+                    <Calendar size={14} className="text-blue-400" />
+                    Agendar Publicação
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
