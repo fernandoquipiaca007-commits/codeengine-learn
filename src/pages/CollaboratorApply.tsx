@@ -119,13 +119,13 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
       const data = await res.json();
 
       if (data.success) {
-        setCandidacyStatus('pending');
-        setMessage({ type: 'success', text: data.message });
+        setCandidacyStatus('approved');
         try {
           localStorage.removeItem('ce_founder_ref');
         } catch { /* ignore */ }
+        onCandidacyApproved();
       } else {
-        setMessage({ type: 'error', text: data.error || 'Erro ao enviar candidatura.' });
+        setMessage({ type: 'error', text: data.error || 'Erro ao salvar perfil.' });
       }
     } catch (err) {
       setMessage({ type: 'error', text: 'Erro de conexão com o servidor.' });
@@ -148,58 +148,7 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
     );
   }
 
-  if (candidacyStatus === 'pending') {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-panel p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl text-white"
-        >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 text-primary">
-            <Clock size={32} className="animate-pulse" />
-          </div>
-          <h2 className="mb-3 text-2xl font-bold font-display text-white">Candidatura em Análise</h2>
-          <p className="mb-6 text-white/70">
-            Recebemos seus dados profissionais e sua pesquisa estratégica de infraestrutura. 
-            Nossa equipe administrativa está revisando sua solicitação para ativação do seu painel de criador.
-          </p>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/50">
-            Status: <span className="font-semibold text-primary">Aguardando Aprovação</span>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
-  if (candidacyStatus === 'rejected') {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-panel p-8 rounded-2xl border border-white/10 shadow-xl bg-surface-container-low/30 backdrop-blur-xl text-white"
-        >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20 text-red-400">
-            <AlertCircle size={32} />
-          </div>
-          <h2 className="mb-3 text-2xl font-bold font-display text-white">Candidatura Recusada</h2>
-          <p className="mb-4 text-red-300 text-sm bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
-            <strong>Motivo:</strong> {rejectReason}
-          </p>
-          <p className="mb-6 text-white/70 text-sm">
-            Você pode corrigir suas informações ou ajustar sua proposta e enviar uma nova candidatura.
-          </p>
-          <button
-            onClick={() => setCandidacyStatus('not_applied')}
-            className="rounded-xl bg-primary px-6 py-3 font-semibold text-white shadow-sm hover:bg-primary/95 transition-all text-sm"
-          >
-            Tentar Novamente
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -212,9 +161,9 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary">
             <ShieldCheck size={28} />
           </div>
-          <h1 className="text-3xl font-bold font-display text-white">Candidatar-se a Criador</h1>
+          <h1 className="text-3xl font-bold font-display text-white">Conte mais sobre você</h1>
           <p className="mt-2 text-white/60 text-sm">
-            Publique seus e-books e cursos digitais no ecossistema da Codeengine
+            Complete seu perfil profissional para começar a publicar no ecossistema da Codeengine
           </p>
         </div>
 
@@ -232,7 +181,7 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Seção 1: Dados do Perfil */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-white border-l-4 border-primary pl-2 font-display">1. Perfil Profissional</h3>
+            <h3 className="mb-4 text-lg font-semibold text-white border-l-4 border-primary pl-2 font-display">Perfil Profissional</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-white/80 mb-1">Nome de Exibição / Canal</label>
@@ -269,161 +218,6 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
             </div>
           </div>
 
-          {/* Seção 2: Preferências de Repasse */}
-          <div>
-            <h3 className="mb-4 text-lg font-semibold text-white border-l-4 border-primary pl-2 font-display">2. Preferências de Repasse Financeiro</h3>
-            <p className="text-white/50 text-xs mb-3 font-sans">
-              Selecione o método de pagamento preferencial. Você poderá configurar seus dados de recebimento (e-mail PayPal ou IBAN bancário) a qualquer momento na sua carteira após aprovação.
-            </p>
-            <div className={`grid gap-3 ${isAngola ? 'grid-cols-2' : 'grid-cols-1'}`}>
-              <button
-                type="button"
-                onClick={() => setPayoutMethod('paypal')}
-                className={`flex items-center justify-center gap-2 rounded-xl border p-4 text-sm font-medium transition-all ${
-                  payoutMethod === 'paypal' 
-                    ? 'border-primary bg-primary/20 text-white' 
-                    : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                }`}
-              >
-                <Mail size={18} />
-                PayPal (Internacional)
-              </button>
-              {isAngola && (
-                <button
-                  type="button"
-                  onClick={() => setPayoutMethod('iban')}
-                  className={`flex items-center justify-center gap-2 rounded-xl border p-4 text-sm font-medium transition-all ${
-                    payoutMethod === 'iban' 
-                      ? 'border-primary bg-primary/20 text-white' 
-                      : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                  }`}
-                >
-                  <Landmark size={18} />
-                  IBAN Bancário (Nacional)
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Seção 3: Pesquisa Estratégica de Storage */}
-          <div>
-            <h3 className="mb-4 text-lg font-semibold text-white border-l-4 border-primary pl-2 font-display">3. Estimativa de Armazenamento</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Que tipos de conteúdo você pretende publicar?</label>
-                <div className="grid gap-2 sm:grid-cols-2 font-sans">
-                  <button
-                    type="button"
-                    onClick={() => toggleContentType('ebooks')}
-                    className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
-                      surveyTypes.includes('ebooks')
-                        ? 'border-primary bg-primary/20 text-white'
-                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <FileText size={18} />
-                    Apenas e-books / PDFs / Apostilas
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleContentType('courses')}
-                    className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
-                      surveyTypes.includes('courses')
-                        ? 'border-primary bg-primary/20 text-white'
-                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <Video size={18} />
-                    Cursos em vídeo / Aulas
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleContentType('tools')}
-                    className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
-                      surveyTypes.includes('tools')
-                        ? 'border-primary bg-primary/20 text-white'
-                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <Terminal size={18} />
-                    Ferramentas digitais / Plugins
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleContentType('events')}
-                    className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
-                      surveyTypes.includes('events')
-                        ? 'border-primary bg-primary/20 text-white'
-                        : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    <Calendar size={18} />
-                    Ingressos para Eventos
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">Quantos GB de conteúdo estima publicar nos primeiros 90 dias?</label>
-                <div className="grid gap-2 sm:grid-cols-2 font-sans">
-                  <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === 'less_1gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="volume"
-                      value="less_1gb"
-                      checked={surveyVolume === 'less_1gb'}
-                      onChange={() => setSurveyVolume('less_1gb')}
-                      className="accent-primary"
-                    />
-                    Menos de 1 GB (Apenas textos e PDFs)
-                  </label>
-                  <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === '1_5gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="volume"
-                      value="1_5gb"
-                      checked={surveyVolume === '1_5gb'}
-                      onChange={() => setSurveyVolume('1_5gb')}
-                      className="accent-primary"
-                    />
-                    1 a 5 GB (Softwares leves ou e-books)
-                  </label>
-                  <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === '5_20gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="volume"
-                      value="5_20gb"
-                      checked={surveyVolume === '5_20gb'}
-                      onChange={() => setSurveyVolume('5_20gb')}
-                      className="accent-primary"
-                    />
-                    5 a 20 GB (Cursos pequenos/apostilas)
-                  </label>
-                  <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-sm transition-all ${
-                    surveyVolume === 'more_20gb' ? 'border-primary bg-primary/20 text-white' : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="volume"
-                      value="more_20gb"
-                      checked={surveyVolume === 'more_20gb'}
-                      onChange={() => setSurveyVolume('more_20gb')}
-                      className="accent-primary"
-                    />
-                    Mais de 20 GB (Cursos em vídeo)
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="pt-6 border-t border-white/10 flex items-center justify-end gap-3">
             <button
               type="button"
@@ -440,7 +234,7 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
               {submitting ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
               ) : <Save size={18} />}
-              Enviar Candidatura
+              Salvar Perfil
             </button>
           </div>
         </form>

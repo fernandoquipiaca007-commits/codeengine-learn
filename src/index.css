@@ -74,6 +74,32 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Custom scrollbar to match the premium dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #050505;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #242428;
+    border-radius: 4px;
+    border: 1px solid #1a1a1e;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3848;
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #242428 #050505;
+  }
+
   body {
     @apply bg-background text-on-surface overflow-x-hidden;
     @apply selection:bg-primary/25 selection:text-primary;
