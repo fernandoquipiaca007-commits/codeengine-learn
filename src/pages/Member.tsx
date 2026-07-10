@@ -78,7 +78,13 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
   const [ebookAvailableLangs, setEbookAvailableLangs] = useState<AppLocale[]>([]);
   const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [courseModalProduct, setCourseModalProduct] = useState<{ id: string; title: string } | null>(null);
-  const [memberData, setMemberData] = useState<{ id: string; name: string; email: string; avatarUrl?: string } | null>(null);
+  const [memberData, setMemberData] = useState<{ 
+    id: string; 
+    name: string; 
+    email: string; 
+    avatarUrl?: string;
+    role?: string;
+  } | null>(null);
   const [stats, setStats] = useState({
     purchaseCount: 0,
     unreadNotifications: 0,
@@ -100,9 +106,13 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
 
   useEffect(() => {
     const next = parseInitial(initialSection);
-    setCurrentSection(next.tab);
+    let nextTab = next.tab;
+    if (memberData?.role === 'criador' && nextTab === 'inicio') {
+      nextTab = 'biblioteca';
+    }
+    setCurrentSection(nextTab);
     if (next.learn) setLearnView(next.learn);
-  }, [initialSection]);
+  }, [initialSection, memberData?.role]);
 
   async function loadMemberData() {
     const seq = ++loadSeqRef.current;
@@ -190,6 +200,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
         name: member.profile_data?.name || user.email?.split('@')[0] || 'Membro',
         email: member.email || user.email || '',
         avatarUrl: member.profile_data?.avatar_url || '',
+        role: member.profile_data?.role || '',
       });
 
       await loadStats(member.id);
@@ -201,6 +212,7 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
           id: '',
           name: currentUser.email?.split('@')[0] || 'Membro',
           email: currentUser.email || '',
+          role: '',
         });
       } else {
         setScreen('auth');
@@ -415,12 +427,14 @@ export function Member({ setScreen, onProductClick, initialSection = 'inicio', o
     );
   }
 
+  const isCriador = memberData?.role === 'criador';
+
   const tabs: { id: Section; label: string }[] = [
-    { id: 'inicio', label: t('member.tabs.home') },
-    { id: 'biblioteca', label: t('member.tabs.library') },
-    { id: 'compras', label: t('member.tabs.purchases') },
-    { id: 'notificacoes', label: t('member.tabs.notifications') },
-    { id: 'recompensas', label: t('member:rewards').toUpperCase() },
+    ...(isCriador ? [] : [{ id: 'inicio' as Section, label: t('member.tabs.home') }]),
+    { id: 'biblioteca' as Section, label: isCriador ? t('profile.acquiredProducts') : t('member.tabs.library') },
+    { id: 'compras' as Section, label: t('member.tabs.purchases') },
+    { id: 'notificacoes' as Section, label: t('member.tabs.notifications') },
+    ...(isCriador ? [] : [{ id: 'recompensas' as Section, label: t('member:rewards').toUpperCase() }]),
   ];
 
   return (

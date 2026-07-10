@@ -163,6 +163,7 @@
     "settings": "Settings",
     "creatorDashboard": "Creator Dashboard",
     "myProducts": "My Products",
+    "acquiredProducts": "Purchased Products",
     "logout": "Sign Out",
     "signInOrCreate": "Sign In / Create Account"
   },

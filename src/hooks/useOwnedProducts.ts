@@ -60,6 +60,29 @@ export function useOwnedProducts(userId: string | undefined) {
       }
     });
 
+    // 4. Creators always have owned access to their own products
+    try {
+      const { data: collab } = await supabase
+        .from('collaborators')
+        .select('id')
+        .eq('member_id', memberId)
+        .eq('status', 'approved')
+        .maybeSingle();
+
+      if (collab?.id) {
+        const { data: ownProducts } = await supabase
+          .from('products')
+          .select('id')
+          .eq('collaborator_id', collab.id);
+        
+        ownProducts?.forEach((p: any) => {
+          owned.add(p.id);
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching creator own products for library:', err);
+    }
+
     return Array.from(owned);
   }, [userId]);
 

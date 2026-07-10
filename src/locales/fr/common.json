@@ -163,6 +163,7 @@
     "settings": "Paramètres",
     "creatorDashboard": "Tableau de Bord",
     "myProducts": "Mes Produits",
+    "acquiredProducts": "Produits Achetés",
     "logout": "Déconnexion",
     "signInOrCreate": "Se Connecter / Créer un Compte"
   },

@@ -452,7 +452,9 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                             {user.email}
                           </p>
                           <p className="font-sans text-[10px] text-on-surface-variant mt-0.5">
-                            {t('profile.memberSince')}
+                            {(userRole === 'criador' || collabStatus === 'approved')
+                              ? (i18n.language.startsWith('en') ? 'CodeEngine 1 Creator' : i18n.language.startsWith('fr') ? 'Créateur CodeEngine 1' : 'Criador CodeEngine 1')
+                              : t('profile.memberSince')}
                           </p>
                         </div>
 
@@ -462,6 +464,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                             {[
                               { label: t('profile.creatorDashboard'),  screen: 'colaborador',          icon: Briefcase },
                               { label: t('profile.myProducts'),        screen: 'colaborador-produtos', icon: ShoppingBag },
+                              { label: t('profile.acquiredProducts'),  screen: 'member',   section: 'biblioteca',  icon: Heart },
                               { 
                                 label: t('profile.notifications'), 
                                 onClick: () => { setShowProfileMenu(false); setShowNotifications(true); },
@@ -471,7 +474,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                             ].map((item) => (
                               <button
                                 key={item.label}
-                                onClick={item.onClick || (() => { setScreen(item.screen); setShowProfileMenu(false); })}
+                                onClick={item.onClick || (() => { setScreen(item.screen, item.section); setShowProfileMenu(false); })}
                                 className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
                               >
                                 <item.icon className="w-3.5 h-3.5 flex-shrink-0 opacity-70 text-primary" />
