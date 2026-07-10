@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, memo, useRef } from 'react';
+import { useState, useEffect, lazy, Suspense, memo, useRef, Dispatch, SetStateAction } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { NavBar } from './components/NavBar';
 import { useAuthSession } from './hooks/useAuthSession';
@@ -99,6 +99,8 @@ const PageContent = memo(function PageContent({
   collabStatus,
   loadingMember,
   loadingCollabStatus,
+  setCollabStatus,
+  setMember,
 }: {
   currentScreen: string;
   currentProductId: string | null;
@@ -111,6 +113,8 @@ const PageContent = memo(function PageContent({
   collabStatus: string;
   loadingMember: boolean;
   loadingCollabStatus: boolean;
+  setCollabStatus: Dispatch<SetStateAction<string>>;
+  setMember: Dispatch<SetStateAction<any>>;
 }) {
   // Determine user role from member profile or existing approved collaborator status
   const userRole: 'aluno' | 'criador' | null = member?.profile_data?.role ?? null;
@@ -881,6 +885,8 @@ export default function App() {
               collabStatus={collabStatus}
               loadingMember={loadingMember}
               loadingCollabStatus={loadingCollabStatus}
+              setCollabStatus={setCollabStatus}
+              setMember={setMember}
             />
           </motion.div>
         </AnimatePresence>
