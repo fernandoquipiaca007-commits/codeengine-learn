@@ -93,6 +93,7 @@ const PageContent = memo(function PageContent({
   setIsImmersive,
   onOnboardingComplete,
   member,
+  collabStatus,
 }: {
   currentScreen: string;
   currentProductId: string | null;
@@ -102,10 +103,11 @@ const PageContent = memo(function PageContent({
   setIsImmersive: (v: boolean) => void;
   onOnboardingComplete?: () => void;
   member: any;
+  collabStatus: string;
 }) {
-  // Determine user role from member profile
+  // Determine user role from member profile or existing approved collaborator status
   const userRole: 'aluno' | 'criador' | null = member?.profile_data?.role ?? null;
-  const isCriador = userRole === 'criador';
+  const isCriador = userRole === 'criador' || collabStatus === 'approved';
   const isAluno = !isCriador; // default: treat as student if no role set
 
   // Route guard: criador cannot access member area, aluno cannot access colaborador panel
@@ -232,6 +234,7 @@ export default function App() {
   const { user, session, loading: authLoading } = useAuthSession();
   const [member, setMember] = useState<any>(null);
   const [loadingMember, setLoadingMember] = useState(true);
+  const [collabStatus, setCollabStatus] = useState<string>('not_applied');
   const lastFetchedUserIdRef = useRef<string | null>(null);
 
   const handleOnboardingComplete = () => {
@@ -600,6 +603,20 @@ export default function App() {
             if (updatedMem && active) currentMem = updatedMem;
           }
           setMember(currentMem);
+
+          // Fetch collaborator status for existing creators
+          try {
+            const resStatus = await fetch(`${backendUrl}/api/collaborators/status`, {
+              headers: { 'Authorization': `Bearer ${session?.access_token}` }
+            });
+            const dataStatus = await resStatus.json();
+            if (dataStatus.success && active) {
+              setCollabStatus(dataStatus.status);
+            }
+          } catch (statusErr) {
+            console.error('[App] Error loading collaborator status:', statusErr);
+          }
+
           lastFetchedUserIdRef.current = user.id;
           setLoadingMember(false);
         } catch (err) {
@@ -613,6 +630,7 @@ export default function App() {
       } else {
         if (active) {
           setMember(null);
+          setCollabStatus('not_applied');
           lastFetchedUserIdRef.current = null;
           setLoadingMember(false);
         }
@@ -689,8 +707,9 @@ export default function App() {
     if (authLoading || loadingMember) return;
     if (user && lastFetchedUserIdRef.current === user.id) {
       const userRole = member?.profile_data?.role;
-      // Criadores não passam pelo onboarding
-      if (userRole === 'criador') return;
+      // Criadores não passam pelo onboarding (new or existing approved)
+      const isCriadorUser = userRole === 'criador' || collabStatus === 'approved';
+      if (isCriadorUser) return;
       const isCompleted = member ? member.onboarding_completed === true : false;
       if (!isCompleted) {
         const isPurchase = sessionStorage.getItem('pendingCheckout') !== null;
@@ -699,7 +718,7 @@ export default function App() {
         }
       }
     }
-  }, [user, member, authLoading, loadingMember, currentScreen]);
+  }, [user, member, authLoading, loadingMember, currentScreen, collabStatus]);
 
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">
@@ -757,6 +776,7 @@ export default function App() {
               setIsImmersive={setIsImmersive}
               onOnboardingComplete={handleOnboardingComplete}
               member={member}
+              collabStatus={collabStatus}
             />
           </motion.div>
         </AnimatePresence>

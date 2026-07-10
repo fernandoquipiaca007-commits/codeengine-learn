@@ -455,7 +455,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                         </div>
 
                         {/* Menu items — condicionais por role */}
-                        {userRole === 'criador' ? (
+                        {(userRole === 'criador' || collabStatus === 'approved') ? (
                           // Criador: apenas definições
                           <button
                             onClick={() => { setScreen('settings'); setShowProfileMenu(false); }}
@@ -498,10 +498,10 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                             <span className="truncate font-medium">Programa de Afiliados</span>
                           </button>
                           {/* Painel do Criador: só para criadores */}
-                          {userRole === 'criador' && (
+                          {(userRole === 'criador' || collabStatus === 'approved') && (
                             <button
                               onClick={() => {
-                                setScreen(collabStatus === 'approved' ? 'colaborador' : 'colaborador');
+                                setScreen('colaborador');
                                 setShowProfileMenu(false);
                               }}
                               className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
