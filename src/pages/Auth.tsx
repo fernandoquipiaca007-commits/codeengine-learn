@@ -269,27 +269,46 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
         if (data.user) {
           setSuccess(t('signInSuccess'));
-          setTimeout(() => {
-            const rawCheckout = sessionStorage.getItem('pendingCheckout');
-            if (rawCheckout) {
-              try {
-                const intent = JSON.parse(rawCheckout) as { productId: string };
-                if (intent.productId) {
+
+          // Handle pending checkout before anything else
+          const rawCheckout = sessionStorage.getItem('pendingCheckout');
+          if (rawCheckout) {
+            try {
+              const intent = JSON.parse(rawCheckout) as { productId: string };
+              if (intent.productId) {
+                setTimeout(() => {
                   setScreen('product');
                   window.dispatchEvent(new CustomEvent('navigate-product', { detail: intent.productId }));
-                  return;
-                }
-              } catch {}
-            }
-            const pendingProduct = sessionStorage.getItem('pendingProductId');
-            if (pendingProduct) {
-              sessionStorage.removeItem('pendingProductId');
+                }, 1000);
+                return;
+              }
+            } catch {}
+          }
+
+          const pendingProduct = sessionStorage.getItem('pendingProductId');
+          if (pendingProduct) {
+            sessionStorage.removeItem('pendingProductId');
+            setTimeout(() => {
               setScreen('product');
               window.dispatchEvent(new CustomEvent('navigate-product', { detail: pendingProduct }));
-            } else {
-              setScreen('member');
-            }
-          }, 1000);
+            }, 1000);
+            return;
+          }
+
+          // Verify role in DB — secure source of truth for redirect destination
+          try {
+            const { data: memData } = await supabase
+              .from('members')
+              .select('profile_data')
+              .eq('auth_id', data.user.id)
+              .maybeSingle();
+            const userRole = memData?.profile_data?.role;
+            setTimeout(() => {
+              setScreen(userRole === 'criador' ? 'colaborador' : 'member');
+            }, 1000);
+          } catch {
+            setTimeout(() => setScreen('member'), 1000);
+          }
         }
 
       } else if (mode === 'reset') {

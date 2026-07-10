@@ -70,6 +70,9 @@ export const slugify = (text: string) => {
     .replace(/\-\-+/g, '-');
 };
 
+// ─── Module-level backend URL (shared across all hooks/effects) ───────────────
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app';
+
 // ─── Page loader skeleton ─────────────────────────────────────────────────────
 function PageLoader() {
   return (
@@ -235,6 +238,7 @@ export default function App() {
   const [member, setMember] = useState<any>(null);
   const [loadingMember, setLoadingMember] = useState(true);
   const [collabStatus, setCollabStatus] = useState<string>('not_applied');
+  const [loadingCollabStatus, setLoadingCollabStatus] = useState(true);
   const lastFetchedUserIdRef = useRef<string | null>(null);
 
   const handleOnboardingComplete = () => {
@@ -604,17 +608,21 @@ export default function App() {
           }
           setMember(currentMem);
 
-          // Fetch collaborator status for existing creators
+          // Fetch collaborator status — needed to identify pre-existing creators
+          // Uses module-level BACKEND_URL (fixes TS2304 scope bug)
           try {
-            const resStatus = await fetch(`${backendUrl}/api/collaborators/status`, {
+            const resStatus = await fetch(`${BACKEND_URL}/api/collaborators/status`, {
               headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
             const dataStatus = await resStatus.json();
-            if (dataStatus.success && active) {
-              setCollabStatus(dataStatus.status);
+            if (active) {
+              setCollabStatus(dataStatus.success ? dataStatus.status : 'not_applied');
             }
-          } catch (statusErr) {
-            console.error('[App] Error loading collaborator status:', statusErr);
+          } catch {
+            // Non-fatal: fall back to role-only check
+            if (active) setCollabStatus('not_applied');
+          } finally {
+            if (active) setLoadingCollabStatus(false);
           }
 
           lastFetchedUserIdRef.current = user.id;
@@ -625,12 +633,14 @@ export default function App() {
             setMember(null);
             lastFetchedUserIdRef.current = user.id;
             setLoadingMember(false);
+            setLoadingCollabStatus(false);
           }
         }
       } else {
         if (active) {
           setMember(null);
           setCollabStatus('not_applied');
+          setLoadingCollabStatus(false);
           lastFetchedUserIdRef.current = null;
           setLoadingMember(false);
         }
@@ -659,8 +669,8 @@ export default function App() {
         if (wasAuthenticating) {
           sessionStorage.removeItem('ce_google_signing_in');
 
-          // Welcome API call (fire-and-forget)
-          fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production.up.railway.app'}/api/auth/welcome`, {
+          // Welcome API call (fire-and-forget) — also persists role in DB
+          fetch(`${BACKEND_URL}/api/auth/welcome`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json', 
@@ -691,7 +701,20 @@ export default function App() {
             return;
           }
 
-          navigateToScreen('member');
+          // Check role in DB before redirecting — use async IIFE since callback can't be async
+          void (async () => {
+            try {
+              const { data: memData } = await supabase
+                .from('members')
+                .select('profile_data')
+                .eq('auth_id', session.user.id)
+                .maybeSingle();
+              const role = memData?.profile_data?.role;
+              navigateToScreen(role === 'criador' ? 'colaborador' : 'member');
+            } catch {
+              navigateToScreen('member');
+            }
+          })();
         }
       }
     });
@@ -702,12 +725,13 @@ export default function App() {
   }, [navigateToScreen, navigateToProduct]);
 
   // Onboarding mandatory redirection lock
-  // Criadores são isentos do onboarding
+  // Guards: wait for BOTH loadingMember AND loadingCollabStatus to resolve
+  // This prevents the flash where onboarding shows before collabStatus is known
   useEffect(() => {
-    if (authLoading || loadingMember) return;
+    if (authLoading || loadingMember || loadingCollabStatus) return;
     if (user && lastFetchedUserIdRef.current === user.id) {
       const userRole = member?.profile_data?.role;
-      // Criadores não passam pelo onboarding (new or existing approved)
+      // Criadores não passam pelo onboarding (novos ou já aprovados)
       const isCriadorUser = userRole === 'criador' || collabStatus === 'approved';
       if (isCriadorUser) return;
       const isCompleted = member ? member.onboarding_completed === true : false;
@@ -718,7 +742,7 @@ export default function App() {
         }
       }
     }
-  }, [user, member, authLoading, loadingMember, currentScreen, collabStatus]);
+  }, [user, member, authLoading, loadingMember, loadingCollabStatus, currentScreen, collabStatus]);
 
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">
