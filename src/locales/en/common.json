@@ -161,6 +161,8 @@
     "myPurchases": "My Purchases",
     "notifications": "Notifications",
     "settings": "Settings",
+    "creatorDashboard": "Creator Dashboard",
+    "myProducts": "My Products",
     "logout": "Sign Out",
     "signInOrCreate": "Sign In / Create Account"
   },

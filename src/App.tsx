@@ -668,14 +668,17 @@ export default function App() {
 
         if (wasAuthenticating) {
           sessionStorage.removeItem('ce_google_signing_in');
+          const oauthRole = sessionStorage.getItem('ce_oauth_registration_role') || 'aluno';
+          sessionStorage.removeItem('ce_oauth_registration_role');
 
-          // Welcome API call (fire-and-forget) — also persists role in DB
+          // Welcome API call — passes selected role in the request body for server persistence
           fetch(`${BACKEND_URL}/api/auth/welcome`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json', 
               Authorization: `Bearer ${session.access_token}` 
             },
+            body: JSON.stringify({ role: oauthRole })
           }).catch(() => {});
 
           const rawCheckout = sessionStorage.getItem('pendingCheckout');
@@ -704,14 +707,44 @@ export default function App() {
           // Check role in DB before redirecting — use async IIFE since callback can't be async
           void (async () => {
             try {
-              const { data: memData } = await supabase
+              let { data: memData } = await supabase
                 .from('members')
-                .select('profile_data')
+                .select('id, profile_data')
                 .eq('auth_id', session.user.id)
                 .maybeSingle();
-              const role = memData?.profile_data?.role;
+              
+              let role = memData?.profile_data?.role;
+              
+              if (!role && oauthRole) {
+                if (memData) {
+                  const updatedProfile = { ...(memData.profile_data || {}), role: oauthRole };
+                  await supabase
+                    .from('members')
+                    .update({ profile_data: updatedProfile })
+                    .eq('id', memData.id);
+                  role = oauthRole;
+                } else {
+                  // Retry if trigger/welcome hasn't created the member row yet
+                  await new Promise(resolve => setTimeout(resolve, 800));
+                  const { data: retryMem } = await supabase
+                    .from('members')
+                    .select('id, profile_data')
+                    .eq('auth_id', session.user.id)
+                    .maybeSingle();
+                  if (retryMem) {
+                    const updatedProfile = { ...(retryMem.profile_data || {}), role: oauthRole };
+                    await supabase
+                      .from('members')
+                      .update({ profile_data: updatedProfile })
+                      .eq('id', retryMem.id);
+                    role = oauthRole;
+                  }
+                }
+              }
+              
               navigateToScreen(role === 'criador' ? 'colaborador' : 'member');
-            } catch {
+            } catch (err) {
+              console.error('[OAuth redirect] Error determining role:', err);
               navigateToScreen('member');
             }
           })();

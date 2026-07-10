@@ -179,6 +179,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
     setSuccess('');
     try {
       sessionStorage.setItem('ce_google_signing_in', 'true');
+      sessionStorage.setItem('ce_oauth_registration_role', registrationRole);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: `${window.location.origin}/` },

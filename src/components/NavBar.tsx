@@ -362,10 +362,12 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
 
           {user ? (
             <>
-              {/* Points badge */}
-              <div className="flex-shrink-0">
-                <PointsBadge onClick={() => setScreen('member', 'recompensas')} />
-              </div>
+              {/* Points badge — apenas para alunos */}
+              {!(userRole === 'criador' || collabStatus === 'approved') && (
+                <div className="flex-shrink-0">
+                  <PointsBadge onClick={() => setScreen('member', 'recompensas')} />
+                </div>
+              )}
 
               {/* Notification bell */}
               <div className="relative flex-shrink-0">
@@ -454,16 +456,29 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                           </p>
                         </div>
 
-                        {/* Menu items — condicionais por role */}
                         {(userRole === 'criador' || collabStatus === 'approved') ? (
-                          // Criador: apenas definições
-                          <button
-                            onClick={() => { setScreen('settings'); setShowProfileMenu(false); }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                          >
-                            <Settings className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
-                            <span className="truncate">{t('profile.settings')}</span>
-                          </button>
+                          // Criador: menu específico focado
+                          <>
+                            {[
+                              { label: t('profile.creatorDashboard'),  screen: 'colaborador',          icon: Briefcase },
+                              { label: t('profile.myProducts'),        screen: 'colaborador-produtos', icon: ShoppingBag },
+                              { 
+                                label: t('profile.notifications'), 
+                                onClick: () => { setShowProfileMenu(false); setShowNotifications(true); },
+                                icon: Bell 
+                              },
+                              { label: t('profile.settings'),          screen: 'settings',             icon: Settings },
+                            ].map((item) => (
+                              <button
+                                key={item.label}
+                                onClick={item.onClick || (() => { setScreen(item.screen); setShowProfileMenu(false); })}
+                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
+                              >
+                                <item.icon className="w-3.5 h-3.5 flex-shrink-0 opacity-70 text-primary" />
+                                <span className="truncate">{item.label}</span>
+                              </button>
+                            ))}
+                          </>
                         ) : (
                           // Aluno (ou sem role): menu completo da área do membro
                           <>
@@ -497,19 +512,6 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                             <Percent className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
                             <span className="truncate font-medium">Programa de Afiliados</span>
                           </button>
-                          {/* Painel do Criador: só para criadores */}
-                          {(userRole === 'criador' || collabStatus === 'approved') && (
-                            <button
-                              onClick={() => {
-                                setScreen('colaborador');
-                                setShowProfileMenu(false);
-                              }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left font-sans text-xs text-on-surface hover:text-primary hover:bg-white/5 rounded-lg transition-all"
-                            >
-                              <Briefcase className="w-3.5 h-3.5 flex-shrink-0 text-primary" />
-                              <span className="truncate font-medium">Painel do Criador</span>
-                            </button>
-                          )}
                         </div>
 
                         {/* Logout */}

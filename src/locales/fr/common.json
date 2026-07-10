@@ -161,6 +161,8 @@
     "myPurchases": "Mes Achats",
     "notifications": "Notifications",
     "settings": "Paramètres",
+    "creatorDashboard": "Tableau de Bord",
+    "myProducts": "Mes Produits",
     "logout": "Déconnexion",
     "signInOrCreate": "Se Connecter / Créer un Compte"
   },
