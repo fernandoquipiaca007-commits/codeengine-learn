@@ -89,7 +89,7 @@ function NavLink({
 }
 
 export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { user } = useAuthSession();
   const { locale } = useLocale();
   const { balance } = usePoints();
