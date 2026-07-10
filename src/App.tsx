@@ -97,6 +97,8 @@ const PageContent = memo(function PageContent({
   onOnboardingComplete,
   member,
   collabStatus,
+  loadingMember,
+  loadingCollabStatus,
 }: {
   currentScreen: string;
   currentProductId: string | null;
@@ -107,6 +109,8 @@ const PageContent = memo(function PageContent({
   onOnboardingComplete?: () => void;
   member: any;
   collabStatus: string;
+  loadingMember: boolean;
+  loadingCollabStatus: boolean;
 }) {
   // Determine user role from member profile or existing approved collaborator status
   const userRole: 'aluno' | 'criador' | null = member?.profile_data?.role ?? null;
@@ -115,6 +119,7 @@ const PageContent = memo(function PageContent({
 
   // Route guard: criador cannot access candidacy page, aluno cannot access colaborador panels
   const resolvedScreen = (() => {
+    if (loadingMember || loadingCollabStatus) return currentScreen;
     if (isCriador && currentScreen === 'colaborador-candidatura') return 'colaborador';
     if (isAluno && member && (currentScreen === 'colaborador' || currentScreen === 'colaborador-produtos')) return 'member';
     return currentScreen;
@@ -242,7 +247,9 @@ export default function App() {
 
   const handleOnboardingComplete = () => {
     setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : { onboarding_completed: true });
-    navigateToScreen('home');
+    const userRole = member?.profile_data?.role;
+    const isCriador = userRole === 'criador' || collabStatus === 'approved';
+    navigateToScreen(isCriador ? 'colaborador' : 'home');
   };
 
   const navigateToProduct = (productId: string, productTitle?: string) => {
@@ -787,10 +794,6 @@ export default function App() {
   useEffect(() => {
     if (authLoading || loadingMember || loadingCollabStatus) return;
     if (user && lastFetchedUserIdRef.current === user.id) {
-      const userRole = member?.profile_data?.role;
-      // Criadores não passam pelo onboarding (novos ou já aprovados)
-      const isCriadorUser = userRole === 'criador' || collabStatus === 'approved';
-      if (isCriadorUser) return;
       const isCompleted = member ? member.onboarding_completed === true : false;
       if (!isCompleted) {
         const isPurchase = sessionStorage.getItem('pendingCheckout') !== null;
@@ -858,6 +861,8 @@ export default function App() {
               onOnboardingComplete={handleOnboardingComplete}
               member={member}
               collabStatus={collabStatus}
+              loadingMember={loadingMember}
+              loadingCollabStatus={loadingCollabStatus}
             />
           </motion.div>
         </AnimatePresence>
