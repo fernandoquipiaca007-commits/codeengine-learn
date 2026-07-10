@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
-import { Plus, ArrowLeft, Edit2, ShieldAlert, CheckCircle, Clock, FileText, ExternalLink, Trash2, Copy } from 'lucide-react';
+import { Plus, ArrowLeft, Edit2, ShieldAlert, CheckCircle, FileText, ExternalLink, Trash2, Copy } from 'lucide-react';
 import { CollaboratorProductForm } from './CollaboratorProductForm';
 
 interface CollaboratorProductsProps {
@@ -89,23 +89,18 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
 
   const getApprovalBadge = (status: string) => {
     switch (status) {
-      case 'approved':
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-400 border border-green-500/20">
-            <CheckCircle size={12} /> Aprovado
-          </span>
-        );
       case 'rejected':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-400 border border-red-500/20">
-            <ShieldAlert size={12} /> Rejeitado
+            <ShieldAlert size={12} /> Desativado
           </span>
         );
+      case 'approved':
       case 'pending_review':
       default:
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-400 border border-orange-500/20">
-            <Clock size={12} /> Em Análise
+          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-400 border border-green-500/20">
+            <CheckCircle size={12} /> Publicado
           </span>
         );
     }
