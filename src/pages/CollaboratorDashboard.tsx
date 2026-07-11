@@ -181,7 +181,7 @@ export function CollaboratorDashboard({
 
   useEffect(() => {
     if (!hasDefaultedView && !countryLoading && hasProducts !== null) {
-      if (hasProducts === false) {
+      if (hasProducts === false || localStorage.getItem("wizard_active_step")) {
         setWalletView("inicio");
       } else {
         setWalletView(isAngola ? "aoa" : "usd");

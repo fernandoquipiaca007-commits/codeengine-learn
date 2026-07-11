@@ -47,9 +47,10 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
     if (prodId) {
       setSelectedProductId(prodId);
       setStep('form');
+      setIsImmersive?.(true);
       localStorage.removeItem("open_creator_product_id");
     }
-  }, []);
+  }, [setIsImmersive]);
 
   async function loadPickerCategories() {
     try {

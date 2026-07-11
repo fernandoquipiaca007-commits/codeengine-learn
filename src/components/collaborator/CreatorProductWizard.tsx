@@ -49,6 +49,9 @@ export function CreatorProductWizard({
   // Categories list for auto-tagging
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [subcategories, setSubcategories] = useState<any[]>([]);
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>("");
+  const [visibility, setVisibility] = useState<"public" | "hidden">("public");
 
   // Product Form State
   const [title, setTitle] = useState("");
@@ -83,6 +86,34 @@ export function CreatorProductWizard({
       setPriceAOA("");
     }
   }, [priceUSD]);
+
+  // Load subcategories when category changes
+  useEffect(() => {
+    async function loadSubcategories() {
+      if (!selectedCategoryId) {
+        setSubcategories([]);
+        setSelectedSubcategoryId("");
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from("subcategories")
+          .select("id, category_id, name")
+          .eq("category_id", selectedCategoryId)
+          .order("display_order", { ascending: true });
+        if (data) {
+          setSubcategories(data);
+          const exists = data.some((s) => s.id === selectedSubcategoryId);
+          if (!exists) {
+            setSelectedSubcategoryId("");
+          }
+        }
+      } catch (e) {
+        console.error("Error loading subcategories in wizard:", e);
+      }
+    }
+    loadSubcategories();
+  }, [selectedCategoryId]);
 
   // Load categories
   useEffect(() => {
@@ -123,6 +154,13 @@ export function CreatorProductWizard({
       setAffiliateCommissionPct(localStorage.getItem("wizard_form_affiliateCommissionPct") || "30");
       setCreatedProductId(localStorage.getItem("open_creator_product_id") || null);
 
+      const savedCatId = localStorage.getItem("wizard_form_categoryId");
+      if (savedCatId) setSelectedCategoryId(savedCatId);
+      const savedSubcatId = localStorage.getItem("wizard_form_subcategoryId");
+      if (savedSubcatId) setSelectedSubcategoryId(savedSubcatId);
+      const savedVis = localStorage.getItem("wizard_form_visibility");
+      if (savedVis) setVisibility(savedVis as "public" | "hidden");
+
       // Clear them so next fresh wizard starts from clean state
       localStorage.removeItem("wizard_active_step");
       localStorage.removeItem("wizard_active_type");
@@ -135,6 +173,9 @@ export function CreatorProductWizard({
       localStorage.removeItem("wizard_form_isFree");
       localStorage.removeItem("wizard_form_affiliateEnabled");
       localStorage.removeItem("wizard_form_affiliateCommissionPct");
+      localStorage.removeItem("wizard_form_categoryId");
+      localStorage.removeItem("wizard_form_subcategoryId");
+      localStorage.removeItem("wizard_form_visibility");
     }
   }, []);
 
@@ -256,6 +297,7 @@ export function CreatorProductWizard({
         title,
         description,
         categoryId: selectedCategoryId,
+        subcategoryId: selectedSubcategoryId || null,
         product_type: "ebook",
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : Number(priceAOA),
@@ -268,7 +310,7 @@ export function CreatorProductWizard({
         storageUrl,
         affiliateEnabled,
         affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
-        visibility: status === "published" ? "visible" : "hidden",
+        visibility,
         status: status === "published" ? "approved" : "draft", // draft or approved
         scheduled_at: status === "scheduled" && scheduledDate ? new Date(scheduledDate).toISOString() : null,
       };
@@ -353,6 +395,21 @@ export function CreatorProductWizard({
     // Save current state as draft first
     const prodId = createdProductId || (await saveProduct("draft"));
     if (prodId) {
+      localStorage.setItem("wizard_active_step", "6");
+      localStorage.setItem("wizard_active_type", type);
+      localStorage.setItem("wizard_form_title", title);
+      localStorage.setItem("wizard_form_description", description);
+      localStorage.setItem("wizard_form_coverUrl", coverUrl);
+      localStorage.setItem("wizard_form_storageUrl", storageUrl);
+      localStorage.setItem("wizard_form_priceUSD", priceUSD);
+      localStorage.setItem("wizard_form_priceAOA", priceAOA);
+      localStorage.setItem("wizard_form_isFree", isFree ? "true" : "false");
+      localStorage.setItem("wizard_form_affiliateEnabled", affiliateEnabled ? "true" : "false");
+      localStorage.setItem("wizard_form_affiliateCommissionPct", affiliateCommissionPct);
+      localStorage.setItem("wizard_form_categoryId", selectedCategoryId);
+      localStorage.setItem("wizard_form_subcategoryId", selectedSubcategoryId);
+      localStorage.setItem("wizard_form_visibility", visibility);
+      localStorage.setItem("open_creator_product_id", prodId);
       onGoToAdvancedForm(prodId);
     }
   };
@@ -372,6 +429,9 @@ export function CreatorProductWizard({
       localStorage.setItem("wizard_form_isFree", isFree ? "true" : "false");
       localStorage.setItem("wizard_form_affiliateEnabled", affiliateEnabled ? "true" : "false");
       localStorage.setItem("wizard_form_affiliateCommissionPct", affiliateCommissionPct);
+      localStorage.setItem("wizard_form_categoryId", selectedCategoryId);
+      localStorage.setItem("wizard_form_subcategoryId", selectedSubcategoryId);
+      localStorage.setItem("wizard_form_visibility", visibility);
       localStorage.setItem("open_creator_product_id", prodId);
       localStorage.setItem("open_creator_product_review", "true");
 
@@ -510,9 +570,81 @@ export function CreatorProductWizard({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Descreve resumidamente o que os leitores vão aprender no teu e-book..."
-                  rows={4}
+                  rows={3}
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors resize-none"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                    Categoria *
+                  </label>
+                  <select
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id} className="bg-neutral-950 text-white font-semibold">
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                    Subcategoria
+                  </label>
+                  <select
+                    value={selectedSubcategoryId}
+                    onChange={(e) => setSelectedSubcategoryId(e.target.value)}
+                    disabled={subcategories.length === 0}
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors disabled:opacity-50"
+                  >
+                    <option value="" className="bg-neutral-950 text-white">
+                      Nenhuma subcategoria
+                    </option>
+                    {subcategories.map((s) => (
+                      <option key={s.id} value={s.id} className="bg-neutral-950 text-white">
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Visibilidade do Produto
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setVisibility("public")}
+                    className={`flex flex-col items-start p-3 rounded-2xl border text-left transition-all ${
+                      visibility === "public"
+                        ? "border-violet-500 bg-violet-500/10 text-white"
+                        : "border-white/10 bg-white/5 text-white/60 hover:border-white/20"
+                    }`}
+                  >
+                    <span className="text-xs font-bold">Público</span>
+                    <span className="text-[9px] opacity-70 mt-0.5">Visível no catálogo geral da biblioteca</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVisibility("hidden")}
+                    className={`flex flex-col items-start p-3 rounded-2xl border text-left transition-all ${
+                      visibility === "hidden"
+                        ? "border-violet-500 bg-violet-500/10 text-white"
+                        : "border-white/10 bg-white/5 text-white/60 hover:border-white/20"
+                    }`}
+                  >
+                    <span className="text-xs font-bold">Oculto</span>
+                    <span className="text-[9px] opacity-70 mt-0.5">Apenas acessível via link direto</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
@@ -855,8 +987,50 @@ export function CreatorProductWizard({
                   <p className="text-[10px] text-on-surface-variant mt-0.5 line-clamp-2 leading-relaxed">
                     {description || "Sem descrição"}
                   </p>
-                  <span className="inline-block mt-1 text-xs font-bold text-violet-400 font-mono">
-                    {isFree ? "Gratuito" : `$${priceUSD} USD`}
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-xs font-bold text-violet-400 font-mono">
+                      {isFree ? "Gratuito" : `$${priceUSD} USD`}
+                    </span>
+                    <span className="text-white/20 text-[9px]">•</span>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
+                      visibility === "public"
+                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                    }`}>
+                      {visibility === "public" ? "Público" : "Oculto"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Summary Grid */}
+              <div className="grid grid-cols-2 gap-2.5 text-[10px] font-sans text-white/70">
+                <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5">
+                  <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Preço</span>
+                  <span className="font-bold text-white font-mono text-xs">
+                    {isFree ? "Gratuito (Free)" : `$${priceUSD} USD ${isAngola && priceAOA ? `/ Kz ${priceAOA} AOA` : ""}`}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5">
+                  <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Visibilidade</span>
+                  <span className={`font-bold text-xs ${visibility === "public" ? "text-emerald-400" : "text-amber-400"}`}>
+                    {visibility === "public" ? "Público (Biblioteca)" : "Oculto (Link Direto)"}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5">
+                  <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Afiliados</span>
+                  <span className="font-bold text-white text-xs">
+                    {affiliateEnabled ? `Ativo (${affiliateCommissionPct}% comissão)` : "Inativo"}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5 truncate">
+                  <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Classificação</span>
+                  <span className="font-bold text-white text-xs truncate block">
+                    {categories.find((c) => c.id === selectedCategoryId)?.name || "Geral"}{" "}
+                    {selectedSubcategoryId && ` · ${subcategories.find((s) => s.id === selectedSubcategoryId)?.name || ""}`}
                   </span>
                 </div>
               </div>
