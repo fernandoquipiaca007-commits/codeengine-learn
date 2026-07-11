@@ -42,6 +42,15 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
     return () => { setIsImmersive?.(false); };
   }, [setIsImmersive]);
 
+  useEffect(() => {
+    const prodId = localStorage.getItem("open_creator_product_id");
+    if (prodId) {
+      setSelectedProductId(prodId);
+      setStep('form');
+      localStorage.removeItem("open_creator_product_id");
+    }
+  }, []);
+
   async function loadPickerCategories() {
     try {
       const { data } = await supabase.from('categories').select('id, name').order('display_order', { ascending: true });

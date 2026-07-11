@@ -35,6 +35,7 @@ import {
   ArrowLeft,
   Megaphone,
   Smartphone,
+  Sparkles,
 } from "lucide-react";
 
 import { useUserCountry } from "../contexts/UserCountryContext";
@@ -42,6 +43,9 @@ import { useUserCountry } from "../contexts/UserCountryContext";
 import { CountryRequiredModal } from "../components/CountryRequiredModal";
 
 import AdsDashboard from "../components/collaborator/AdsDashboard";
+
+import { CreatorProductSelector } from "../components/collaborator/CreatorProductSelector";
+import { CreatorProductWizard } from "../components/collaborator/CreatorProductWizard";
 
 interface CollaboratorDashboardProps {
   setScreen: (screen: string) => void;
@@ -166,18 +170,24 @@ export function CollaboratorDashboard({
   // Currency filter for dashboard view
 
   const [walletView, setWalletView] = useState<
-    "usd" | "aoa" | "affiliates" | "founder" | "analytics" | "ads" | "profile" | "community"
-  >("usd");
+    "criar" | "usd" | "aoa" | "affiliates" | "founder" | "analytics" | "ads" | "profile" | "community"
+  >("criar");
+
+  const [hasProducts, setHasProducts] = useState<boolean | null>(null);
+  const [wizardType, setWizardType] = useState<"ebook" | "course" | "template" | "music" | "app" | "service" | null>(null);
 
   const [hasDefaultedView, setHasDefaultedView] = useState(false);
 
   useEffect(() => {
-    if (!hasDefaultedView && !countryLoading) {
-      setWalletView(isAngola ? "aoa" : "usd");
-
+    if (!hasDefaultedView && !countryLoading && hasProducts !== null) {
+      if (hasProducts === false) {
+        setWalletView("criar");
+      } else {
+        setWalletView(isAngola ? "aoa" : "usd");
+      }
       setHasDefaultedView(true);
     }
-  }, [isAngola, countryLoading, hasDefaultedView]);
+  }, [isAngola, countryLoading, hasDefaultedView, hasProducts]);
 
   useEffect(() => {
     if (!isAngola) {
@@ -488,6 +498,24 @@ export function CollaboratorDashboard({
           }
         } catch (errAff) {
           console.error("Error loading affiliates:", errAff);
+        }
+
+        // Fetch products to check onboarding status
+        try {
+          const resProd = await fetch(`${BACKEND_URL}/api/collaborators/products`, {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+          const dataProd = await resProd.json();
+          if (dataProd.success && Array.isArray(dataProd.products)) {
+            setHasProducts(dataProd.products.length > 0);
+          } else {
+            setHasProducts(false);
+          }
+        } catch (errProd) {
+          console.error("Error loading products for onboarding check:", errProd);
+          setHasProducts(false);
         }
       } else {
         console.error("Error dashboard:", data.error);
@@ -1299,9 +1327,18 @@ export function CollaboratorDashboard({
           return null;
         })()}
 
-        {/* Currency Filter Toggle - Desktop */}
-
         <div className="hidden sm:flex mb-2 items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => setWalletView("criar")}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+              walletView === "criar"
+                ? "bg-violet-600 text-white shadow-[0_0_10px_rgba(139,92,246,0.35)]"
+                : "text-on-surface-variant hover:text-white"
+            }`}
+          >
+            <Sparkles size={12} className="text-violet-400" /> Criar
+          </button>
+
           {isAngola ? (
             <>
               <button
@@ -1432,6 +1469,12 @@ export function CollaboratorDashboard({
             className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-surface-high border border-white/10 text-xs font-bold text-white shadow-md active:scale-[0.98] transition-all"
           >
             <span className="flex items-center gap-2">
+              {walletView === "criar" && (
+                <>
+                  <Sparkles size={12} className="text-violet-400" />
+                  <span>Criar</span>
+                </>
+              )}
               {walletView === "aoa" && (
                 <>
                   <Landmark size={12} className="text-amber-400" />
@@ -1491,6 +1534,19 @@ export function CollaboratorDashboard({
                 onClick={() => setShowWalletTabsDropdown(false)}
               />
               <div className="absolute left-0 right-0 mt-1.5 rounded-xl bg-[#0a0a0f] border border-white/15 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-40 max-h-[300px] overflow-y-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWalletView("criar");
+                    setShowWalletTabsDropdown(false);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors ${
+                    walletView === "criar" ? "text-violet-400 bg-violet-500/10" : "text-on-surface-variant"
+                  }`}
+                >
+                  <Sparkles size={12} className="text-violet-400" /> Criar
+                </button>
+
                 {isAngola && (
                   <button
                     type="button"
@@ -2520,9 +2576,27 @@ export function CollaboratorDashboard({
           <AdsDashboard collaboratorId={profile.id} />
         )}
 
+        {/* ====== CRIAR PRODUCT SELECTOR VIEW ====== */}
+        {walletView === "criar" && (
+          <div className="mb-6">
+            <CreatorProductSelector
+              displayName={profile?.displayName}
+              onSelectType={(type) => {
+                if (type === "affiliate") {
+                  setScreen("afiliados");
+                } else {
+                  setWizardType(type);
+                }
+              }}
+              onGoToAffiliates={() => setScreen("afiliados")}
+            />
+          </div>
+        )}
+
         {/* Main Grid: Extrato e Solicitações */}
 
-        {walletView !== "affiliates" &&
+        {walletView !== "criar" &&
+          walletView !== "affiliates" &&
           walletView !== "founder" &&
           walletView !== "analytics" &&
           walletView !== "ads" &&
@@ -3885,6 +3959,22 @@ export function CollaboratorDashboard({
               )}
             </motion.div>
           </div>
+        )}
+
+        {/* Modal: Creator Product Stepper Wizard */}
+        {wizardType && (
+          <CreatorProductWizard
+            type={wizardType}
+            onClose={() => setWizardType(null)}
+            onGoToAdvancedForm={(productId) => {
+              setWizardType(null);
+              localStorage.setItem("open_creator_product_id", productId);
+              setScreen("colaborador-produtos");
+            }}
+            setScreen={setScreen}
+            displayName={profile?.displayName}
+            isAngola={isAngola}
+          />
         )}
       </div>
     </div>
