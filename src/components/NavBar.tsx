@@ -395,7 +395,7 @@ export function NavBar({ currentScreen, setScreen, onSearchClick }: NavBarProps)
                       <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
                       <NotificationDropdown
                         userId={user.id}
-                        onNavigate={(screen) => { setScreen(screen); setShowNotifications(false); }}
+                        onNavigate={(screen, section) => { setScreen(screen, section); setShowNotifications(false); }}
                         onClose={() => setShowNotifications(false)}
                       />
                     </>

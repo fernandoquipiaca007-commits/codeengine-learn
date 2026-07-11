@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { Plus, ArrowLeft, Edit2, ShieldAlert, CheckCircle, FileText, ExternalLink, Trash2, Copy } from 'lucide-react';
@@ -169,19 +169,19 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-bold text-white font-mono">{formatPrice(prod)}</td>
-                    <td className="px-6 py-4 text-xs font-medium font-sans">{prod.licensing_info?.type === 'commercial' ? 'Comercial' : 'Pessoal'}{prod.licensing_info?.lifetime ? ' (Vitalicio)' : ` (${prod.licensing_info?.duration_days} dias)`}</td>
-                    <td className="px-6 py-4">{getApprovalBadge(prod.approval_status)}</td>
-                    <td className="px-6 py-4">{getStatusBadge(prod)}</td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 font-bold text-white font-mono whitespace-nowrap">{formatPrice(prod)}</td>
+                    <td className="px-6 py-4 text-xs font-medium font-sans whitespace-nowrap">{prod.licensing_info?.type === 'commercial' ? 'Comercial' : 'Pessoal'}{prod.licensing_info?.lifetime ? ' (Vitalicio)' : ` (${prod.licensing_info?.duration_days} dias)`}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getApprovalBadge(prod.approval_status)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(prod)}</td>
+                    <td className="px-6 py-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => handleEdit(prod.id)} className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer"><Edit2 size={13} className="text-primary" /> Editar</button>
-                        <button onClick={() => handleDelete(prod.id)} className="flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"><Trash2 size={13} /> Excluir</button>
-                        <button onClick={() => handleCopyLink(prod.title)} className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer"><Copy size={13} className="text-yellow-400" /> Copiar Link</button>
+                        <button onClick={() => handleEdit(prod.id)} className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap"><Edit2 size={13} className="text-primary" /> Editar</button>
+                        <button onClick={() => handleDelete(prod.id)} className="flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer whitespace-nowrap"><Trash2 size={13} /> Excluir</button>
+                        <button onClick={() => handleCopyLink(prod.title)} className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap"><Copy size={13} className="text-yellow-400" /> Copiar Link</button>
                         {prod.approval_status === 'approved' && prod.status === 'active' ? (
-                          <a href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer">Ver Loja <ExternalLink size={12} className="text-primary" /></a>
+                          <a href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap">Ver Loja <ExternalLink size={12} className="text-primary" /></a>
                         ) : (
-                          <a href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=true`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/25 transition-all cursor-pointer animate-pulse">Ver Preview <ExternalLink size={12} /></a>
+                          <a href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=true`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/25 transition-all cursor-pointer animate-pulse whitespace-nowrap">Ver Preview <ExternalLink size={12} /></a>
                         )}
                       </div>
                     </td>
