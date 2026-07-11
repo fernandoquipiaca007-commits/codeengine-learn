@@ -98,6 +98,54 @@ const SECTION_TITLES = {
   }
 };
 
+function getEmbedUrl(url: string | null): { url: string; isEmbed: boolean } {
+  if (!url) return { url: '', isEmbed: false };
+  const trimmed = url.trim();
+
+  // 1. YouTube
+  if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+    const videoId = trimmed.includes('youtu.be')
+      ? trimmed.split('youtu.be/')[1]?.split('?')[0]
+      : trimmed.split('v=')[1]?.split('&')[0];
+    return {
+      url: `https://www.youtube.com/embed/${videoId}?autoplay=0&modestbranding=1&rel=0`,
+      isEmbed: true
+    };
+  }
+
+  // 2. Vimeo
+  if (trimmed.includes('vimeo.com')) {
+    const videoId = trimmed.split('vimeo.com/')[1]?.split('?')[0];
+    return {
+      url: `https://player.vimeo.com/video/${videoId}?autoplay=0&badge=0&autopause=0`,
+      isEmbed: true
+    };
+  }
+
+  // 3. Cloudflare Stream
+  if (trimmed.startsWith('cfstream://') || trimmed.includes('iframe.videodelivery.net')) {
+    const videoId = trimmed.startsWith('cfstream://')
+      ? trimmed.replace(/^cfstream:\/\//, '')
+      : trimmed.split('videodelivery.net/')[1]?.split('/')[0]?.split('?')[0];
+    return {
+      url: `https://iframe.videodelivery.net/${videoId}?autoplay=0`,
+      isEmbed: true
+    };
+  }
+
+  // 4. Google Drive
+  if (trimmed.includes('drive.google.com') || trimmed.includes('/file/d/')) {
+    if (trimmed.includes('/preview')) return { url: trimmed, isEmbed: true };
+    const match = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) return { url: `https://drive.google.com/file/d/${match[1]}/preview`, isEmbed: true };
+    const idMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch) return { url: `https://drive.google.com/file/d/${idMatch[1]}/preview`, isEmbed: true };
+    return { url: trimmed, isEmbed: true };
+  }
+
+  return { url: trimmed, isEmbed: false };
+}
+
 const ALERT_TRANSLATIONS = {
   pt: {
     availableIn: "Este documento está disponível em:",
@@ -1076,21 +1124,34 @@ export function Product({
           </div>
 
           {/* Promo Video */}
-          {product.video_url && (
-            <div className="mt-4 w-full max-w-lg aspect-video bg-surface-highest rounded-2xl overflow-hidden relative group border border-white/10 shadow-lg">
-              <video
-                ref={promoVideoRef}
-                src={product.video_url}
-                controls
-                preload="none"
-                playsInline
-                muted
-                loop
-                className="w-full h-full object-cover"
-                poster={getProductCoverUrl(product, locale)}
-              />
-            </div>
-          )}
+          {product.video_url && (() => {
+            const embed = getEmbedUrl(product.video_url);
+            return (
+              <div className="mt-4 w-full max-w-lg aspect-video bg-surface-highest rounded-2xl overflow-hidden relative group border border-white/10 shadow-lg">
+                {embed.isEmbed ? (
+                  <iframe
+                    src={embed.url}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={product.title || 'Video'}
+                  />
+                ) : (
+                  <video
+                    ref={promoVideoRef}
+                    src={product.video_url}
+                    controls
+                    preload="none"
+                    playsInline
+                    muted
+                    loop
+                    className="w-full h-full object-cover"
+                    poster={getProductCoverUrl(product, locale)}
+                  />
+                )}
+              </div>
+            );
+          })()}
 
           {/* Tags */}
           {Array.isArray(product.tags) && product.tags.length > 0 && (

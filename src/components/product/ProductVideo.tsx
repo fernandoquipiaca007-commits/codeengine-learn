@@ -96,18 +96,37 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
     }
   }
 
+  function isEmbeddable(video: Video): boolean {
+    const url = video.video_url?.trim() || '';
+    return (
+      video.video_type === 'youtube' ||
+      video.video_type === 'vimeo' ||
+      video.video_type === 'google-drive' ||
+      video.video_type === 'instagram' ||
+      url.includes('youtube.com') ||
+      url.includes('youtu.be') ||
+      url.includes('vimeo.com') ||
+      url.includes('drive.google.com') ||
+      url.includes('/file/d/')
+    );
+  }
+
   function getEmbedUrl(video: Video): string {
     const url = video.video_url?.trim() || '';
     if (!url) return '';
 
-    if (video.video_type === 'youtube') {
+    const isYoutube = url.includes('youtube.com') || url.includes('youtu.be');
+    const isVimeo = url.includes('vimeo.com');
+    const isDrive = url.includes('drive.google.com') || url.includes('/file/d/');
+
+    if (isYoutube || video.video_type === 'youtube') {
       const videoId = url.includes('youtu.be') 
         ? url.split('youtu.be/')[1]?.split('?')[0]
         : url.split('v=')[1]?.split('&')[0];
       return `https://www.youtube.com/embed/${videoId}`;
     }
     
-    if (video.video_type === 'vimeo') {
+    if (isVimeo || video.video_type === 'vimeo') {
       const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
       return `https://player.vimeo.com/video/${videoId}`;
     }
@@ -116,9 +135,7 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
       return url.replace('/p/', '/embed/p/');
     }
 
-    if (video.video_type === 'google-drive') {
-      // URL is already normalized to /file/d/ID/preview by the admin
-      // But handle raw share links just in case
+    if (isDrive || video.video_type === 'google-drive') {
       if (url.includes('/preview')) return url;
       const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
       if (match) return `https://drive.google.com/file/d/${match[1]}/preview`;
@@ -149,7 +166,7 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
         {/* Main Video Player */}
         <div className="glass-panel rounded-2xl overflow-hidden border border-white/10">
           <div className="aspect-video bg-surface-highest relative">
-            {activeVideoData.video_type === 'upload' ? (
+            {!isEmbeddable(activeVideoData) ? (
               <video
                 ref={videoRef}
                 src={getPublicStorageUrl(activeVideoData.video_url, 'product-videos')}
