@@ -365,13 +365,13 @@ export function Welcome({ setScreen }: WelcomeProps) {
       <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-5xl gap-5 md:gap-6 pt-20 pb-6">
 
         {/* ── Hero Title ── */}
-        <h1 className="tahoe-glass-text flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-2 w-full flex-wrap text-[2rem] xs:text-[2.4rem] sm:text-5xl md:text-6xl lg:text-7xl leading-tight pointer-events-none">
+        <h1 className="tahoe-glass-text flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-2 w-full flex-wrap text-[2.4rem] xs:text-[2.8rem] sm:text-5xl md:text-6xl lg:text-7xl leading-tight pointer-events-none">
           <span className="font-serif italic font-medium">{word1}</span>
           <span className="font-sans font-extrabold tracking-tighter">{word2}</span>
         </h1>
 
         {/* ── Subtitle ── */}
-        <p className="text-sm sm:text-lg md:text-xl font-bold tracking-tight text-white max-w-[92%] sm:max-w-xl md:max-w-2xl leading-snug pointer-events-none">
+        <p className="text-base xs:text-lg sm:text-lg md:text-xl font-bold tracking-tight text-white max-w-[92%] sm:max-w-xl md:max-w-2xl leading-snug pointer-events-none">
           {subtitle}
         </p>
 
@@ -387,14 +387,14 @@ export function Welcome({ setScreen }: WelcomeProps) {
         >
           <button
             onClick={() => setScreen('home')}
-            className="relative inline-flex h-10 md:h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] px-6 md:px-8 text-xs md:text-sm font-bold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+            className="relative inline-flex h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] px-6 md:px-8 text-xs md:text-sm font-bold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
           >
             {primaryCta}
             <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" />
           </button>
           <button
             onClick={handleSecondaryCtaClick}
-            className="relative inline-flex h-10 md:h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-5 md:px-8 text-xs md:text-sm font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="relative inline-flex h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-5 md:px-8 text-xs md:text-sm font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary animate-pulse" />
             {secondaryCta}

@@ -3243,7 +3243,7 @@ export function CollaboratorDashboard({
 
               {/* Conselho para aprovação imediata */}
               <div className="mb-4 rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-[11px] text-amber-300 leading-relaxed font-sans">
-                <strong>💡 Conselho para Aprovação Imediata:</strong> Recomenda-se vivamente que a conta de pagamento (PayPal) ou os dados bancários (IBAN/Titular) correspondam exatamente ao mesmo e-mail e nome completo que cadastrou nesta plataforma. Esta consistência acelera a verificação e garante a aprovação imediata dos seus saques pela administração.
+                {t('collaborator.walletSetup.advice', '💡 Conselho para Aprovação Imediata: Recomenda-se vivamente que a conta de pagamento (PayPal) ou os dados bancários (IBAN/Titular) correspondam exatamente ao mesmo e-mail e nome completo que cadastrou nesta plataforma. Esta consistência acelera a verificação e garante a aprovação imediata dos seus saques pela administração.')}
               </div>
 
               <form onSubmit={handleWalletSubmit} className="space-y-4">
