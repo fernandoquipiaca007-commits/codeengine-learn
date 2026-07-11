@@ -13,7 +13,7 @@ interface ProductActionButtonProps {
   productId: string;
   price: number;
   isFree: boolean;
-  productType?: 'file' | 'course' | 'ebook';
+  productType?: 'file' | 'course' | 'ebook' | 'service' | string;
   productTitle?: string;
   fastpayLink?: string | null;
   aoaPrice?: number | null;
@@ -28,6 +28,7 @@ interface ProductActionButtonProps {
   onRequireAuth?: () => void;
   preferAoa?: boolean;
   originalPrice?: number;
+  licensingInfo?: any;
 }
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
@@ -49,6 +50,7 @@ export function ProductActionButton({
   onRequireAuth,
   preferAoa = false,
   originalPrice,
+  licensingInfo,
 }: ProductActionButtonProps) {
   const { locale } = useLocale();
   const { t } = useTranslation(['common', 'checkout'], { lng: locale });
@@ -57,6 +59,7 @@ export function ProductActionButton({
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showServiceModal, setShowServiceModal] = useState(false);
 
   // Get current user
   const [user, setUser] = useState<any>(null);
@@ -349,6 +352,7 @@ export function ProductActionButton({
   if (ownsProduct) {
     const isCourse = productType === 'course';
     const isEbook = productType === 'ebook';
+    const isService = productType === 'service';
 
     return (
       <div className="flex flex-col gap-4">
@@ -358,11 +362,13 @@ export function ProductActionButton({
               onStartLearning(productId, 'course');
             } else if (isEbook && onStartLearning) {
               onStartLearning(productId, 'ebook');
+            } else if (isService) {
+              setShowServiceModal(true);
             } else {
               void handleDownload();
             }
           }}
-          disabled={downloading && !isCourse && !isEbook}
+          disabled={downloading && !isCourse && !isEbook && !isService}
           className={`
             bg-green-600 text-white font-display text-sm sm:text-base md:text-lg 
             font-bold px-5 sm:px-6 py-3 sm:py-3.5 rounded-lg 
@@ -374,7 +380,7 @@ export function ProductActionButton({
             ${className || ''}
           `}
         >
-          {downloading && !isCourse && !isEbook ? (
+          {downloading && !isCourse && !isEbook && !isService ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
             <CheckCircle className="w-5 h-5" />
@@ -384,11 +390,13 @@ export function ProductActionButton({
               ? t('product.startCourse')
               : isEbook
                 ? t('product.readNow')
-                : downloading
-                  ? t('actions.downloading')
-                  : t('actions.downloadProduct')}
+                : isService
+                  ? 'Acessar Serviço'
+                  : downloading
+                    ? t('actions.downloading')
+                    : t('actions.downloadProduct')}
           </span>
-          {!isCourse && !isEbook && (
+          {!isCourse && !isEbook && !isService && (
             <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
           )}
         </button>
@@ -397,6 +405,102 @@ export function ProductActionButton({
           <CheckCircle className="w-4 h-4" />
           {accessType === 'free' ? t('product.freeBadge') : t('product.lifetimeAccess')}
         </div>
+
+        {/* Modal de Entrega do Serviço */}
+        {isService && showServiceModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="bg-[#121214] border border-white/10 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative text-left">
+              <button 
+                onClick={() => setShowServiceModal(false)}
+                className="absolute top-4 right-4 text-on-surface-variant hover:text-white transition"
+              >
+                <span className="sr-only">Fechar</span>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-white font-display">Instruções do seu Serviço</h3>
+                <p className="text-xs text-on-surface-variant">
+                  Você adquiriu com sucesso o serviço <strong className="text-white">"{productTitle}"</strong>. Siga as instruções do criador abaixo para recebê-lo de forma segura.
+                </p>
+              </div>
+
+              <div className="bg-white/3 border border-white/5 rounded-xl p-4 text-sm text-white/90 leading-relaxed max-h-48 overflow-y-auto whitespace-pre-wrap">
+                {licensingInfo?.service_delivery?.instructions || 'Nenhuma instrução específica de entrega fornecida pelo criador. Por favor, entre em contato usando o botão abaixo.'}
+              </div>
+
+              <div className="space-y-3">
+                <span className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Canal Oficial e Seguro de Contacto</span>
+                {(() => {
+                  const delivery = licensingInfo?.service_delivery || {};
+                  const method = delivery.method || 'email';
+                  const contact = delivery.contact || '';
+
+                  if (method === 'whatsapp') {
+                    const digits = contact.replace(/\D/g, '');
+                    const waLink = contact.startsWith('http') ? contact : `https://wa.me/${digits}`;
+                    return (
+                      <a
+                        href={waLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-green-600 hover:bg-green-700 text-white py-3 text-sm font-semibold transition"
+                      >
+                        Falar com o Criador no WhatsApp
+                      </a>
+                    );
+                  }
+
+                  if (method === 'email') {
+                    return (
+                      <a
+                        href={`mailto:${contact}`}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white py-3 text-sm font-semibold transition"
+                      >
+                        Enviar E-mail para o Criador
+                      </a>
+                    );
+                  }
+
+                  if (method === 'telegram') {
+                    const tgLink = contact.startsWith('http') ? contact : `https://t.me/${contact.replace('@', '')}`;
+                    return (
+                      <a
+                        href={tgLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white py-3 text-sm font-semibold transition"
+                      >
+                        Falar com o Criador no Telegram
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <a
+                      href={contact.startsWith('http') ? contact : `https://${contact}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/95 text-on-primary py-3 text-sm font-semibold transition"
+                    >
+                      Acessar Canal de Atendimento / Agendamento
+                    </a>
+                  );
+                })()}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowServiceModal(false)}
+                className="w-full border border-white/10 hover:bg-white/5 text-xs text-white py-2 rounded-xl transition"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

@@ -1161,6 +1161,7 @@ export function Product({
             onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
             onRequireAuth={() => setScreen && setScreen('signup')}
             preferAoa={isAngola}
+            licensingInfo={product.licensing_info}
           />
         </div>
       </div>
@@ -1376,6 +1377,7 @@ export function Product({
                 onStartLearning={(id, type) => setScreen && setScreen('member', `learn:${type}:${id}`)}
                 onRequireAuth={() => setScreen && setScreen('signup')}
                 preferAoa={isAngola}
+                licensingInfo={product.licensing_info}
               />
             </div>
 
