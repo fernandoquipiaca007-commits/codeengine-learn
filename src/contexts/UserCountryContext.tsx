@@ -6,6 +6,8 @@ interface UserCountryContextValue {
   isAngola: boolean;
   isLoading: boolean;
   setUserCountry: (country: string) => Promise<void>;
+  rates: { USD_BRL: number; USD_EUR: number; USD_AOA: number } | null;
+  convertPrice: (usdPrice: number, aoaPrice?: number | null) => { amount: number; currency: string; formatted: string };
 }
 
 const UserCountryContext = createContext<UserCountryContextValue>({
@@ -13,11 +15,31 @@ const UserCountryContext = createContext<UserCountryContextValue>({
   isAngola: false,
   isLoading: true,
   setUserCountry: async () => {},
+  rates: null,
+  convertPrice: (usdPrice) => ({ amount: usdPrice, currency: 'USD', formatted: `$${usdPrice}` }),
 });
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
 export function UserCountryProvider({ children }: { children: ReactNode }) {
   const [country, setCountry] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [rates, setRates] = useState<{ USD_BRL: number; USD_EUR: number; USD_AOA: number } | null>(null);
+
+  useEffect(() => {
+    async function fetchRates() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/stripe/exchange-rates`);
+        const data = await res.json();
+        if (data.success && data.rates) {
+          setRates(data.rates);
+        }
+      } catch (err) {
+        console.warn('[UserCountryContext] Error fetching exchange rates:', err);
+      }
+    }
+    fetchRates();
+  }, []);
 
   const loadCountry = useCallback(async () => {
     setIsLoading(true);
@@ -110,6 +132,53 @@ export function UserCountryProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const convertPrice = useCallback((usdPrice: number, aoaPrice?: number | null) => {
+    const defaultRates = { USD_BRL: 5.40, USD_EUR: 0.92, USD_AOA: 850.00 };
+    const activeRates = rates || defaultRates;
+
+    if (country === 'BR') {
+      const amount = usdPrice * activeRates.USD_BRL;
+      const formatted = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(amount);
+      return { amount, currency: 'BRL', formatted };
+    }
+
+    if (country === 'PT') {
+      const amount = usdPrice * activeRates.USD_EUR;
+      const formatted = new Intl.NumberFormat('pt-PT', {
+        style: 'currency',
+        currency: 'EUR',
+      }).format(amount);
+      return { amount, currency: 'EUR', formatted };
+    }
+
+    if (country === 'AO') {
+      if (aoaPrice != null && aoaPrice > 0) {
+        const formatted = new Intl.NumberFormat('pt-AO', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        }).format(aoaPrice) + ' Kz';
+        return { amount: aoaPrice, currency: 'AOA', formatted };
+      } else {
+        const amount = usdPrice * activeRates.USD_AOA;
+        const formatted = new Intl.NumberFormat('pt-AO', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        }).format(amount) + ' Kz';
+        return { amount, currency: 'AOA', formatted };
+      }
+    }
+
+    // Default to USD
+    const formatted = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(usdPrice);
+    return { amount: usdPrice, currency: 'USD', formatted };
+  }, [country, rates]);
+
   return (
     <UserCountryContext.Provider
       value={{
@@ -117,6 +186,8 @@ export function UserCountryProvider({ children }: { children: ReactNode }) {
         isAngola: country === 'AO',
         isLoading,
         setUserCountry,
+        rates,
+        convertPrice,
       }}
     >
       {children}

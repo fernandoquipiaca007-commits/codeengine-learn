@@ -199,7 +199,7 @@ interface HomeProps {
 
 export function Home({ setScreen, onProductClick }: HomeProps) {
   const { locale } = useLocale();
-  const { isAngola } = useUserCountry();
+  const { isAngola, convertPrice } = useUserCountry();
   const [products, setProducts] = useState<LocalizedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -474,13 +474,7 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
 
   const formatPrice = (p: LocalizedProduct) => {
     if (p.is_free) return activeLang === 'pt' ? 'Livre' : activeLang === 'fr' ? 'Gratuit' : 'Free';
-    
-    if (isAngola) {
-      const priceVal = p.aoa_price || (p as any).aoaPrice || Math.round(p.price * 920);
-      return `Kz ${Number(priceVal).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}`;
-    }
-    
-    return `$${p.price}`;
+    return convertPrice(p.price, p.aoa_price || (p as any).aoaPrice).formatted;
   };
 
   return (

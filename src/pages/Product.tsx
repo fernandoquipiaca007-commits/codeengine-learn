@@ -157,7 +157,7 @@ export function Product({
   overrideProductData,
 }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
-  const { isAngola } = useUserCountry();
+  const { isAngola, convertPrice } = useUserCountry();
   const { t } = useTranslation(['pages', 'common'], { lng: locale });
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
   const tDict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
@@ -1132,18 +1132,24 @@ export function Product({
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3">
           <div>
             <p className="font-sans text-xs text-on-surface-variant">{t('product.finalPrice')}</p>
-            {isAngola ? (
-              <>
-                <p className="font-mono text-base font-bold text-amber-500">
-                  Kz {Number(getFinalAoaPrice()).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
-                </p>
-                <p className="text-[9px] text-on-surface-variant/80">
-                  ou $ {getFinalPrice()} USD {discount > 0 && `(Desconto de $${discount.toFixed(2)} USD aplicado)`}
-                </p>
-              </>
-            ) : (
-              <p className="font-mono text-xl font-bold text-primary">$ {getFinalPrice()}</p>
-            )}
+            {(() => {
+              const details = convertPrice(getFinalPrice(), getFinalAoaPrice());
+              if (details.currency !== 'USD') {
+                return (
+                  <>
+                    <p className="font-mono text-base font-bold text-amber-500">
+                      {details.formatted}
+                    </p>
+                    <p className="text-[9px] text-on-surface-variant/80">
+                      ou $ {getFinalPrice()} USD {discount > 0 && `(Desconto de $${discount.toFixed(2)} USD aplicado)`}
+                    </p>
+                  </>
+                );
+              }
+              return (
+                <p className="font-mono text-xl font-bold text-primary">{details.formatted}</p>
+              );
+            })()}
           </div>
           <ProductActionButton
             productId={product.id}
@@ -1256,39 +1262,45 @@ export function Product({
           
           <div className="flex flex-col gap-3.5">
             <div className="flex flex-col items-center justify-center gap-1 w-full">
-              {isAngola ? (
-                <>
-                  <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-amber-500 tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
-                    Kz {Number(getFinalAoaPrice()).toLocaleString('pt-AO', { minimumFractionDigits: 0 })}
-                  </span>
-                  <span className="font-sans text-[11px] text-on-surface-variant">
-                    Equivalente a $ {getFinalPrice()} USD
-                  </span>
-                  {discount > 0 && (
-                    <span className="text-xs text-green-400 font-sans block mt-1 font-bold animate-pulse">
-                      Desconto de ${discount.toFixed(2)} USD aplicado ao preço em dólar
-                    </span>
-                  )}
-                </>
-              ) : (
-                <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
-                  {(campaignPrice || discount > 0) ? (
-                    <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
-                      <span className="text-sm sm:text-base font-semibold text-on-surface-variant/50 line-through">
-                        {tDict.before} ${listPrice}
+              {(() => {
+                const details = convertPrice(getFinalPrice(), getFinalAoaPrice());
+                if (details.currency !== 'USD') {
+                  return (
+                    <>
+                      <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-amber-500 tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
+                        {details.formatted}
                       </span>
-                      <span className="text-sm sm:text-base font-semibold text-on-surface-variant/30">|</span>
-                      <span className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                        {tDict.now} ${getFinalPrice()}
+                      <span className="font-sans text-[11px] text-on-surface-variant">
+                        Equivalente a $ {getFinalPrice()} USD
                       </span>
-                    </div>
-                  ) : (
-                    <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
-                      $ {getFinalPrice()}
-                    </span>
-                  )}
-                </div>
-              )}
+                      {discount > 0 && (
+                        <span className="text-xs text-green-400 font-sans block mt-1 font-bold animate-pulse">
+                          Desconto de ${discount.toFixed(2)} USD aplicado ao preço em dólar
+                        </span>
+                      )}
+                    </>
+                  );
+                }
+                return (
+                  <div className="flex justify-center items-baseline gap-2 sm:gap-3 mb-1 flex-wrap">
+                    {(campaignPrice || discount > 0) ? (
+                      <div className="flex items-center justify-center gap-2 flex-wrap font-mono">
+                        <span className="text-sm sm:text-base font-semibold text-on-surface-variant/50 line-through">
+                          {tDict.before} ${listPrice}
+                        </span>
+                        <span className="text-sm sm:text-base font-semibold text-on-surface-variant/30">|</span>
+                        <span className="text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                          {tDict.now} ${getFinalPrice()}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)]">
+                        {details.formatted}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             
             {/* Campaign Countdown Timer */}
