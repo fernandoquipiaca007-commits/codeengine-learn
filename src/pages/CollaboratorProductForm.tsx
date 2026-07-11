@@ -956,7 +956,7 @@ export function CollaboratorProductForm({
     // USD é obrigatório para TODOS os colaboradores. AOA é obrigatório apenas para angolanos.
     const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
 
-    const isFileRequired = formType !== 'course';
+    const isFileRequired = formType !== 'course' && formType !== 'service';
     if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl)) {
       setFormError('Por favor preencha todos os campos obrigatórios. O preço em USD (dólar) é obrigatório para todos os colaboradores.');
       setLoading(false);
@@ -1092,9 +1092,12 @@ export function CollaboratorProductForm({
 
     const finalVideoUrl = videoSourceType === 'upload' ? videoUrl : youtubeVideoUrl;
     const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
-    const isFileRequired = formType !== 'course';
-    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl)) {
-      setFormError('Por favor preencha todos os campos obrigatórios.');
+    const isFileRequired = formType !== 'course' && formType !== 'service';
+    const isPreviewRequired = formType === 'music';
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl) || (isPreviewRequired && !previewUrl)) {
+      setFormError(isPreviewRequired && !previewUrl 
+        ? 'Por favor adicione a amostra de áudio/preview com marca d\'água.'
+        : 'Por favor preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
     }
@@ -1162,9 +1165,12 @@ export function CollaboratorProductForm({
 
     const finalVideoUrl = videoSourceType === 'upload' ? videoUrl : youtubeVideoUrl;
     const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
-    const isFileRequired = formType !== 'course';
-    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl)) {
-      setFormError('Por favor preencha todos os campos obrigatórios.');
+    const isFileRequired = formType !== 'course' && formType !== 'service';
+    const isPreviewRequired = formType === 'music';
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl) || (isPreviewRequired && !previewUrl)) {
+      setFormError(isPreviewRequired && !previewUrl 
+        ? 'Por favor adicione a amostra de áudio/preview com marca d\'água.'
+        : 'Por favor preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
     }
@@ -2078,130 +2084,135 @@ export function CollaboratorProductForm({
               )}
 
               {/* Upload Preview (Opcional) */}
-              {formType !== 'course' && (
+              {(formType === 'ebook' || formType === 'template' || formType === 'music' || formType === 'generic') && (
                 <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
                   <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
-                    <Globe size={16} className="text-on-surface-variant" /> Ficheiro de Amostra/Preview (PDF/Imagem - Opcional)
+                    <Globe size={16} className="text-on-surface-variant" /> 
+                    {formType === "music" ? "Amostra de Áudio (Preview com Marca d'Água) *" : "Ficheiro de Amostra/Preview (PDF/Imagem - Opcional)"}
                   </span>
                   <input
                     type="file"
-                    accept="application/pdf,image/jpeg,image/png"
+                    accept={formType === 'music' ? 'audio/mpeg,audio/wav,audio/ogg' : 'application/pdf,image/jpeg,image/png'}
                     onChange={e => handleFileUpload(e, 'product-previews', setPreviewUrl)}
-                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
+                    className={`block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer ${
+                      submitAttempted && formType === 'music' && !previewUrl ? 'border border-red-500/50 p-2 rounded-xl' : ''
+                    }`}
                   />
+                  {submitAttempted && formType === 'music' && !previewUrl && (
+                    <span className="text-[10px] text-red-400 mt-1 block">A amostra de áudio é obrigatória para produtos musicais.</span>
+                  )}
                   {uploadProgress['product-previews'] && (
                     <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-previews']}</span>
                   )}
                   {previewUrl && (
                     <div className="mt-2 text-xs text-on-surface-variant truncate">
-                      URL pública da amostra gerada.
+                      Amostra/Preview carregada com sucesso.
                     </div>
                   )}
                 </div>
               )}
+              {(formType === 'course' || formType === 'ebook' || formType === 'generic') && (
+                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
+                  <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
+                    <Video size={16} className="text-on-surface-variant" /> Vídeo de Introdução (Opcional)
+                  </span>
+                  <div className="space-y-2 mt-2">
+                    <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Origem do Vídeo</label>
+                    <select
+                      value={videoSourceType}
+                      onChange={e => {
+                        const val = e.target.value as any;
+                        if (val === 'upload' && collaboratorPlan !== 'course_creator') {
+                          setShowUpgradeModal(true);
+                        } else {
+                          setVideoSourceType(val);
+                        }
+                      }}
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white focus:outline-none"
+                    >
+                      <option value="youtube">YouTube (Streaming Rápido)</option>
+                      <option value="vimeo">Vimeo (Streaming Premium)</option>
+                      <option value="wistia">Wistia (Vídeo Marketing)</option>
+                      <option value="loom">Loom (Apresentação Rápida)</option>
+                      <option value="external">Link Direto / MP4 Externo</option>
+                      <option value="upload">Upload Próprio (Plano Premium)</option>
+                    </select>
 
-
-              {/* Vídeo de Apresentação (Premium Direct Upload vs Free Youtube Link) */}
-              <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
-                  <Video size={16} className="text-on-surface-variant" /> Vídeo de Introdução (Opcional)
-                </span>
-                <div className="space-y-2 mt-2">
-                  <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Origem do Vídeo</label>
-                  <select
-                    value={videoSourceType}
-                    onChange={e => {
-                      const val = e.target.value as any;
-                      if (val === 'upload' && collaboratorPlan !== 'course_creator') {
-                        setShowUpgradeModal(true);
-                      } else {
-                        setVideoSourceType(val);
-                      }
-                    }}
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white focus:outline-none"
-                  >
-                    <option value="youtube">YouTube (Streaming Rápido)</option>
-                    <option value="vimeo">Vimeo (Streaming Premium)</option>
-                    <option value="wistia">Wistia (Vídeo Marketing)</option>
-                    <option value="loom">Loom (Apresentação Rápida)</option>
-                    <option value="external">Link Direto / MP4 Externo</option>
-                    <option value="upload">Upload Próprio (Plano Premium)</option>
-                  </select>
-
-                  {videoSourceType === 'upload' ? (
-                    <div className="mt-2">
-                      <input
-                        type="file"
-                        accept="video/mp4,video/webm"
-                        onChange={e => handleFileUpload(e, 'product-videos', setVideoUrl)}
-                        className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer mt-2"
-                      />
-                      {uploadProgress['product-videos'] && (
-                        <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-videos']}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <>
-                      {/* Instruction Box */}
-                      <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-[11px] leading-relaxed text-white/80 space-y-1">
-                        {videoSourceType === 'youtube' && (
-                          <>
-                            <p className="font-semibold text-primary">Como hospedar no YouTube gratuitamente:</p>
-                            <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant">
-                              <li>Faça upload do vídeo na sua conta do YouTube Studio.</li>
-                              <li>Defina a visibilidade como <strong className="text-white">"Não listado"</strong> (para que ninguém assista fora da CodeEngine).</li>
-                              <li>Copie o link gerado e cole no campo abaixo.</li>
-                            </ul>
-                          </>
-                        )}
-                        {videoSourceType === 'vimeo' && (
-                          <>
-                            <p className="font-semibold text-primary">Como hospedar no Vimeo:</p>
-                            <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant">
-                              <li>Faça upload do seu vídeo no painel do Vimeo.</li>
-                              <li>Defina as permissões de privacidade apropriadas.</li>
-                              <li>Copie o link do vídeo (ex: vimeo.com/...) e cole abaixo.</li>
-                            </ul>
-                          </>
-                        )}
-                        {videoSourceType === 'wistia' && (
-                          <>
-                            <p className="font-semibold text-primary">Hospedagem via Wistia:</p>
-                            <p className="text-on-surface-variant">Copie o link de compartilhamento ou URL do player e insira-o no campo de URL abaixo.</p>
-                          </>
-                        )}
-                        {videoSourceType === 'loom' && (
-                          <>
-                            <p className="font-semibold text-primary">Apresentação via Loom:</p>
-                            <p className="text-on-surface-variant">Copie o link público do vídeo gravado e insira-o no campo de URL abaixo.</p>
-                          </>
-                        )}
-                        {videoSourceType === 'external' && (
-                          <>
-                            <p className="font-semibold text-primary">MP4 / Link Externo:</p>
-                            <p className="text-on-surface-variant">Insira a URL direta do arquivo de vídeo (ex: terminando em .mp4 ou .webm) hospedada em servidores externos.</p>
-                          </>
-                        )}
-                      </div>
-
-                      <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mt-1">URL do Vídeo</label>
-                      <div className="flex gap-2">
+                    {videoSourceType === 'upload' ? (
+                      <div className="mt-2">
                         <input
-                          type="url"
-                          placeholder="Insira o link de compartilhamento..."
-                          value={youtubeVideoUrl}
-                          onChange={e => setYoutubeVideoUrl(e.target.value)}
-                          className="flex-1 rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                          type="file"
+                          accept="video/mp4,video/webm"
+                          onChange={e => handleFileUpload(e, 'product-videos', setVideoUrl)}
+                          className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer mt-2"
                         />
-                        <span className="flex items-center text-on-surface-variant"><PlayCircle size={18} /></span>
+                        {uploadProgress['product-videos'] && (
+                          <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-videos']}</span>
+                        )}
                       </div>
-                      <span className="block text-[10px] text-primary leading-normal">
-                        Como criador no plano gratuito, você pode hospedar seus vídeos em plataformas externas de streaming rápido. Para fazer upload e hospedagem direta na CodeEngine, faça o upgrade clicando no botão "Plano Premium" do Painel.
-                      </span>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        {/* Instruction Box */}
+                        <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-[11px] leading-relaxed text-white/80 space-y-1">
+                          {videoSourceType === 'youtube' && (
+                            <>
+                              <p className="font-semibold text-primary">Como hospedar no YouTube gratuitamente:</p>
+                              <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant">
+                                <li>Faça upload do vídeo na sua conta do YouTube Studio.</li>
+                                <li>Defina a visibilidade como <strong className="text-white">"Não listado"</strong> (para que ninguém assista fora da CodeEngine).</li>
+                                <li>Copie o link gerado e cole no campo abaixo.</li>
+                              </ul>
+                            </>
+                          )}
+                          {videoSourceType === 'vimeo' && (
+                            <>
+                              <p className="font-semibold text-primary">Como hospedar no Vimeo:</p>
+                              <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant">
+                                <li>Faça upload do seu vídeo no painel do Vimeo.</li>
+                                <li>Defina as permissões de privacidade apropriadas.</li>
+                                <li>Copie o link do vídeo (ex: vimeo.com/...) e cole abaixo.</li>
+                              </ul>
+                            </>
+                          )}
+                          {videoSourceType === 'wistia' && (
+                            <>
+                              <p className="font-semibold text-primary">Hospedagem via Wistia:</p>
+                              <p className="text-on-surface-variant">Copie o link de compartilhamento ou URL do player e insira-o no campo de URL abaixo.</p>
+                            </>
+                          )}
+                          {videoSourceType === 'loom' && (
+                            <>
+                              <p className="font-semibold text-primary">Apresentação via Loom:</p>
+                              <p className="text-on-surface-variant">Copie o link público do vídeo gravado e insira-o no campo de URL abaixo.</p>
+                            </>
+                          )}
+                          {videoSourceType === 'external' && (
+                            <>
+                              <p className="font-semibold text-primary">MP4 / Link Externo:</p>
+                              <p className="text-on-surface-variant">Insira a URL direta do arquivo de vídeo (ex: terminando em .mp4 ou .webm) hospedada em servidores externos.</p>
+                            </>
+                          )}
+                        </div>
+
+                        <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mt-1">URL do Vídeo</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            placeholder="Insira o link de compartilhamento..."
+                            value={youtubeVideoUrl}
+                            onChange={e => setYoutubeVideoUrl(e.target.value)}
+                            className="flex-1 rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none"
+                          />
+                          <span className="flex items-center text-on-surface-variant"><PlayCircle size={18} /></span>
+                        </div>
+                        <span className="block text-[10px] text-primary leading-normal">
+                          Como criador no plano gratuito, você pode hospedar seus vídeos em plataformas externas. Para fazer upload direto na CodeEngine, faça o upgrade clicando no botão "Plano Premium" do Painel.
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Painel de Licenciamento */}
               <div className="rounded-xl border border-white/10 p-4 bg-white/5">
