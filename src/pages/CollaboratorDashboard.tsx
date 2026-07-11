@@ -387,11 +387,16 @@ export function CollaboratorDashboard({
         }
       }
 
+      const dashboardController = new AbortController();
+      const dashboardTimeout = setTimeout(() => dashboardController.abort(), 6000);
+
       const res = await fetch(`${BACKEND_URL}/api/collaborators/dashboard`, {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
+        signal: dashboardController.signal
       });
+      clearTimeout(dashboardTimeout);
 
       const data = await res.json();
 
@@ -427,14 +432,19 @@ export function CollaboratorDashboard({
         // Fetch affiliates
 
         try {
+          const affiliatesController = new AbortController();
+          const affiliatesTimeout = setTimeout(() => affiliatesController.abort(), 5000);
+
           const resAff = await fetch(
             `${BACKEND_URL}/api/collaborators/affiliates`,
             {
               headers: {
                 Authorization: `Bearer ${session.access_token}`,
               },
+              signal: affiliatesController.signal
             },
           );
+          clearTimeout(affiliatesTimeout);
 
           const dataAff = await resAff.json();
 
