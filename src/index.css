@@ -830,6 +830,8 @@ html.has-campaign-banner .page-wrapper {
 [style*="--theme-text-color"] h6,
 [style*="--theme-text-color"] strong {
   color: var(--theme-text-color) !important;
+  background: none !important;
+  background-image: none !important;
   background-clip: unset !important;
   -webkit-background-clip: unset !important;
   -webkit-text-fill-color: var(--theme-text-color) !important;
