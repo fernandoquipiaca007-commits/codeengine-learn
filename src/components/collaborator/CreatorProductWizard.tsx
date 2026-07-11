@@ -575,44 +575,25 @@ export function CreatorProductWizard({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    Categoria *
-                  </label>
-                  <select
-                    value={selectedCategoryId}
-                    onChange={(e) => setSelectedCategoryId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id} className="bg-neutral-950 text-white font-semibold">
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    Subcategoria
-                  </label>
-                  <select
-                    value={selectedSubcategoryId}
-                    onChange={(e) => setSelectedSubcategoryId(e.target.value)}
-                    disabled={subcategories.length === 0}
-                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors disabled:opacity-50"
-                  >
-                    <option value="" className="bg-neutral-950 text-white">
-                      Nenhuma subcategoria
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Subcategoria
+                </label>
+                <select
+                  value={selectedSubcategoryId}
+                  onChange={(e) => setSelectedSubcategoryId(e.target.value)}
+                  disabled={subcategories.length === 0}
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors disabled:opacity-50"
+                >
+                  <option value="" className="bg-neutral-950 text-white">
+                    Selecionar subcategoria (opcional)
+                  </option>
+                  {subcategories.map((s) => (
+                    <option key={s.id} value={s.id} className="bg-neutral-950 text-white">
+                      {s.name}
                     </option>
-                    {subcategories.map((s) => (
-                      <option key={s.id} value={s.id} className="bg-neutral-950 text-white">
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-2">
@@ -1027,10 +1008,9 @@ export function CreatorProductWizard({
                 </div>
 
                 <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5 truncate">
-                  <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Classificação</span>
+                  <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Subcategoria</span>
                   <span className="font-bold text-white text-xs truncate block">
-                    {categories.find((c) => c.id === selectedCategoryId)?.name || "Geral"}{" "}
-                    {selectedSubcategoryId && ` · ${subcategories.find((s) => s.id === selectedSubcategoryId)?.name || ""}`}
+                    {selectedSubcategoryId ? (subcategories.find((s) => s.id === selectedSubcategoryId)?.name || "Nenhuma") : "Nenhuma"}
                   </span>
                 </div>
               </div>
