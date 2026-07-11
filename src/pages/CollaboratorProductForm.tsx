@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft, Zap, Calendar, Music, Smartphone, Briefcase } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
+import { CourseBuilder, Lesson, Module } from '../components/collaborator/forms/CourseBuilder';
+import { loadCurriculum, saveModule, deleteModule, saveLesson, deleteLesson } from '../lib/curriculum';
+
+
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
@@ -350,6 +354,9 @@ export function CollaboratorProductForm({
     return 'generic';
   })();
 
+  // CourseBuilder state — lessons and optional modules
+  const [courseBuilderLessons, setCourseBuilderLessons] = useState<Lesson[]>([]);
+  const [courseBuilderModules, setCourseBuilderModules] = useState<Module[]>([]);
 
   const [campaign, setCampaign] = useState<CampaignState>({
     banner_text: '',
@@ -691,6 +698,103 @@ export function CollaboratorProductForm({
     }
   }
 
+  // Load course curriculum if editing a course
+  useEffect(() => {
+    if (productId && formType === 'course') {
+      void loadCourseCurriculum(productId);
+    }
+  }, [productId, formType]);
+
+  async function loadCourseCurriculum(id: string) {
+    try {
+      const data = await loadCurriculum(id);
+      const mappedLessons: Lesson[] = data.lessons.map(l => ({
+        id: l.id,
+        title: l.title,
+        description: l.description || '',
+        videoSource: (l.video_storage_path ? 'upload' : 
+                      l.external_url?.includes('vimeo') ? 'vimeo' : 
+                      l.external_url?.includes('panda') ? 'panda' : 'youtube') as any,
+        videoUrl: l.video_storage_path || l.external_url || '',
+        availability: l.is_active ? 'immediate' : 'scheduled',
+        scheduledAt: '',
+        duration: l.video_duration_seconds ? String(l.video_duration_seconds) : '',
+        moduleId: l.module_id || null,
+      }));
+      const mappedModules: Module[] = data.modules.map(m => ({
+        id: m.id,
+        title: m.title,
+      }));
+      setCourseBuilderLessons(mappedLessons);
+      setCourseBuilderModules(mappedModules);
+    } catch (e) {
+      console.error('Failed to load course curriculum:', e);
+    }
+  }
+
+  async function saveCourseBuilderCurriculum(savedProductId: string) {
+    try {
+      // 1. Get existing modules and lessons from DB to delete the ones removed by the user
+      const existing = await loadCurriculum(savedProductId);
+
+      // Find modules to delete
+      const modulesToDelete = existing.modules.filter(m => !courseBuilderModules.some(bm => bm.id === m.id));
+      for (const m of modulesToDelete) {
+        await deleteModule(m.id);
+      }
+
+      // Find lessons to delete
+      const lessonsToDelete = existing.lessons.filter(l => !courseBuilderLessons.some(bl => bl.id === l.id));
+      for (const l of lessonsToDelete) {
+        await deleteLesson(l.id);
+      }
+
+      // 2. Save modules
+      const moduleIdMap: Record<string, string> = {}; // maps client-side temp ID to database UUID
+      
+      for (let i = 0; i < courseBuilderModules.length; i++) {
+        const m = courseBuilderModules[i];
+        const isTempId = m.id.length < 20;
+        const savedMod = await saveModule(savedProductId, {
+          id: isTempId ? undefined : m.id,
+          title: m.title || `Modulo ${i + 1}`,
+          display_order: i,
+        });
+        moduleIdMap[m.id] = savedMod.id;
+      }
+
+      // 3. Save lessons
+      for (let i = 0; i < courseBuilderLessons.length; i++) {
+        const l = courseBuilderLessons[i];
+        const isTempId = l.id.length < 20;
+
+        // Resolve module ID if the lesson is in a module
+        let resolvedModuleId: string | null = null;
+        if (l.moduleId) {
+          resolvedModuleId = moduleIdMap[l.moduleId] || l.moduleId;
+        }
+
+        // Set video storage path if upload, or external_url if link/vimeo/panda/youtube
+        const isUpload = l.videoSource === 'upload';
+        
+        await saveLesson(savedProductId, {
+          id: isTempId ? undefined : l.id,
+          title: l.title || `Aula ${i + 1}`,
+          description: l.description || '',
+          module_id: resolvedModuleId,
+          display_order: i,
+          lesson_type: 'video',
+          is_active: l.availability === 'immediate',
+          video_storage_path: isUpload ? l.videoUrl : undefined,
+          external_url: isUpload ? undefined : l.videoUrl,
+        });
+      }
+    } catch (err) {
+      console.error('Error saving curriculum:', err);
+      throw new Error('Falha ao salvar as aulas do curso.');
+    }
+  }
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, bucket: string, fieldSetter: (url: string) => void) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -852,7 +956,8 @@ export function CollaboratorProductForm({
     // USD é obrigatório para TODOS os colaboradores. AOA é obrigatório apenas para angolanos.
     const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
 
-    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || !storageUrl) {
+    const isFileRequired = formType !== 'course';
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl)) {
       setFormError('Por favor preencha todos os campos obrigatórios. O preço em USD (dólar) é obrigatório para todos os colaboradores.');
       setLoading(false);
       return;
@@ -939,6 +1044,11 @@ export function CollaboratorProductForm({
 
       const data = await res.json();
       if (data.success) {
+        const savedId = productId || data.product?.id;
+        if (formType === 'course' && savedId) {
+          await saveCourseBuilderCurriculum(savedId);
+        }
+
         if (productId) {
           queryCache.invalidatePrefix(`product-detail-${productId}`);
         }
@@ -947,7 +1057,7 @@ export function CollaboratorProductForm({
         setFormError(data.error || 'Erro ao guardar o produto.');
       }
     } catch (err: any) {
-      setFormError('Erro de conexão ao servidor.');
+      setFormError(err.message || 'Erro de conexão ao servidor.');
     } finally {
       setLoading(false);
     }
@@ -972,9 +1082,17 @@ export function CollaboratorProductForm({
     setSubmitAttempted(true);
     setLoading(true);
     setFormError(null);
+
+    if (formType === 'course' && courseBuilderLessons.length === 0) {
+      setFormError('Por favor adicione pelo menos 1 aula antes de publicar o curso.');
+      setLoading(false);
+      return;
+    }
+
     const finalVideoUrl = videoSourceType === 'upload' ? videoUrl : youtubeVideoUrl;
     const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
-    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || !storageUrl) {
+    const isFileRequired = formType !== 'course';
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl)) {
       setFormError('Por favor preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
@@ -1008,13 +1126,18 @@ export function CollaboratorProductForm({
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (data.success) {
+        const savedId = productId || data.product?.id;
+        if (formType === 'course' && savedId) {
+          await saveCourseBuilderCurriculum(savedId);
+        }
+
         if (productId) queryCache.invalidatePrefix(`product-detail-${productId}`);
         onSaveSuccess();
       } else {
         setFormError(data.error || 'Erro ao publicar o produto.');
       }
     } catch (err: any) {
-      setFormError('Erro de conexão ao servidor.');
+      setFormError(err.message || 'Erro de conexão ao servidor.');
     } finally {
       setLoading(false);
     }
@@ -1027,9 +1150,17 @@ export function CollaboratorProductForm({
     setSubmitAttempted(true);
     setLoading(true);
     setFormError(null);
+
+    if (formType === 'course' && courseBuilderLessons.length === 0) {
+      setFormError('Por favor adicione pelo menos 1 aula antes de publicar o curso.');
+      setLoading(false);
+      return;
+    }
+
     const finalVideoUrl = videoSourceType === 'upload' ? videoUrl : youtubeVideoUrl;
     const isPriceValid = isFree || (priceUSD && (!isAngola || priceAOA));
-    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || !storageUrl) {
+    const isFileRequired = formType !== 'course';
+    if (!title || !description || !categoryId || !isPriceValid || !coverUrl || (isFileRequired && !storageUrl)) {
       setFormError('Por favor preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
@@ -1061,13 +1192,18 @@ export function CollaboratorProductForm({
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (data.success) {
+        const savedId = productId || data.product?.id;
+        if (formType === 'course' && savedId) {
+          await saveCourseBuilderCurriculum(savedId);
+        }
+
         if (productId) queryCache.invalidatePrefix(`product-detail-${productId}`);
         onSaveSuccess();
       } else {
         setFormError(data.error || 'Erro ao agendar a publicação.');
       }
     } catch (err: any) {
-      setFormError('Erro de conexão ao servidor.');
+      setFormError(err.message || 'Erro de conexão ao servidor.');
     } finally {
       setLoading(false);
     }
@@ -1272,18 +1408,34 @@ export function CollaboratorProductForm({
           <Info size={13} className="inline mr-1" /> Detalhes & Preços
         </button>
 
-        {(() => {
+        {/* For courses: show "Aulas" tab immediately, no save required */}
+        {formType === 'course' && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('curriculum')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
+              activeTab === 'curriculum'
+                ? 'bg-primary/15 text-primary border border-primary/20'
+                : 'text-on-surface-variant hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <PlayCircle size={13} className="inline" />
+            Aulas
+            {courseBuilderLessons.length > 0 && (
+              <span className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary/20 text-[9px] font-bold text-primary">
+                {courseBuilderLessons.length}
+              </span>
+            )}
+          </button>
+        )}
+
+        {/* For non-course types that had curriculum (legacy): keep old tab */}
+        {formType !== 'course' && (() => {
           const selectedCategory = categories.find(c => c.id === categoryId);
           const isCourse = selectedCategory ? (
             selectedCategory.name.toLowerCase().includes('curso') ||
-            selectedCategory.name.toLowerCase().includes('course') ||
-            selectedCategory.name.toLowerCase().includes('série') ||
-            selectedCategory.name.toLowerCase().includes('serie') ||
-            selectedCategory.name.toLowerCase().includes('vídeo') ||
-            selectedCategory.name.toLowerCase().includes('video') ||
-            selectedCategory.name.toLowerCase().includes('tutorial')
+            selectedCategory.name.toLowerCase().includes('course')
           ) : false;
-
           return isCourse && (
             <button
               type="button"
@@ -1291,7 +1443,7 @@ export function CollaboratorProductForm({
                 if (productId) {
                   setActiveTab('curriculum');
                 } else {
-                  alert('Por favor, salve os detalhes básicos do produto primeiro antes de editar a grade curricular.');
+                  alert('Por favor, salve os detalhes basicos do produto primeiro antes de editar a grade curricular.');
                 }
               }}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
@@ -1302,6 +1454,7 @@ export function CollaboratorProductForm({
             </button>
           );
         })()}
+
 
         <button
           type="button"
@@ -1888,55 +2041,60 @@ export function CollaboratorProductForm({
               </div>
 
               {/* Upload Ficheiro do Produto */}
-              <div className="rounded-xl border border-dashed p-4 bg-white/5">
-                <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
-                  <FileText size={16} className="text-on-surface-variant" /> Arquivo do Produto (Download Seguro) *
-                </span>
-                <span className="block text-xs text-on-surface-variant mb-2 font-sans">
-                  {collaboratorPlan === 'ebook_creator' 
-                    ? 'Limitação do plano grátis: Apenas PDF, EPUB, DOCX, ZIP (Máx. 50MB)'
-                    : 'Qualquer formato de arquivo permitido (Máx. 2GB)'}
-                </span>
-                <input
-                  type="file"
-                  onChange={e => handleFileUpload(e, 'ebooks-private', setStorageUrl)}
-                  className={`block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer ${
-                    submitAttempted && !storageUrl ? 'border border-red-500/50 p-2 rounded-xl' : ''
-                  }`}
-                />
-                {submitAttempted && !storageUrl && (
-                  <span className="text-[10px] text-red-400 mt-1 block">O arquivo de download do produto é obrigatório.</span>
-                )}
-                {uploadProgress['ebooks-private'] && (
-                  <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['ebooks-private']}</span>
-                )}
-                {storageUrl && (
-                  <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
-                    <ShieldCheck size={14} /> Arquivo carregado com sucesso.
-                  </div>
-                )}
-              </div>
+              {formType !== 'course' && (
+                <div className="rounded-xl border border-dashed p-4 bg-white/5">
+                  <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
+                    <FileText size={16} className="text-on-surface-variant" /> Arquivo do Produto (Download Seguro) *
+                  </span>
+                  <span className="block text-xs text-on-surface-variant mb-2 font-sans">
+                    {collaboratorPlan === 'ebook_creator' 
+                      ? 'Limitação do plano grátis: Apenas PDF, EPUB, DOCX, ZIP (Máx. 50MB)'
+                      : 'Qualquer formato de arquivo permitido (Máx. 2GB)'}
+                  </span>
+                  <input
+                    type="file"
+                    onChange={e => handleFileUpload(e, 'ebooks-private', setStorageUrl)}
+                    className={`block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer ${
+                      submitAttempted && !storageUrl ? 'border border-red-500/50 p-2 rounded-xl' : ''
+                    }`}
+                  />
+                  {submitAttempted && !storageUrl && (
+                    <span className="text-[10px] text-red-400 mt-1 block">O arquivo de download do produto é obrigatório.</span>
+                  )}
+                  {uploadProgress['ebooks-private'] && (
+                    <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['ebooks-private']}</span>
+                  )}
+                  {storageUrl && (
+                    <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
+                      <ShieldCheck size={14} /> Arquivo carregado com sucesso.
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Upload Preview (Opcional) */}
-              <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
-                <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
-                  <Globe size={16} className="text-on-surface-variant" /> Ficheiro de Amostra/Preview (PDF/Imagem - Opcional)
-                </span>
-                <input
-                  type="file"
-                  accept="application/pdf,image/jpeg,image/png"
-                  onChange={e => handleFileUpload(e, 'product-previews', setPreviewUrl)}
-                  className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
-                />
-                {uploadProgress['product-previews'] && (
-                  <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-previews']}</span>
-                )}
-                {previewUrl && (
-                  <div className="mt-2 text-xs text-on-surface-variant truncate">
-                    URL pública da amostra gerada.
-                  </div>
-                )}
-              </div>
+              {formType !== 'course' && (
+                <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
+                  <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
+                    <Globe size={16} className="text-on-surface-variant" /> Ficheiro de Amostra/Preview (PDF/Imagem - Opcional)
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/pdf,image/jpeg,image/png"
+                    onChange={e => handleFileUpload(e, 'product-previews', setPreviewUrl)}
+                    className="block w-full text-xs text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
+                  />
+                  {uploadProgress['product-previews'] && (
+                    <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-previews']}</span>
+                  )}
+                  {previewUrl && (
+                    <div className="mt-2 text-xs text-on-surface-variant truncate">
+                      URL pública da amostra gerada.
+                    </div>
+                  )}
+                </div>
+              )}
+
 
               {/* Vídeo de Apresentação (Premium Direct Upload vs Free Youtube Link) */}
               <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
@@ -2718,9 +2876,21 @@ export function CollaboratorProductForm({
         )}
 
         {/* Curriculum Editor tab */}
-        {activeTab === 'curriculum' && productId && (
+        {activeTab === 'curriculum' && (
           <div className="space-y-4">
-            <CurriculumEditor productId={productId} />
+            {formType === 'course' ? (
+              <CourseBuilder
+                lessons={courseBuilderLessons}
+                modules={courseBuilderModules}
+                onLessonsChange={setCourseBuilderLessons}
+                onModulesChange={setCourseBuilderModules}
+                collaboratorPlan={collaboratorPlan}
+                onUpgradePremium={() => setShowUpgradeModal(true)}
+                submitAttempted={submitAttempted}
+              />
+            ) : (
+              productId && <CurriculumEditor productId={productId} />
+            )}
           </div>
         )}
 
