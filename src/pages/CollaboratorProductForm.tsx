@@ -17,6 +17,183 @@ import { useUserCountry } from '../contexts/UserCountryContext';
 import { useLocale } from '../contexts/LocaleContext';
 import { useTranslation } from 'react-i18next';
 
+const PLACEHOLDERS_AND_LABELS = {
+  pt: {
+    title: {
+      ebook: 'Ex: Guia Completo de CSS Flexbox & Grid',
+      course: 'Ex: Curso Completo de Web Development do Zero',
+      music: 'Ex: Ambient Lofi Beat - WAV/MP3',
+      app: 'Ex: Pacote de Instalação do Editor de Imagem',
+      template: 'Ex: Dashboard UI Kit - Figma Template',
+      service: 'Ex: Mentoria Individual de Carreira Tech',
+      default: 'Ex: Novo Produto Digital'
+    },
+    description: {
+      ebook: 'Descreva detalhadamente o conteúdo do e-book, o que o leitor irá aprender e os tópicos abordados.',
+      course: 'Descreva detalhadamente o conteúdo do curso, o que o aluno irá aprender, requisitos e ementa.',
+      music: 'Descreva o arquivo de áudio ou álbum, estilo musical, BPM, tom e condições de uso.',
+      app: 'Descreva a finalidade da ferramenta, funcionalidades principais e requisitos de sistema.',
+      template: 'Descreva o modelo/template, para qual ferramenta serve (Figma, Canva, etc.) e o que vem no pacote.',
+      service: 'Descreva detalhadamente a mentoria ou consultoria, cronograma, duração e formato dos encontros.',
+      default: 'Descreva detalhadamente as características do produto.'
+    },
+    titleLabel: {
+      ebook: 'Título do E-book *',
+      course: 'Título do Curso *',
+      music: 'Título da Faixa / Álbum *',
+      app: 'Nome do Aplicativo / Ferramenta *',
+      template: 'Título do Modelo / Template *',
+      service: 'Nome do Serviço / Mentoria *',
+      default: 'Título do Produto *'
+    },
+    descriptionLabel: {
+      ebook: 'Descrição do E-book *',
+      course: 'Descrição do Curso *',
+      music: 'Descrição da Música / Faixa *',
+      app: 'Descrição da Ferramenta *',
+      template: 'Descrição do Template *',
+      service: 'Descrição do Serviço *',
+      default: 'Descrição Detalhada *'
+    },
+    coverLabel: {
+      ebook: 'Capa do E-book (PNG/JPG) *',
+      course: 'Capa do Curso (PNG/JPG) *',
+      music: 'Capa do Álbum / Single (PNG/JPG) *',
+      app: 'Capa da Ferramenta / Ícone (PNG/JPG) *',
+      template: 'Capa do Template / Modelo (PNG/JPG) *',
+      service: 'Banner do Serviço (PNG/JPG) *',
+      default: 'Imagem de Capa (PNG/JPG) *'
+    },
+    fileLabel: {
+      ebook: 'Arquivo do E-book (Download Seguro) *',
+      music: 'Arquivo de Áudio / Álbum (Download Seguro) *',
+      app: 'Pacote da Ferramenta (ZIP/RAR - Download Seguro) *',
+      template: 'Arquivo do Template (Download Seguro) *',
+      default: 'Arquivo do Produto (Download Seguro) *'
+    },
+    sampleLabel: {
+      music: 'Amostra de Áudio (Preview com Marca d\'Água) *',
+      default: 'Ficheiro de Amostra/Preview (PDF/Imagem - Opcional)'
+    }
+  },
+  en: {
+    title: {
+      ebook: 'Ex: Complete Guide to CSS Flexbox & Grid',
+      course: 'Ex: Complete Web Development Boot Camp',
+      music: 'Ex: Lofi Chill Beat - WAV/MP3',
+      app: 'Ex: Image Editor Installation Package',
+      template: 'Ex: Dashboard UI Kit - Figma Template',
+      service: 'Ex: 1-on-1 Tech Career Mentorship',
+      default: 'Ex: New Digital Product'
+    },
+    description: {
+      ebook: 'Describe the e-book content in detail, what the reader will learn, and topics covered.',
+      course: 'Describe the course content in detail, what the student will learn, requirements and syllabus.',
+      music: 'Describe the audio file or album, musical style, BPM, key, and usage terms.',
+      app: 'Describe the purpose of the tool/software, core features, and system requirements.',
+      template: 'Describe the template, which tool it is for (Figma, Canva, etc.) and what is included.',
+      service: 'Describe the mentorship or consulting in detail, schedule, duration, and meeting format.',
+      default: 'Describe the product features in detail.'
+    },
+    titleLabel: {
+      ebook: 'E-book Title *',
+      course: 'Course Title *',
+      music: 'Track / Album Title *',
+      app: 'App / Tool Name *',
+      template: 'Template Title *',
+      service: 'Service / Mentorship Name *',
+      default: 'Product Title *'
+    },
+    descriptionLabel: {
+      ebook: 'E-book Description *',
+      course: 'Course Description *',
+      music: 'Music / Track Description *',
+      app: 'Tool Description *',
+      template: 'Template Description *',
+      service: 'Service Description *',
+      default: 'Detailed Description *'
+    },
+    coverLabel: {
+      ebook: 'E-book Cover Image (PNG/JPG) *',
+      course: 'Course Cover Image (PNG/JPG) *',
+      music: 'Album / Single Cover (PNG/JPG) *',
+      app: 'Tool Cover / Icon (PNG/JPG) *',
+      template: 'Template Cover Image (PNG/JPG) *',
+      service: 'Service Banner Image (PNG/JPG) *',
+      default: 'Cover Image (PNG/JPG) *'
+    },
+    fileLabel: {
+      ebook: 'E-book File (Secure Download) *',
+      music: 'Audio File / Album (Secure Download) *',
+      app: 'Tool Package (ZIP/RAR - Secure Download) *',
+      template: 'Template File (Secure Download) *',
+      default: 'Product File (Secure Download) *'
+    },
+    sampleLabel: {
+      music: 'Audio Sample (Watermarked Preview) *',
+      default: 'Sample/Preview File (PDF/Image - Optional)'
+    }
+  },
+  fr: {
+    title: {
+      ebook: 'Ex: Guide Complet sur CSS Flexbox & Grid',
+      course: 'Ex: Cours Complet de Développement Web de Zéro',
+      music: 'Ex: Beat Lofi Chill - WAV/MP3',
+      app: 'Ex: Paquet d\'Installation de l\'Éditeur d\'Images',
+      template: 'Ex: Kit Interface Utilisateur Tableau de Bord - Figma Template',
+      service: 'Ex: Mentorat Individuel de Carrière Tech',
+      default: 'Ex: Nouveau Produit Numérique'
+    },
+    description: {
+      ebook: 'Décrivez en détail le contenu de l\'e-book, ce que le lecteur apprendra et les sujets abordés.',
+      course: 'Décrivez en détail le contenu du cours, ce que l\'étudiant apprendra, les prérequis et le programme.',
+      music: 'Décrivez le fichier audio ou l\'album, le style musical, le BPM, la tonalité et les conditions d\'utilisation.',
+      app: 'Décrivez le but de l\'outil/logiciel, les fonctionnalités principales et la configuration requise.',
+      template: 'Décrivez le modèle/template, pour quel outil il est destiné (Figma, Canva, etc.) et le contenu.',
+      service: 'Décrivez en détail le mentorat ou le conseil, le calendrier, la durée et le format des réunions.',
+      default: 'Décrivez en détail les caractéristiques du produit.'
+    },
+    titleLabel: {
+      ebook: 'Titre de l\'E-book *',
+      course: 'Titre du Cours *',
+      music: 'Titre de la Piste / Album *',
+      app: 'Nom de l\'Application / Outil *',
+      template: 'Titre du Modèle / Template *',
+      service: 'Nom du Service / Mentorat *',
+      default: 'Titre du Produit *'
+    },
+    descriptionLabel: {
+      ebook: 'Description de l\'E-book *',
+      course: 'Description du Cours *',
+      music: 'Description de la Musique *',
+      app: 'Description de l\'Outil *',
+      template: 'Description du Template *',
+      service: 'Description du Service *',
+      default: 'Description Détaillée *'
+    },
+    coverLabel: {
+      ebook: 'Image de Couverture de l\'E-book (PNG/JPG) *',
+      course: 'Image de Couverture du Cours (PNG/JPG) *',
+      music: 'Couverture d\'Album / Single (PNG/JPG) *',
+      app: 'Couverture de l\'Outil / Icône (PNG/JPG) *',
+      template: 'Couverture de Modèle / Template (PNG/JPG) *',
+      service: 'Image de Bannière du Service (PNG/JPG) *',
+      default: 'Image de Couverture (PNG/JPG) *'
+    },
+    fileLabel: {
+      ebook: 'Fichier de l\'E-book (Téléchargement Sécurisé) *',
+      music: 'Fichier Audio / Album (Téléchargement Sécurisé) *',
+      app: 'Paquet de l\'Outil (ZIP/RAR - Téléchargement Sécurisé) *',
+      template: 'Fichier de Template (Téléchargement Sécurisé) *',
+      default: 'Fichier du Produit (Téléchargement Sécurisé) *'
+    },
+    sampleLabel: {
+      music: 'Échantillon Audio (Aperçu avec Filigrane) *',
+      default: 'Fichier d\'Aperçu/Exemple (PDF/Image - Optionnel)'
+    }
+  }
+};
+
 interface CollaboratorProductFormProps {
   productId?: string | null;
   onClose: () => void;
@@ -353,6 +530,18 @@ export function CollaboratorProductForm({
     if (selectedCat) return detectFormType(selectedCat.name);
     return 'generic';
   })();
+
+  const langKey = (locale && ['pt', 'en', 'fr'].includes(locale)) ? (locale as 'pt' | 'en' | 'fr') : 'pt';
+  const texts = PLACEHOLDERS_AND_LABELS[langKey];
+  const formTypeKey = (formType && ['ebook', 'course', 'music', 'app', 'template', 'service'].includes(formType)) ? (formType as 'ebook' | 'course' | 'music' | 'app' | 'template' | 'service') : 'default';
+
+  const currentTitlePlaceholder = (texts.title as any)[formTypeKey] || texts.title.default;
+  const currentDescriptionPlaceholder = (texts.description as any)[formTypeKey] || texts.description.default;
+  const currentTitleLabel = (texts.titleLabel as any)[formTypeKey] || texts.titleLabel.default;
+  const currentDescriptionLabel = (texts.descriptionLabel as any)[formTypeKey] || texts.descriptionLabel.default;
+  const currentCoverLabel = (texts.coverLabel as any)[formTypeKey] || texts.coverLabel.default;
+  const currentFileLabel = (texts.fileLabel as any)[formTypeKey] || texts.fileLabel.default;
+  const currentSampleLabel = (texts.sampleLabel as any)[formTypeKey] || texts.sampleLabel.default;
 
   // CourseBuilder state — lessons and optional modules
   const [courseBuilderLessons, setCourseBuilderLessons] = useState<Lesson[]>([]);
@@ -1369,14 +1558,21 @@ export function CollaboratorProductForm({
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-base sm:text-lg font-bold text-white font-display">
-              {productId ? 'Editar Produto' : 'Novo Produto'}
+              {productId 
+                ? (langKey === 'pt' ? 'Editar Produto' : langKey === 'fr' ? 'Modifier le Produit' : 'Edit Product') 
+                : (langKey === 'pt' ? 'Novo Produto' : langKey === 'fr' ? 'Nouveau Produit' : 'New Product')}
             </h2>
             {(presetFormType || formType !== 'generic') && (() => {
-              const labels: Record<string, string> = {
-                ebook: 'E-book', course: 'Curso Online', template: 'Template',
-                music: 'Musica', app: 'Aplicativo', service: 'Servico', generic: '',
+              const labels: Record<string, Record<'pt'|'en'|'fr', string>> = {
+                ebook: { pt: 'E-book', en: 'E-book', fr: 'E-book' },
+                course: { pt: 'Curso Online', en: 'Online Course', fr: 'Cours en Ligne' },
+                template: { pt: 'Template', en: 'Template', fr: 'Modèle' },
+                music: { pt: 'Música', en: 'Music', fr: 'Musique' },
+                app: { pt: 'Aplicativo', en: 'Application', fr: 'Application' },
+                service: { pt: 'Serviço', en: 'Service', fr: 'Service' },
+                generic: { pt: '', en: '', fr: '' },
               };
-              const label = labels[formType] || '';
+              const label = labels[formType]?.[langKey] || '';
               if (!label) return null;
               return (
                 <span className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider shrink-0">
@@ -1385,8 +1581,8 @@ export function CollaboratorProductForm({
               );
             })()}
           </div>
-          <p className="text-[9px] sm:text-[10px] text-on-surface-variant mt-0.5">
-            Os produtos salvos serao enviados como rascunhos para aprovacao da administracao.
+          <p className="font-sans text-[10px] text-on-surface-variant mt-0.5 hidden sm:block">
+            {langKey === 'pt' ? 'Os produtos salvos serão enviados como rascunhos para aprovação da administração.' : langKey === 'fr' ? 'Les produits enregistrés seront envoyés comme brouillons pour approbation de l\'administration.' : 'Saved products will be sent as drafts for administration approval.'}
           </p>
         </div>
         <div className="flex items-center gap-2 self-end sm:self-center">
@@ -1395,7 +1591,7 @@ export function CollaboratorProductForm({
             onClick={onClose}
             className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-on-surface transition-all cursor-pointer whitespace-nowrap"
           >
-            Sair sem Salvar
+            {langKey === 'pt' ? 'Sair sem Salvar' : langKey === 'fr' ? 'Quitter sans Enregistrer' : 'Exit without Saving'}
           </button>
           <button
             type="submit"
@@ -1406,7 +1602,7 @@ export function CollaboratorProductForm({
             {loading ? (
               <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
             ) : <Save size={12} />}
-            <span>Salvar Rascunho</span>
+            <span>{langKey === 'pt' ? 'Salvar Rascunho' : langKey === 'fr' ? 'Enregistrer le Brouillon' : 'Save Draft'}</span>
           </button>
           <div className="relative" ref={publishBtnRef}>
             <button
@@ -1416,7 +1612,7 @@ export function CollaboratorProductForm({
               className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
             >
               <Zap size={12} className="text-green-600" />
-              <span>Publicar</span>
+              <span>{langKey === 'pt' ? 'Publicar' : langKey === 'fr' ? 'Publier' : 'Publish'}</span>
             </button>
             {showPublishOptions && (
               <div className="absolute top-full mt-2 right-0 w-64 glass-panel rounded-xl border border-white/10 p-3 space-y-2 z-50">
@@ -1600,36 +1796,40 @@ export function CollaboratorProductForm({
             {/* Lado Esquerdo: Metadados */}
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Título do Produto *</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">{currentTitleLabel}</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  placeholder="Ex: Guia Completo de CSS Flexbox & Grid"
+                  placeholder={currentTitlePlaceholder}
                   className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
                     submitAttempted && !title ? 'border-red-500/50' : 'border-white/10'
                   }`}
                 />
                 {submitAttempted && !title && (
-                  <span className="text-[10px] text-red-400 mt-1 block">O título do produto é obrigatório.</span>
+                  <span className="text-[10px] text-red-400 mt-1 block">
+                    {langKey === 'pt' ? 'O título é obrigatório.' : langKey === 'fr' ? 'Le titre est obligatoire.' : 'Title is required.'}
+                  </span>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Descrição Detalhada *</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">{currentDescriptionLabel}</label>
                 <textarea
                   required
                   rows={3}
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  placeholder="Descreva detalhadamente o conteúdo, o que o aluno irá aprender e os requisitos."
+                  placeholder={currentDescriptionPlaceholder}
                   className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-none ${
                     submitAttempted && !description ? 'border-red-500/50' : 'border-white/10'
                   }`}
                 />
                 {submitAttempted && !description && (
-                  <span className="text-[10px] text-red-400 mt-1 block">A descrição do produto é obrigatória.</span>
+                  <span className="text-[10px] text-red-400 mt-1 block">
+                    {langKey === 'pt' ? 'A descrição é obrigatória.' : langKey === 'fr' ? 'La description est obligatoire.' : 'Description is required.'}
+                  </span>
                 )}
               </div>
 
@@ -2079,7 +2279,7 @@ export function CollaboratorProductForm({
               {/* Upload Capa */}
               <div className="rounded-xl border border-dashed p-4 bg-white/5">
                 <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
-                  <Image size={16} className="text-on-surface-variant" /> Imagem de Capa (PNG/JPG) *
+                  <Image size={16} className="text-on-surface-variant" /> {currentCoverLabel}
                 </span>
                 <input
                   type="file"
@@ -2090,7 +2290,9 @@ export function CollaboratorProductForm({
                   }`}
                 />
                 {submitAttempted && !coverUrl && (
-                  <span className="text-[10px] text-red-400 mt-1 block">A imagem de capa é obrigatória.</span>
+                  <span className="text-[10px] text-red-400 mt-1 block">
+                    {langKey === 'pt' ? 'A imagem de capa é obrigatória.' : langKey === 'fr' ? 'L\'image de couverture est obligatoire.' : 'Cover image is required.'}
+                  </span>
                 )}
                 {uploadProgress['product-covers'] && (
                   <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-covers']}</span>
@@ -2103,20 +2305,20 @@ export function CollaboratorProductForm({
               </div>
 
               {/* Upload Ficheiro do Produto */}
-              {formType !== 'course' && (
+              {formType !== 'course' && formType !== 'service' && (
                 <div className="rounded-xl border border-dashed p-4 bg-white/5">
                   <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
-                    <FileText size={16} className="text-on-surface-variant" /> Arquivo do Produto (Download Seguro) *
+                    <FileText size={16} className="text-on-surface-variant" /> {currentFileLabel}
                   </span>
                   <span className="block text-xs text-on-surface-variant mb-2 font-sans">
                     {collaboratorPlan === 'ebook_creator' 
-                      ? `Limitação do plano grátis: Apenas ${
+                      ? `${langKey === 'pt' ? 'Limitação do plano grátis: Apenas' : langKey === 'fr' ? 'Limitation du plan gratuit: Uniquement' : 'Free plan limitation: Only'} ${
                           formType === 'music' ? 'MP3, WAV, M4A, ZIP, RAR' :
                           formType === 'app' ? 'ZIP, RAR' :
                           formType === 'template' ? 'ZIP, RAR, PDF' :
                           'PDF, EPUB, DOCX, ZIP'
                         } (Máx. 50MB)`
-                      : 'Qualquer formato de arquivo permitido (Máx. 2GB)'}
+                      : (langKey === 'pt' ? 'Qualquer formato de arquivo permitido (Máx. 2GB)' : langKey === 'fr' ? 'Tout format de fichier autorisé (Max 2 Go)' : 'Any file format allowed (Max 2GB)')}
                   </span>
                   <input
                     type="file"
@@ -2126,14 +2328,16 @@ export function CollaboratorProductForm({
                     }`}
                   />
                   {submitAttempted && !storageUrl && (
-                    <span className="text-[10px] text-red-400 mt-1 block">O arquivo de download do produto é obrigatório.</span>
+                    <span className="text-[10px] text-red-400 mt-1 block">
+                      {langKey === 'pt' ? 'O arquivo de download é obrigatório.' : langKey === 'fr' ? 'Le fichier de téléchargement est obligatoire.' : 'The download file is required.'}
+                    </span>
                   )}
                   {uploadProgress['ebooks-private'] && (
                     <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['ebooks-private']}</span>
                   )}
                   {storageUrl && (
                     <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
-                      <ShieldCheck size={14} /> Arquivo carregado com sucesso.
+                      <ShieldCheck size={14} /> {langKey === 'pt' ? 'Arquivo carregado com sucesso.' : langKey === 'fr' ? 'Fichier chargé avec succès.' : 'File uploaded successfully.'}
                     </div>
                   )}
                 </div>
@@ -2144,7 +2348,7 @@ export function CollaboratorProductForm({
                 <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
                   <span className="block text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
                     <Globe size={16} className="text-on-surface-variant" /> 
-                    {formType === "music" ? "Amostra de Áudio (Preview com Marca d'Água) *" : "Ficheiro de Amostra/Preview (PDF/Imagem - Opcional)"}
+                    {currentSampleLabel}
                   </span>
                   <input
                     type="file"
@@ -2155,25 +2359,27 @@ export function CollaboratorProductForm({
                     }`}
                   />
                   {submitAttempted && formType === 'music' && !previewUrl && (
-                    <span className="text-[10px] text-red-400 mt-1 block">A amostra de áudio é obrigatória para produtos musicais.</span>
+                    <span className="text-[10px] text-red-400 mt-1 block">
+                      {langKey === 'pt' ? 'A amostra de áudio é obrigatória para produtos musicais.' : langKey === 'fr' ? 'L\'échantillon audio est obligatoire pour les produits musicaux.' : 'Audio sample is required for music products.'}
+                    </span>
                   )}
                   {uploadProgress['product-previews'] && (
                     <span className="text-xs text-primary mt-1 block font-medium font-mono">{uploadProgress['product-previews']}</span>
                   )}
                   {previewUrl && (
                     <div className="mt-2 text-xs text-on-surface-variant truncate">
-                      Amostra/Preview carregada com sucesso.
+                      {langKey === 'pt' ? 'Amostra/Preview carregada com sucesso.' : langKey === 'fr' ? 'Échantillon/Aperçu chargé avec succès.' : 'Sample/Preview uploaded successfully.'}
                     </div>
                   )}
                 </div>
               )}
-              {(formType === 'course' || formType === 'ebook' || formType === 'generic') && (
+              {(formType === 'course' || formType === 'ebook' || formType === 'service' || formType === 'generic') && (
                 <div className="rounded-xl border border-dashed border-white/10 p-4 bg-white/5">
                   <span className="block text-sm font-semibold text-white mb-1 flex items-center gap-1.5">
-                    <Video size={16} className="text-on-surface-variant" /> Vídeo de Introdução (Opcional)
+                    <Video size={16} className="text-on-surface-variant" /> {langKey === 'pt' ? 'Vídeo de Introdução (Opcional)' : langKey === 'fr' ? 'Vidéo d\'Introduction (Optionnel)' : 'Introduction Video (Optional)'}
                   </span>
                   <div className="space-y-2 mt-2">
-                    <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Origem do Vídeo</label>
+                    <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">{langKey === 'pt' ? 'Origem do Vídeo' : langKey === 'fr' ? 'Source de la Vidéo' : 'Video Source'}</label>
                     <select
                       value={videoSourceType}
                       onChange={e => {
