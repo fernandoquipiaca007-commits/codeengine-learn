@@ -100,13 +100,13 @@
     scrollbar-color: #242428 #050505;
   }
 
-  html,
-  body {
+  html {
     background-color: #050505 !important;
   }
 
   body {
-    @apply bg-background text-on-surface overflow-x-hidden;
+    background-color: transparent !important;
+    @apply text-on-surface overflow-x-hidden;
     @apply selection:bg-primary/25 selection:text-primary;
     max-width: 100vw;
     position: relative;
