@@ -101,8 +101,7 @@
   }
 
   html,
-  body,
-  #root {
+  body {
     background-color: #050505 !important;
   }
 
