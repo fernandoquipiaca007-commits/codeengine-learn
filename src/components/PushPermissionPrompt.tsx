@@ -95,10 +95,16 @@ export function PushPermissionPrompt() {
           resolve('default');
         }
       });
-      if (permission === 'granted') await subscribe();
+      
+      // Close the modal immediately once the native permission choice is made
+      setShow(false);
+      
+      if (permission === 'granted') {
+        // Run subscribe in background without blocking or waiting
+        void subscribe();
+      }
     } catch (err) {
       console.error('Request permission failed:', err);
-    } finally {
       setShow(false);
     }
   }
