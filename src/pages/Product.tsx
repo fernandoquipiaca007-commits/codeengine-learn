@@ -214,6 +214,11 @@ export function Product({
   overrideProductData,
 }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
+  const overrideTitle = overrideProductData?.title || "";
+  const overrideDescription = overrideProductData?.description || "";
+  const overrideCoverUrl = overrideProductData?.cover_url || "";
+  const overridePrice = overrideProductData?.price || 0;
+  const overrideAoaPrice = overrideProductData?.aoa_price || 0;
   const { isAngola, convertPrice } = useUserCountry();
   const { t } = useTranslation(['pages', 'common'], { lng: locale });
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
@@ -301,7 +306,15 @@ export function Product({
           let data: ProductType | null = null;
 
           if (overrideProductData) {
-            data = { ...DUMMY_CODEENGINE_PRODUCT, ...overrideProductData } as ProductType;
+            data = { 
+              ...DUMMY_CODEENGINE_PRODUCT, 
+              ...overrideProductData,
+              title: overrideTitle || DUMMY_CODEENGINE_PRODUCT.title,
+              description: overrideDescription || DUMMY_CODEENGINE_PRODUCT.description,
+              cover_url: overrideCoverUrl || DUMMY_CODEENGINE_PRODUCT.cover_url,
+              price: overridePrice || DUMMY_CODEENGINE_PRODUCT.price,
+              aoa_price: overrideAoaPrice || DUMMY_CODEENGINE_PRODUCT.aoa_price,
+            } as ProductType;
           } else if (productId) {
             const active = await supabase
               .from('products')
@@ -480,10 +493,15 @@ export function Product({
         };
 
         const cacheKey = `product-detail-${productId || 'latest'}-${locale}`;
-        const cachedData = await queryCache.get(cacheKey, fetcher, { revalidate });
+        let cachedData;
+        if (overrideProductData) {
+          cachedData = await fetcher();
+        } else {
+          cachedData = await queryCache.get(cacheKey, fetcher, { revalidate });
+        }
 
         if (cachedData) {
-          console.log('[ProductPage] applying product from cache or fetch:', cachedData.product.id);
+          console.log('[ProductPage] applying product:', cachedData.product.id);
           setProduct(cachedData.product);
           setPageLayout(cachedData.pageLayout);
           setCustomCopy(cachedData.customCopy);
@@ -500,7 +518,7 @@ export function Product({
         if (!silent) setLoading(false);
       }
     },
-    [productId, locale]
+    [productId, locale, overrideTitle, overrideDescription, overrideCoverUrl, overridePrice, overrideAoaPrice]
   );
 
   useEffect(() => {

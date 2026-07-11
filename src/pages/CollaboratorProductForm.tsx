@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft, Zap, Calendar, Music, Smartphone, Briefcase } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
@@ -3685,8 +3686,8 @@ export function CollaboratorProductForm({
       )}
     </div>
 
-    {reviewMode && (
-      <div className="fixed inset-0 w-full h-full z-[100] bg-black overflow-y-auto font-sans flex flex-col animate-fade-in">
+    {reviewMode && createPortal(
+      <div className="fixed inset-0 w-full h-full z-[99999] bg-black overflow-y-auto font-sans flex flex-col animate-fade-in">
         {/* Header */}
         <div className="shrink-0 p-3 bg-neutral-900 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 z-[110] relative">
           <div className="flex items-center gap-3">
@@ -3852,7 +3853,8 @@ export function CollaboratorProductForm({
             </div>
           )}
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
     {showUpgradeModal && (
