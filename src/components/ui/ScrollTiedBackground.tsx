@@ -58,10 +58,22 @@ export function ScrollTiedBackground({
     displayProgressRef.current = 0;
     video.load();
 
-    const onReady = () => setIsLoaded(true);
+    const forceRenderFirstFrame = () => {
+      video.play().then(() => {
+        video.pause();
+      }).catch((err) => {
+        console.warn('[ScrollTiedBackground] Play/pause kick-off failed:', err);
+      });
+    };
+
+    const onReady = () => {
+      setIsLoaded(true);
+      forceRenderFirstFrame();
+    };
 
     if (video.readyState >= 1) {
       setIsLoaded(true);
+      forceRenderFirstFrame();
     }
 
     video.addEventListener('loadedmetadata', onReady);
@@ -71,6 +83,7 @@ export function ScrollTiedBackground({
     // Fallback timer: force isLoaded after 1 second to guarantee visibility
     const timer = setTimeout(() => {
       setIsLoaded(true);
+      forceRenderFirstFrame();
     }, 1000);
 
     return () => {
@@ -96,26 +109,26 @@ export function ScrollTiedBackground({
     const pixelsPerSecond = 320; // 1s of video per 320px of scroll for optimal pacing
 
     const getTargetTime = () => {
-      if (!video.duration) return 0;
+      if (!video.duration || isNaN(video.duration)) return 0;
       // absolute scroll position mapped to video duration
       return Math.max(0, Math.min(video.duration, window.scrollY / pixelsPerSecond));
     };
 
-    let currentProgress = getTargetTime() / (video.duration || 1);
+    let currentProgress = (video.duration && !isNaN(video.duration)) ? getTargetTime() / video.duration : 0;
     let targetProgress = currentProgress;
 
     // Seed initial position
-    if (video.readyState >= 1 && video.duration) {
+    if (video.readyState >= 1 && video.duration && !isNaN(video.duration)) {
       video.currentTime = currentProgress * video.duration;
     }
 
     const onScroll = () => {
-      if (!video.duration) return;
+      if (!video.duration || isNaN(video.duration)) return;
       targetProgress = getTargetTime() / video.duration;
     };
 
     const rafLoop = () => {
-      if (video.readyState >= 1 && video.duration) {
+      if (video.readyState >= 1 && video.duration && !isNaN(video.duration)) {
         // Snappy LERP (Linear Interpolation) for buttery-smooth transition
         const diff = targetProgress - currentProgress;
         if (Math.abs(diff) > 0.0002) {
