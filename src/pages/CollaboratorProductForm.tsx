@@ -2059,7 +2059,12 @@ export function CollaboratorProductForm({
                   </span>
                   <span className="block text-xs text-on-surface-variant mb-2 font-sans">
                     {collaboratorPlan === 'ebook_creator' 
-                      ? 'Limitação do plano grátis: Apenas PDF, EPUB, DOCX, ZIP (Máx. 50MB)'
+                      ? `Limitação do plano grátis: Apenas ${
+                          formType === 'music' ? 'MP3, WAV, FLAC, M4A, MP4, ZIP, RAR' :
+                          formType === 'app' ? 'ZIP, RAR, EXE, DMG, APK, IPA, BIN, JSON, JS, HTML, CSS' :
+                          formType === 'template' ? 'ZIP, RAR, JSON, PDF, FIG, XD, SKETCH' :
+                          'PDF, EPUB, DOCX, MOBI, ZIP'
+                        } (Máx. 50MB)`
                       : 'Qualquer formato de arquivo permitido (Máx. 2GB)'}
                   </span>
                   <input
