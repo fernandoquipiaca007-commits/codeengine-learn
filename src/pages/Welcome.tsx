@@ -362,51 +362,51 @@ export function Welcome({ setScreen }: WelcomeProps) {
       <SilentPrecisionBackground colors={themeColors} />
 
       {/* Single unified content column — everything fits in one viewport */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-5xl gap-5 md:gap-6 pt-20 pb-6">
+      <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-5xl gap-6 md:gap-8 pt-24 pb-12">
 
         {/* ── Hero Title ── */}
-        <h1 className="tahoe-glass-text flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-2 w-full flex-wrap text-[2.4rem] xs:text-[2.8rem] sm:text-5xl md:text-6xl lg:text-7xl leading-tight pointer-events-none">
+        <h1 className="tahoe-glass-text flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 px-2 w-full flex-wrap text-[2.8rem] xs:text-[3.2rem] sm:text-5xl md:text-6xl lg:text-7xl leading-tight pointer-events-none">
           <span className="font-serif italic font-medium">{word1}</span>
           <span className="font-sans font-extrabold tracking-tighter">{word2}</span>
         </h1>
 
         {/* ── Subtitle ── */}
-        <p className="text-base xs:text-lg sm:text-lg md:text-xl font-bold tracking-tight text-white max-w-[92%] sm:max-w-xl md:max-w-2xl leading-snug pointer-events-none">
+        <p className="text-lg xs:text-xl sm:text-xl md:text-2xl font-bold tracking-tight text-white max-w-[94%] sm:max-w-xl md:max-w-2xl leading-snug pointer-events-none">
           {subtitle}
         </p>
 
         {/* ── Description ── */}
-        <p className="text-xs sm:text-sm md:text-base font-normal text-muted-foreground/90 max-w-[85%] sm:max-w-md md:max-w-lg leading-relaxed pointer-events-none">
+        <p className="text-sm xs:text-base sm:text-base md:text-lg font-normal text-muted-foreground/90 max-w-[90%] sm:max-w-md md:max-w-lg leading-relaxed pointer-events-none">
           {description}
         </p>
 
         {/* ── CTA Buttons ── */}
         <div
-          className={cn("flex flex-row items-center justify-center gap-3 pointer-events-auto transition-all duration-1000 transform", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6")}
+          className={cn("flex flex-row items-center justify-center gap-3.5 pointer-events-auto transition-all duration-1000 transform", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6")}
           style={{ transitionDelay: "350ms" }}
         >
           <button
             onClick={() => setScreen('home')}
-            className="relative inline-flex h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] px-6 md:px-8 text-xs md:text-sm font-bold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+            className="relative inline-flex h-12 xs:h-14 items-center justify-center gap-2 rounded-xl bg-white text-black hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.35)] px-8 xs:px-10 text-sm xs:text-base font-bold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
           >
             {primaryCta}
-            <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" />
+            <ArrowRight className="w-4 h-4 text-black" />
           </button>
           <button
             onClick={handleSecondaryCtaClick}
-            className="relative inline-flex h-11 items-center justify-center gap-1.5 md:gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-5 md:px-8 text-xs md:text-sm font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="relative inline-flex h-12 xs:h-14 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-card/80 to-card px-6 xs:px-9 text-sm xs:text-base font-semibold text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.05)] ring-1 ring-border/50 backdrop-blur-md transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary animate-pulse" />
+            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
             {secondaryCta}
           </button>
         </div>
 
         {/* ── Knowledge Areas Marquee ── */}
         <div
-          className={cn("w-full flex flex-col items-center gap-3 pointer-events-auto transition-all duration-1000 transform mt-2", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6")}
+          className={cn("w-full flex flex-col items-center gap-4 pointer-events-auto transition-all duration-1000 transform mt-4", isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6")}
           style={{ transitionDelay: "500ms" }}
         >
-          <span className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground/70 font-medium select-none">
+          <span className="text-xs xs:text-sm sm:text-xs uppercase tracking-widest text-muted-foreground/70 font-bold select-none">
             {marqueeLabel}
           </span>
           <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
@@ -416,9 +416,9 @@ export function Welcome({ setScreen }: WelcomeProps) {
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/5 border border-white/10 text-white font-sans text-[10px] sm:text-xs font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 xs:px-5 xs:py-2.5 rounded-full bg-white/5 border border-white/10 text-white font-sans text-xs xs:text-sm font-semibold backdrop-blur-md shadow-sm select-none whitespace-nowrap hover:border-primary/30 transition-colors"
                   >
-                    <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary flex-shrink-0" />
+                    <Icon className="w-4 h-4 text-primary flex-shrink-0" />
                     <span className="opacity-80 tracking-wide">{topic.text}</span>
                   </div>
                 );
