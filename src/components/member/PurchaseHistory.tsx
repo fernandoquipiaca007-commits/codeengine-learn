@@ -13,6 +13,10 @@ interface Purchase {
   payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
   access_type: string | null;
   purchase_date: string;
+  escrow_status?: 'none' | 'held' | 'requested' | 'released' | 'disputed';
+  escrow_requested_at?: string | null;
+  escrow_dispute_reason?: string | null;
+  escrow_resolved_at?: string | null;
   products: {
     id: string;
     title: string;
@@ -20,6 +24,7 @@ interface Purchase {
     cover_storage_path: string | null;
     is_free: boolean;
     category_id: string;
+    product_type?: string;
     language?: string | null;
     use_shared_content?: boolean | null;
     updated_at?: string | null;
@@ -55,6 +60,10 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
 
+  const [showDisputeModal, setShowDisputeModal] = useState<string | null>(null);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [submittingEscrow, setSubmittingEscrow] = useState<string | null>(null);
+
   useEffect(() => {
     loadPurchases();
   }, [memberId, locale]);
@@ -73,6 +82,7 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
             cover_storage_path,
             is_free,
             category_id,
+            product_type,
             use_shared_content,
             updated_at
           )
@@ -131,6 +141,76 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
       console.error('Error loading purchases:', error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleRelease(purchaseId: string) {
+    if (!window.confirm('Tem certeza de que deseja confirmar a conclusão e liberar o pagamento para o criador? Esta ação é irreversível.')) {
+      return;
+    }
+    setSubmittingEscrow(purchaseId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
+      const response = await fetch(`${BACKEND_URL}/api/collaborators/escrow/${purchaseId}/release`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      const res = await response.json();
+      if (!res.success) {
+        alert(res.error || 'Erro ao liberar pagamento.');
+      } else {
+        alert('Pagamento liberado com sucesso!');
+        void loadPurchases();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro de conexão ao liberar pagamento.');
+    } finally {
+      setSubmittingEscrow(null);
+    }
+  }
+
+  async function handleDispute(purchaseId: string) {
+    if (!disputeReason.trim()) {
+      alert('Por favor, informe a justificativa da disputa.');
+      return;
+    }
+    setSubmittingEscrow(purchaseId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
+      const response = await fetch(`${BACKEND_URL}/api/collaborators/escrow/${purchaseId}/dispute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ reason: disputeReason }),
+      });
+
+      const res = await response.json();
+      if (!res.success) {
+        alert(res.error || 'Erro ao abrir disputa.');
+      } else {
+        alert('Disputa aberta com sucesso. Nossa equipe analisará o caso.');
+        setShowDisputeModal(null);
+        setDisputeReason('');
+        void loadPurchases();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro de conexão ao abrir disputa.');
+    } finally {
+      setSubmittingEscrow(null);
     }
   }
 
@@ -366,8 +446,8 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                   </div>
                 </div>
 
-                {/* Actions - Show download for any purchase with access */}
-                {hasAccess && (
+                {/* Actions - Show download for any purchase with access (only if it's not a service or service escrow is released) */}
+                {hasAccess && purchase.products?.product_type !== 'service' && (
                   <button
                     onClick={() => onDownload(purchase.product_id)}
                     className="secondary-btn px-2.5 py-1 rounded text-[10px] font-semibold flex items-center justify-center gap-1 hover:bg-white/10 transition-all ml-auto touch-target"
@@ -377,9 +457,124 @@ export function PurchaseHistory({ memberId, onDownload }: PurchaseHistoryProps) 
                   </button>
                 )}
               </div>
+
+              {/* Escrow System Panel for Services */}
+              {purchase.escrow_status && purchase.escrow_status !== 'none' && (
+                <div className="mt-2.5 pt-2 border-t border-white/5 space-y-1.5 font-sans">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold text-white flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+                      Garantia de Serviço Segura
+                    </span>
+                    <span className="text-[9px] font-medium text-on-surface-variant uppercase tracking-wider">
+                      Status: {purchase.escrow_status === 'held' ? 'Retido' :
+                               purchase.escrow_status === 'requested' ? 'Solicitado' :
+                               purchase.escrow_status === 'released' ? 'Liberado' :
+                               purchase.escrow_status === 'disputed' ? 'Em Disputa' : purchase.escrow_status}
+                    </span>
+                  </div>
+
+                  {purchase.escrow_status === 'held' && (
+                    <div className="flex items-center justify-between gap-2 bg-white/5 p-2 rounded-lg">
+                      <p className="text-[10px] text-on-surface-variant leading-relaxed">
+                        O pagamento está retido com segurança. Confirme a entrega assim que o serviço for concluído.
+                      </p>
+                      <button
+                        onClick={() => handleRelease(purchase.id)}
+                        disabled={submittingEscrow === purchase.id}
+                        className="px-2.5 py-1 rounded bg-green-500 hover:bg-green-600 text-white text-[9px] font-semibold transition disabled:opacity-40 flex-shrink-0 touch-target"
+                      >
+                        Liberar Pagamento
+                      </button>
+                    </div>
+                  )}
+
+                  {purchase.escrow_status === 'requested' && (
+                    <div className="bg-white/5 p-2 rounded-lg space-y-2">
+                      <p className="text-[10px] text-on-surface-variant leading-relaxed">
+                        O criador declarou o serviço concluído e solicitou a liberação. Se nenhuma ação for tomada em 7 dias, a liberação será automática.
+                      </p>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => {
+                            setShowDisputeModal(purchase.id);
+                            setDisputeReason('');
+                          }}
+                          disabled={submittingEscrow === purchase.id}
+                          className="px-2 py-0.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[9px] font-semibold transition disabled:opacity-40 touch-target"
+                        >
+                          Contestar Entrega
+                        </button>
+                        <button
+                          onClick={() => handleRelease(purchase.id)}
+                          disabled={submittingEscrow === purchase.id}
+                          className="px-2.5 py-1 rounded bg-green-500 hover:bg-green-600 text-white text-[9px] font-semibold transition disabled:opacity-40 touch-target"
+                        >
+                          Liberar Pagamento
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {purchase.escrow_status === 'disputed' && (
+                    <div className="bg-red-500/5 border border-red-500/10 p-2 rounded-lg">
+                      <p className="text-[10px] text-red-400 leading-relaxed font-medium">
+                        Você contestou este serviço. A moderação foi notificada e entrará em contato.
+                      </p>
+                      {purchase.escrow_dispute_reason && (
+                        <p className="text-[9px] text-on-surface-variant mt-1 italic">
+                          Sua justificativa: "{purchase.escrow_dispute_reason}"
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {purchase.escrow_status === 'released' && (
+                    <div className="bg-green-500/5 border border-green-500/10 p-1.5 rounded-lg">
+                      <p className="text-[9px] text-green-400 leading-relaxed font-semibold font-sans">
+                        ✓ Pagamento concluído e liberado ao criador.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
             );
           })}
+        </div>
+      )}
+
+      {/* Dispute Reason Modal */}
+      {showDisputeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-panel w-full max-w-sm rounded-xl border border-white/10 p-4 space-y-3 font-sans">
+            <h3 className="font-display text-sm font-bold text-white">Contestar Entrega do Serviço</h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Explique detalhadamente por que este serviço não foi concluído como combinado. A moderação analisará seu relato.
+            </p>
+            <textarea
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              placeholder="Digite sua justificativa..."
+              rows={4}
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-red-500/50"
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setShowDisputeModal(null)}
+                className="px-3 py-1.5 rounded text-xs text-white/60 hover:bg-white/5 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDispute(showDisputeModal)}
+                disabled={!disputeReason.trim() || submittingEscrow === showDisputeModal}
+                className="px-3 py-1.5 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition disabled:opacity-40"
+              >
+                Enviar Contestação
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

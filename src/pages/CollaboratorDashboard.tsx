@@ -98,6 +98,41 @@ export function CollaboratorDashboard({
 
   const [ledger, setLedger] = useState<any[]>([]);
 
+  const [submittingEscrow, setSubmittingEscrow] = useState<string | null>(null);
+
+  async function handleRequestRelease(purchaseId: string) {
+    if (!window.confirm('Tem certeza de que deseja solicitar a liberação do pagamento para este serviço? O cliente será notificado e terá 7 dias para contestar antes da auto-liberação.')) {
+      return;
+    }
+    setSubmittingEscrow(purchaseId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
+      const response = await fetch(`${BACKEND_URL}/api/collaborators/escrow/${purchaseId}/request-release`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      const res = await response.json();
+      if (!res.success) {
+        alert(res.error || 'Erro ao solicitar liberação.');
+      } else {
+        alert('Liberação de pagamento solicitada com sucesso!');
+        await loadDashboardData();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erro de conexão ao solicitar liberação.');
+    } finally {
+      setSubmittingEscrow(null);
+    }
+  }
+
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
 
   // Withdrawal Request Modal / State (USD)
@@ -2542,7 +2577,60 @@ export function CollaboratorDashboard({
                             </td>
 
                             <td className="py-2.5 font-medium text-white text-xs">
-                              {item.description}
+                              <div>{item.description}</div>
+                              {(() => {
+                                const purchase = Array.isArray(item.purchases) ? item.purchases[0] : item.purchases;
+                                if (!purchase || !purchase.escrow_status || purchase.escrow_status === 'none') return null;
+                                return (
+                                  <div className="mt-1.5 p-2 rounded bg-white/5 border border-white/5 space-y-1.5 font-sans max-w-xs text-on-surface-variant">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="text-[10px] font-semibold text-white flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+                                        Garantia de Serviço
+                                      </span>
+                                      <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">
+                                        {purchase.escrow_status === 'held' ? 'Retido' :
+                                         purchase.escrow_status === 'requested' ? 'Aguardando Cliente' :
+                                         purchase.escrow_status === 'released' ? 'Liberado' :
+                                         purchase.escrow_status === 'disputed' ? 'Disputado' : purchase.escrow_status}
+                                      </span>
+                                    </div>
+
+                                    {purchase.escrow_status === 'held' && (
+                                      <div className="flex items-center justify-between gap-1.5">
+                                        <span className="text-[9px] text-on-surface-variant leading-tight">
+                                          Serviço concluído? Solicite a liberação ao cliente.
+                                        </span>
+                                        <button
+                                          onClick={() => handleRequestRelease(item.purchase_id)}
+                                          disabled={submittingEscrow === item.purchase_id}
+                                          className="px-2 py-0.5 rounded bg-primary text-on-primary hover:bg-primary/95 text-[9px] font-semibold transition disabled:opacity-40 flex-shrink-0"
+                                        >
+                                          Solicitar
+                                        </button>
+                                      </div>
+                                    )}
+
+                                    {purchase.escrow_status === 'requested' && (
+                                      <div className="text-[9px] text-on-surface-variant leading-tight font-sans">
+                                        Solicitado em {new Date(purchase.escrow_requested_at).toLocaleDateString('pt-BR')}. Auto-libera em 7 dias se o cliente não contestar.
+                                      </div>
+                                    )}
+
+                                    {purchase.escrow_status === 'disputed' && (
+                                      <div className="text-[9px] text-red-400 bg-red-500/5 p-1 rounded border border-red-500/10 font-sans">
+                                        <strong>Disputado pelo cliente:</strong> "{purchase.escrow_dispute_reason || 'Sem justificativa'}"
+                                      </div>
+                                    )}
+
+                                    {purchase.escrow_status === 'released' && (
+                                      <div className="text-[9px] text-green-400 font-semibold font-sans">
+                                        ✓ Pagamento liberado para saque.
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </td>
 
                             <td className="py-2.5">
