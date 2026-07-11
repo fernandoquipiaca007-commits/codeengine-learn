@@ -402,10 +402,14 @@ export function CollaboratorProductForm({
   const [newBonus, setNewBonus] = useState({ title: '', description: '', original_value: '', linked_product_id: '' });
   const [newBenefit, setNewBenefit] = useState({ title: '', description: '' });
 
-  // Licensing state
   const [licenseType, setLicenseType] = useState<'personal' | 'commercial'>('personal');
   const [isLifetime, setIsLifetime] = useState(true);
   const [durationDays, setDurationDays] = useState('365');
+
+  // Service delivery states
+  const [serviceContactMethod, setServiceContactMethod] = useState<'email' | 'whatsapp' | 'telegram' | 'link'>('email');
+  const [serviceContactInfo, setServiceContactInfo] = useState('');
+  const [serviceInstructions, setServiceInstructions] = useState('');
 
   // Upload progress/status
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: string }>({});
@@ -606,6 +610,12 @@ export function CollaboratorProductForm({
           setIsLifetime(lic.lifetime !== false);
           setDurationDays(String(lic.duration_days || '365'));
 
+          if (lic.service_delivery) {
+            setServiceContactMethod(lic.service_delivery.method || 'email');
+            setServiceContactInfo(lic.service_delivery.contact || '');
+            setServiceInstructions(lic.service_delivery.instructions || '');
+          }
+
           // Load Customizations
           if (prod.product_campaigns && prod.product_campaigns.length > 0) {
             const camp = prod.product_campaigns[0];
@@ -805,7 +815,19 @@ export function CollaboratorProductForm({
 
     // Free plan file validation
     if (collaboratorPlan === 'ebook_creator' && bucket === 'ebooks-private') {
-      const allowedExts = ['pdf', 'epub', 'docx', 'zip', 'mp3', 'wav', 'm4a'];
+      let allowedExts = ['pdf', 'epub', 'docx', 'zip', 'mp3', 'wav', 'm4a'];
+      if (formType === 'music') {
+        allowedExts = ['mp3', 'wav', 'flac', 'm4a', 'mp4', 'zip', 'rar'];
+      } else if (formType === 'app') {
+        allowedExts = ['zip', 'rar', 'exe', 'dmg', 'apk', 'ipa', 'bin', 'json', 'js', 'html', 'css'];
+      } else if (formType === 'template') {
+        allowedExts = ['zip', 'rar', 'json', 'pdf', 'fig', 'xd', 'sketch'];
+      } else if (formType === 'ebook') {
+        allowedExts = ['pdf', 'epub', 'docx', 'mobi', 'zip'];
+      } else {
+        allowedExts = ['zip', 'rar', 'pdf', 'png', 'jpg', 'jpeg'];
+      }
+      
       const ext = file.name.split('.').pop()?.toLowerCase() || '';
       if (!allowedExts.includes(ext)) {
         setUploadProgress(prev => ({ ...prev, [key]: '' }));
@@ -990,7 +1012,14 @@ export function CollaboratorProductForm({
       const licensingInfo = {
         type: licenseType,
         lifetime: isLifetime,
-        duration_days: isLifetime ? null : Number(durationDays)
+        duration_days: isLifetime ? null : Number(durationDays),
+        ...(formType === 'service' ? {
+          service_delivery: {
+            method: serviceContactMethod,
+            contact: serviceContactInfo,
+            instructions: serviceInstructions
+          }
+        } : {})
       };
 
       const payload = {
@@ -1105,10 +1134,21 @@ export function CollaboratorProductForm({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setFormError('Sessão expirada.'); setLoading(false); return; }
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
-      const licensingInfo = { type: licenseType, lifetime: isLifetime, duration_days: isLifetime ? null : Number(durationDays) };
+      const licensingInfo = {
+        type: licenseType,
+        lifetime: isLifetime,
+        duration_days: isLifetime ? null : Number(durationDays),
+        ...(formType === 'service' ? {
+          service_delivery: {
+            method: serviceContactMethod,
+            contact: serviceContactInfo,
+            instructions: serviceInstructions
+          }
+        } : {})
+      };
       const payload = {
         title, description, categoryId,
-        product_type: formType === 'course' ? 'course' : (formType === 'ebook' ? 'ebook' : 'file'),
+        product_type: formType === 'course' ? 'course' : (formType === 'ebook' ? 'ebook' : (formType === 'service' ? 'service' : 'file')),
         subcategoryId: subcategoryId || null,
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
@@ -1178,10 +1218,21 @@ export function CollaboratorProductForm({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setFormError('Sessão expirada.'); setLoading(false); return; }
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
-      const licensingInfo = { type: licenseType, lifetime: isLifetime, duration_days: isLifetime ? null : Number(durationDays) };
+      const licensingInfo = {
+        type: licenseType,
+        lifetime: isLifetime,
+        duration_days: isLifetime ? null : Number(durationDays),
+        ...(formType === 'service' ? {
+          service_delivery: {
+            method: serviceContactMethod,
+            contact: serviceContactInfo,
+            instructions: serviceInstructions
+          }
+        } : {})
+      };
       const payload = {
         title, description, categoryId,
-        product_type: formType === 'course' ? 'course' : (formType === 'ebook' ? 'ebook' : 'file'),
+        product_type: formType === 'course' ? 'course' : (formType === 'ebook' ? 'ebook' : (formType === 'service' ? 'service' : 'file')),
         subcategoryId: subcategoryId || null,
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
@@ -2219,78 +2270,143 @@ export function CollaboratorProductForm({
                 </div>
               )}
 
-              {/* Painel de Licenciamento */}
-              <div className="rounded-xl border border-white/10 p-4 bg-white/5">
-                <span className="block text-sm font-bold text-white mb-3 font-display">Opções de Licenciamento</span>
-                
-                <div className="space-y-3">
+              {/* Painel de Licenciamento / Entrega do Serviço */}
+              {formType === 'service' ? (
+                <div className="rounded-xl border border-white/10 p-4 bg-white/5 space-y-4">
+                  <span className="block text-sm font-bold text-white mb-1 font-display">Entrega & Contacto do Serviço</span>
+                  <span className="block text-xs text-on-surface-variant mb-3 font-sans">
+                    Defina como o cliente receberá o serviço pós-compra de forma segura.
+                  </span>
+
                   <div>
-                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Permissões de Uso</label>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setLicenseType('personal')}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
-                          licenseType === 'personal'
-                            ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
-                            : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        Uso Pessoal
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setLicenseType('commercial')}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
-                          licenseType === 'commercial'
-                            ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
-                            : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        Uso Comercial
-                      </button>
-                    </div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Método de Contacto Preferencial</label>
+                    <select
+                      value={serviceContactMethod}
+                      onChange={e => setServiceContactMethod(e.target.value as any)}
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-3 py-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    >
+                      <option value="email">E-mail Corporativo</option>
+                      <option value="whatsapp">WhatsApp / Link de Chat</option>
+                      <option value="telegram">Telegram (User/Link)</option>
+                      <option value="link">Link de Agendamento (Calendly / Outro)</option>
+                    </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Duração do Acesso</label>
-                    <div className="flex gap-2 mb-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsLifetime(true)}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
-                          isLifetime
-                            ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
-                            : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        Acesso Vitalício
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsLifetime(false)}
-                        className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
-                          !isLifetime
-                            ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
-                            : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        Tempo Limitado
-                      </button>
-                    </div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+                      {serviceContactMethod === 'email' ? 'E-mail para Contacto *' :
+                       serviceContactMethod === 'whatsapp' ? 'Número WhatsApp (com DDI, ex: 244900000000) *' :
+                       serviceContactMethod === 'telegram' ? 'Link/Username Telegram *' :
+                       'Link de Agendamento (ex: calendly.com/...) *'}
+                    </label>
+                    <input
+                      type={serviceContactMethod === 'email' ? 'email' : 'text'}
+                      value={serviceContactInfo}
+                      onChange={e => setServiceContactInfo(e.target.value)}
+                      placeholder={
+                        serviceContactMethod === 'email' ? 'exemplo@codeengine.com' :
+                        serviceContactMethod === 'whatsapp' ? '244923000000' :
+                        serviceContactMethod === 'telegram' ? 'seu_usuario' :
+                        'https://calendly.com/seu-link'
+                      }
+                      className={`w-full rounded-xl bg-surface-high border px-3 py-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors ${
+                        submitAttempted && !serviceContactInfo ? 'border-red-500/50' : 'border-white/10'
+                      }`}
+                    />
+                    {submitAttempted && !serviceContactInfo && (
+                      <span className="text-[10px] text-red-400 mt-1 block">A informação de contacto é obrigatória.</span>
+                    )}
+                  </div>
 
-                    {!isLifetime && (
-                      <input
-                        type="number"
-                        value={durationDays}
-                        onChange={e => setDurationDays(e.target.value)}
-                        placeholder="Dias de acesso (Ex: 365)"
-                        className="w-full rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 font-mono"
-                      />
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Instruções de Entrega para o Cliente *</label>
+                    <textarea
+                      rows={4}
+                      value={serviceInstructions}
+                      onChange={e => setServiceInstructions(e.target.value)}
+                      placeholder="Explique detalhadamente como o serviço será entregue após o pagamento (ex: 'Envie-me um e-mail com os detalhes do projeto...' ou 'Após o pagamento, use o link de contacto para agendarmos a mentoria...')"
+                      className={`w-full rounded-xl bg-surface-high border px-3 py-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-none ${
+                        submitAttempted && !serviceInstructions ? 'border-red-500/50' : 'border-white/10'
+                      }`}
+                    />
+                    {submitAttempted && !serviceInstructions && (
+                      <span className="text-[10px] text-red-400 mt-1 block">As instruções de entrega são obrigatórias.</span>
                     )}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-xl border border-white/10 p-4 bg-white/5">
+                  <span className="block text-sm font-bold text-white mb-3 font-display">Opções de Licenciamento</span>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Permissões de Uso</label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setLicenseType('personal')}
+                          className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
+                            licenseType === 'personal'
+                              ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                              : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          Uso Pessoal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLicenseType('commercial')}
+                          className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
+                            licenseType === 'commercial'
+                              ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                              : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          Uso Comercial
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Duração do Acesso</label>
+                      <div className="flex gap-2 mb-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsLifetime(true)}
+                          className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
+                            isLifetime
+                              ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                              : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          Acesso Vitalício
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsLifetime(false)}
+                          className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
+                            !isLifetime
+                              ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                              : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          Tempo Limitado
+                        </button>
+                      </div>
+
+                      {!isLifetime && (
+                        <input
+                          type="number"
+                          value={durationDays}
+                          onChange={e => setDurationDays(e.target.value)}
+                          placeholder="Dias de acesso (Ex: 365)"
+                          className="w-full rounded-xl bg-surface-high border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 font-mono"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
