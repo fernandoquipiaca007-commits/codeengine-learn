@@ -293,7 +293,8 @@ export function CreatorProductWizard({
         throw new Error(data.error || "Erro ao salvar o produto.");
       }
 
-      setCreatedProductId(data.productId || createdProductId);
+      const pId = data.product?.id || data.productId || createdProductId;
+      setCreatedProductId(pId);
 
       if (status === "published") {
         alert("E-book publicado com sucesso!");
@@ -305,7 +306,7 @@ export function CreatorProductWizard({
         setScreen("colaborador-produtos");
       } else {
         // Draft saved successfully
-        return data.productId || createdProductId;
+        return pId;
       }
     } catch (err: any) {
       console.error(err);
