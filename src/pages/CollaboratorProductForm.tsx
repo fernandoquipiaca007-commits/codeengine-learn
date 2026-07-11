@@ -2943,6 +2943,13 @@ export function CollaboratorProductForm({
             productId={productId} 
             overrideThemePath={themeVideoPath}
             overrideThemeConfig={themeVideoConfig}
+            overrideProductData={{
+              title: title || undefined,
+              description: description || undefined,
+              cover_url: coverUrl || undefined,
+              price: price ? Number(price) : undefined,
+              aoa_price: aoaPrice ? Number(aoaPrice) : undefined
+            }}
           />
         </div>
       )}

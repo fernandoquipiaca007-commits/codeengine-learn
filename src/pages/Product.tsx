@@ -32,11 +32,35 @@ import { LazyImage } from '../components/ui/LazyImage';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 
 
+const DUMMY_CODEENGINE_PRODUCT: any = {
+  id: 'codeengine-demo',
+  title: 'CodeEngine 1.0 — Template de Teste',
+  description: 'Este é um produto demonstrativo para teste do seu tema visual da CodeEngine.',
+  price: 9.99,
+  aoa_price: 5000,
+  cover_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+  status: 'active',
+  approval_status: 'approved',
+  collaborator_id: 'system',
+  benefits: [
+    'Aprenda a construir interfaces modernas e responsivas',
+    'Integração facilitada com processadores de pagamento locais e globais',
+    'SEO otimizado com suporte a multi-idioma (i18n)'
+  ],
+  custom_copy: {
+    hero: {
+      title: 'Seu Produto em Destaque',
+      subtitle: 'Uma prévia em tempo real de como o seu conteúdo ficará com os efeitos 3D selecionados.'
+    }
+  }
+};
+
 interface ProductProps {
   setScreen?: (screen: string, section?: string) => void;
   productId?: string | null;
   overrideThemePath?: string;
   overrideThemeConfig?: any;
+  overrideProductData?: any;
 }
 
 function hasCopy(value: unknown): value is string {
@@ -57,6 +81,7 @@ const TRANSLATIONS = {
     now: 'Maintenant:'
   }
 };
+
 
 const SECTION_TITLES = {
   pt: {
@@ -217,7 +242,9 @@ export function Product({
         const fetcher = async () => {
           let data: ProductType | null = null;
 
-          if (productId) {
+          if (overrideProductData) {
+            data = { ...DUMMY_CODEENGINE_PRODUCT, ...overrideProductData } as ProductType;
+          } else if (productId) {
             const active = await supabase
               .from('products')
               .select('*')
@@ -235,23 +262,28 @@ export function Product({
               else data = (fallback.data as ProductType) ?? null;
             }
           } else {
-            const fallback = await supabase
-              .from('products')
-              .select('*')
-              .eq('status', 'active')
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            if (fallback.error) console.error('[ProductPage] Error loading latest product:', fallback.error);
-            else data = (fallback.data as ProductType) ?? null;
+            // Creators without products or editing themes get the dummy demo product, NOT a client's product
+            data = DUMMY_CODEENGINE_PRODUCT as ProductType;
           }
 
-          console.log('[ProductPage] base product loaded from DB:', data);
+          console.log('[ProductPage] base product resolved:', data);
           if (!data) return null;
+
+          // If dummy demo product, bypass translation queries
+          if (data.id === 'codeengine-demo') {
+            return {
+              product: data,
+              pageLayout: parsePageLayoutConfig((data as any).page_layout_config),
+              customCopy: (data as any).custom_copy || {},
+              availableLanguages: ['pt'],
+              collaboratorInfo: null
+            };
+          }
 
           const contentLang = resolveContentLocale(locale);
           const useShared = Boolean((data as { use_shared_content?: boolean }).use_shared_content);
           const translationLang = useShared ? 'pt' : contentLang;
+
 
           const { data: tr } = await supabase
             .from('products_translations')
