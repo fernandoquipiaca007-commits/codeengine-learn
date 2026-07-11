@@ -617,7 +617,10 @@ export default function App() {
     let active = true;
     async function loadMember() {
       if (user?.id) {
-        setLoadingMember(true);
+        const isDifferentUser = lastFetchedUserIdRef.current !== user.id;
+        if (isDifferentUser) {
+          setLoadingMember(true);
+        }
         try {
           const { data: mem } = await supabase
             .from('members')
