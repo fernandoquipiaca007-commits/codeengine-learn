@@ -436,6 +436,7 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
   );
 
   const selectedPreset = THEME_PRESETS[centerIndex];
+  const visibleMap = getVisibleMap(centerIndex);
 
   return (
     <section className="flex flex-col items-center w-full py-2 relative z-20 select-none">
@@ -471,7 +472,7 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
                         className="absolute inset-0 w-full h-full pointer-events-none"
                       />
                     ) : (
-                      visibleMap.has(idx) ? (
+                      visibleMap.has(index) ? (
                         <video 
                           src={`/${preset.videoPath}`}
                           className="absolute inset-0 w-full h-full object-cover pointer-events-none animate-fade-in"
