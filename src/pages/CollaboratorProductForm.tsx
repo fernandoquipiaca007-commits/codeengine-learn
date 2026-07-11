@@ -3839,7 +3839,8 @@ function ReviewCoursePlayerMockup({
     return trimmed;
   }
 
-  const embedUrl = selectedLesson ? getEmbedUrl(selectedLesson.video_storage_path || selectedLesson.external_url) : '';
+  const resolvedUrl = selectedLesson ? (selectedLesson.videoUrl || selectedLesson.video_storage_path || selectedLesson.external_url || '') : '';
+  const embedUrl = getEmbedUrl(resolvedUrl);
   const isEmbed = embedUrl.startsWith('https://');
 
   return (
@@ -3855,11 +3856,11 @@ function ReviewCoursePlayerMockup({
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
-            ) : selectedLesson.video_storage_path ? (
+            ) : (selectedLesson.videoUrl || selectedLesson.video_storage_path) ? (
               <div className="w-full max-w-3xl aspect-video rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl flex flex-col items-center justify-center text-center p-6 space-y-4">
                 <PlayCircle className="w-16 h-16 text-primary animate-pulse" />
                 <h4 className="text-white font-bold">{selectedLesson.title}</h4>
-                <p className="text-xs text-on-surface-variant max-w-sm">Vídeo local carregado: {selectedLesson.video_storage_path}</p>
+                <p className="text-xs text-on-surface-variant max-w-sm">Vídeo local carregado: {selectedLesson.videoUrl || selectedLesson.video_storage_path}</p>
               </div>
             ) : (
               <div className="w-full max-w-3xl aspect-video rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl flex flex-col items-center justify-center text-center p-6 space-y-4">
