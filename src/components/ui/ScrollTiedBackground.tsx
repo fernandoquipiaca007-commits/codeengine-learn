@@ -65,7 +65,20 @@ export function ScrollTiedBackground({
     }
 
     video.addEventListener('loadedmetadata', onReady);
-    return () => video.removeEventListener('loadedmetadata', onReady);
+    video.addEventListener('loadeddata', onReady);
+    video.addEventListener('canplay', onReady);
+
+    // Fallback timer: force isLoaded after 1 second to guarantee visibility
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 1000);
+
+    return () => {
+      video.removeEventListener('loadedmetadata', onReady);
+      video.removeEventListener('loadeddata', onReady);
+      video.removeEventListener('canplay', onReady);
+      clearTimeout(timer);
+    };
   }, [videoPath, isColorTheme]);
 
   // ── Scroll scrubbing engine ───────────────────────────────────────────────

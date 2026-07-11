@@ -471,14 +471,20 @@ export function CardFanCarousel({ currentPath, currentConfig, onSelectPreset }: 
                         className="absolute inset-0 w-full h-full pointer-events-none"
                       />
                     ) : (
-                      <video 
-                        src={`/${preset.videoPath}`}
-                        className="absolute inset-0 w-full h-full object-cover pointer-events-none animate-fade-in"
-                        preload="metadata"
-                        muted
-                        loop
-                        playsInline
-                      />
+                      visibleMap.has(idx) ? (
+                        <video 
+                          src={`/${preset.videoPath}`}
+                          className="absolute inset-0 w-full h-full object-cover pointer-events-none animate-fade-in"
+                          preload="metadata"
+                          muted
+                          loop
+                          playsInline
+                        />
+                      ) : (
+                        <div className="absolute inset-0 w-full h-full bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center text-white/20 text-[10px] font-sans">
+                          {preset.name}
+                        </div>
+                      )
                     )
                   ) : (
                     <img 
