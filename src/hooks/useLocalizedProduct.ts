@@ -242,5 +242,27 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
   };
 
   const cacheKey = `localized-products-list-${lang}-${status}`;
-  return queryCache.get(cacheKey, fetcher);
+  const cachedProducts = await queryCache.get(cacheKey, fetcher);
+
+  // Get current user session to check ownership of hidden products
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
+  let currentCollabId: string | null = null;
+  if (userId) {
+    const { data: collab } = await supabase
+      .from('collaborators')
+      .select('id')
+      .eq('member_id', userId)
+      .maybeSingle();
+    currentCollabId = collab?.id || null;
+  }
+
+  return (cachedProducts || []).filter((p: any) => {
+    const vis = p.visibility || 'public';
+    if (vis === 'hidden') {
+      return currentCollabId && p.collaborator_id === currentCollabId;
+    }
+    return true;
+  });
 }

@@ -522,6 +522,11 @@ export function CollaboratorProductForm({
   const [themeSaving, setThemeSaving] = useState(false);
   const [themeSaved, setThemeSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
+  const [visibility, setVisibility] = useState<'public' | 'hidden'>('public');
+  const [reviewMode, setReviewMode] = useState(false);
+  const [reviewTab, setReviewTab] = useState<'sales' | 'home' | 'player'>('sales');
+  const [showPublishReviewOptions, setShowPublishReviewOptions] = useState(false);
+  const publishReviewBtnRef = useRef<HTMLDivElement>(null);
 
   // Derived: detect the form type from preset or from the selected category name
   const formType: ProductFormType = (() => {
@@ -777,6 +782,8 @@ export function CollaboratorProductForm({
               isLight: prod.theme_video_config.isLight,
             });
           }
+
+          setVisibility(prod.visibility || 'public');
 
           // Dual Pricing Values
           setPriceUSD(prod.price ? String(prod.price) : '');
@@ -1242,7 +1249,8 @@ export function CollaboratorProductForm({
         themeVideoPath: themeVideoPath || null,
         themeVideoConfig,
         primaryLanguage: locale,
-        translations
+        translations,
+        visibility
       };
 
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
@@ -1353,7 +1361,8 @@ export function CollaboratorProductForm({
         primaryLanguage: locale, translations,
         status: 'active',
         approval_status: 'approved',
-        scheduled_publish_at: null
+        scheduled_publish_at: null,
+        visibility
       };
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
       const url = productId ? `${BACKEND_URL}/api/collaborators/products/${productId}` : `${BACKEND_URL}/api/collaborators/products`;
@@ -1435,7 +1444,8 @@ export function CollaboratorProductForm({
         affiliateEnabled, affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
         themeVideoPath: themeVideoPath || null, themeVideoConfig,
         primaryLanguage: locale, translations,
-        scheduled_publish_at: new Date(scheduledDate).toISOString()
+        scheduled_publish_at: new Date(scheduledDate).toISOString(),
+        visibility
       };
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
       const url = productId ? `${BACKEND_URL}/api/collaborators/products/${productId}` : `${BACKEND_URL}/api/collaborators/products`;
@@ -1604,42 +1614,16 @@ export function CollaboratorProductForm({
             ) : <Save size={12} />}
             <span>{langKey === 'pt' ? 'Salvar Rascunho' : langKey === 'fr' ? 'Enregistrer le Brouillon' : 'Save Draft'}</span>
           </button>
-          <div className="relative" ref={publishBtnRef}>
+          <div>
             <button
               type="button"
               disabled={loading}
-              onClick={() => setShowPublishOptions(v => !v)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
+              onClick={() => setReviewMode(true)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
             >
-              <Zap size={12} className="text-green-600" />
-              <span>{langKey === 'pt' ? 'Publicar' : langKey === 'fr' ? 'Publier' : 'Publish'}</span>
+              <Zap size={12} className="text-green-600 fill-green-600" />
+              <span>{langKey === 'pt' ? 'Revisar & Publicar' : langKey === 'fr' ? 'Réviser & Publier' : 'Review & Publish'}</span>
             </button>
-            {showPublishOptions && (
-              <div className="absolute top-full mt-2 right-0 w-64 glass-panel rounded-xl border border-white/10 p-3 space-y-2 z-50">
-                <button onClick={handlePublishNow} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white hover:bg-white/10 transition">
-                  <Zap size={14} className="text-green-400" />
-                  Publicação Instantânea
-                </button>
-                <div className="border-t border-white/10" />
-                <div className="space-y-1.5">
-                  <label className="text-xs text-white/60">Agendar para:</label>
-                  <input
-                    type="datetime-local"
-                    value={scheduledDate}
-                    onChange={e => setScheduledDate(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white"
-                  />
-                  <button
-                    onClick={handleSchedulePublish}
-                    disabled={!scheduledDate}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-white/10 transition disabled:opacity-40"
-                  >
-                    <Calendar size={14} className="text-blue-400" />
-                    Agendar Publicação
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -2613,6 +2597,38 @@ export function CollaboratorProductForm({
                   </div>
                 </div>
               )}
+              {/* Visibilidade do Produto */}
+              <div className="rounded-xl border border-white/10 p-4 bg-white/5 space-y-3">
+                <span className="block text-sm font-bold text-white mb-1 font-display">Visibilidade na Plataforma</span>
+                <span className="block text-xs text-on-surface-variant font-sans">
+                  Controle quem pode ver seu produto na loja. Defina como "Oculto" se quiser testar a página ou ocultar o curso temporariamente sem o apagar.
+                </span>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('public')}
+                    className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
+                      visibility === 'public'
+                        ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                        : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    Público (Loja & Catálogo)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVisibility('hidden')}
+                    className={`flex-1 rounded-xl border py-2 text-xs font-semibold transition-all ${
+                      visibility === 'hidden'
+                        ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(192,193,255,0.1)]'
+                        : 'border-white/10 bg-white/5 text-on-surface-variant hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    Oculto (Só visível para mim)
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -3563,6 +3579,168 @@ export function CollaboratorProductForm({
       )}
     </div>
 
+    {reviewMode && (
+      <div className="fixed inset-0 w-full h-full z-[100] bg-black overflow-y-auto font-sans flex flex-col animate-fade-in">
+        {/* Header */}
+        <div className="shrink-0 p-3 bg-neutral-900 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 z-[110] relative">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setReviewMode(false)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              {langKey === 'pt' ? 'Voltar ao Formulário' : langKey === 'fr' ? 'Retour au Formulaire' : 'Back to Form'}
+            </button>
+            <div className="border-l border-white/10 h-6 hidden sm:block" />
+            <div>
+              <h2 className="text-sm font-bold text-white">Revisão do Produto</h2>
+              <p className="text-[10px] text-on-surface-variant">Revise a aparência e estrutura antes de publicar</p>
+            </div>
+          </div>
+
+          {/* Navigation Tabs for preview */}
+          <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/5">
+            <button
+              type="button"
+              onClick={() => setReviewTab('sales')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${reviewTab === 'sales' ? 'bg-primary text-black shadow-md' : 'text-white/60 hover:text-white'}`}
+            >
+              Página de Vendas
+            </button>
+            <button
+              type="button"
+              onClick={() => setReviewTab('home')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${reviewTab === 'home' ? 'bg-primary text-black shadow-md' : 'text-white/60 hover:text-white'}`}
+            >
+              Página Inicial
+            </button>
+            {formType === 'course' && (
+              <button
+                type="button"
+                onClick={() => setReviewTab('player')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${reviewTab === 'player' ? 'bg-primary text-black shadow-md' : 'text-white/60 hover:text-white'}`}
+              >
+                Player do Curso
+              </button>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 relative" ref={publishReviewBtnRef}>
+            <button
+              type="button"
+              onClick={() => setShowPublishReviewOptions(v => !v)}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-black transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.35)] cursor-pointer"
+            >
+              <Zap size={12} className="text-green-600 fill-green-600 animate-pulse" />
+              <span>Confirmar e Publicar</span>
+            </button>
+
+            {showPublishReviewOptions && (
+              <div className="absolute top-full mt-2 right-0 w-64 glass-panel rounded-xl border border-white/10 p-3 space-y-2 z-50 shadow-2xl">
+                <button onClick={handlePublishNow} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-white hover:bg-white/10 transition cursor-pointer font-bold text-left">
+                  <Zap size={14} className="text-green-400 fill-green-400" />
+                  Publicação Instantânea
+                </button>
+                <div className="border-t border-white/10" />
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-[10px] uppercase font-bold text-white/50 block">Agendar para:</label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledDate}
+                    onChange={e => setScheduledDate(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  />
+                  <button
+                    onClick={handleSchedulePublish}
+                    disabled={!scheduledDate}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-white/70 hover:bg-white/10 transition disabled:opacity-40 cursor-pointer font-bold text-left"
+                  >
+                    <Calendar size={14} className="text-blue-400" />
+                    Agendar Publicação
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Main content body */}
+        <div className="flex-1 min-h-0 relative">
+          {reviewTab === 'sales' && (
+            <div className="w-full h-full overflow-y-auto bg-black">
+              <ProductPage
+                productId={productId}
+                overrideThemePath={themeVideoPath}
+                overrideThemeConfig={themeVideoConfig}
+                overrideProductData={{
+                  title: title || undefined,
+                  description: description || undefined,
+                  cover_url: coverUrl || undefined,
+                  price: priceUSD ? Number(priceUSD) : undefined,
+                  aoa_price: priceAOA ? Number(priceAOA) : undefined
+                }}
+              />
+            </div>
+          )}
+
+          {reviewTab === 'home' && (
+            <div className="w-full h-full overflow-y-auto bg-[#0a0a0f] p-6 sm:p-12 flex flex-col items-center">
+              <div className="w-full max-w-4xl space-y-8">
+                {/* Grid Mockup */}
+                <div className="space-y-2 text-center sm:text-left">
+                  <span className="text-[10px] text-primary uppercase font-bold tracking-widest">Prévia na Página Inicial</span>
+                  <h3 className="text-xl font-bold text-white">Como seu produto aparecerá no catálogo</h3>
+                  <p className="text-xs text-on-surface-variant">Card e visualização rápida do produto no grid principal da plataforma.</p>
+                </div>
+                
+                <div className="flex justify-center sm:justify-start">
+                  {/* Mock Card */}
+                  <div className="w-full max-w-sm glass-panel border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative group flex flex-col bg-neutral-900/40">
+                    <div className="aspect-video bg-neutral-950 relative overflow-hidden flex items-center justify-center">
+                      {coverUrl ? (
+                        <img src={coverUrl} className="w-full h-full object-cover" alt="Cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-white/5 text-white/20 text-xs">Sem Capa</div>
+                      )}
+                      <div className="absolute top-3 left-3 bg-black/60 px-2 py-0.5 rounded text-[10px] font-bold text-primary border border-primary/20 uppercase">
+                        {formType === 'course' ? 'Curso' : 'E-book'}
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                      <div className="space-y-1.5">
+                        <h4 className="font-display text-sm font-bold text-white truncate">{title || 'Título do Produto'}</h4>
+                        <p className="font-sans text-xs text-on-surface-variant line-clamp-2">{description || 'Sem descrição cadastrada ainda...'}</p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                        <span className="font-mono text-sm font-extrabold text-white">
+                          {isFree ? 'Grátis' : (baseCurrency === 'USD' ? `$${priceUSD || '0.00'}` : `Kz ${priceAOA || '0'}`)}
+                        </span>
+                        <span className="text-[9px] text-primary uppercase font-bold tracking-wider">Acessar Detalhes →</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {reviewTab === 'player' && formType === 'course' && (
+            <div className="w-full h-full bg-[#0a0a0f]">
+              <ReviewCoursePlayerMockup
+                modules={courseBuilderModules}
+                lessons={courseBuilderLessons}
+                productTitle={title}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+
     {showUpgradeModal && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
         <div className="w-full max-w-md glass-panel rounded-2xl border border-white/10 p-6 space-y-4 shadow-2xl animate-fade-in">
@@ -3611,6 +3789,158 @@ export function CollaboratorProductForm({
         </div>
       </div>
     )}
+    </div>
+  );
+}
+
+function ReviewCoursePlayerMockup({
+  modules,
+  lessons,
+  productTitle
+}: {
+  modules: any[];
+  lessons: any[];
+  productTitle: string;
+}) {
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  
+  // Find first lesson on mount
+  useEffect(() => {
+    if (lessons.length > 0) {
+      setSelectedLesson(lessons[0]);
+    }
+  }, [lessons]);
+
+  // Group lessons by module
+  const lessonsByModule = (moduleId: string | null) => {
+    return lessons
+      .filter((l) => l.module_id === moduleId)
+      .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+  };
+
+  // Lessons not in any module
+  const orphanLessons = lessons
+    .filter((l) => !l.module_id)
+    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+
+  function getEmbedUrl(url: string | null): string {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+      const videoId = trimmed.includes('youtu.be')
+        ? trimmed.split('youtu.be/')[1]?.split('?')[0]
+        : trimmed.split('v=')[1]?.split('&')[0];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    if (trimmed.includes('vimeo.com')) {
+      const videoId = trimmed.split('vimeo.com/')[1]?.split('?')[0];
+      return `https://player.vimeo.com/video/${videoId}`;
+    }
+    return trimmed;
+  }
+
+  const embedUrl = selectedLesson ? getEmbedUrl(selectedLesson.video_storage_path || selectedLesson.external_url) : '';
+  const isEmbed = embedUrl.startsWith('https://');
+
+  return (
+    <div className="w-full h-full flex flex-col md:flex-row overflow-hidden min-h-[500px]">
+      {/* Player Area */}
+      <div className="flex-1 bg-black p-4 flex flex-col justify-between min-w-0">
+        <div className="flex-1 flex items-center justify-center relative">
+          {selectedLesson ? (
+            isEmbed ? (
+              <iframe
+                src={embedUrl}
+                className="w-full max-w-3xl aspect-video rounded-2xl border border-white/10 shadow-2xl"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : selectedLesson.video_storage_path ? (
+              <div className="w-full max-w-3xl aspect-video rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl flex flex-col items-center justify-center text-center p-6 space-y-4">
+                <PlayCircle className="w-16 h-16 text-primary animate-pulse" />
+                <h4 className="text-white font-bold">{selectedLesson.title}</h4>
+                <p className="text-xs text-on-surface-variant max-w-sm">Vídeo local carregado: {selectedLesson.video_storage_path}</p>
+              </div>
+            ) : (
+              <div className="w-full max-w-3xl aspect-video rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl flex flex-col items-center justify-center text-center p-6 space-y-4">
+                <BookOpen className="w-16 h-16 text-primary" />
+                <h4 className="text-white font-bold">{selectedLesson.title}</h4>
+                <p className="text-xs text-on-surface-variant max-w-sm">Aula de texto/interativa (sem vídeo associado)</p>
+              </div>
+            )
+          ) : (
+            <div className="text-white/40 text-sm">Selecione uma aula para assistir</div>
+          )}
+        </div>
+        
+        {/* Title details */}
+        {selectedLesson && (
+          <div className="p-4 bg-neutral-950 rounded-2xl border border-white/5 mt-4 max-w-4xl mx-auto w-full">
+            <h3 className="text-base font-bold text-white">{selectedLesson.title}</h3>
+            <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">{selectedLesson.description || 'Sem descrição cadastrada para esta aula.'}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Playlist Area */}
+      <div className="w-full md:w-80 shrink-0 bg-neutral-900 border-t md:border-t-0 md:border-l border-white/10 flex flex-col overflow-hidden">
+        <div className="p-4 border-b border-white/10">
+          <h3 className="text-sm font-bold text-white truncate">{productTitle || 'Playlist do Curso'}</h3>
+          <p className="text-[10px] text-on-surface-variant mt-0.5">{lessons.length} aulas cadastradas</p>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+          {/* Modules List */}
+          {modules.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)).map((mod) => {
+            const modLessons = lessonsByModule(mod.id);
+            return (
+              <div key={mod.id} className="space-y-1.5">
+                <div className="flex items-center gap-1.5 px-2">
+                  <Layers className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">{mod.title}</span>
+                </div>
+                <div className="space-y-1 pl-1">
+                  {modLessons.map((l) => (
+                    <button
+                      key={l.id}
+                      onClick={() => setSelectedLesson(l)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center gap-2 transition-all ${selectedLesson?.id === l.id ? 'bg-primary text-black font-bold' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}
+                    >
+                      <PlayCircle className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{l.title}</span>
+                    </button>
+                  ))}
+                  {modLessons.length === 0 && (
+                    <p className="text-[10px] text-white/30 italic pl-6">Nenhuma aula neste módulo</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Orphan Lessons */}
+          {orphanLessons.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5 px-2">
+                <Layers className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-bold text-white uppercase tracking-wider">Aulas sem Módulo</span>
+              </div>
+              <div className="space-y-1 pl-1">
+                {orphanLessons.map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => setSelectedLesson(l)}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center gap-2 transition-all ${selectedLesson?.id === l.id ? 'bg-primary text-black font-bold' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    <PlayCircle className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{l.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

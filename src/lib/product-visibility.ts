@@ -12,11 +12,16 @@ export function canViewProduct(
   product: {
     visibility?: string | null;
     min_member_level?: string | null;
+    collaborator_id?: string | null;
   },
   memberLevel: string | null | undefined,
-  isLoggedIn: boolean
+  isLoggedIn: boolean,
+  currentCollaboratorId?: string | null
 ): boolean {
   const visibility = product.visibility || 'public';
+  if (visibility === 'hidden') {
+    return !!currentCollaboratorId && currentCollaboratorId === product.collaborator_id;
+  }
   if (visibility === 'public') {
     const min = product.min_member_level;
     if (!min) return true;

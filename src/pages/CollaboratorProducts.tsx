@@ -77,7 +77,17 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
   };
 
   const getStatusBadge = (prod: any) => {
-    if (prod.status === 'active') return <span className="rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-[10px] font-bold text-green-400 uppercase">{t('collaborator.products.statusActive', 'Publicado')}</span>;
+    if (prod.status === 'active') {
+      if (prod.visibility === 'hidden') {
+        return (
+          <div className="flex flex-wrap gap-1.5 items-center">
+            <span className="rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-[10px] font-bold text-green-400 uppercase">{t('collaborator.products.statusActive', 'Publicado')}</span>
+            <span className="rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase">Oculto</span>
+          </div>
+        );
+      }
+      return <span className="rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-[10px] font-bold text-green-400 uppercase">{t('collaborator.products.statusActive', 'Publicado')}</span>;
+    }
     if (prod.status === 'draft' && prod.scheduled_publish_at) {
       const d = new Date(prod.scheduled_publish_at);
       return <span className="rounded bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[10px] font-bold text-blue-400 uppercase">{t('collaborator.products.statusScheduled', 'Agendado')}: {String(d.getDate()).padStart(2,'0')}/{String(d.getMonth()+1).padStart(2,'0')}</span>;

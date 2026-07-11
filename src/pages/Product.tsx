@@ -318,6 +318,26 @@ export function Product({
           console.log('[ProductPage] base product resolved:', data);
           if (!data) return null;
 
+          // Check if product is hidden and verify ownership
+          if (data.visibility === 'hidden') {
+            const { data: { session } } = await supabase.auth.getSession();
+            const userId = session?.user?.id;
+            let currentCollabId: string | null = null;
+            if (userId) {
+              const { data: collab } = await supabase
+                .from('collaborators')
+                .select('id')
+                .eq('member_id', userId)
+                .maybeSingle();
+              currentCollabId = collab?.id || null;
+            }
+            const isOwner = currentCollabId && data.collaborator_id === currentCollabId;
+            if (!isOwner) {
+              console.warn('[ProductPage] Access denied to hidden product for user:', userId);
+              return null;
+            }
+          }
+
           // If dummy demo product, bypass translation queries
           if (data.id === 'codeengine-demo') {
             return {
