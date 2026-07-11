@@ -30,6 +30,9 @@ export interface Product {
   isSponsored?: boolean;
   theme_video_path?: string | null;
   theme_video_config?: any;
+  visibility?: string | null;
+  collaborator_id?: string | null;
+  scheduled_publish_at?: string | null;
 }
 
 export interface Category {
