@@ -815,17 +815,17 @@ export function CollaboratorProductForm({
 
     // Free plan file validation
     if (collaboratorPlan === 'ebook_creator' && bucket === 'ebooks-private') {
-      let allowedExts = ['pdf', 'epub', 'docx', 'zip', 'mp3', 'wav', 'm4a'];
+      let allowedExts = ['pdf', 'epub', 'docx', 'zip'];
       if (formType === 'music') {
-        allowedExts = ['mp3', 'wav', 'flac', 'm4a', 'mp4', 'zip', 'rar'];
+        allowedExts = ['mp3', 'wav', 'm4a', 'zip', 'rar'];
       } else if (formType === 'app') {
-        allowedExts = ['zip', 'rar', 'exe', 'dmg', 'apk', 'ipa', 'bin', 'json', 'js', 'html', 'css'];
+        allowedExts = ['zip', 'rar'];
       } else if (formType === 'template') {
-        allowedExts = ['zip', 'rar', 'json', 'pdf', 'fig', 'xd', 'sketch'];
+        allowedExts = ['zip', 'rar', 'pdf'];
       } else if (formType === 'ebook') {
-        allowedExts = ['pdf', 'epub', 'docx', 'mobi', 'zip'];
+        allowedExts = ['pdf', 'epub', 'docx', 'zip'];
       } else {
-        allowedExts = ['zip', 'rar', 'pdf', 'png', 'jpg', 'jpeg'];
+        allowedExts = ['zip', 'rar', 'pdf'];
       }
       
       const ext = file.name.split('.').pop()?.toLowerCase() || '';
@@ -2111,10 +2111,10 @@ export function CollaboratorProductForm({
                   <span className="block text-xs text-on-surface-variant mb-2 font-sans">
                     {collaboratorPlan === 'ebook_creator' 
                       ? `Limitação do plano grátis: Apenas ${
-                          formType === 'music' ? 'MP3, WAV, FLAC, M4A, MP4, ZIP, RAR' :
-                          formType === 'app' ? 'ZIP, RAR, EXE, DMG, APK, IPA, BIN, JSON, JS, HTML, CSS' :
-                          formType === 'template' ? 'ZIP, RAR, JSON, PDF, FIG, XD, SKETCH' :
-                          'PDF, EPUB, DOCX, MOBI, ZIP'
+                          formType === 'music' ? 'MP3, WAV, M4A, ZIP, RAR' :
+                          formType === 'app' ? 'ZIP, RAR' :
+                          formType === 'template' ? 'ZIP, RAR, PDF' :
+                          'PDF, EPUB, DOCX, ZIP'
                         } (Máx. 50MB)`
                       : 'Qualquer formato de arquivo permitido (Máx. 2GB)'}
                   </span>
