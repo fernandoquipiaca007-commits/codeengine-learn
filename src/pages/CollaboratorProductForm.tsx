@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft, Zap, Calendar } from 'lucide-react';
+import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft, Zap, Calendar, Music, Smartphone, Briefcase } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
 import { queryCache } from '../lib/queryCache';
+import { detectFormType, ProductFormType } from '../lib/categoryDetect';
 
 import { Product as ProductPage } from './Product';
 import { useUserCountry } from '../contexts/UserCountryContext';
@@ -17,6 +18,10 @@ interface CollaboratorProductFormProps {
   onClose: () => void;
   onSaveSuccess: () => void;
   collaboratorPlan: 'ebook_creator' | 'course_creator';
+  /** When coming from the ProductTypePicker, the category ID is preset */
+  presetCategoryId?: string | null;
+  /** Override form type even when the category name might not match keywords */
+  presetFormType?: ProductFormType | null;
 }
 
 interface Category {
@@ -83,7 +88,9 @@ export function CollaboratorProductForm({
   productId,
   onClose,
   onSaveSuccess,
-  collaboratorPlan
+  collaboratorPlan,
+  presetCategoryId,
+  presetFormType,
 }: CollaboratorProductFormProps) {
   const { isAngola } = useUserCountry();
   const { locale } = useLocale();
@@ -95,7 +102,8 @@ export function CollaboratorProductForm({
   // Form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryId, setCategoryId] = useState(presetCategoryId ?? '');
+
   
   // Dual Pricing (USD and AOA simultaneously)
   const [priceUSD, setPriceUSD] = useState('');
@@ -334,6 +342,15 @@ export function CollaboratorProductForm({
   const [themeSaved, setThemeSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
 
+  // Derived: detect the form type from preset or from the selected category name
+  const formType: ProductFormType = (() => {
+    if (presetFormType) return presetFormType;
+    const selectedCat = categories.find(c => c.id === categoryId);
+    if (selectedCat) return detectFormType(selectedCat.name);
+    return 'generic';
+  })();
+
+
   const [campaign, setCampaign] = useState<CampaignState>({
     banner_text: '',
     special_price: '',
@@ -456,8 +473,8 @@ export function CollaboratorProductForm({
         
         setCategories(mapped);
         
-        // Find first unlocked category as default if categoryId is empty
-        if (mapped.length > 0 && !categoryId) {
+        // Find first unlocked category as default only if no preset was provided
+        if (mapped.length > 0 && !categoryId && !presetCategoryId) {
           const firstUnlocked = mapped.find(c => !c.isPremiumLocked) || mapped[0];
           setCategoryId(firstUnlocked.id);
         }
@@ -1152,11 +1169,26 @@ export function CollaboratorProductForm({
     <div className="text-white font-sans w-full h-full flex flex-col">
       <div className="p-2 sm:p-3 shrink-0 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-white/10">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-white font-display">
-            {productId ? 'Editar Produto' : 'Adicionar Novo Produto'}
-          </h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-base sm:text-lg font-bold text-white font-display">
+              {productId ? 'Editar Produto' : 'Novo Produto'}
+            </h2>
+            {(presetFormType || formType !== 'generic') && (() => {
+              const labels: Record<string, string> = {
+                ebook: 'E-book', course: 'Curso Online', template: 'Template',
+                music: 'Musica', app: 'Aplicativo', service: 'Servico', generic: '',
+              };
+              const label = labels[formType] || '';
+              if (!label) return null;
+              return (
+                <span className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider shrink-0">
+                  {label}
+                </span>
+              );
+            })()}
+          </div>
           <p className="text-[9px] sm:text-[10px] text-on-surface-variant mt-0.5">
-            Os produtos salvos serão enviados como rascunhos para aprovação da administração.
+            Os produtos salvos serao enviados como rascunhos para aprovacao da administracao.
           </p>
         </div>
         <div className="flex items-center gap-2 self-end sm:self-center">
