@@ -1973,7 +1973,7 @@ export function CollaboratorDashboard({
 
         {/* ====== ANALYTICS VIEW ====== */}
 
-        {walletView === "analytics" && <CollaboratorAnalyticsPanel t={t} />}
+        {walletView === "analytics" && <CollaboratorAnalyticsPanel t={t} walletView={walletView} />}
 
         {/* ====== MEUS AFILIADOS VIEW ====== */}
 
@@ -3266,9 +3266,10 @@ export function CollaboratorDashboard({
                         placeholder="AO06.0000.0000.0000.0000.0"
 
                         value={iban}
-
-                        onChange={(e) => setIban(e.target.value)}
-
+                        onChange={(e) => {
+                          const cleaned = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 24);
+                          setIban(cleaned);
+                        }}
                         className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 font-mono"
                       />
                     </div>
@@ -4523,9 +4524,10 @@ function PureSvgChart({
   );
 }
 
-function CollaboratorAnalyticsPanel({ t }: { t: any }) {
+function CollaboratorAnalyticsPanel({ t, walletView }: { t: any; walletView: string }) {
   const [loading, setLoading] = useState(true);
 
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [error, setError] = useState(false);
 
   const [summary, setSummary] = useState<any>(null);
@@ -4539,8 +4541,10 @@ function CollaboratorAnalyticsPanel({ t }: { t: any }) {
   const [period, setPeriod] = useState<string>("30d");
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [selectedProduct, period]);
+    if (walletView === "analytics") {
+      fetchAnalytics();
+    }
+  }, [selectedProduct, period, walletView]);
 
   async function fetchAnalytics() {
     setLoading(true);
