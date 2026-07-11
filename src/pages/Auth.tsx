@@ -200,6 +200,21 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
     try {
       if (mode === 'signup') {
+        // Pre-signup check: check if the email already exists in members table to avoid silent errors or duplicate signups
+        const { data: existingMember, error: queryError } = await supabase
+          .from('members')
+          .select('id')
+          .eq('email', email.trim().toLowerCase())
+          .maybeSingle();
+
+        if (queryError) {
+          console.error('[Auth] Error querying existing member:', queryError);
+        }
+
+        if (existingMember) {
+          throw new Error(lang === 'pt' ? 'Este e-mail já está cadastrado. Por favor, tente fazer login.' : 'This email is already registered. Please try logging in.');
+        }
+
         let referredByUserId: string | null = null;
         try {
           const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
