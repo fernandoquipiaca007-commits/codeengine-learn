@@ -507,6 +507,7 @@ export function CollaboratorProductForm({
     backgroundStyle?: string;
     textColor?: string;
     accentColor?: string;
+    panelBgColor?: string;
     isLight?: boolean;
   }>({
     videoOpacity: 0.25,
@@ -1595,34 +1596,52 @@ export function CollaboratorProductForm({
             {langKey === 'pt' ? 'Os produtos salvos serão enviados como rascunhos para aprovação da administração.' : langKey === 'fr' ? 'Les produits enregistrés seront envoyés comme brouillons pour approbation de l\'administration.' : 'Saved products will be sent as drafts for administration approval.'}
           </p>
         </div>
-        <div className="flex items-center gap-2 self-end sm:self-center">
+        <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end flex-wrap">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-semibold text-on-surface transition-all cursor-pointer whitespace-nowrap"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-[10px] sm:text-xs font-semibold text-on-surface transition-all cursor-pointer whitespace-nowrap"
           >
-            {langKey === 'pt' ? 'Sair sem Salvar' : langKey === 'fr' ? 'Quitter sans Enregistrer' : 'Exit without Saving'}
+            {langKey === 'pt' ? (
+              <span>Sair<span className="hidden xs:inline"> sem Salvar</span></span>
+            ) : langKey === 'fr' ? (
+              <span>Quitter<span className="hidden xs:inline"> sans Enregistrer</span></span>
+            ) : (
+              <span>Exit<span className="hidden xs:inline"> without Saving</span></span>
+            )}
           </button>
           <button
             type="submit"
             form="product-form"
             disabled={loading}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/15 disabled:opacity-50 text-xs font-bold transition-all cursor-pointer whitespace-nowrap text-white"
+            className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/15 disabled:opacity-50 text-[10px] sm:text-xs font-bold transition-all cursor-pointer whitespace-nowrap text-white"
           >
             {loading ? (
               <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-            ) : <Save size={12} />}
-            <span>{langKey === 'pt' ? 'Salvar Rascunho' : langKey === 'fr' ? 'Enregistrer le Brouillon' : 'Save Draft'}</span>
+            ) : <Save size={11} />}
+            {langKey === 'pt' ? (
+              <span>Salvar<span className="hidden xs:inline"> Rascunho</span></span>
+            ) : langKey === 'fr' ? (
+              <span>Enregistrer<span className="hidden xs:inline"> le Brouillon</span></span>
+            ) : (
+              <span>Save<span className="hidden xs:inline"> Draft</span></span>
+            )}
           </button>
           <div>
             <button
               type="button"
               disabled={loading}
               onClick={() => setReviewMode(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
+              className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 rounded-full bg-white text-black hover:bg-neutral-100 disabled:opacity-50 text-[10px] sm:text-xs font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(255,255,255,0.25)] cursor-pointer whitespace-nowrap"
             >
-              <Zap size={12} className="text-green-600 fill-green-600" />
-              <span>{langKey === 'pt' ? 'Revisar & Publicar' : langKey === 'fr' ? 'Réviser & Publier' : 'Review & Publish'}</span>
+              <Zap size={11} className="text-green-600 fill-green-600" />
+              {langKey === 'pt' ? (
+                <span>Revisar<span className="hidden xs:inline"> & Publicar</span></span>
+              ) : langKey === 'fr' ? (
+                <span>Réviser<span className="hidden xs:inline"> & Publier</span></span>
+              ) : (
+                <span>Review<span className="hidden xs:inline"> & Publish</span></span>
+              )}
             </button>
           </div>
         </div>
