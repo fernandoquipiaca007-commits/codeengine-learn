@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import {
   BookOpen,
@@ -27,7 +27,7 @@ interface TypeCard {
   label: string;
   description: string;
   keywords: string[];
-  Icon: React.ElementType;
+  Icon: any;
 }
 
 const TYPE_CARDS: TypeCard[] = [
