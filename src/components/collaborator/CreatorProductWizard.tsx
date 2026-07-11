@@ -107,6 +107,37 @@ export function CreatorProductWizard({
     loadCategories();
   }, []);
 
+  // Load wizard state from localStorage on mount if returning from preview/advanced form
+  useEffect(() => {
+    const savedStep = localStorage.getItem("wizard_active_step");
+    if (savedStep) {
+      setStep(Number(savedStep));
+      setTitle(localStorage.getItem("wizard_form_title") || "");
+      setDescription(localStorage.getItem("wizard_form_description") || "");
+      setCoverUrl(localStorage.getItem("wizard_form_coverUrl") || "");
+      setStorageUrl(localStorage.getItem("wizard_form_storageUrl") || "");
+      setPriceUSD(localStorage.getItem("wizard_form_priceUSD") || "");
+      setPriceAOA(localStorage.getItem("wizard_form_priceAOA") || "");
+      setIsFree(localStorage.getItem("wizard_form_isFree") === "true");
+      setAffiliateEnabled(localStorage.getItem("wizard_form_affiliateEnabled") === "true");
+      setAffiliateCommissionPct(localStorage.getItem("wizard_form_affiliateCommissionPct") || "30");
+      setCreatedProductId(localStorage.getItem("open_creator_product_id") || null);
+
+      // Clear them so next fresh wizard starts from clean state
+      localStorage.removeItem("wizard_active_step");
+      localStorage.removeItem("wizard_active_type");
+      localStorage.removeItem("wizard_form_title");
+      localStorage.removeItem("wizard_form_description");
+      localStorage.removeItem("wizard_form_coverUrl");
+      localStorage.removeItem("wizard_form_storageUrl");
+      localStorage.removeItem("wizard_form_priceUSD");
+      localStorage.removeItem("wizard_form_priceAOA");
+      localStorage.removeItem("wizard_form_isFree");
+      localStorage.removeItem("wizard_form_affiliateEnabled");
+      localStorage.removeItem("wizard_form_affiliateCommissionPct");
+    }
+  }, []);
+
   // Generic File Upload Handler (presigned upload with Supabase fallback)
   const uploadFile = async (
     file: File,
@@ -304,10 +335,6 @@ export function CreatorProductWizard({
 
     setErrorMsg(null);
     if (step < 6) {
-      // Auto-save draft in background when moving past cover/files
-      if (step === 3 || step === 4 || step === 5) {
-        saveProduct("draft");
-      }
       setStep(step + 1);
     }
   };
@@ -329,12 +356,25 @@ export function CreatorProductWizard({
     }
   };
 
-  const handlePreview = () => {
-    if (createdProductId) {
-      // Open product view page in a new window/tab in preview mode
-      window.open(`/?preview=true&productId=${createdProductId}`, "_blank");
-    } else {
-      alert("Por favor, avance e salve o rascunho primeiro para visualizar.");
+  const handlePreview = async () => {
+    const prodId = createdProductId || (await saveProduct("draft"));
+    if (prodId) {
+      // Save wizard state to localStorage so we can resume later!
+      localStorage.setItem("wizard_active_step", "6");
+      localStorage.setItem("wizard_active_type", type);
+      localStorage.setItem("wizard_form_title", title);
+      localStorage.setItem("wizard_form_description", description);
+      localStorage.setItem("wizard_form_coverUrl", coverUrl);
+      localStorage.setItem("wizard_form_storageUrl", storageUrl);
+      localStorage.setItem("wizard_form_priceUSD", priceUSD);
+      localStorage.setItem("wizard_form_priceAOA", priceAOA);
+      localStorage.setItem("wizard_form_isFree", isFree ? "true" : "false");
+      localStorage.setItem("wizard_form_affiliateEnabled", affiliateEnabled ? "true" : "false");
+      localStorage.setItem("wizard_form_affiliateCommissionPct", affiliateCommissionPct);
+      localStorage.setItem("open_creator_product_id", prodId);
+      localStorage.setItem("open_creator_product_review", "true");
+
+      onGoToAdvancedForm(prodId);
     }
   };
 

@@ -122,7 +122,16 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
 
   const handlePickerSelect = (categoryId: string, formType: ProductFormType) => { setPresetCategoryId(categoryId || null); setPresetFormType(formType); setStep('form'); };
 
-  const handleFormClose = () => { setStep('list'); setSelectedProductId(null); setPresetCategoryId(null); setPresetFormType(null); setIsImmersive?.(false); };
+  const handleFormClose = () => { 
+    setStep('list'); 
+    setSelectedProductId(null); 
+    setPresetCategoryId(null); 
+    setPresetFormType(null); 
+    setIsImmersive?.(false); 
+    if (localStorage.getItem("wizard_active_step")) {
+      setScreen('colaborador');
+    }
+  };
 
   const handleFormSaveSuccess = () => { setStep('list'); setSelectedProductId(null); setPresetCategoryId(null); setPresetFormType(null); setIsImmersive?.(false); void loadProducts(); };
 

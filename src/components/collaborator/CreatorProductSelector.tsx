@@ -123,18 +123,18 @@ export function CreatorProductSelector({
           <div className="absolute top-0 right-1/4 w-48 h-24 bg-purple-500/8 rounded-full blur-3xl" />
         </div>
 
-        <div className="flex items-start gap-3 mb-2">
-          <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/15 border border-primary/25 shrink-0">
-            <Sparkles size={18} className="text-primary" />
+        <div className="flex items-start gap-4 mb-4">
+          <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/15 border border-primary/25 shrink-0 shadow-lg shadow-primary/5">
+            <Sparkles size={22} className="text-primary animate-pulse" />
           </div>
           <div>
-            <h2 className="font-display text-xl sm:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/60 tracking-tight leading-tight">
+            <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/70 tracking-tight leading-tight">
               {displayName
-                ? `${displayName}, o que queres criar hoje?`
-                : "O que queres criar hoje?"}
+                ? `Olá, ${displayName}! Bem-vindo ao teu portal de criação.`
+                : "Bem-vindo ao teu portal de criação."}
             </h2>
-            <p className="text-on-surface-variant text-sm mt-0.5 font-sans">
-              Transforma o teu conhecimento em rendimento. Escolhe o tipo de produto para começar.
+            <p className="text-on-surface-variant text-sm mt-1 leading-relaxed font-sans max-w-xl">
+              Aqui tens o poder de transformar as tuas ideias e conhecimento em produtos digitais de sucesso. Escolhe um dos formatos abaixo para começar a criar o teu primeiro produto de forma simples e guiada.
             </p>
           </div>
         </div>

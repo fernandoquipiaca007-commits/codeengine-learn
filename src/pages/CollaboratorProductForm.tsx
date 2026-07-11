@@ -627,6 +627,10 @@ export function CollaboratorProductForm({
     fetchCollaboratorProducts();
     if (productId) {
       fetchProductDetails(productId);
+      if (localStorage.getItem("open_creator_product_review") === "true") {
+        setReviewMode(true);
+        localStorage.removeItem("open_creator_product_review");
+      }
     }
   }, [productId]);
 
@@ -3688,11 +3692,19 @@ export function CollaboratorProductForm({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => setReviewMode(false)}
+              onClick={() => {
+                if (localStorage.getItem("wizard_active_step")) {
+                  onClose();
+                } else {
+                  setReviewMode(false);
+                }
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              {langKey === 'pt' ? 'Voltar ao Formulário' : langKey === 'fr' ? 'Retour au Formulaire' : 'Back to Form'}
+              {localStorage.getItem("wizard_active_step")
+                ? (langKey === 'pt' ? 'Voltar ao Assistente' : langKey === 'fr' ? "Retour à l'Assistant" : 'Back to Assistant')
+                : (langKey === 'pt' ? 'Voltar ao Formulário' : langKey === 'fr' ? 'Retour au Formulaire' : 'Back to Form')}
             </button>
             <div className="border-l border-white/10 h-6 hidden sm:block" />
             <div>

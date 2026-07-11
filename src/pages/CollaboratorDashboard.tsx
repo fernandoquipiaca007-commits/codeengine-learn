@@ -36,6 +36,7 @@ import {
   Megaphone,
   Smartphone,
   Sparkles,
+  Home,
 } from "lucide-react";
 
 import { useUserCountry } from "../contexts/UserCountryContext";
@@ -170,8 +171,8 @@ export function CollaboratorDashboard({
   // Currency filter for dashboard view
 
   const [walletView, setWalletView] = useState<
-    "criar" | "usd" | "aoa" | "affiliates" | "founder" | "analytics" | "ads" | "profile" | "community"
-  >("criar");
+    "inicio" | "usd" | "aoa" | "affiliates" | "founder" | "analytics" | "ads" | "profile" | "community"
+  >("inicio");
 
   const [hasProducts, setHasProducts] = useState<boolean | null>(null);
   const [wizardType, setWizardType] = useState<"ebook" | "course" | "template" | "music" | "app" | "service" | null>(null);
@@ -181,7 +182,7 @@ export function CollaboratorDashboard({
   useEffect(() => {
     if (!hasDefaultedView && !countryLoading && hasProducts !== null) {
       if (hasProducts === false) {
-        setWalletView("criar");
+        setWalletView("inicio");
       } else {
         setWalletView(isAngola ? "aoa" : "usd");
       }
@@ -1329,14 +1330,14 @@ export function CollaboratorDashboard({
 
         <div className="hidden sm:flex mb-2 items-center gap-1 p-0.5 bg-surface-high rounded-full w-fit border border-white/10 flex-wrap sm:flex-nowrap">
           <button
-            onClick={() => setWalletView("criar")}
+            onClick={() => setWalletView("inicio")}
             className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-              walletView === "criar"
+              walletView === "inicio"
                 ? "bg-violet-600 text-white shadow-[0_0_10px_rgba(139,92,246,0.35)]"
                 : "text-on-surface-variant hover:text-white"
             }`}
           >
-            <Sparkles size={12} className="text-violet-400" /> Criar
+            <Home size={12} className="text-violet-400" /> Início
           </button>
 
           {isAngola ? (
@@ -1469,10 +1470,10 @@ export function CollaboratorDashboard({
             className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-surface-high border border-white/10 text-xs font-bold text-white shadow-md active:scale-[0.98] transition-all"
           >
             <span className="flex items-center gap-2">
-              {walletView === "criar" && (
+              {walletView === "inicio" && (
                 <>
-                  <Sparkles size={12} className="text-violet-400" />
-                  <span>Criar</span>
+                  <Home size={12} className="text-violet-400" />
+                  <span>Início</span>
                 </>
               )}
               {walletView === "aoa" && (
@@ -1537,14 +1538,14 @@ export function CollaboratorDashboard({
                 <button
                   type="button"
                   onClick={() => {
-                    setWalletView("criar");
+                    setWalletView("inicio");
                     setShowWalletTabsDropdown(false);
                   }}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 hover:text-white transition-colors ${
-                    walletView === "criar" ? "text-violet-400 bg-violet-500/10" : "text-on-surface-variant"
+                    walletView === "inicio" ? "text-violet-400 bg-violet-500/10" : "text-on-surface-variant"
                   }`}
                 >
-                  <Sparkles size={12} className="text-violet-400" /> Criar
+                  <Home size={12} className="text-violet-400" /> Início
                 </button>
 
                 {isAngola && (
@@ -2576,8 +2577,8 @@ export function CollaboratorDashboard({
           <AdsDashboard collaboratorId={profile.id} />
         )}
 
-        {/* ====== CRIAR PRODUCT SELECTOR VIEW ====== */}
-        {walletView === "criar" && (
+        {/* ====== INICIO PRODUCT SELECTOR VIEW ====== */}
+        {walletView === "inicio" && (
           <div className="mb-6">
             <CreatorProductSelector
               displayName={profile?.displayName}
@@ -2595,7 +2596,7 @@ export function CollaboratorDashboard({
 
         {/* Main Grid: Extrato e Solicitações */}
 
-        {walletView !== "criar" &&
+        {walletView !== "inicio" &&
           walletView !== "affiliates" &&
           walletView !== "founder" &&
           walletView !== "analytics" &&
