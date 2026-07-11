@@ -40,14 +40,22 @@ export function ScrollTiedBackground({
     }
   }, []);
 
-  const isColorTheme = videoPath.startsWith('color:') || !shouldLoadVideo;
+  // Three modes:
+  // 1. isNoVideo: videoPath is empty — pure dark bg, no video element at all
+  // 2. isColorTheme: videoPath starts with 'color:' — CSS gradient background
+  // 3. isVideoTheme: normal 3D video file
+  const isNoVideo = !videoPath || videoPath === '';
+  const isColorTheme = !isNoVideo && (videoPath.startsWith('color:') || !shouldLoadVideo);
+  const isVideoTheme = !isNoVideo && !isColorTheme;
 
   // ── Video loading ─────────────────────────────────────────────────────────
   useEffect(() => {
-    if (isColorTheme) {
+    // Color and empty themes need no video loading
+    if (!isVideoTheme) {
       setIsLoaded(true);
       return;
     }
+
     const video = videoRef.current;
     if (!video) return;
 
@@ -56,47 +64,51 @@ export function ScrollTiedBackground({
     pendingSeek.current = false;
     targetProgressRef.current = 0;
     displayProgressRef.current = 0;
+
+    // Set new src and reload
+    video.src = `/${videoPath}`;
     video.load();
+
+    let readied = false;
 
     const forceRenderFirstFrame = () => {
       video.play().then(() => {
         video.pause();
-      }).catch((err) => {
-        console.warn('[ScrollTiedBackground] Play/pause kick-off failed:', err);
+      }).catch(() => {
+        // Autoplay policy blocked — that's fine, the video is still decoded
       });
     };
 
     const onReady = () => {
+      if (readied) return;
+      readied = true;
       setIsLoaded(true);
       forceRenderFirstFrame();
     };
 
+    // If already cached / preloaded
     if (video.readyState >= 1) {
-      setIsLoaded(true);
-      forceRenderFirstFrame();
+      onReady();
     }
 
     video.addEventListener('loadedmetadata', onReady);
-    video.addEventListener('loadeddata', onReady);
     video.addEventListener('canplay', onReady);
 
-    // Fallback timer: force isLoaded after 1 second to guarantee visibility
+    // Fallback: force visible after 800ms regardless
     const timer = setTimeout(() => {
-      setIsLoaded(true);
-      forceRenderFirstFrame();
-    }, 1000);
+      if (!readied) onReady();
+    }, 800);
 
     return () => {
       video.removeEventListener('loadedmetadata', onReady);
-      video.removeEventListener('loadeddata', onReady);
       video.removeEventListener('canplay', onReady);
       clearTimeout(timer);
     };
-  }, [videoPath, isColorTheme]);
+  }, [videoPath, isVideoTheme]);
 
   // ── Scroll scrubbing engine ───────────────────────────────────────────────
   useEffect(() => {
-    if (isColorTheme || !isLoaded) return;
+    if (!isVideoTheme || !isLoaded) return;
     const video = videoRef.current;
     if (!video) return;
 
@@ -110,7 +122,6 @@ export function ScrollTiedBackground({
 
     const getTargetTime = () => {
       if (!video.duration || isNaN(video.duration)) return 0;
-      // absolute scroll position mapped to video duration
       return Math.max(0, Math.min(video.duration, window.scrollY / pixelsPerSecond));
     };
 
@@ -129,18 +140,17 @@ export function ScrollTiedBackground({
 
     const rafLoop = () => {
       if (video.readyState >= 1 && video.duration && !isNaN(video.duration)) {
-        // Snappy LERP (Linear Interpolation) for buttery-smooth transition
+        // Snappy LERP for buttery-smooth scrubbing
         const diff = targetProgress - currentProgress;
         if (Math.abs(diff) > 0.0002) {
-          currentProgress += diff * 0.15; // 15% catch-up speed per frame
+          currentProgress += diff * 0.15;
         } else {
-          currentProgress = targetProgress; // Snap to target when close
+          currentProgress = targetProgress;
         }
 
         const targetTime = currentProgress * video.duration;
 
-        // Prevent decoder overloading: only seek if the target time differs by
-        // more than 15ms (1 frame) and if the video is not already seeking.
+        // Throttle seeks: only seek if diff > 15ms and not already seeking
         if (!video.seeking && Math.abs(video.currentTime - targetTime) > 0.015) {
           video.currentTime = targetTime;
         }
@@ -158,7 +168,7 @@ export function ScrollTiedBackground({
         rafRef.current = null;
       }
     };
-  }, [isLoaded, videoPath, isColorTheme]);
+  }, [isLoaded, videoPath, isVideoTheme]);
 
   // Build video CSS filter
   const videoFilter = `brightness(${brightness}) contrast(${contrast})`;
@@ -166,29 +176,33 @@ export function ScrollTiedBackground({
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none select-none overflow-hidden z-0 bg-black">
       {isColorTheme ? (
+        /* Gradient/color background */
         <div
           style={{ background: backgroundStyle }}
           className="w-full h-full"
         />
-      ) : (
+      ) : isVideoTheme ? (
+        /* 3D video background */
         <video
           ref={videoRef}
-          src={`/${videoPath}`}
           preload="auto"
           muted
           playsInline
-          webkit-playsinline="true"
-          onLoadedMetadata={() => setIsLoaded(true)}
           style={{
             opacity: isLoaded ? videoOpacity : 0,
             filter: videoFilter,
             willChange: 'opacity',
+            transition: 'opacity 0.6s ease',
           }}
-          className="w-full h-full object-cover transition-opacity duration-700"
+          className="w-full h-full object-cover"
         />
+      ) : (
+        /* Pure dark (empty videoPath) — just the black bg from the parent div */
+        null
       )}
-      {/* Dark gradient mask to ensure text readability */}
-      {!isColorTheme && (
+
+      {/* Dark gradient overlay for text readability (not on color themes which manage their own contrast) */}
+      {isVideoTheme && (
         <div
           style={{ opacity: overlayOpacity }}
           className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black/95 z-1"
