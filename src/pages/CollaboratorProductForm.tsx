@@ -1509,11 +1509,16 @@ export function CollaboratorProductForm({
                           id="base_price"
                           step={baseCurrency === 'USD' ? '0.01' : '1'}
                           min="0"
+                          max={baseCurrency === 'USD' ? MAX_PRICE_USD : MAX_PRICE_AOA}
                           required={!isFree}
                           disabled={isFree}
                           value={isFree ? '0.00' : basePrice}
                           onChange={(e) => {
-                            const val = e.target.value;
+                            let val = e.target.value;
+                            const maxVal = baseCurrency === 'USD' ? MAX_PRICE_USD : MAX_PRICE_AOA;
+                            if (val && Number(val) > maxVal) {
+                              val = String(maxVal);
+                            }
                             setBasePrice(val);
                             syncPrices(val, baseCurrency);
                           }}
@@ -2063,8 +2068,13 @@ export function CollaboratorProductForm({
                   <input
                     type="number"
                     step="0.01"
+                    max={MAX_PRICE_USD}
                     value={campaign.special_price}
-                    onChange={e => setCampaign({ ...campaign, special_price: e.target.value })}
+                    onChange={e => {
+                      let val = e.target.value;
+                      if (val && Number(val) > MAX_PRICE_USD) val = String(MAX_PRICE_USD);
+                      setCampaign({ ...campaign, special_price: val });
+                    }}
                     placeholder="0.00"
                     className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
                   />
@@ -2075,8 +2085,13 @@ export function CollaboratorProductForm({
                   <input
                     type="number"
                     step="1"
+                    max={MAX_PRICE_AOA}
                     value={campaign.special_price_aoa}
-                    onChange={e => setCampaign({ ...campaign, special_price_aoa: e.target.value })}
+                    onChange={e => {
+                      let val = e.target.value;
+                      if (val && Number(val) > MAX_PRICE_AOA) val = String(MAX_PRICE_AOA);
+                      setCampaign({ ...campaign, special_price_aoa: val });
+                    }}
                     placeholder="0"
                     className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
                   />
@@ -2186,7 +2201,15 @@ export function CollaboratorProductForm({
                   <input
                     type="number"
                     value={newCoupon.discount_value}
-                    onChange={e => setNewCoupon({ ...newCoupon, discount_value: e.target.value })}
+                    onChange={e => {
+                      let val = e.target.value;
+                      if (newCoupon.discount_type === 'percent') {
+                        if (Number(val) > 100) val = '100';
+                      } else {
+                        if (Number(val) > MAX_PRICE_USD) val = String(MAX_PRICE_USD);
+                      }
+                      setNewCoupon({ ...newCoupon, discount_value: val });
+                    }}
                     placeholder="Ex: 50 ou 10"
                     className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
                   />

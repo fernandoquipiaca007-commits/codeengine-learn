@@ -266,6 +266,7 @@ export default function App() {
   const [collabStatus, setCollabStatus] = useState<string>('not_applied');
   const [loadingCollabStatus, setLoadingCollabStatus] = useState(true);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Override browser default window.alert with a premium custom modal alert
