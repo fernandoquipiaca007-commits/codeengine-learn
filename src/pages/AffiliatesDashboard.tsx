@@ -1009,7 +1009,10 @@ export function AffiliatesDashboard({ setScreen }: AffiliatesDashboardProps) {
                       type="text"
                       required
                       value={payoutInfo.iban}
-                      onChange={(e) => setPayoutInfo(prev => ({ ...prev, iban: e.target.value }))}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 24);
+                        setPayoutInfo(prev => ({ ...prev, iban: cleaned }));
+                      }}
                       placeholder="AO06.XXXX.XXXX.XXXX.XXXX.XXXX.X"
                       className="w-full bg-black/40 border border-white/10 rounded-lg px-3.5 py-2 text-xs text-white placeholder-on-surface-variant/40 outline-none focus:border-primary transition-all font-sans select-all"
                     />

@@ -265,7 +265,14 @@ export default function App() {
   const [loadingMember, setLoadingMember] = useState(true);
   const [collabStatus, setCollabStatus] = useState<string>('not_applied');
   const [loadingCollabStatus, setLoadingCollabStatus] = useState(true);
-  const lastFetchedUserIdRef = useRef<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Override browser default window.alert with a premium custom modal alert
+    window.alert = (message: string) => {
+      setAlertMessage(message);
+    };
+  }, []);
 
   const handleOnboardingComplete = () => {
     setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : { onboarding_completed: true });
@@ -904,6 +911,45 @@ export default function App() {
       )}
       <PwaInstallBanner />
       <PushPermissionPrompt />
+
+      {/* Premium Custom Alert Modal */}
+      <AnimatePresence>
+        {alertMessage && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="relative max-w-sm w-full bg-[#0d0d11]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl text-center space-y-4 overflow-hidden"
+            >
+              {/* Decorative radial gradient glow */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-primary/20 rounded-full blur-[40px] pointer-events-none z-0" />
+              
+              <div className="relative z-10 mx-auto w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              
+              <div className="relative z-10 space-y-1.5">
+                <h4 className="text-xs font-bold text-primary font-display uppercase tracking-widest">Notificação</h4>
+                <p className="text-sm text-white/90 font-sans font-medium leading-relaxed">{alertMessage}</p>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => setAlertMessage(null)}
+                className="relative z-10 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:shadow-[0_0_30px_rgba(192,193,255,0.4)] text-on-primary font-display text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-[0.98]"
+              >
+                Entendido
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
