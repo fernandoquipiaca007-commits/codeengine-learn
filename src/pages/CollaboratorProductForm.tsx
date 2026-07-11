@@ -396,8 +396,8 @@ export function CollaboratorProductForm({
   const [subcategoryId, setSubcategoryId] = useState('');
   const [videoSourceType, setVideoSourceType] = useState<'youtube' | 'vimeo' | 'wistia' | 'loom' | 'external' | 'upload'>('youtube');
 
-  // Upgrade Plan Stripe Automation State
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -1918,8 +1918,7 @@ export function CollaboratorProductForm({
                     onChange={e => {
                       const val = e.target.value as any;
                       if (val === 'upload' && collaboratorPlan !== 'course_creator') {
-                        alert("Esta funcionalidade de Upload Próprio requer o Plano Premium (Course Creator). Por favor, ative a sua assinatura premium no painel para fazer uploads diretos de vídeo.");
-                        setVideoSourceType('youtube');
+                        setShowUpgradeModal(true);
                       } else {
                         setVideoSourceType(val);
                       }
@@ -3018,6 +3017,55 @@ export function CollaboratorProductForm({
         </div>
       )}
     </div>
+
+    {showUpgradeModal && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+        <div className="w-full max-w-md glass-panel rounded-2xl border border-white/10 p-6 space-y-4 shadow-2xl animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+              <Video className="text-primary w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-display text-base font-bold text-white">Upgrade para Plano Premium</h3>
+              <p className="text-[10px] text-primary uppercase font-bold tracking-wider">Hospedagem Exclusiva CodeEngine</p>
+            </div>
+          </div>
+          
+          <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
+            Esta funcionalidade de <strong>Upload Próprio</strong> requer o Plano Premium (Course Creator). 
+            Adquira a assinatura hoje para liberar o upload direto de vídeos de alta performance nos seus cursos.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowUpgradeModal(false);
+                setVideoSourceType('youtube');
+              }}
+              className="flex-1 py-2 px-4 rounded-xl border border-white/10 text-xs font-semibold text-white/60 hover:text-white hover:bg-white/5 transition active:scale-95"
+            >
+              Voltar para YouTube
+            </button>
+            <button
+              type="button"
+              disabled={isUpgrading}
+              onClick={handleUpgradePlan}
+              className="flex-1 py-2 px-4 rounded-xl bg-primary text-black hover:bg-primary-hover text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-50"
+            >
+              {isUpgrading ? (
+                <span className="w-3.5 h-3.5 border-2 border-black/40 border-t-black rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Zap size={12} fill="currentColor" />
+                  Ativar Premium
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 }
