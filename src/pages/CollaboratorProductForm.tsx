@@ -1197,7 +1197,7 @@ export function CollaboratorProductForm({
               <span>Publicar</span>
             </button>
             {showPublishOptions && (
-              <div className="absolute bottom-full mb-2 right-0 w-64 glass-panel rounded-xl border border-white/10 p-3 space-y-2 z-50">
+              <div className="absolute top-full mt-2 right-0 w-64 glass-panel rounded-xl border border-white/10 p-3 space-y-2 z-50">
                 <button onClick={handlePublishNow} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white hover:bg-white/10 transition">
                   <Zap size={14} className="text-green-400" />
                   Publicação Instantânea
@@ -1937,6 +1937,48 @@ export function CollaboratorProductForm({
                       <option value="loom">Loom (Apresentação Rápida)</option>
                       <option value="external">Link Direto / MP4 Externo</option>
                     </select>
+
+                    {/* Instruction Box */}
+                    <div className="bg-white/5 border border-white/5 rounded-xl p-3 text-[11px] leading-relaxed text-white/80 space-y-1">
+                      {videoSourceType === 'youtube' && (
+                        <>
+                          <p className="font-semibold text-primary">Como hospedar no YouTube gratuitamente:</p>
+                          <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant">
+                            <li>Faça upload do vídeo na sua conta do YouTube Studio.</li>
+                            <li>Defina a visibilidade como <strong className="text-white">"Não listado"</strong> (para que ninguém assista fora da CodeEngine).</li>
+                            <li>Copie o link gerado e cole no campo abaixo.</li>
+                          </ul>
+                        </>
+                      )}
+                      {videoSourceType === 'vimeo' && (
+                        <>
+                          <p className="font-semibold text-primary">Como hospedar no Vimeo:</p>
+                          <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant">
+                            <li>Faça upload do seu vídeo no painel do Vimeo.</li>
+                            <li>Defina as permissões de privacidade apropriadas.</li>
+                            <li>Copie o link do vídeo (ex: vimeo.com/...) e cole abaixo.</li>
+                          </ul>
+                        </>
+                      )}
+                      {videoSourceType === 'wistia' && (
+                        <>
+                          <p className="font-semibold text-primary">Hospedagem via Wistia:</p>
+                          <p className="text-on-surface-variant">Copie o link de compartilhamento ou URL do player e insira-o no campo de URL abaixo.</p>
+                        </>
+                      )}
+                      {videoSourceType === 'loom' && (
+                        <>
+                          <p className="font-semibold text-primary">Apresentação via Loom:</p>
+                          <p className="text-on-surface-variant">Copie o link público do vídeo gravado e insira-o no campo de URL abaixo.</p>
+                        </>
+                      )}
+                      {videoSourceType === 'external' && (
+                        <>
+                          <p className="font-semibold text-primary">MP4 / Link Externo:</p>
+                          <p className="text-on-surface-variant">Insira a URL direta do arquivo de vídeo (ex: terminando em .mp4 ou .webm) hospedada em servidores externos.</p>
+                        </>
+                      )}
+                    </div>
 
                     <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mt-1">URL do Vídeo</label>
                     <div className="flex gap-2">
