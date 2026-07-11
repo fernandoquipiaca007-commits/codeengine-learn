@@ -2947,8 +2947,8 @@ export function CollaboratorProductForm({
               title: title || undefined,
               description: description || undefined,
               cover_url: coverUrl || undefined,
-              price: price ? Number(price) : undefined,
-              aoa_price: aoaPrice ? Number(aoaPrice) : undefined
+              price: priceUSD ? Number(priceUSD) : undefined,
+              aoa_price: priceAOA ? Number(priceAOA) : undefined
             }}
           />
         </div>
