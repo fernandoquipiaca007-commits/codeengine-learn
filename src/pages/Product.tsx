@@ -146,6 +146,15 @@ function getEmbedUrl(url: string | null): { url: string; isEmbed: boolean } {
   return { url: trimmed, isEmbed: false };
 }
 
+function hexToRgb(hex: string): string {
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  const fullHex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+  return result
+    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+    : '16, 16, 22';
+}
+
 const ALERT_TRANSLATIONS = {
   pt: {
     availableIn: "Este documento está disponível em:",
@@ -946,7 +955,13 @@ export function Product({
       <div 
         style={hasTheme ? {
           '--glass-opacity': themeConfig.sectionOpacity ?? 0.1,
-          '--glass-blur': `${themeConfig.blurAmount ?? 8}px`
+          '--glass-blur': `${themeConfig.blurAmount ?? 8}px`,
+          ...(themeConfig.textColor ? { '--theme-text-color': themeConfig.textColor } : {}),
+          ...(themeConfig.accentColor ? { '--theme-accent-color': themeConfig.accentColor } : {}),
+          ...(themeConfig.panelBgColor ? {
+            '--glass-bg-color': `rgba(${hexToRgb(themeConfig.panelBgColor)}, var(--glass-opacity, 0.1))`,
+            '--glass-card-bg-color': `rgba(${hexToRgb(themeConfig.panelBgColor)}, var(--glass-opacity, 0.1))`
+          } : {})
         } as React.CSSProperties : {}}
         className={`pt-24 pb-20 md:pb-16 px-4 sm:px-6 md:px-16 max-w-[1080px] mx-auto min-h-screen overflow-x-hidden page-wrapper relative z-10 ${
           isLight ? 'light-theme-page' : ''

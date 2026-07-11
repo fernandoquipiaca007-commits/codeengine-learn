@@ -3392,6 +3392,46 @@ export function CollaboratorProductForm({
                     </div>
                   </div>
 
+                  {/* Group 3 - Cores Personalizadas */}
+                  <div className="border-t border-white/5 pt-2">
+                    <span className="text-[10px] font-bold text-primary/70 uppercase tracking-wider">Cores Personalizadas</span>
+                    <div className="grid gap-3 grid-cols-3 mt-1.5 bg-white/5 p-2.5 rounded-lg border border-white/5">
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-white">Cor das Letras</label>
+                        <div className="flex items-center gap-2">
+                          <input type="color"
+                            value={themeVideoConfig.textColor || '#ffffff'}
+                            onChange={e => setThemeVideoConfig(prev => ({ ...prev, textColor: e.target.value }))}
+                            className="w-8 h-6 rounded border border-white/10 cursor-pointer bg-transparent"
+                          />
+                          <span className="text-[10px] text-white/60 font-mono uppercase">{themeVideoConfig.textColor || '#ffffff'}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-white">Fundo dos Painéis</label>
+                        <div className="flex items-center gap-2">
+                          <input type="color"
+                            value={themeVideoConfig.panelBgColor || '#101016'}
+                            onChange={e => setThemeVideoConfig(prev => ({ ...prev, panelBgColor: e.target.value }))}
+                            className="w-8 h-6 rounded border border-white/10 cursor-pointer bg-transparent"
+                          />
+                          <span className="text-[10px] text-white/60 font-mono uppercase">{themeVideoConfig.panelBgColor || '#101016'}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-white">Cor de Destaque</label>
+                        <div className="flex items-center gap-2">
+                          <input type="color"
+                            value={themeVideoConfig.accentColor || '#c0c1ff'}
+                            onChange={e => setThemeVideoConfig(prev => ({ ...prev, accentColor: e.target.value }))}
+                            className="w-8 h-6 rounded border border-white/10 cursor-pointer bg-transparent"
+                          />
+                          <span className="text-[10px] text-white/60 font-mono uppercase">{themeVideoConfig.accentColor || '#c0c1ff'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               )}
             </div>
@@ -3554,6 +3594,49 @@ export function CollaboratorProductForm({
                         onChange={e => setThemeVideoConfig(prev => ({ ...prev, blurAmount: Number(e.target.value) }))}
                         className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Group: Cores Customizadas ── */}
+                <div className="border-t border-white/10 pt-2 space-y-0.5">
+                  <span className="text-[9px] font-bold text-primary/70 uppercase tracking-widest">Cores Personalizadas</span>
+                  <div className="grid grid-cols-1 gap-2 pt-1">
+                    {/* Cor do Texto */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-semibold text-white">Cor das Letras</label>
+                      <div className="flex items-center gap-1.5">
+                        <input type="color"
+                          value={themeVideoConfig.textColor || '#ffffff'}
+                          onChange={e => setThemeVideoConfig(prev => ({ ...prev, textColor: e.target.value }))}
+                          className="w-7 h-5 rounded border border-white/10 cursor-pointer bg-transparent"
+                        />
+                        <span className="text-[9px] text-white/60 font-mono uppercase">{themeVideoConfig.textColor || '#ffffff'}</span>
+                      </div>
+                    </div>
+                    {/* Cor do Painel */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-semibold text-white">Fundo dos Painéis</label>
+                      <div className="flex items-center gap-1.5">
+                        <input type="color"
+                          value={themeVideoConfig.panelBgColor || '#101016'}
+                          onChange={e => setThemeVideoConfig(prev => ({ ...prev, panelBgColor: e.target.value }))}
+                          className="w-7 h-5 rounded border border-white/10 cursor-pointer bg-transparent"
+                        />
+                        <span className="text-[9px] text-white/60 font-mono uppercase">{themeVideoConfig.panelBgColor || '#101016'}</span>
+                      </div>
+                    </div>
+                    {/* Cor de Destaque */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-semibold text-white">Cor de Destaque</label>
+                      <div className="flex items-center gap-1.5">
+                        <input type="color"
+                          value={themeVideoConfig.accentColor || '#c0c1ff'}
+                          onChange={e => setThemeVideoConfig(prev => ({ ...prev, accentColor: e.target.value }))}
+                          className="w-7 h-5 rounded border border-white/10 cursor-pointer bg-transparent"
+                        />
+                        <span className="text-[9px] text-white/60 font-mono uppercase">{themeVideoConfig.accentColor || '#c0c1ff'}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
