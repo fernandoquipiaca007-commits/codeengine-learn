@@ -997,6 +997,7 @@ export function CollaboratorProductForm({
         title,
         description,
         categoryId,
+        product_type: formType === 'course' ? 'course' : (formType === 'ebook' ? 'ebook' : 'file'),
         subcategoryId: subcategoryId || null,
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
@@ -1103,7 +1104,9 @@ export function CollaboratorProductForm({
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
       const licensingInfo = { type: licenseType, lifetime: isLifetime, duration_days: isLifetime ? null : Number(durationDays) };
       const payload = {
-        title, description, categoryId, subcategoryId: subcategoryId || null,
+        title, description, categoryId,
+        product_type: formType === 'course' ? 'course' : (formType === 'ebook' ? 'ebook' : 'file'),
+        subcategoryId: subcategoryId || null,
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
         basePrice: isFree ? 0 : Number(basePrice), baseCurrency,
@@ -1171,7 +1174,9 @@ export function CollaboratorProductForm({
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
       const licensingInfo = { type: licenseType, lifetime: isLifetime, duration_days: isLifetime ? null : Number(durationDays) };
       const payload = {
-        title, description, categoryId, subcategoryId: subcategoryId || null,
+        title, description, categoryId,
+        product_type: formType === 'course' ? 'course' : (formType === 'ebook' ? 'ebook' : 'file'),
+        subcategoryId: subcategoryId || null,
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : (isAngola ? Number(priceAOA) : 0),
         basePrice: isFree ? 0 : Number(basePrice), baseCurrency,

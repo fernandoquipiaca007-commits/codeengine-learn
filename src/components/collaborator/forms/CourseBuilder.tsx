@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Plus, Trash2, ChevronDown, ChevronUp, Video,
   MoveUp, MoveDown, PlayCircle, Clock, Save, AlertTriangle,
@@ -59,7 +59,6 @@ function makeModule(): Module {
   return { id: makeId(), title: '' };
 }
 
-// Video source label helper
 const VIDEO_SOURCES: { value: LessonVideoSource; label: string }[] = [
   { value: 'youtube', label: 'YouTube' },
   { value: 'vimeo', label: 'Vimeo' },
@@ -80,6 +79,8 @@ interface LessonCardProps {
   onMoveUp: () => void;
   onMoveDown: () => void;
   submitAttempted: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 function LessonCard({
@@ -93,9 +94,9 @@ function LessonCard({
   onMoveUp,
   onMoveDown,
   submitAttempted,
+  isOpen,
+  onToggle,
 }: LessonCardProps) {
-  const [open, setOpen] = useState(index === 0);
-
   const update = (partial: Partial<Lesson>) => onUpdate({ ...lesson, ...partial });
 
   return (
@@ -103,12 +104,11 @@ function LessonCard({
       {/* Lesson header row */}
       <div
         className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none hover:bg-white/5 transition-colors"
-        onClick={() => setOpen(v => !v)}
+        onClick={onToggle}
         role="button"
         tabIndex={0}
-        onKeyDown={e => e.key === 'Enter' && setOpen(v => !v)}
+        onKeyDown={e => e.key === 'Enter' && onToggle()}
       >
-        {/* Lesson number badge */}
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary">
           {index + 1}
         </span>
@@ -117,7 +117,6 @@ function LessonCard({
           {lesson.title || 'Nova Aula'}
         </span>
 
-        {/* Status indicators */}
         {lesson.videoUrl && (
           <PlayCircle size={14} className="text-green-400 shrink-0" />
         )}
@@ -125,7 +124,6 @@ function LessonCard({
           <span className="text-[10px] text-on-surface-variant font-mono shrink-0">{lesson.duration}</span>
         )}
 
-        {/* Move / Remove controls */}
         <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
           <button
             type="button"
@@ -155,13 +153,11 @@ function LessonCard({
           </button>
         </div>
 
-        {open ? <ChevronUp size={14} className="text-on-surface-variant shrink-0" /> : <ChevronDown size={14} className="text-on-surface-variant shrink-0" />}
+        {isOpen ? <ChevronUp size={14} className="text-on-surface-variant shrink-0" /> : <ChevronDown size={14} className="text-on-surface-variant shrink-0" />}
       </div>
 
-      {/* Expanded body */}
-      {open && (
+      {isOpen && (
         <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
-          {/* Title */}
           <div>
             <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">
               Titulo da Aula *
@@ -180,7 +176,6 @@ function LessonCard({
             )}
           </div>
 
-          {/* Video source + URL */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
               <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">
@@ -230,7 +225,6 @@ function LessonCard({
             </div>
           </div>
 
-          {/* Duration + Availability */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">
@@ -288,7 +282,6 @@ function LessonCard({
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">
               Descricao <span className="normal-case text-white/30">(opcional)</span>
@@ -323,18 +316,20 @@ interface ModuleGroupProps {
   onMoveLessonDown: (id: string) => void;
   onAddLesson: () => void;
   submitAttempted: boolean;
+  openLessonId: string | null;
+  onToggleLesson: (id: string) => void;
 }
 
 function ModuleGroup({
   module, lessons, allLessons, collaboratorPlan, onUpgradePremium,
   onUpdateModule, onRemoveModule, onUpdateLesson, onRemoveLesson,
   onMoveLessonUp, onMoveLessonDown, onAddLesson, submitAttempted,
+  openLessonId, onToggleLesson
 }: ModuleGroupProps) {
   const [open, setOpen] = useState(true);
 
   return (
     <div className="rounded-xl border border-white/15 bg-white/3 overflow-hidden">
-      {/* Module header */}
       <div className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border-b border-white/10">
         <button
           type="button"
@@ -375,6 +370,8 @@ function ModuleGroup({
               onMoveUp={() => onMoveLessonUp(lesson.id)}
               onMoveDown={() => onMoveLessonDown(lesson.id)}
               submitAttempted={submitAttempted}
+              isOpen={openLessonId === lesson.id}
+              onToggle={() => onToggleLesson(lesson.id)}
             />
           ))}
           <button
@@ -401,30 +398,35 @@ export function CourseBuilder({
   onUpgradePremium,
   submitAttempted,
 }: CourseBuilderProps) {
-  // ── Lessons (unassigned = no moduleId) ──
+  const [openLessonId, setOpenLessonId] = useState<string | null>(lessons[0]?.id || null);
+
+  const handleToggleLesson = (id: string) => {
+    setOpenLessonId(prev => prev === id ? null : id);
+  };
+
   const unassigned = lessons.filter(l => !l.moduleId);
 
-  // Add unassigned lesson
   const addLesson = () => {
-    onLessonsChange([...lessons, makeLesson(null)]);
+    const newL = makeLesson(null);
+    onLessonsChange([...lessons, newL]);
+    setOpenLessonId(newL.id);
   };
 
-  // Add lesson to module
   const addLessonToModule = (moduleId: string) => {
-    onLessonsChange([...lessons, makeLesson(moduleId)]);
+    const newL = makeLesson(moduleId);
+    onLessonsChange([...lessons, newL]);
+    setOpenLessonId(newL.id);
   };
 
-  // Update lesson
   const updateLesson = (updated: Lesson) => {
     onLessonsChange(lessons.map(l => l.id === updated.id ? updated : l));
   };
 
-  // Remove lesson
   const removeLesson = (id: string) => {
     onLessonsChange(lessons.filter(l => l.id !== id));
+    if (openLessonId === id) setOpenLessonId(null);
   };
 
-  // Move lesson within its group (unassigned or in module)
   const moveLessonInGroup = (id: string, direction: 'up' | 'down', groupLessons: Lesson[]) => {
     const idx = groupLessons.findIndex(l => l.id === id);
     if (direction === 'up' && idx === 0) return;
@@ -434,23 +436,19 @@ export function CourseBuilder({
     const newGroup = [...groupLessons];
     [newGroup[idx], newGroup[swapIdx]] = [newGroup[swapIdx], newGroup[idx]];
 
-    // Rebuild full list: replace only the group's items in their original positions
     const otherLessons = lessons.filter(l => !groupLessons.some(g => g.id === l.id));
     const reordered = [...newGroup, ...otherLessons];
     onLessonsChange(reordered);
   };
 
-  // Add module
   const addModule = () => {
     onModulesChange([...modules, makeModule()]);
   };
 
-  // Update module
   const updateModule = (updated: Module) => {
     onModulesChange(modules.map(m => m.id === updated.id ? updated : m));
   };
 
-  // Remove module (unassign its lessons)
   const removeModule = (moduleId: string) => {
     onModulesChange(modules.filter(m => m.id !== moduleId));
     onLessonsChange(lessons.map(l => l.moduleId === moduleId ? { ...l, moduleId: null } : l));
@@ -461,7 +459,6 @@ export function CourseBuilder({
 
   return (
     <div className="space-y-4">
-      {/* Stats bar */}
       <div className="flex items-center gap-4 rounded-xl bg-white/5 border border-white/10 px-4 py-2.5">
         <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
           <PlayCircle size={13} className="text-primary" />
@@ -479,7 +476,6 @@ export function CourseBuilder({
         )}
       </div>
 
-      {/* Publish validation warning */}
       {submitAttempted && totalLessons === 0 && (
         <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-xs text-amber-300">
           <AlertTriangle size={14} className="shrink-0" />
@@ -487,7 +483,6 @@ export function CourseBuilder({
         </div>
       )}
 
-      {/* Unassigned lessons */}
       <div className="space-y-2">
         {unassigned.map((lesson, idx) => (
           <LessonCard
@@ -502,11 +497,12 @@ export function CourseBuilder({
             onMoveUp={() => moveLessonInGroup(lesson.id, 'up', unassigned)}
             onMoveDown={() => moveLessonInGroup(lesson.id, 'down', unassigned)}
             submitAttempted={submitAttempted}
+            isOpen={openLessonId === lesson.id}
+            onToggle={() => handleToggleLesson(lesson.id)}
           />
         ))}
       </div>
 
-      {/* Modules */}
       {modules.map(module => {
         const modLessons = lessons.filter(l => l.moduleId === module.id);
         return (
@@ -525,11 +521,12 @@ export function CourseBuilder({
             onMoveLessonDown={id => moveLessonInGroup(id, 'down', modLessons)}
             onAddLesson={() => addLessonToModule(module.id)}
             submitAttempted={submitAttempted}
+            openLessonId={openLessonId}
+            onToggleLesson={handleToggleLesson}
           />
         );
       })}
 
-      {/* Add buttons */}
       <div className="flex flex-col sm:flex-row gap-2">
         <button
           type="button"
