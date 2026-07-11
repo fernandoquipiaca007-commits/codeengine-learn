@@ -54,7 +54,7 @@ const pageVariants = {
 const pageTransition: any = {
   type: 'tween',
   ease: [0.16, 1, 0.3, 1],
-  duration: 0.22,
+  duration: 0.10,
 };
 
 export const slugify = (text: string) => {
@@ -646,14 +646,20 @@ export default function App() {
           // Fetch collaborator status — needed to identify pre-existing creators
           // Uses module-level BACKEND_URL (fixes TS2304 scope bug)
           try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout limit
+
             const resStatus = await fetch(`${BACKEND_URL}/api/collaborators/status`, {
-              headers: { 'Authorization': `Bearer ${session?.access_token}` }
+              headers: { 'Authorization': `Bearer ${session?.access_token}` },
+              signal: controller.signal
             });
+            clearTimeout(timeoutId);
             const dataStatus = await resStatus.json();
             if (active) {
               setCollabStatus(dataStatus.success ? dataStatus.status : 'not_applied');
             }
-          } catch {
+          } catch (err) {
+            console.warn('[App] Collaborator status fetch timed out or failed:', err);
             // Non-fatal: fall back to role-only check
             if (active) setCollabStatus('not_applied');
           } finally {
@@ -689,7 +695,7 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, [user?.id, authLoading]);
+  }, [user?.id, authLoading, session]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
