@@ -154,6 +154,7 @@ export function Product({
   productId,
   overrideThemePath,
   overrideThemeConfig,
+  overrideProductData,
 }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
   const { isAngola } = useUserCountry();
