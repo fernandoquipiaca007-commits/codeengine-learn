@@ -841,14 +841,14 @@ export default function App() {
           return;
         }
       }
-      // NEW: redirect criador away from member area to avoid flash
+      // NEW: redirect criador away from member area dashboard to avoid flash, but allow accessing specific sub-sections
       const userRole = member?.profile_data?.role ?? null;
       const isCriador = userRole === 'criador' || collabStatus === 'approved';
-      if (isCriador && currentScreen === 'member') {
+      if (isCriador && currentScreen === 'member' && memberSection === 'inicio') {
         navigateToScreen('colaborador');
       }
     }
-  }, [user, member, authLoading, loadingMember, loadingCollabStatus, currentScreen, collabStatus, navigateToScreen]);
+  }, [user, member, authLoading, loadingMember, loadingCollabStatus, currentScreen, memberSection, collabStatus, navigateToScreen]);
 
   return (
     <div className="relative min-h-screen flex flex-col text-on-surface overflow-x-hidden max-w-[100vw]">
