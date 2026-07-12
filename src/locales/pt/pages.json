@@ -644,7 +644,7 @@
     },
     "profile": {
       "bioLabel": "Descrição / Bio Pública",
-      "bioHelp": "Apresente-se aos compradores. Mencione a sua experiência, área de especialidade e o que torna os seus produtos únicos. Máx. 500 caracteres.",
+      "bioHelp": "Apresente-se aos compradores. Mencione a sua experiência, área de especialidade e o que torna os seus produtos únicos.",
       "bioPlaceholder": "Ex: Sou especialista em marketing digital com 8 anos de experiência a ajudar empreendedores a crescer online...",
       "characters": "caracteres",
       "saveBio": "Guardar Bio",

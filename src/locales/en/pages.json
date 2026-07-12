@@ -640,7 +640,7 @@
     },
     "profile": {
       "bioLabel": "Public Description / Bio",
-      "bioHelp": "Introduce yourself to buyers. Mention your experience, area of expertise, and what makes your products unique. Max 500 characters.",
+      "bioHelp": "Introduce yourself to buyers. Mention your experience, area of expertise, and what makes your products unique.",
       "bioPlaceholder": "E.g., I'm a digital marketing specialist with 8 years of experience helping entrepreneurs grow online...",
       "characters": "characters",
       "saveBio": "Save Bio",

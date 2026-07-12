@@ -2392,7 +2392,7 @@ export function CollaboratorDashboard({
                     alt=""
                     className="w-3 h-3 object-contain shrink-0"
                   />
-                  Verificado CodeEngine
+                  Criador Verificado
                 </span>
 
                 {bioText && (
