@@ -92,6 +92,8 @@ export function RichTextEditor({
     document.execCommand('insertText', false, text);
   };
 
+  const showPlaceholder = !value || value === '<p><br></p>' || value === '<br>' || value === '';
+
   return (
     <div className={`border border-white/10 rounded-xl bg-surface-high overflow-hidden flex flex-col ${className}`}>
       {/* Toolbar */}
@@ -182,18 +184,24 @@ export function RichTextEditor({
         </button>
       </div>
 
-      {/* Editor Body */}
-      <div
-        ref={editorRef}
-        contentEditable
-        onInput={emitChange}
-        onBlur={emitChange}
-        onKeyUp={updateActiveFormats}
-        onMouseUp={updateActiveFormats}
-        onPaste={handlePaste}
-        className="w-full min-h-[120px] px-4 py-3 text-sm text-white focus:outline-none overflow-y-auto font-sans leading-relaxed prose prose-invert max-w-none prose-sm outline-none"
-        placeholder={placeholder}
-      />
+      {/* Editor Body Wrapper */}
+      <div className="relative flex-1 min-h-[120px]">
+        {showPlaceholder && (
+          <span className="absolute left-4 top-3 text-white/30 pointer-events-none select-none text-sm font-sans">
+            {placeholder}
+          </span>
+        )}
+        <div
+          ref={editorRef}
+          contentEditable
+          onInput={emitChange}
+          onBlur={emitChange}
+          onKeyUp={updateActiveFormats}
+          onMouseUp={updateActiveFormats}
+          onPaste={handlePaste}
+          className="w-full min-h-[120px] px-4 py-3 text-sm text-white focus:outline-none overflow-y-auto font-sans leading-relaxed prose prose-invert max-w-none prose-sm outline-none"
+        />
+      </div>
     </div>
   );
 }

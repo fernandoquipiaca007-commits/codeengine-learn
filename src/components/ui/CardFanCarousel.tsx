@@ -13,6 +13,7 @@ export interface ThemePreset {
     blurAmount: number;
     brightness?: number;
     contrast?: number;
+    hueRotate?: number;
     backgroundStyle?: string;
     textColor?: string;
     accentColor?: string;
@@ -182,6 +183,7 @@ interface CardFanCarouselProps {
     blurAmount: number;
     brightness?: number;
     contrast?: number;
+    hueRotate?: number;
     backgroundStyle?: string;
     textColor?: string;
     accentColor?: string;

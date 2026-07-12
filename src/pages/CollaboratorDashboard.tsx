@@ -3977,7 +3977,7 @@ export function CollaboratorDashboard({
             setScreen={setScreen}
             displayName={profile?.displayName}
             isAngola={isAngola}
-            collaboratorPlan={profile?.plan || 'ebook_creator'}
+            collaboratorPlan={(profile?.plan as "course_creator" | "ebook_creator") || 'ebook_creator'}
           />
         )}
       </div>

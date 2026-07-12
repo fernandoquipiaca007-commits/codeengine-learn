@@ -602,7 +602,7 @@ export function CreatorProductWizard({
           </div>
 
           <h3 className="font-display font-extrabold text-white text-lg">
-            Assistente Simplificado para {type === "course" ? "Curso" : type === "template" ? "Template" : type === "music" ? "Música" : type === "app" ? "Aplicativo" : "Serviço"}
+            Assistente Simplificado para {type === "template" ? "Template" : type === "music" ? "Música" : type === "app" ? "Aplicativo" : type === "service" ? "Serviço" : type}
           </h3>
           <p className="text-on-surface-variant text-xs mt-2 leading-relaxed font-sans">
             O assistente passo a passo rápido para este tipo de produto estará disponível em breve. Mas não te preocupes! Podes criar este produto agora mesmo usando o nosso editor avançado.
