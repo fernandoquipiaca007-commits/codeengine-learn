@@ -1037,55 +1037,72 @@ export function Product({
 
       {/* Hero Section — on mobile: cover thumbnail inline with title; on md+: 3-col [left | content | cover] */}
       <section ref={heroRef} className="grid gap-6 md:grid-cols-[350px_1fr_auto] md:gap-8 items-start mb-10 md:mb-16 relative">
-
         {/* ── LEFT: Creator / CodeEngine Panel ── */}
         <div className="hidden md:flex flex-col gap-3">
-          {(product as any).collaborator_id && collaboratorInfo ? (
-            /* Collaborator Card */
-            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-              {/* Avatar circular + verified */}
-              <div className="flex flex-col items-center pt-8 pb-5 px-5 gap-4 relative">
-                <div className="relative">
-                  <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
-                    {collaboratorInfo.avatar_url ? (
-                      <img src={collaboratorInfo.avatar_url} alt={collaboratorInfo.display_name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary font-bold text-3xl font-display">
-                        {collaboratorInfo.display_name?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+          {(product as any).collaborator_id && (product as any).collaborator_id !== 'system' ? (
+            collaboratorInfo ? (
+              /* Collaborator Card */
+              <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+                {/* Avatar circular + verified */}
+                <div className="flex flex-col items-center pt-8 pb-5 px-5 gap-4 relative">
+                  <div className="relative">
+                    <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
+                      {collaboratorInfo.avatar_url ? (
+                        <img src={collaboratorInfo.avatar_url} alt={collaboratorInfo.display_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary font-bold text-3xl font-display">
+                          {collaboratorInfo.display_name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    {/* Verified badge — official icon */}
+                    <img
+                      src="/icons/vericado.ico"
+                      alt="Verificado"
+                      title="Criador Verificado pela CodeEngine"
+                      className="absolute bottom-0 right-0 w-8 h-8 object-contain"
+                    />
                   </div>
-                  {/* Verified badge — official icon */}
-                  <img
-                    src="/icons/vericado.ico"
-                    alt="Verificado"
-                    title="Criador Verificado pela CodeEngine"
-                    className="absolute bottom-0 right-0 w-8 h-8 object-contain"
-                  />
+
+                  <div className="text-center space-y-1">
+                    <p className="font-display font-black text-white text-base leading-tight">{collaboratorInfo.display_name}</p>
+                    {collaboratorInfo.specialty && (
+                      <p className="text-[10px] font-bold text-primary/80 uppercase tracking-widest">{collaboratorInfo.specialty}</p>
+                    )}
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-400 uppercase tracking-wide">
+                      <img src="/icons/vericado.ico" alt="" className="w-3 h-3 object-contain shrink-0" />
+                      Verificado
+                    </span>
+                  </div>
                 </div>
 
-                <div className="text-center space-y-1">
-                  <p className="font-display font-black text-white text-base leading-tight">{collaboratorInfo.display_name}</p>
-                  {collaboratorInfo.specialty && (
-                    <p className="text-[10px] font-bold text-primary/80 uppercase tracking-widest">{collaboratorInfo.specialty}</p>
-                  )}
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-400 uppercase tracking-wide">
-                    <img src="/icons/vericado.ico" alt="" className="w-3 h-3 object-contain shrink-0" />
-                    Verificado
-                  </span>
+                {/* Bio */}
+                {collaboratorInfo.bio && (
+                  <div className="px-5 pb-6 border-t border-white/5 pt-4">
+                    <div 
+                      className="text-xs sm:text-[13px] text-white/80 font-sans leading-relaxed space-y-2 [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                      dangerouslySetInnerHTML={{ __html: collaboratorInfo.bio.includes('<') ? collaboratorInfo.bio : collaboratorInfo.bio.replace(/\n/g, '<br/>') }}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Collaborator Card Loading Skeleton */
+              <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl animate-pulse">
+                <div className="flex flex-col items-center pt-8 pb-5 px-5 gap-4">
+                  <div className="w-28 h-28 rounded-full bg-white/5 border-2 border-white/10" />
+                  <div className="text-center space-y-2">
+                    <div className="w-32 h-5 bg-white/10 rounded mx-auto" />
+                    <div className="w-20 h-4 bg-white/5 rounded mx-auto" />
+                  </div>
+                </div>
+                <div className="px-5 pb-6 border-t border-white/5 pt-4 space-y-2">
+                  <div className="w-full h-3 bg-white/5 rounded" />
+                  <div className="w-[90%] h-3 bg-white/5 rounded" />
+                  <div className="w-[95%] h-3 bg-white/5 rounded" />
                 </div>
               </div>
-
-              {/* Bio */}
-              {collaboratorInfo.bio && (
-                <div className="px-5 pb-6 border-t border-white/5 pt-4">
-                  <div 
-                    className="text-xs sm:text-[13px] text-white/80 font-sans leading-relaxed space-y-2 [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                    dangerouslySetInnerHTML={{ __html: collaboratorInfo.bio.includes('<') ? collaboratorInfo.bio : collaboratorInfo.bio.replace(/\n/g, '<br/>') }}
-                  />
-                </div>
-              )}
-            </div>
+            )
           ) : (
             /* CodeEngine Official Card */
             <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
@@ -1139,7 +1156,9 @@ export function Product({
             <div className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-emerald-500/20 text-xs font-semibold text-white font-display">
               {/* official verified icon */}
               <img src="/icons/vericado.ico" alt="Verificado" className="w-4 h-4 object-contain shrink-0" />
-              {(product as any).collaborator_id && collaboratorInfo ? collaboratorInfo.display_name : 'Oficial CodeEngine'}
+              {(product as any).collaborator_id && (product as any).collaborator_id !== 'system'
+                ? (collaboratorInfo?.display_name || '...')
+                : 'Oficial CodeEngine'}
             </div>
           </div>
 

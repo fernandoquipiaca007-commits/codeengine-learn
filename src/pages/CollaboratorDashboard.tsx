@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 
 import { supabase } from "../lib/supabase";
+import { queryCache } from "../lib/queryCache";
 
 import { useTranslation } from "react-i18next";
 
@@ -1133,6 +1134,9 @@ export function CollaboratorDashboard({
         .eq("id", profile.id);
 
       if (error) throw error;
+
+      // Invalidate frontend cache to force reload fresh bio details
+      queryCache.invalidatePrefix("product-detail-");
 
       setBioSaved(true);
 
