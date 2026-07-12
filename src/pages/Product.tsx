@@ -354,24 +354,26 @@ export function Product({
           if (isHidden || isDraft) {
             const { data: { session } } = await supabase.auth.getSession();
             const userId = session?.user?.id;
-            let currentCollabId: string | null = null;
-             if (userId) {
-               const { data: member } = await supabase
-                 .from('members')
-                 .select('id')
-                 .eq('auth_id', userId)
-                 .maybeSingle();
-               
-               if (member) {
-                 const { data: collab } = await supabase
-                   .from('collaborators')
-                   .select('id')
-                   .eq('member_id', member.id)
-                   .maybeSingle();
-                 currentCollabId = collab?.id || null;
-               }
-             }
-            const isOwner = currentCollabId && data.collaborator_id === currentCollabId;
+            
+            let productCreatorAuthId: string | null = null;
+            if (data.collaborator_id) {
+              const { data: collab } = await supabase
+                .from('collaborators')
+                .select('member_id')
+                .eq('id', data.collaborator_id)
+                .maybeSingle();
+              
+              if (collab?.member_id) {
+                const { data: mem } = await supabase
+                  .from('members')
+                  .select('auth_id')
+                  .eq('id', collab.member_id)
+                  .maybeSingle();
+                productCreatorAuthId = mem?.auth_id || null;
+              }
+            }
+            
+            const isOwner = userId && productCreatorAuthId && userId === productCreatorAuthId;
             if (!isOwner) {
               console.warn('[ProductPage] Access denied to hidden/draft product for user:', userId);
               return null;
@@ -536,7 +538,7 @@ export function Product({
         if (!silent) setLoading(false);
       }
     },
-    [productId, locale, overrideTitle, overrideDescription, overrideCoverUrl, overridePrice, overrideAoaPrice]
+    [productId, locale, overrideTitle, overrideDescription, overrideCoverUrl, overridePrice, overrideAoaPrice, user?.id]
   );
 
   useEffect(() => {
