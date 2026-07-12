@@ -374,6 +374,7 @@ export function Product({
             }
             
             const isOwner = userId && productCreatorAuthId && userId === productCreatorAuthId;
+            console.log('[ProductPage] ownership check debug:', { userId, productCreatorAuthId, isOwner, collaborator_id: data.collaborator_id });
             if (!isOwner) {
               console.warn('[ProductPage] Access denied to hidden/draft product for user:', userId);
               return null;
