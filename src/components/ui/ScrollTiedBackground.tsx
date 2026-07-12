@@ -49,6 +49,18 @@ export function ScrollTiedBackground({
   const isVideoTheme = !isNoVideo && !isColorTheme;
 
   // ── Video loading ─────────────────────────────────────────────────────────
+  const onReady = () => {
+    setIsLoaded(true);
+    const video = videoRef.current;
+    if (video) {
+      video.play().then(() => {
+        video.pause();
+      }).catch(() => {
+        // Autoplay policy blocked — that's fine
+      });
+    }
+  };
+
   useEffect(() => {
     // Color and empty themes need no video loading
     if (!isVideoTheme) {
@@ -65,43 +77,17 @@ export function ScrollTiedBackground({
     targetProgressRef.current = 0;
     displayProgressRef.current = 0;
 
-    // Set new src and reload
-    video.src = `/${videoPath}`;
-    video.load();
-
-    let readied = false;
-
-    const forceRenderFirstFrame = () => {
-      video.play().then(() => {
-        video.pause();
-      }).catch(() => {
-        // Autoplay policy blocked — that's fine, the video is still decoded
-      });
-    };
-
-    const onReady = () => {
-      if (readied) return;
-      readied = true;
-      setIsLoaded(true);
-      forceRenderFirstFrame();
-    };
-
-    // If already cached / preloaded
+    // Check if already ready/cached on mount or source change
     if (video.readyState >= 1) {
       onReady();
     }
 
-    video.addEventListener('loadedmetadata', onReady);
-    video.addEventListener('canplay', onReady);
-
     // Fallback: force visible after 800ms regardless
     const timer = setTimeout(() => {
-      if (!readied) onReady();
+      setIsLoaded(true);
     }, 800);
 
     return () => {
-      video.removeEventListener('loadedmetadata', onReady);
-      video.removeEventListener('canplay', onReady);
       clearTimeout(timer);
     };
   }, [videoPath, isVideoTheme]);
@@ -173,21 +159,29 @@ export function ScrollTiedBackground({
   // Build video CSS filter
   const videoFilter = `brightness(${brightness}) contrast(${contrast})`;
 
+  // Fallback gradient if color theme background is missing or if connection is slow
+  const resolvedBackgroundStyle = backgroundStyle || 'linear-gradient(135deg, #09090b 0%, #020205 100%)';
+
+  const resolvedVideoSrc = videoPath.startsWith('http') ? videoPath : (videoPath.startsWith('/') ? videoPath : `/${videoPath}`);
+
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none select-none overflow-hidden z-0 bg-black">
       {isColorTheme ? (
         /* Gradient/color background */
         <div
-          style={{ background: backgroundStyle }}
+          style={{ background: resolvedBackgroundStyle }}
           className="w-full h-full"
         />
       ) : isVideoTheme ? (
         /* 3D video background */
         <video
           ref={videoRef}
+          src={resolvedVideoSrc}
           preload="auto"
           muted
           playsInline
+          onLoadedMetadata={onReady}
+          onCanPlay={onReady}
           style={{
             opacity: isLoaded ? videoOpacity : 0,
             filter: videoFilter,
