@@ -1377,6 +1377,16 @@ export function Product({
           <div className="flex flex-col gap-3.5">
             <div className="flex flex-col items-center justify-center gap-1 w-full">
               {(() => {
+                if (product.is_free) {
+                  return (
+                    <div className="flex flex-col items-center justify-center gap-1 w-full animate-fade-in">
+                      <span className="font-display text-xl sm:text-2xl md:text-3xl font-extrabold text-primary tracking-tight drop-shadow-[0_0_12px_rgba(192,193,255,0.4)] uppercase">
+                        Grátis
+                      </span>
+                    </div>
+                  );
+                }
+
                 const isDiscounted = campaignPrice || discount > 0 || referralDiscount > 0;
                 const details = convertPrice(getFinalPrice(), getFinalAoaPrice());
                 const originalDetails = convertPrice(listPrice, (product as any).aoa_price || Math.round(product.price * 920));

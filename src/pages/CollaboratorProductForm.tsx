@@ -3678,8 +3678,9 @@ export function CollaboratorProductForm({
               title: title || undefined,
               description: description || undefined,
               cover_url: coverUrl || undefined,
-              price: priceUSD ? Number(priceUSD) : undefined,
-              aoa_price: priceAOA ? Number(priceAOA) : undefined
+              price: isFree ? 0 : (priceUSD ? Number(priceUSD) : 0),
+              aoa_price: isFree ? 0 : (priceAOA ? Number(priceAOA) : 0),
+              is_free: isFree
             }}
           />
         </div>
@@ -3793,8 +3794,9 @@ export function CollaboratorProductForm({
                   title: title || undefined,
                   description: description || undefined,
                   cover_url: coverUrl || undefined,
-                  price: priceUSD ? Number(priceUSD) : undefined,
-                  aoa_price: priceAOA ? Number(priceAOA) : undefined
+                  price: isFree ? 0 : (priceUSD ? Number(priceUSD) : 0),
+                  aoa_price: isFree ? 0 : (priceAOA ? Number(priceAOA) : 0),
+                  is_free: isFree
                 }}
               />
             </div>
