@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  GraduationCap,
   Image,
   UploadCloud,
   FileText,
@@ -39,8 +40,15 @@ export function CreatorProductWizard({
   displayName,
   isAngola = false,
 }: CreatorProductWizardProps) {
-  // We only support E-book full wizard for now (Phase 1)
   const isEbook = type === "ebook";
+  const isCourse = type === "course";
+
+  // Course Specific Form State (Step 3: First Lesson)
+  const [lessonTitle, setLessonTitle] = useState("Aula 1: Introdução");
+  const [lessonSourceType, setLessonSourceType] = useState<"upload" | "link">("link");
+  const [lessonVideoUrl, setLessonVideoUrl] = useState("");
+  const [lessonFile, setLessonFile] = useState<File | null>(null);
+  const [lessonUploadProgress, setLessonUploadProgress] = useState<number | null>(null);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -125,10 +133,17 @@ export function CreatorProductWizard({
           .order("display_order", { ascending: true });
         if (data && data.length > 0) {
           setCategories(data);
-          // Try to find a category related to E-books or digital products
-          const found = data.find((c) =>
-            c.name.toLowerCase().includes("ebook") || c.name.toLowerCase().includes("livro")
-          );
+          // Try to find a category related to E-books or Courses depending on the wizard type
+          let found;
+          if (type === "course") {
+            found = data.find((c) =>
+              c.name.toLowerCase().includes("curso") || c.name.toLowerCase().includes("course")
+            );
+          } else {
+            found = data.find((c) =>
+              c.name.toLowerCase().includes("ebook") || c.name.toLowerCase().includes("livro")
+            );
+          }
           setSelectedCategoryId(found ? found.id : data[0].id);
         }
       } catch (e) {
@@ -154,6 +169,10 @@ export function CreatorProductWizard({
       setAffiliateCommissionPct(localStorage.getItem("wizard_form_affiliateCommissionPct") || "30");
       setCreatedProductId(localStorage.getItem("open_creator_product_id") || null);
 
+      setLessonTitle(localStorage.getItem("wizard_form_lessonTitle") || "Aula 1: Introdução");
+      setLessonSourceType((localStorage.getItem("wizard_form_lessonSourceType") as any) || "link");
+      setLessonVideoUrl(localStorage.getItem("wizard_form_lessonVideoUrl") || "");
+
       const savedCatId = localStorage.getItem("wizard_form_categoryId");
       if (savedCatId) setSelectedCategoryId(savedCatId);
       const savedSubcatId = localStorage.getItem("wizard_form_subcategoryId");
@@ -176,6 +195,9 @@ export function CreatorProductWizard({
       localStorage.removeItem("wizard_form_categoryId");
       localStorage.removeItem("wizard_form_subcategoryId");
       localStorage.removeItem("wizard_form_visibility");
+      localStorage.removeItem("wizard_form_lessonTitle");
+      localStorage.removeItem("wizard_form_lessonSourceType");
+      localStorage.removeItem("wizard_form_lessonVideoUrl");
     }
   }, []);
 
@@ -282,6 +304,22 @@ export function CreatorProductWizard({
     }
   };
 
+  const [lessonVideoStoragePath, setLessonVideoStoragePath] = useState("");
+
+  const handleLessonVideoUpload = async (file: File) => {
+    setErrorMsg(null);
+    setLessonFile(file);
+    try {
+      const path = await uploadFile(file, "ebooks-private", setLessonUploadProgress);
+      setLessonVideoStoragePath(path);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(`Erro ao carregar o vídeo da aula: ${err.message || err}`);
+      setLessonFile(null);
+      setLessonUploadProgress(null);
+    }
+  };
+
   // Save Product as Draft/Publish
   const saveProduct = async (status: "draft" | "published" | "scheduled") => {
     setLoading(true);
@@ -298,7 +336,7 @@ export function CreatorProductWizard({
         description,
         categoryId: selectedCategoryId,
         subcategoryId: selectedSubcategoryId || null,
-        product_type: "ebook",
+        product_type: isCourse ? "course" : "ebook",
         price: isFree ? 0 : Number(priceUSD),
         aoaPrice: isFree ? 0 : Number(priceAOA),
         basePrice: isFree ? 0 : Number(priceUSD),
@@ -307,7 +345,7 @@ export function CreatorProductWizard({
         exchangeRateUsed: exchangeRate,
         isFree,
         coverUrl,
-        storageUrl,
+        storageUrl: isCourse ? null : storageUrl,
         affiliateEnabled,
         affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
         visibility,
@@ -338,12 +376,91 @@ export function CreatorProductWizard({
       const pId = data.product?.id || data.productId || createdProductId;
       setCreatedProductId(pId);
 
+      // If it is a course, let's create the default module and first lesson
+      if (isCourse && pId) {
+        // 1. Check if module already exists to prevent duplicate insertion on updates
+        const { data: existingModules } = await supabase
+          .from("course_modules")
+          .select("id")
+          .eq("product_id", pId)
+          .limit(1);
+
+        let moduleId = "";
+        if (existingModules && existingModules.length > 0) {
+          moduleId = existingModules[0].id;
+        } else {
+          // Create new module
+          const { data: newMod, error: modError } = await supabase
+            .from("course_modules")
+            .insert({
+              product_id: pId,
+              title: "Módulo 1: Introdução",
+              description: "Módulo inicial do curso.",
+              display_order: 0,
+            })
+            .select()
+            .single();
+
+          if (modError) {
+            console.error("Error creating module in wizard:", modError);
+          } else if (newMod) {
+            moduleId = newMod.id;
+          }
+        }
+
+        if (moduleId) {
+          // 2. Check if lesson already exists
+          const { data: existingLessons } = await supabase
+            .from("course_lessons")
+            .select("id")
+            .eq("product_id", pId)
+            .eq("module_id", moduleId)
+            .limit(1);
+
+          if (!existingLessons || existingLessons.length === 0) {
+            // Create new lesson
+            const { error: lessonError } = await supabase
+              .from("course_lessons")
+              .insert({
+                product_id: pId,
+                module_id: moduleId,
+                title: lessonTitle || "Aula 1: Introdução",
+                description: "Primeira aula do curso.",
+                display_order: 0,
+                lesson_type: "video",
+                video_storage_path: lessonSourceType === "upload" ? lessonVideoStoragePath : null,
+                external_url: lessonSourceType === "link" ? lessonVideoUrl : null,
+                is_preview: false,
+                is_active: true,
+              });
+
+            if (lessonError) {
+              console.error("Error creating lesson in wizard:", lessonError);
+            }
+          } else {
+            // Update existing lesson video/URL
+            const { error: lessonUpdateError } = await supabase
+              .from("course_lessons")
+              .update({
+                title: lessonTitle || "Aula 1: Introdução",
+                video_storage_path: lessonSourceType === "upload" ? lessonVideoStoragePath : null,
+                external_url: lessonSourceType === "link" ? lessonVideoUrl : null,
+              })
+              .eq("id", existingLessons[0].id);
+
+            if (lessonUpdateError) {
+              console.error("Error updating lesson in wizard:", lessonUpdateError);
+            }
+          }
+        }
+      }
+
       if (status === "published") {
-        alert("E-book publicado com sucesso!");
+        alert(isCourse ? "Curso publicado com sucesso!" : "E-book publicado com sucesso!");
         onClose();
         setScreen("colaborador-produtos");
       } else if (status === "scheduled") {
-        alert("Publicação agendada com sucesso!");
+        alert(isCourse ? "Publicação do curso agendada com sucesso!" : "Publicação agendada com sucesso!");
         onClose();
         setScreen("colaborador-produtos");
       } else {
@@ -364,12 +481,28 @@ export function CreatorProductWizard({
       return;
     }
     if (step === 2 && !coverUrl) {
-      setErrorMsg("Carregue a capa do e-book para continuar.");
+      setErrorMsg(isCourse ? "Carregue a capa do curso para continuar." : "Carregue a capa do e-book para continuar.");
       return;
     }
-    if (step === 3 && !storageUrl) {
-      setErrorMsg("Envie o arquivo PDF/EPUB do e-book para continuar.");
-      return;
+    if (step === 3) {
+      if (isEbook && !storageUrl) {
+        setErrorMsg("Envie o arquivo PDF/EPUB do e-book para continuar.");
+        return;
+      }
+      if (isCourse) {
+        if (!lessonTitle.trim()) {
+          setErrorMsg("O título da primeira aula é obrigatório.");
+          return;
+        }
+        if (lessonSourceType === "upload" && !lessonVideoStoragePath) {
+          setErrorMsg("Carregue o arquivo de vídeo da primeira aula para continuar.");
+          return;
+        }
+        if (lessonSourceType === "link" && !lessonVideoUrl.trim()) {
+          setErrorMsg("Insira o link do vídeo da primeira aula para continuar.");
+          return;
+        }
+      }
     }
     if (step === 4 && !isFree && (!priceUSD || isNaN(Number(priceUSD)) || Number(priceUSD) <= 0)) {
       setErrorMsg("Defina um preço válido maior que zero.");
@@ -409,6 +542,9 @@ export function CreatorProductWizard({
       localStorage.setItem("wizard_form_categoryId", selectedCategoryId);
       localStorage.setItem("wizard_form_subcategoryId", selectedSubcategoryId);
       localStorage.setItem("wizard_form_visibility", visibility);
+      localStorage.setItem("wizard_form_lessonTitle", lessonTitle);
+      localStorage.setItem("wizard_form_lessonSourceType", lessonSourceType);
+      localStorage.setItem("wizard_form_lessonVideoUrl", lessonVideoUrl);
       localStorage.setItem("open_creator_product_id", prodId);
       onGoToAdvancedForm(prodId);
     }
@@ -432,6 +568,9 @@ export function CreatorProductWizard({
       localStorage.setItem("wizard_form_categoryId", selectedCategoryId);
       localStorage.setItem("wizard_form_subcategoryId", selectedSubcategoryId);
       localStorage.setItem("wizard_form_visibility", visibility);
+      localStorage.setItem("wizard_form_lessonTitle", lessonTitle);
+      localStorage.setItem("wizard_form_lessonSourceType", lessonSourceType);
+      localStorage.setItem("wizard_form_lessonVideoUrl", lessonVideoUrl);
       localStorage.setItem("open_creator_product_id", prodId);
       localStorage.setItem("open_creator_product_review", "true");
 
@@ -497,9 +636,13 @@ export function CreatorProductWizard({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.01]">
           <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-violet-400" />
+            {isCourse ? (
+              <GraduationCap size={16} className="text-violet-400" />
+            ) : (
+              <BookOpen size={16} className="text-violet-400" />
+            )}
             <span className="text-xs font-bold text-white font-mono uppercase tracking-widest">
-              Criar E-book
+              {isCourse ? "Criar Curso" : "Criar E-book"}
             </span>
           </div>
           <button
@@ -703,7 +846,7 @@ export function CreatorProductWizard({
             </motion.div>
           )}
 
-          {step === 3 && (
+          {step === 3 && isEbook && (
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -774,6 +917,143 @@ export function CreatorProductWizard({
                   </>
                 )}
               </div>
+            </motion.div>
+          )}
+
+          {step === 3 && isCourse && (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-4 font-sans"
+            >
+              <div>
+                <h3 className="text-base font-extrabold text-white mb-1">
+                  3. Primeira Aula do Curso
+                </h3>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Um curso precisa de pelo menos 1 aula ativa para ser publicado. Adicione a sua aula inaugural agora.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Título da Primeira Aula *
+                </label>
+                <input
+                  type="text"
+                  value={lessonTitle}
+                  onChange={(e) => setLessonTitle(e.target.value)}
+                  placeholder="Ex: Aula 1: Boas-vindas e Introdução ao Curso"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Origem do Vídeo da Aula
+                </label>
+                <div className="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/10 w-fit">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLessonSourceType("link");
+                      setErrorMsg(null);
+                    }}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      lessonSourceType === "link" ? "bg-violet-500 text-white" : "text-on-surface-variant hover:text-white"
+                    }`}
+                  >
+                    Link Externo (YouTube/Vimeo)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLessonSourceType("upload");
+                      setErrorMsg(null);
+                    }}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      lessonSourceType === "upload" ? "bg-violet-500 text-white" : "text-on-surface-variant hover:text-white"
+                    }`}
+                  >
+                    Fazer Upload do Vídeo
+                  </button>
+                </div>
+              </div>
+
+              {lessonSourceType === "link" ? (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                    Link do Vídeo (YouTube, Vimeo, Loom) *
+                  </label>
+                  <input
+                    type="text"
+                    value={lessonVideoUrl}
+                    onChange={(e) => setLessonVideoUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors"
+                  />
+                  <p className="text-[9px] text-on-surface-variant leading-relaxed">
+                    * Ideal para começar rápido usando hospedagem gratuita de vídeos externos.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 hover:border-violet-500/40 rounded-2xl p-6 bg-white/[0.01] transition-colors relative">
+                  {lessonVideoStoragePath ? (
+                    <div className="text-center">
+                      <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center mx-auto mb-2">
+                        <UploadCloud size={20} className="text-emerald-400" />
+                      </div>
+                      <p className="text-xs font-bold text-white truncate max-w-[200px]">
+                        {lessonFile?.name || "Vídeo salvo"}
+                      </p>
+                      <p className="text-[10px] text-emerald-400 font-semibold mt-0.5 flex items-center justify-center gap-1">
+                        <CheckCircle size={10} /> Vídeo enviado com sucesso
+                      </p>
+                      <button
+                        onClick={() => {
+                          setLessonVideoStoragePath("");
+                          setLessonFile(null);
+                          setLessonUploadProgress(null);
+                        }}
+                        className="mt-2 text-[10px] text-red-400 font-bold hover:underline"
+                      >
+                        Substituir arquivo
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleLessonVideoUpload(e.target.files[0]);
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="flex flex-col items-center pointer-events-none">
+                        {lessonUploadProgress !== null ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
+                            <span className="text-xs font-bold text-white">{lessonUploadProgress}%</span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                              <UploadCloud size={20} className="text-violet-400" />
+                            </div>
+                            <span className="text-xs font-bold text-white">Carrega o vídeo da primeira aula</span>
+                            <span className="text-[10px] text-on-surface-variant mt-1">
+                              Formatos sugeridos: MP4, MOV · máx. 100MB
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -960,7 +1240,11 @@ export function CreatorProductWizard({
                   />
                 ) : (
                   <div className="w-14 h-18 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                    <BookOpen size={16} className="text-violet-400" />
+                    {isCourse ? (
+                      <GraduationCap size={16} className="text-violet-400" />
+                    ) : (
+                      <BookOpen size={16} className="text-violet-400" />
+                    )}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">

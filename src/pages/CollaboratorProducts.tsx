@@ -151,6 +151,9 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
       localStorage.removeItem("wizard_form_categoryId");
       localStorage.removeItem("wizard_form_subcategoryId");
       localStorage.removeItem("wizard_form_visibility");
+      localStorage.removeItem("wizard_form_lessonTitle");
+      localStorage.removeItem("wizard_form_lessonSourceType");
+      localStorage.removeItem("wizard_form_lessonVideoUrl");
       localStorage.removeItem("open_creator_product_id");
       localStorage.removeItem("open_creator_product_review");
     }
