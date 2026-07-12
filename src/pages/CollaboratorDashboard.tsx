@@ -277,6 +277,13 @@ export function CollaboratorDashboard({
     loadDashboardData();
   }, []);
 
+  useEffect(() => {
+    const activeType = localStorage.getItem("wizard_active_type");
+    if (activeType && localStorage.getItem("wizard_active_step")) {
+      setWizardType(activeType as any);
+    }
+  }, []);
+
   async function fetchCommunities() {
     setLoadingCommunities(true);
     setCommError(null);

@@ -720,6 +720,23 @@ export function CollaboratorProductForm({
     }
   }
 
+  async function fetchSubcategoriesForProduct(catId: string, targetSubcatId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('subcategories')
+        .select('id, category_id, name, description')
+        .eq('category_id', catId)
+        .order('display_order', { ascending: true });
+      if (!error && data) {
+        setSubcategories(data);
+        const exists = data.some(s => s.id === targetSubcatId);
+        setSubcategoryId(exists ? targetSubcatId : '');
+      }
+    } catch (err) {
+      console.error('Error fetching subcategories for product:', err);
+    }
+  }
+
   async function fetchProductDetails(id: string) {
     setFetchingProduct(true);
     try {
@@ -740,7 +757,11 @@ export function CollaboratorProductForm({
           setTitle(prod.title || '');
           setDescription(prod.description || '');
           setCategoryId(prod.category_id || '');
-          setSubcategoryId(prod.subcategory_id || '');
+          if (prod.category_id) {
+            void fetchSubcategoriesForProduct(prod.category_id, prod.subcategory_id || '');
+          } else {
+            setSubcategoryId(prod.subcategory_id || '');
+          }
           setCoverUrl(prod.cover_url || '');
           setPreviewUrl(prod.preview_url || '');
           
