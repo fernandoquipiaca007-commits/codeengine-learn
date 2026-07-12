@@ -130,6 +130,38 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
   const [showSettings, setShowSettings] = useState(false);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
 
+  // Overrides to protect Ebook content (Anti-copy, Anti-save, Anti-print)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Ctrl+P, Ctrl+C (copy)
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P' || e.key === 'c' || e.key === 'C'))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    const handleCopy = (e: ClipboardEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('contextmenu', handleContextMenu, true);
+    window.addEventListener('copy', handleCopy, true);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('contextmenu', handleContextMenu, true);
+      window.removeEventListener('copy', handleCopy, true);
+    };
+  }, []);
+
   const pdfOptions = useMemo(() => ({
     cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
     cMapPacked: true,
@@ -472,7 +504,7 @@ export function EbookReaderPro({ productId, onBack, lang }: EbookReaderProProps)
   const pageTextColor = effectiveTheme === 'light' ? '#666666' : '#999999';
 
   return (
-    <div className="fixed inset-0 flex flex-col z-[100] font-sans" style={{ backgroundColor: bgColor }}>
+    <div className="fixed inset-0 flex flex-col z-[100] font-sans select-none" style={{ backgroundColor: bgColor }} onContextMenu={(e) => e.preventDefault()}>
       <style>{`
         .page-wrapper {
           transition: width 0.2s ease-out, height 0.2s ease-out;

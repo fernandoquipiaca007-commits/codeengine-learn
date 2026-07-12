@@ -56,6 +56,7 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const mediaRequestRef = useRef(0);
   const hasRestoredTime = useRef(false);
+  const maxTimeRef = useRef<number>(0);
 
   // Estado básico
   const [product, setProduct] = useState<{ title: string; cover_url: string } | null>(null);
@@ -66,7 +67,26 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
 
   useEffect(() => {
     hasRestoredTime.current = false;
-  }, [currentLessonId]);
+    
+    // Initialize max watched time to prevent forward skipping abuse
+    const localData = localStorage.getItem(`course_progress_${productId}`);
+    let startTime = 0;
+    if (localData) {
+      try {
+        const parsed = JSON.parse(localData);
+        if (parsed.last_lesson_id === currentLessonId && parsed.last_position > 0) {
+          startTime = parsed.last_position;
+        }
+      } catch {}
+    }
+    if (startTime === 0) {
+      const serverProgress = progress.find((p) => p.lesson_id === currentLessonId);
+      if (serverProgress?.position_seconds) {
+        startTime = serverProgress.position_seconds;
+      }
+    }
+    maxTimeRef.current = startTime;
+  }, [currentLessonId, progress, productId]);
   
   // Estado da Mídia
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
@@ -192,15 +212,148 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   }, [flushProgress]);
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Ctrl+P
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P'))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('contextmenu', handleContextMenu, true);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('contextmenu', handleContextMenu, true);
+    };
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, []);
 
+  // Track YouTube player progress
+  const ytPlayerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (mediaType !== 'cloudflare-stream' || !mediaUrl) return;
+    const isYouTube = mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be');
+    if (!isYouTube) return;
+
+    // Load YouTube API script if not loaded
+    if (!(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+
+    let interval: ReturnType<typeof setInterval>;
+    const initYT = () => {
+      const iframe = document.getElementById('yt-iframe');
+      if (!iframe) return;
+
+      ytPlayerRef.current = new (window as any).YT.Player('yt-iframe', {
+        events: {
+          onStateChange: (event: any) => {
+            // event.data === 0 means ENDED
+            if (event.data === 0 && currentLessonId) {
+              // Mark as completed
+              saveProgress({
+                product_id: productId,
+                lesson_id: currentLessonId,
+                progress_type: 'video',
+                position_seconds: ytPlayerRef.current.getDuration() || 0,
+                position_percent: 100,
+                status: 'completed',
+              });
+              setProgress((prev) => {
+                const rest = prev.filter((p) => p.lesson_id !== currentLessonId);
+                return [...rest, { lesson_id: currentLessonId, position_seconds: Math.floor(ytPlayerRef.current.getDuration() || 0), status: 'completed' }];
+              });
+            }
+          }
+        }
+      });
+
+      // Periodically update position
+      interval = setInterval(() => {
+        if (ytPlayerRef.current && typeof ytPlayerRef.current.getCurrentTime === 'function') {
+          try {
+            const time = ytPlayerRef.current.getCurrentTime();
+            const dur = ytPlayerRef.current.getDuration();
+            if (dur > 0 && currentLessonId) {
+              const pct = (time / dur) * 100;
+              const status = pct >= 90 ? 'completed' : 'in_progress';
+              
+              // Local update for responsive UI progress bar
+              setCurrentTime(time);
+              setDuration(dur);
+              
+              // Auto-save periodically
+              saveProgress({
+                product_id: productId,
+                lesson_id: currentLessonId,
+                progress_type: 'video',
+                position_seconds: Math.floor(time),
+                position_percent: pct,
+                status,
+              });
+              setProgress((prev) => {
+                const rest = prev.filter((p) => p.lesson_id !== currentLessonId);
+                return [...rest, { lesson_id: currentLessonId, position_seconds: Math.floor(time), status }];
+              });
+            }
+          } catch {}
+        }
+      }, 5000);
+    };
+
+    // Try initializing
+    const checkAPI = setInterval(() => {
+      if ((window as any).YT && (window as any).YT.Player) {
+        clearInterval(checkAPI);
+        // Wait briefly for DOM rendering
+        setTimeout(initYT, 1000);
+      }
+    }, 500);
+
+    return () => {
+      clearInterval(checkAPI);
+      if (interval) clearInterval(interval);
+      if (ytPlayerRef.current && typeof ytPlayerRef.current.destroy === 'function') {
+        try {
+          ytPlayerRef.current.destroy();
+        } catch {}
+      }
+    };
+  }, [mediaUrl, mediaType, currentLessonId, productId]);
+
   // Handlers do player
   const handleTimeUpdate = () => {
     const v = videoRef.current;
     if (!v || !currentLessonId) return;
+
+    // Skipping protection (Anti-abuse)
+    if (v.currentTime > maxTimeRef.current + 2.5) {
+      v.currentTime = maxTimeRef.current;
+      return;
+    }
+
+    // Update maxTimeRef
+    if (v.currentTime > maxTimeRef.current) {
+      maxTimeRef.current = v.currentTime;
+    }
 
     setCurrentTime(v.currentTime);
 
@@ -469,6 +622,26 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
     return progress.find((p) => p.lesson_id === lessonId)?.status || 'not_started';
   };
 
+  const toggleLessonCompleted = (lessonId: string) => {
+    const currentStatus = lessonStatus(lessonId);
+    const newStatus = currentStatus === 'completed' ? 'in_progress' : 'completed';
+    const position = newStatus === 'completed' ? (currentLesson?.video_duration_seconds || 0) : 0;
+
+    saveProgress({
+      product_id: productId,
+      lesson_id: lessonId,
+      progress_type: 'video',
+      position_seconds: position,
+      position_percent: newStatus === 'completed' ? 100 : 0,
+      status: newStatus,
+    });
+
+    setProgress((prev) => {
+      const rest = prev.filter((p) => p.lesson_id !== lessonId);
+      return [...rest, { lesson_id: lessonId, position_seconds: position, status: newStatus }];
+    });
+  };
+
   const courseProgress = lessons.length > 0 
     ? (progress.filter((p) => p.status === 'completed').length / lessons.length) * 100 
     : 0;
@@ -635,7 +808,8 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                 {/* 3. Cloudflare Stream Player */}
                 {mediaUrl && mediaType === 'cloudflare-stream' && !mediaError && (
                   <iframe
-                    src={mediaUrl}
+                    id={mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be') ? 'yt-iframe' : undefined}
+                    src={mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be') ? `${mediaUrl}${mediaUrl.includes('?') ? '&' : '?'}enablejsapi=1` : mediaUrl}
                     allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                     allowFullScreen
                     className="w-full h-full border-0 absolute inset-0 rounded-2xl"
@@ -652,7 +826,9 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                       src={mediaUrl}
                       preload="metadata"
                       playsInline
-                      className={`w-full h-full ${mediaType === 'audio' ? 'hidden' : isFullscreen ? 'object-contain' : 'object-cover'}`}
+                      controlsList="nodownload"
+                      onContextMenu={(e) => e.preventDefault()}
+                      className={`w-full h-full ${mediaType === 'audio' ? 'hidden' : isFullscreen ? 'object-contain' : 'object-cover'} select-none`}
                       onTimeUpdate={handleTimeUpdate}
                       onLoadedMetadata={handleLoadedMetadata}
                       onPlay={handlePlay}
@@ -820,9 +996,26 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-secondary/50 to-transparent opacity-30" />
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{currentLesson.title}</h2>
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-primary/80">
-                    <Clock className="w-3 h-3" />
-                    {currentLesson.video_duration_seconds ? formatTime(currentLesson.video_duration_seconds) : t('coursePlayer.interactive')}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {/* Manual Complete Button */}
+                    <button
+                      onClick={() => toggleLessonCompleted(currentLesson.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all ${
+                        lessonStatus(currentLesson.id) === 'completed'
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                          : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20'
+                      }`}
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      {lessonStatus(currentLesson.id) === 'completed' 
+                        ? t('coursePlayer.completed', 'Concluída') 
+                        : t('coursePlayer.markCompleted', 'Concluir Aula')}
+                    </button>
+
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-primary/80">
+                      <Clock className="w-3 h-3" />
+                      {currentLesson.video_duration_seconds ? formatTime(currentLesson.video_duration_seconds) : t('coursePlayer.interactive')}
+                    </div>
                   </div>
                 </div>
                 {currentLesson.description ? (
