@@ -975,6 +975,7 @@ export function Product({
           overlayOpacity={themeConfig.overlayOpacity}
           brightness={themeConfig.brightness ?? 1.0}
           contrast={themeConfig.contrast ?? 1.0}
+          hueRotate={themeConfig.hueRotate}
           backgroundStyle={themeConfig.backgroundStyle}
         />
       )}

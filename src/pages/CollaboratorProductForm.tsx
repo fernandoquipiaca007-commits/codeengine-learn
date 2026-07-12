@@ -505,6 +505,7 @@ export function CollaboratorProductForm({
     blurAmount: number;
     brightness: number;
     contrast: number;
+    hueRotate?: number;
     backgroundStyle?: string;
     textColor?: string;
     accentColor?: string;
@@ -517,6 +518,7 @@ export function CollaboratorProductForm({
     blurAmount: 8,
     brightness: 1.0,
     contrast: 1.0,
+    hueRotate: 0,
   });
 
   const [showPreview, setShowPreview] = useState(false);
@@ -803,9 +805,11 @@ export function CollaboratorProductForm({
               blurAmount: prod.theme_video_config.blurAmount ?? 8,
               brightness: prod.theme_video_config.brightness ?? 1.0,
               contrast: prod.theme_video_config.contrast ?? 1.0,
+              hueRotate: prod.theme_video_config.hueRotate ?? 0,
               backgroundStyle: prod.theme_video_config.backgroundStyle,
               textColor: prod.theme_video_config.textColor,
               accentColor: prod.theme_video_config.accentColor,
+              panelBgColor: prod.theme_video_config.panelBgColor,
               isLight: prod.theme_video_config.isLight,
             });
           }
@@ -3356,6 +3360,7 @@ export function CollaboratorProductForm({
                     ...preset.config,
                     brightness: preset.config.brightness ?? prev.brightness ?? 1.0,
                     contrast: preset.config.contrast ?? prev.contrast ?? 1.0,
+                    hueRotate: preset.config.hueRotate ?? prev.hueRotate ?? 0,
                   }));
                   // Auto-open preview on preset select so user sees changes instantly
                   setShowPreview(true);
@@ -3415,6 +3420,18 @@ export function CollaboratorProductForm({
                           className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                         />
                         <span className="block text-[9px] text-on-surface-variant">Cores mais intensas vs. mais suaves no fundo.</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center text-[11px] font-semibold text-white">
+                          <span>Tom de Cor (Hue Rotate)</span>
+                          <span className="text-primary font-mono">{themeVideoConfig.hueRotate ?? 0}°</span>
+                        </div>
+                        <input type="range" min="0" max="360" step="1"
+                          value={themeVideoConfig.hueRotate ?? 0}
+                          onChange={(e) => setThemeVideoConfig(prev => ({ ...prev, hueRotate: Number(e.target.value) }))}
+                          className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="block text-[9px] text-on-surface-variant">Rotaciona a matiz de cores do vídeo de fundo (0° a 360°).</span>
                       </div>
                     </div>
                   </div>
@@ -3618,6 +3635,18 @@ export function CollaboratorProductForm({
                       <input type="range" min="0.5" max="2" step="0.05"
                         value={themeVideoConfig.contrast}
                         onChange={e => setThemeVideoConfig(prev => ({ ...prev, contrast: Number(e.target.value) }))}
+                        className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
+                      />
+                    </div>
+                    {/* Tom de Cor */}
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between text-[10px] font-semibold text-white">
+                        <span>Tom de Cor (Hue Rotate)</span>
+                        <span className="text-primary font-mono">{themeVideoConfig.hueRotate ?? 0}°</span>
+                      </div>
+                      <input type="range" min="0" max="360" step="1"
+                        value={themeVideoConfig.hueRotate ?? 0}
+                        onChange={e => setThemeVideoConfig(prev => ({ ...prev, hueRotate: Number(e.target.value) }))}
                         className="w-full h-1 rounded-full appearance-none cursor-pointer accent-primary bg-white/10"
                       />
                     </div>

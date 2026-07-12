@@ -6,6 +6,7 @@ interface ScrollTiedBackgroundProps {
   overlayOpacity?: number;
   brightness?: number;
   contrast?: number;
+  hueRotate?: number;
   backgroundStyle?: string;
 }
 
@@ -15,30 +16,19 @@ export function ScrollTiedBackground({
   overlayOpacity = 0.7,
   brightness = 1.0,
   contrast = 1.0,
+  hueRotate = 0,
   backgroundStyle,
 }: ScrollTiedBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const rafRef = useRef<number | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(true);
+  const [shouldLoadVideo] = useState(true);
 
   // Refs used inside RAF / event listeners — avoids stale closure issues
   const targetProgressRef = useRef(0);
   const displayProgressRef = useRef(0);
   const isSeeking = useRef(false);
   const pendingSeek = useRef(false);
-
-  // ── Connection check (skip video on data-saver / 2G connections) ──────────
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const connection = (navigator as any).connection;
-      const isSlow =
-        connection &&
-        (connection.saveData ||
-          ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
-      if (isSlow) setShouldLoadVideo(false);
-    }
-  }, []);
 
   // Three modes:
   // 1. isNoVideo: videoPath is empty — pure dark bg, no video element at all
@@ -157,7 +147,7 @@ export function ScrollTiedBackground({
   }, [isLoaded, videoPath, isVideoTheme]);
 
   // Build video CSS filter
-  const videoFilter = `brightness(${brightness}) contrast(${contrast})`;
+  const videoFilter = `brightness(${brightness}) contrast(${contrast}) hue-rotate(${hueRotate}deg)`;
 
   // Fallback gradient if color theme background is missing or if connection is slow
   const resolvedBackgroundStyle = backgroundStyle || 'linear-gradient(135deg, #09090b 0%, #020205 100%)';
