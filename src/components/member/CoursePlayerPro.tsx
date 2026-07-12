@@ -564,30 +564,32 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
   return (
     <div ref={containerRef} className="min-h-screen bg-black pb-20 font-sans">
       {/* Header simples (Estilo Design Branch) */}
-      <div className="px-4 sm:px-6 py-4 flex items-center justify-between border-b border-white/5 bg-surface/20 backdrop-blur-md mb-6">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2.5 text-on-surface-variant hover:text-primary transition-all group"
-        >
-          <div className="p-2 rounded-full bg-white/5 group-hover:bg-primary/10 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-          </div>
-          <span className="font-display font-bold text-base tracking-tight text-on-surface">CodeEngine <span className="text-primary/60">1</span></span>
-        </button>
-        <button
-          onClick={() => setShowPlaylist(!showPlaylist)}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white flex items-center gap-2 border border-white/10 hover:border-white/20"
-          title={showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
-        >
-          <List className="w-5 h-5" />
-          <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wider">
-            {showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
-          </span>
-        </button>
+      <div className="border-b border-white/5 bg-surface/20 backdrop-blur-md mb-6">
+        <div className="max-w-[1880px] w-full mx-auto px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2.5 text-on-surface-variant hover:text-primary transition-all group"
+          >
+            <div className="p-2 rounded-full bg-white/5 group-hover:bg-primary/10 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-display font-bold text-base tracking-tight text-on-surface">CodeEngine <span className="text-primary/60">1</span></span>
+          </button>
+          <button
+            onClick={() => setShowPlaylist(!showPlaylist)}
+            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white flex items-center gap-2 border border-white/10 hover:border-white/20"
+            title={showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
+          >
+            <List className="w-5 h-5" />
+            <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wider">
+              {showPlaylist ? t('coursePlayer.hidePlaylist') : t('coursePlayer.showPlaylist')}
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* Container principal (max-w 1400px) */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+      {/* Container principal (max-w 1880px) */}
+      <div className="max-w-[1880px] mx-auto px-4 sm:px-6 md:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Coluna do Player - 2/3 */}
           <div className={`${showPlaylist ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6 transition-all duration-300`}>
