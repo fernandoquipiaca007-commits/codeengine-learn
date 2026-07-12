@@ -538,6 +538,8 @@ export function Product({
         setProduct(data.product);
         setPageLayout(data.pageLayout);
         setCustomCopy(data.customCopy);
+        setAvailableLanguages(data.availableLanguages || []);
+        setCollaboratorInfo(data.collaboratorInfo || null);
       }
     });
     return () => {
@@ -1040,15 +1042,15 @@ export function Product({
         <div className="hidden md:flex flex-col gap-3">
           {(product as any).collaborator_id && collaboratorInfo ? (
             /* Collaborator Card */
-            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
               {/* Avatar circular + verified */}
-              <div className="flex flex-col items-center pt-6 pb-4 px-4 gap-3 relative">
+              <div className="flex flex-col items-center pt-8 pb-5 px-5 gap-4 relative">
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
+                  <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
                     {collaboratorInfo.avatar_url ? (
                       <img src={collaboratorInfo.avatar_url} alt={collaboratorInfo.display_name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary font-bold text-2xl font-display">
+                      <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary font-bold text-3xl font-display">
                         {collaboratorInfo.display_name?.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -1058,16 +1060,16 @@ export function Product({
                     src="/icons/vericado.ico"
                     alt="Verificado"
                     title="Criador Verificado pela CodeEngine"
-                    className="absolute -bottom-1 -right-1 w-6 h-6 object-contain"
+                    className="absolute bottom-0 right-0 w-8 h-8 object-contain"
                   />
                 </div>
 
-                <div className="text-center space-y-0.5">
-                  <p className="font-display font-bold text-white text-sm leading-tight">{collaboratorInfo.display_name}</p>
+                <div className="text-center space-y-1">
+                  <p className="font-display font-black text-white text-base leading-tight">{collaboratorInfo.display_name}</p>
                   {collaboratorInfo.specialty && (
-                    <p className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest">{collaboratorInfo.specialty}</p>
+                    <p className="text-[10px] font-bold text-primary/80 uppercase tracking-widest">{collaboratorInfo.specialty}</p>
                   )}
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-400 uppercase tracking-wide">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-400 uppercase tracking-wide">
                     <img src="/icons/vericado.ico" alt="" className="w-3 h-3 object-contain shrink-0" />
                     Verificado
                   </span>
@@ -1076,9 +1078,9 @@ export function Product({
 
               {/* Bio */}
               {collaboratorInfo.bio && (
-                <div className="px-4 pb-5 border-t border-white/5 pt-3">
+                <div className="px-5 pb-6 border-t border-white/5 pt-4">
                   <div 
-                    className="text-xs sm:text-sm text-on-surface-variant font-sans leading-relaxed space-y-2 [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                    className="text-xs sm:text-[13px] text-white/80 font-sans leading-relaxed space-y-2 [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
                     dangerouslySetInnerHTML={{ __html: collaboratorInfo.bio.includes('<') ? collaboratorInfo.bio : collaboratorInfo.bio.replace(/\n/g, '<br/>') }}
                   />
                 </div>
