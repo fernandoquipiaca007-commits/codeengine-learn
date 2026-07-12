@@ -3978,6 +3978,11 @@ export function CollaboratorDashboard({
             displayName={profile?.displayName}
             isAngola={isAngola}
             collaboratorPlan={(profile?.plan as "course_creator" | "ebook_creator") || 'ebook_creator'}
+            onRequestUpgrade={() => {
+              setWizardType(null);
+              setPricingModalStep("select_method");
+              setShowPlanBenefitsModal(true);
+            }}
           />
         )}
       </div>

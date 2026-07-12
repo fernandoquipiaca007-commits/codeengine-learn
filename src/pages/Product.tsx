@@ -1027,7 +1027,7 @@ export function Product({
       {/* Back Button */}
       {setScreen && (
         <button
-          onClick={() => setScreen('library')}
+          onClick={() => setScreen(isPreviewMode ? 'colaborador-produtos' : 'library')}
           className="mb-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border border-white/10 hover:border-primary/30 transition-all text-on-surface-variant hover:text-primary"
         >
           <ArrowLeft className="w-4 h-4" />

@@ -32,6 +32,7 @@ interface CreatorProductWizardProps {
   displayName?: string;
   isAngola?: boolean;
   collaboratorPlan?: 'ebook_creator' | 'course_creator';
+  onRequestUpgrade?: () => void;
 }
 
 export function CreatorProductWizard({
@@ -42,6 +43,7 @@ export function CreatorProductWizard({
   displayName,
   isAngola = false,
   collaboratorPlan = 'ebook_creator',
+  onRequestUpgrade,
 }: CreatorProductWizardProps) {
   const isEbook = type === "ebook";
   const isCourse = type === "course";
@@ -56,6 +58,7 @@ export function CreatorProductWizard({
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Categories list for auto-tagging
   const [categories, setCategories] = useState<any[]>([]);
@@ -974,7 +977,7 @@ export function CreatorProductWizard({
                     type="button"
                     onClick={() => {
                       if (collaboratorPlan !== 'course_creator') {
-                        setErrorMsg("O upload de vídeo próprio requer o Plano Premium. Selecione 'Link Externo' ou faça upgrade no Painel.");
+                        setShowUpgradeModal(true);
                         return;
                       }
                       setLessonSourceType("upload");
@@ -1009,7 +1012,7 @@ export function CreatorProductWizard({
                   {/* Tutorial video for YouTube unlisted links */}
                   <div className="mt-2 border border-white/10 bg-white/5 rounded-xl p-3 space-y-2">
                     <p className="text-[10px] font-semibold text-violet-400">💡 Como obter o link não listado no YouTube de forma segura:</p>
-                    <div className="relative aspect-video rounded-lg overflow-hidden border border-white/5 bg-black">
+                    <div className="relative w-full max-w-[360px] aspect-video rounded-lg overflow-hidden border border-white/5 bg-black mx-auto md:mx-0">
                       <iframe
                         src="https://www.youtube.com/embed/SVB2jXOcYXY"
                         title="Tutorial: Vídeo Não Listado"
@@ -1416,6 +1419,51 @@ export function CreatorProductWizard({
           )}
         </div>
       </motion.div>
+
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0c0d14] p-6 shadow-2xl relative space-y-4">
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              className="absolute top-4 right-4 text-on-surface-variant hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 mx-auto">
+              <Sparkles size={22} />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h3 className="font-display font-extrabold text-white text-base">
+                Recurso Premium Exclusivo
+              </h3>
+              <p className="text-on-surface-variant text-xs leading-relaxed font-sans">
+                O upload direto de vídeos para a infraestrutura de streaming rápido da CodeEngine é um recurso exclusivo do <strong>Plano Premium</strong>. Com ele, você hospeda seus vídeos diretamente no sistema e seus alunos desfrutam de uma experiência fluida, sem anúncios externos.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 pt-2">
+              <button
+                onClick={() => {
+                  setShowUpgradeModal(false);
+                  if (onRequestUpgrade) onRequestUpgrade();
+                }}
+                className="w-full py-2.5 rounded-full bg-primary font-bold text-white hover:bg-primary-high transition-all text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-primary/25 cursor-pointer"
+              >
+                Fazer Upgrade Agora
+                <ArrowRight size={14} />
+              </button>
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="w-full py-2.5 rounded-full bg-white/5 font-bold text-on-surface-variant hover:text-white hover:bg-white/10 transition-all text-xs text-center cursor-pointer"
+              >
+                Continuar com Links Gratuitos (YouTube/Vimeo)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

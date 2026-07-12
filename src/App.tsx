@@ -142,6 +142,9 @@ const PageContent = memo(function PageContent({
 
   return (
     <Suspense fallback={<PageLoader />}>
+      {currentScreen === 'loading-route' && (
+        <PageLoader />
+      )}
       {currentScreen === 'welcome' && (
         <Welcome setScreen={navigateToScreen} />
       )}
@@ -234,7 +237,7 @@ function getInitialScreen(): string {
     pathname !== '/' ||
     hash.includes('access_token=') ||
     hash.includes('type=recovery');
-  if (hasSpecialRoute) return 'welcome';
+  if (hasSpecialRoute) return 'loading-route';
   const stored = sessionStorage.getItem('ce_last_screen');
   const valid = ['welcome','home','library','member','about','releases','contact',
     'favorites','news','settings','privacy','terms','licensing','support',
@@ -274,6 +277,15 @@ export default function App() {
       setAlertMessage(message);
     };
   }, []);
+
+  useEffect(() => {
+    if (currentScreen === 'loading-route') {
+      const timer = setTimeout(() => {
+        setScreen('welcome');
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentScreen]);
 
   const handleOnboardingComplete = () => {
     setMember((prev: any) => prev ? { ...prev, onboarding_completed: true } : { onboarding_completed: true });
@@ -588,6 +600,9 @@ export default function App() {
       }
       setScreen(targetScreen);
       window.history.replaceState({}, '', '/');
+    } else {
+      // Fallback if no special route matches, transition from loading-route to welcome
+      setScreen(prev => prev === 'loading-route' ? 'welcome' : prev);
     }
 
     return () => {

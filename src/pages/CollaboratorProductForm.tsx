@@ -2456,7 +2456,7 @@ export function CollaboratorProductForm({
                                 <li>Defina a visibilidade como <strong className="text-white">"Não listado"</strong> (para que ninguém assista fora da CodeEngine).</li>
                                 <li>Copie o link gerado e cole no campo abaixo.</li>
                               </ul>
-                              <div className="relative aspect-video rounded-lg overflow-hidden border border-white/5 bg-black mt-2">
+                              <div className="relative w-full max-w-[360px] aspect-video rounded-lg overflow-hidden border border-white/5 bg-black mt-2">
                                 <iframe
                                   src="https://www.youtube.com/embed/SVB2jXOcYXY"
                                   title="Tutorial: Vídeo Não Listado"
