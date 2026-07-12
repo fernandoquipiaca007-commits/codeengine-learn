@@ -1,8 +1,9 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Plus, Trash2, ChevronDown, ChevronUp, Video,
   MoveUp, MoveDown, PlayCircle, Clock, Save, AlertTriangle,
 } from 'lucide-react';
+import { RichTextEditor } from '../../ui/RichTextEditor';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -286,12 +287,10 @@ function LessonCard({
             <label className="block text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">
               Descricao <span className="normal-case text-white/30">(opcional)</span>
             </label>
-            <textarea
-              rows={2}
+            <RichTextEditor
               value={lesson.description}
-              onChange={e => update({ description: e.target.value })}
+              onChange={val => update({ description: val })}
               placeholder="Descreva o conteudo desta aula..."
-              className="w-full rounded-xl bg-surface-high border border-white/10 px-3 py-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors resize-none"
             />
           </div>
         </div>

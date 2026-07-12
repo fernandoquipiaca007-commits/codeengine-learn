@@ -1036,7 +1036,7 @@ export function Product({
       )}
 
       {/* Hero Section — on mobile: cover thumbnail inline with title; on md+: 3-col [left | content | cover] */}
-      <section ref={heroRef} className="grid gap-6 md:grid-cols-[280px_1fr_auto] md:gap-8 items-start mb-10 md:mb-16 relative">
+      <section ref={heroRef} className="grid gap-6 md:grid-cols-[350px_1fr_auto] md:gap-8 items-start mb-10 md:mb-16 relative">
 
         {/* ── LEFT: Creator / CodeEngine Panel ── */}
         <div className="hidden md:flex flex-col gap-3">
