@@ -431,18 +431,34 @@ export default function App() {
           setScreen('product');
           window.history.replaceState({ screen: 'product', productId: slug, section: 'inicio' }, '', `/product/${slug}`);
         } else {
-          // Fetch products from database to match slug to ID
-          supabase.from('products').select('id, title').then(({ data }) => {
-            const found = data?.find(p => slugify(p.title) === slug);
-            if (found) {
-              setCurrentProductId(found.id);
-              setScreen('product');
-              window.history.replaceState({ screen: 'product', productId: found.id, section: 'inicio' }, '', `/product/${slug}`);
-            } else {
-              // Fallback
-              setScreen('home');
-            }
-          });
+          // Try to resolve slug to ID via backend (so it works even for draft/scheduled/hidden products)
+          fetch(`${BACKEND_URL}/api/products/resolve-slug/${slug}`)
+            .then(res => {
+              if (res.ok) return res.json();
+              throw new Error('Not found');
+            })
+            .then(data => {
+              if (data?.id) {
+                setCurrentProductId(data.id);
+                setScreen('product');
+                window.history.replaceState({ screen: 'product', productId: data.id, section: 'inicio' }, '', `/product/${slug}`);
+              } else {
+                setScreen('home');
+              }
+            })
+            .catch(() => {
+              // Fallback to client-side active products list
+              supabase.from('products').select('id, title').then(({ data }) => {
+                const found = data?.find(p => slugify(p.title) === slug);
+                if (found) {
+                  setCurrentProductId(found.id);
+                  setScreen('product');
+                  window.history.replaceState({ screen: 'product', productId: found.id, section: 'inicio' }, '', `/product/${slug}`);
+                } else {
+                  setScreen('home');
+                }
+              });
+            });
         }
         return;
       }

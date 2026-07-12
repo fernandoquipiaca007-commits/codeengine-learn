@@ -348,8 +348,10 @@ export function Product({
           console.log('[ProductPage] base product resolved:', data);
           if (!data) return null;
 
-          // Check if product is hidden and verify ownership
-          if (data.visibility === 'hidden') {
+          // Check if product is hidden/draft and verify ownership
+          const isHidden = data.visibility === 'hidden';
+          const isDraft = data.status === 'draft';
+          if (isHidden || isDraft) {
             const { data: { session } } = await supabase.auth.getSession();
             const userId = session?.user?.id;
             let currentCollabId: string | null = null;
@@ -363,7 +365,7 @@ export function Product({
             }
             const isOwner = currentCollabId && data.collaborator_id === currentCollabId;
             if (!isOwner) {
-              console.warn('[ProductPage] Access denied to hidden product for user:', userId);
+              console.warn('[ProductPage] Access denied to hidden/draft product for user:', userId);
               return null;
             }
           }
