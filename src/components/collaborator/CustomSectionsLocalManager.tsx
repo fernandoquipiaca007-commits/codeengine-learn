@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RichTextEditor } from '../ui/RichTextEditor';
 import {
   Plus as LucidePlus,
   Trash2 as LucideTrash2,
@@ -139,15 +140,13 @@ export function CustomSectionsLocalManager({ sections, onChange }: CustomSection
           <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
             Conteúdo
           </label>
-          <textarea
+          <RichTextEditor
             value={newSection.content}
-            onChange={(e) => setNewSection({ ...newSection, content: e.target.value })}
+            onChange={(val) => setNewSection({ ...newSection, content: val })}
             placeholder="Digite o conteúdo da seção..."
-            rows={4}
-            className="w-full bg-surface-high border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono placeholder-white/20 focus:outline-none"
           />
           <p className="text-[10px] text-on-surface-variant mt-1">
-            Dica: Suporta formatação em Markdown e tags de HTML básico.
+            Dica: Formate o texto usando a barra de ferramentas acima.
           </p>
         </div>
 
@@ -206,11 +205,10 @@ export function CustomSectionsLocalManager({ sections, onChange }: CustomSection
                         onChange={(e) => setEditContent({ ...editContent, title: e.target.value })}
                         className="w-full bg-surface-high border border-white/10 rounded-xl px-4 py-2 text-sm text-white"
                       />
-                      <textarea
+                      <RichTextEditor
                         value={editContent.content}
-                        onChange={(e) => setEditContent({ ...editContent, content: e.target.value })}
-                        rows={5}
-                        className="w-full bg-surface-high border border-white/10 rounded-xl px-4 py-2 text-sm text-white font-mono"
+                        onChange={(val) => setEditContent({ ...editContent, content: val })}
+                        placeholder="Conteúdo da seção..."
                       />
                       <div className="flex gap-2">
                         <button

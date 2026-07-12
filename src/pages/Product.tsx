@@ -882,6 +882,17 @@ export function Product({
   const renderPersuasiveDescription = (descText: string) => {
     if (!descText) return null;
 
+    // Check if contains HTML tags to render as Rich Text
+    const isHTML = /<[a-z][\s\S]*>/i.test(descText);
+    if (isHTML) {
+      return (
+        <div 
+          className="prose prose-invert max-w-none prose-sm sm:prose-base font-sans text-on-surface-variant/90 leading-relaxed [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h1]:text-lg [&_h1]:font-bold [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-sm [&_h3]:font-bold [&_p]:my-2"
+          dangerouslySetInnerHTML={{ __html: descText }}
+        />
+      );
+    }
+
     // Split into paragraphs by double newlines or single newlines that separate distinct blocks
     const blocks = descText.split(/\n\n+/).filter(Boolean);
 
@@ -1066,9 +1077,10 @@ export function Product({
               {/* Bio */}
               {collaboratorInfo.bio && (
                 <div className="px-4 pb-5 border-t border-white/5 pt-3">
-                  <p className="text-[11px] text-on-surface-variant font-sans leading-relaxed line-clamp-6">
-                    {collaboratorInfo.bio}
-                  </p>
+                  <div 
+                    className="text-xs sm:text-sm text-on-surface-variant font-sans leading-relaxed space-y-2 [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: collaboratorInfo.bio.includes('<') ? collaboratorInfo.bio : collaboratorInfo.bio.replace(/\n/g, '<br/>') }}
+                  />
                 </div>
               )}
             </div>

@@ -825,7 +825,10 @@ export function CoursePlayerPro({ productId, initialLessonId, onBack }: CoursePl
                 </div>
                 {currentLesson.description ? (
                   <div className="prose prose-invert max-w-none">
-                    <p className="text-on-surface-variant leading-relaxed text-base sm:text-lg font-sans opacity-80">{currentLesson.description}</p>
+                    <div 
+                      className="text-on-surface-variant leading-relaxed text-sm sm:text-base font-sans opacity-80 [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                      dangerouslySetInnerHTML={{ __html: currentLesson.description.includes('<') ? currentLesson.description : currentLesson.description.replace(/\n/g, '<br/>') }}
+                    />
                   </div>
                 ) : (
                   <p className="text-on-surface-variant/40 italic font-sans">{t('coursePlayer.noDescription')}</p>

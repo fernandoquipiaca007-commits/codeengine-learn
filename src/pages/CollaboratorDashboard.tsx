@@ -38,6 +38,7 @@ import {
   Sparkles,
   Home,
 } from "lucide-react";
+import { RichTextEditor } from "../components/ui/RichTextEditor";
 
 import { useUserCountry } from "../contexts/UserCountryContext";
 
@@ -2411,24 +2412,18 @@ export function CollaboratorDashboard({
               </label>
 
               <p className="text-[11px] text-on-surface-variant">
-                {t('collaborator.profile.bioHelp', 'Apresente-se aos compradores. Mencione a sua experiência, área de especialidade e o que torna os seus produtos únicos. Máx. 500 caracteres.')}
+                {t('collaborator.profile.bioHelp', 'Apresente-se aos compradores. Mencione a sua experiência, área de especialidade e o que torna os seus produtos únicos.')}
               </p>
 
-              <textarea
+              <RichTextEditor
                 value={bioText}
-
-                onChange={(e) => setBioText(e.target.value.slice(0, 500))}
-
-                rows={5}
-
+                onChange={setBioText}
                 placeholder={t('collaborator.profile.bioPlaceholder', 'Ex: Sou especialista em marketing digital com 8 anos de experiência a ajudar empreendedores a crescer online...')}
-
-                className="w-full rounded-xl bg-surface-high border border-white/10 text-white text-xs font-sans px-4 py-3 resize-none focus:outline-none focus:border-emerald-500/50 placeholder:text-on-surface-variant/50 transition-colors"
               />
 
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-on-surface-variant">
-                  {bioText.length}/500 {t('collaborator.profile.characters', 'caracteres')}
+                  {bioText.length} caracteres
                 </span>
 
                 <button

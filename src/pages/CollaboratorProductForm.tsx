@@ -10,6 +10,7 @@ import { loadCurriculum, saveModule, deleteModule, saveLesson, deleteLesson } fr
 import { CustomSectionsLocalManager, CustomSectionState } from '../components/collaborator/CustomSectionsLocalManager';
 import { CardFanCarousel } from '../components/ui/CardFanCarousel';
 import { ScrollTiedBackground } from '../components/ui/ScrollTiedBackground';
+import { RichTextEditor } from '../components/ui/RichTextEditor';
 import { queryCache } from '../lib/queryCache';
 import { detectFormType, ProductFormType } from '../lib/categoryDetect';
 
@@ -1851,15 +1852,11 @@ export function CollaboratorProductForm({
 
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">{currentDescriptionLabel}</label>
-                <textarea
-                  required
-                  rows={3}
+                <RichTextEditor
                   value={description}
-                  onChange={e => setDescription(e.target.value)}
+                  onChange={setDescription}
                   placeholder={currentDescriptionPlaceholder}
-                  className={`w-full rounded-xl bg-surface-high border px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-none ${
-                    submitAttempted && !description ? 'border-red-500/50' : 'border-white/10'
-                  }`}
+                  className={submitAttempted && !description ? 'border-red-500/50' : 'border-white/10'}
                 />
                 {submitAttempted && !description && (
                   <span className="text-[10px] text-red-400 mt-1 block">
@@ -2571,14 +2568,11 @@ export function CollaboratorProductForm({
 
                   <div>
                     <label className="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Instruções de Entrega para o Cliente *</label>
-                    <textarea
-                      rows={4}
+                    <RichTextEditor
                       value={serviceInstructions}
-                      onChange={e => setServiceInstructions(e.target.value)}
+                      onChange={setServiceInstructions}
                       placeholder="Explique detalhadamente como o serviço será entregue após o pagamento (ex: 'Envie-me um e-mail com os detalhes do projeto...' ou 'Após o pagamento, use o link de contacto para agendarmos a mentoria...')"
-                      className={`w-full rounded-xl bg-surface-high border px-3 py-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors resize-none ${
-                        submitAttempted && !serviceInstructions ? 'border-red-500/50' : 'border-white/10'
-                      }`}
+                      className={submitAttempted && !serviceInstructions ? 'border-red-500/50' : 'border-white/10'}
                     />
                     {submitAttempted && !serviceInstructions && (
                       <span className="text-[10px] text-red-400 mt-1 block">As instruções de entrega são obrigatórias.</span>
@@ -2949,12 +2943,10 @@ export function CollaboratorProductForm({
 
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Resposta</label>
-                <textarea
+                <RichTextEditor
                   value={newFaq.answer}
-                  onChange={e => setNewFaq({ ...newFaq, answer: e.target.value })}
+                  onChange={val => setNewFaq({ ...newFaq, answer: val })}
                   placeholder="Ex: Imediatamente por e-mail e na sua área de membros após a confirmação do pagamento."
-                  rows={3}
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none resize-none"
                 />
               </div>
 
@@ -3043,12 +3035,10 @@ export function CollaboratorProductForm({
 
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Descrição</label>
-                <textarea
+                <RichTextEditor
                   value={newBonus.description}
-                  onChange={e => setNewBonus({ ...newBonus, description: e.target.value })}
+                  onChange={val => setNewBonus({ ...newBonus, description: val })}
                   placeholder="Ex: Planilha interativa para planejar e controlar todos os investimentos e despesas."
-                  rows={2}
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none resize-none"
                 />
               </div>
 
@@ -3130,12 +3120,10 @@ export function CollaboratorProductForm({
 
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Descrição Curta</label>
-                <textarea
+                <RichTextEditor
                   value={newBenefit.description}
-                  onChange={e => setNewBenefit({ ...newBenefit, description: e.target.value })}
+                  onChange={val => setNewBenefit({ ...newBenefit, description: val })}
                   placeholder="Ex: Estude no seu próprio ritmo, sem prazos de validade ou expirações."
-                  rows={2}
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none resize-none focus:ring-1 focus:ring-primary/50"
                 />
               </div>
 
@@ -3205,15 +3193,13 @@ export function CollaboratorProductForm({
 
                   <div>
                     <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">{lang.descLabel} *</label>
-                    <textarea
+                    <RichTextEditor
                       value={translations[lang.code]?.description || ''}
-                      onChange={e => setTranslations({
+                      onChange={val => setTranslations({
                         ...translations,
-                        [lang.code]: { ...translations[lang.code], description: e.target.value }
+                        [lang.code]: { ...translations[lang.code], description: val }
                       })}
                       placeholder={`${lang.descLabel}...`}
-                      rows={4}
-                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none resize-none"
                     />
                   </div>
 

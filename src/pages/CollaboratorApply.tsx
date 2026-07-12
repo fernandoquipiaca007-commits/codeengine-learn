@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { AlertCircle, CheckCircle, Clock, Save, FileText, Video, Terminal, Calendar, ArrowRight, ShieldCheck, Mail, Landmark } from 'lucide-react';
 import { useUserCountry } from '../contexts/UserCountryContext';
+import { RichTextEditor } from '../components/ui/RichTextEditor';
 
 interface CollaboratorApplyProps {
   setScreen: (screen: string) => void;
@@ -207,12 +208,10 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-white/80 mb-1">Minibiografia / Descrição</label>
-                <textarea
-                  placeholder="Conte um pouco sobre sua trajetória profissional e o conteúdo que deseja compartilhar."
+                <RichTextEditor
                   value={bio}
-                  onChange={e => setBio(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 bg-surface-high border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-colors font-sans text-sm resize-none"
+                  onChange={setBio}
+                  placeholder="Conte um pouco sobre sua trajetória profissional e o conteúdo que deseja compartilhar."
                 />
               </div>
             </div>

@@ -193,7 +193,10 @@ export function CoursePlayerLegacy({ productId, initialLessonId, onBack }: Cours
             <div>
               <h2 className="font-display text-xl font-bold text-white mb-2">{currentLesson.title}</h2>
               {currentLesson.description && (
-                <p className="font-sans text-on-surface-variant">{currentLesson.description}</p>
+                <div 
+                  className="font-sans text-on-surface-variant leading-relaxed prose prose-invert max-w-none [&_a]:text-primary [&_a:hover]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 text-sm"
+                  dangerouslySetInnerHTML={{ __html: currentLesson.description.includes('<') ? currentLesson.description : currentLesson.description.replace(/\n/g, '<br/>') }}
+                />
               )}
             </div>
           )}
