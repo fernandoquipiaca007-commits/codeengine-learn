@@ -355,14 +355,22 @@ export function Product({
             const { data: { session } } = await supabase.auth.getSession();
             const userId = session?.user?.id;
             let currentCollabId: string | null = null;
-            if (userId) {
-              const { data: collab } = await supabase
-                .from('collaborators')
-                .select('id')
-                .eq('member_id', userId)
-                .maybeSingle();
-              currentCollabId = collab?.id || null;
-            }
+             if (userId) {
+               const { data: member } = await supabase
+                 .from('members')
+                 .select('id')
+                 .eq('auth_id', userId)
+                 .maybeSingle();
+               
+               if (member) {
+                 const { data: collab } = await supabase
+                   .from('collaborators')
+                   .select('id')
+                   .eq('member_id', member.id)
+                   .maybeSingle();
+                 currentCollabId = collab?.id || null;
+               }
+             }
             const isOwner = currentCollabId && data.collaborator_id === currentCollabId;
             if (!isOwner) {
               console.warn('[ProductPage] Access denied to hidden/draft product for user:', userId);
