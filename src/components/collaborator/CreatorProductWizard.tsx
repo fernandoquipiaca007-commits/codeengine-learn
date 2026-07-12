@@ -17,6 +17,7 @@ import {
   Settings,
   CheckCircle,
   Loader2,
+  Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -30,6 +31,7 @@ interface CreatorProductWizardProps {
   setScreen: (screen: string) => void;
   displayName?: string;
   isAngola?: boolean;
+  collaboratorPlan?: 'ebook_creator' | 'course_creator';
 }
 
 export function CreatorProductWizard({
@@ -39,6 +41,7 @@ export function CreatorProductWizard({
   setScreen,
   displayName,
   isAngola = false,
+  collaboratorPlan = 'ebook_creator',
 }: CreatorProductWizardProps) {
   const isEbook = type === "ebook";
   const isCourse = type === "course";
@@ -688,19 +691,19 @@ export function CreatorProductWizard({
                   1. Informações Básicas
                 </h3>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  Introduz o título do teu e-book e uma descrição curta para cativar os leitores.
+                  {isCourse ? "Introduz o título do teu curso e uma descrição curta para cativar os alunos." : "Introduz o título do teu e-book e uma descrição curta para cativar os leitores."}
                 </p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                  Título do E-book
+                  {isCourse ? "Título do Curso" : "Título do E-book"}
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Guia Prático de Programação Web"
+                  placeholder={isCourse ? "Ex: Curso Completo de Programação Web" : "Ex: Guia Prático de Programação Web"}
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -712,7 +715,7 @@ export function CreatorProductWizard({
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Descreve resumidamente o que os leitores vão aprender no teu e-book..."
+                  placeholder={isCourse ? "Descreve resumidamente o que os alunos vão aprender no teu curso..." : "Descreve resumidamente o que os leitores vão aprender no teu e-book..."}
                   rows={3}
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors resize-none"
                 />
@@ -833,9 +836,11 @@ export function CreatorProductWizard({
                           <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
                             <Image size={20} className="text-violet-400" />
                           </div>
-                          <span className="text-xs font-bold text-white">Carrega a capa do e-book</span>
+                          <span className="text-xs font-bold text-white">
+                            {isCourse ? "Carrega a capa do curso" : "Carrega a capa do e-book"}
+                          </span>
                           <span className="text-[10px] text-on-surface-variant mt-1">
-                            Recomendado: formato vertical (800x1200px) · JPG/PNG
+                            {isCourse ? "Recomendado: formato horizontal (1280x720px) · JPG/PNG" : "Recomendado: formato vertical (800x1200px) · JPG/PNG"}
                           </span>
                         </>
                       )}
@@ -965,17 +970,22 @@ export function CreatorProductWizard({
                   >
                     Link Externo (YouTube/Vimeo)
                   </button>
-                  <button
+                   <button
                     type="button"
                     onClick={() => {
+                      if (collaboratorPlan !== 'course_creator') {
+                        setErrorMsg("O upload de vídeo próprio requer o Plano Premium. Selecione 'Link Externo' ou faça upgrade no Painel.");
+                        return;
+                      }
                       setLessonSourceType("upload");
                       setErrorMsg(null);
                     }}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                       lessonSourceType === "upload" ? "bg-violet-500 text-white" : "text-on-surface-variant hover:text-white"
                     }`}
                   >
                     Fazer Upload do Vídeo
+                    {collaboratorPlan !== 'course_creator' && <Lock size={10} className="opacity-60" />}
                   </button>
                 </div>
               </div>
@@ -995,6 +1005,21 @@ export function CreatorProductWizard({
                   <p className="text-[9px] text-on-surface-variant leading-relaxed">
                     * Ideal para começar rápido usando hospedagem gratuita de vídeos externos.
                   </p>
+                  
+                  {/* Tutorial video for YouTube unlisted links */}
+                  <div className="mt-2 border border-white/10 bg-white/5 rounded-xl p-3 space-y-2">
+                    <p className="text-[10px] font-semibold text-violet-400">💡 Como obter o link não listado no YouTube de forma segura:</p>
+                    <div className="relative aspect-video rounded-lg overflow-hidden border border-white/5 bg-black">
+                      <iframe
+                        src="https://www.youtube.com/embed/SVB2jXOcYXY"
+                        title="Tutorial: Vídeo Não Listado"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="absolute inset-0 w-full h-full"
+                      />
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 hover:border-violet-500/40 rounded-2xl p-6 bg-white/[0.01] transition-colors relative">
@@ -1068,7 +1093,7 @@ export function CreatorProductWizard({
                   4. Preço
                 </h3>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  Define o valor de venda do teu e-book ou disponibiliza-o gratuitamente.
+                  {isCourse ? "Define o valor de venda do teu curso ou disponibiliza-o gratuitamente." : "Define o valor de venda do teu e-book ou disponibiliza-o gratuitamente."}
                 </p>
               </div>
 
@@ -1153,7 +1178,7 @@ export function CreatorProductWizard({
                   5. Programa de Afiliados
                 </h3>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  Permite que outros vendedores promovam o teu e-book em troca de uma comissão por venda.
+                  {isCourse ? "Permite que outros vendedores promovam o teu curso em troca de uma comissão por venda." : "Permite que outros vendedores promovam o teu e-book em troca de uma comissão por venda."}
                 </p>
               </div>
 
@@ -1206,7 +1231,7 @@ export function CreatorProductWizard({
                         className="w-full accent-violet-500 bg-white/10 rounded-lg appearance-none h-1.5"
                       />
                       <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                        Recomendado: 30% a 50% para incentivar afiliados profissionais a promoverem o teu e-book.
+                        {isCourse ? "Recomendado: 30% a 50% para incentivar afiliados profissionais a promoverem o teu curso." : "Recomendado: 30% a 50% para incentivar afiliados profissionais a promoverem o teu e-book."}
                       </p>
                     </motion.div>
                   )}
@@ -1226,7 +1251,7 @@ export function CreatorProductWizard({
                   6. Revisão e Publicação
                 </h3>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  Tudo pronto! Escolha como deseja publicar o e-book na plataforma.
+                  {isCourse ? "Tudo pronto! Escolha como deseja publicar o curso na plataforma." : "Tudo pronto! Escolha como deseja publicar o e-book na plataforma."}
                 </p>
               </div>
 

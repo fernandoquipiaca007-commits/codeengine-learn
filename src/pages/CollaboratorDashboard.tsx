@@ -3982,6 +3982,7 @@ export function CollaboratorDashboard({
             setScreen={setScreen}
             displayName={profile?.displayName}
             isAngola={isAngola}
+            collaboratorPlan={profile?.plan || 'ebook_creator'}
           />
         )}
       </div>

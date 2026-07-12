@@ -2448,11 +2448,21 @@ export function CollaboratorProductForm({
                           {videoSourceType === 'youtube' && (
                             <>
                               <p className="font-semibold text-primary">Como hospedar no YouTube gratuitamente:</p>
-                              <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant">
+                              <ul className="list-disc pl-4 space-y-0.5 text-on-surface-variant mb-2">
                                 <li>Faça upload do vídeo na sua conta do YouTube Studio.</li>
                                 <li>Defina a visibilidade como <strong className="text-white">"Não listado"</strong> (para que ninguém assista fora da CodeEngine).</li>
                                 <li>Copie o link gerado e cole no campo abaixo.</li>
                               </ul>
+                              <div className="relative aspect-video rounded-lg overflow-hidden border border-white/5 bg-black mt-2">
+                                <iframe
+                                  src="https://www.youtube.com/embed/SVB2jXOcYXY"
+                                  title="Tutorial: Vídeo Não Listado"
+                                  frameBorder="0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                  className="absolute inset-0 w-full h-full"
+                                />
+                              </div>
                             </>
                           )}
                           {videoSourceType === 'vimeo' && (
@@ -3942,13 +3952,50 @@ function ReviewCoursePlayerMockup({
   productTitle: string;
 }) {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
-  
+  const [videoPlayUrl, setVideoPlayUrl] = useState<string>('');
+  const [loadingVideo, setLoadingVideo] = useState(false);
+
   // Find first lesson on mount
   useEffect(() => {
     if (lessons.length > 0) {
       setSelectedLesson(lessons[0]);
     }
   }, [lessons]);
+
+  useEffect(() => {
+    if (!selectedLesson) {
+      setVideoPlayUrl('');
+      return;
+    }
+
+    const path = selectedLesson.video_storage_path || selectedLesson.videoUrl || '';
+    const isHttp = path.startsWith('http://') || path.startsWith('https://');
+
+    if (path && !isHttp) {
+      setLoadingVideo(true);
+      const getSignedUrl = async () => {
+        try {
+          const { data, error } = await supabase
+            .storage
+            .from('ebooks-private')
+            .createSignedUrl(path, 3600);
+          if (error) throw error;
+          if (data?.signedUrl) {
+            setVideoPlayUrl(data.signedUrl);
+          }
+        } catch (err) {
+          console.error("Error creating signed URL for lesson preview:", err);
+          setVideoPlayUrl('');
+        } finally {
+          setLoadingVideo(false);
+        }
+      };
+      getSignedUrl();
+    } else {
+      setVideoPlayUrl(path);
+      setLoadingVideo(false);
+    }
+  }, [selectedLesson]);
 
   // Group lessons by module
   const lessonsByModule = (moduleId: string | null) => {
@@ -3995,6 +4042,18 @@ function ReviewCoursePlayerMockup({
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
+            ) : videoPlayUrl ? (
+              <video
+                src={videoPlayUrl}
+                controls
+                controlsList="nodownload"
+                className="w-full max-w-3xl aspect-video rounded-2xl border border-white/10 shadow-2xl bg-neutral-900"
+              />
+            ) : loadingVideo ? (
+              <div className="w-full max-w-3xl aspect-video rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl flex flex-col items-center justify-center text-center p-6 space-y-4">
+                <div className="w-8 h-8 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
+                <h4 className="text-white font-bold">Obtendo link seguro do vídeo...</h4>
+              </div>
             ) : (selectedLesson.videoUrl || selectedLesson.video_storage_path) ? (
               <div className="w-full max-w-3xl aspect-video rounded-2xl bg-neutral-900 border border-white/10 shadow-2xl flex flex-col items-center justify-center text-center p-6 space-y-4">
                 <PlayCircle className="w-16 h-16 text-primary animate-pulse" />
