@@ -120,10 +120,10 @@ export function ProductVideo({ productId, refreshKey = 0 }: ProductVideoProps) {
     const isDrive = url.includes('drive.google.com') || url.includes('/file/d/');
 
     if (isYoutube || video.video_type === 'youtube') {
-      const videoId = url.includes('youtu.be') 
-        ? url.split('youtu.be/')[1]?.split('?')[0]
-        : url.split('v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      const videoId = (match && match[2].length === 11) ? match[2] : null;
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
     }
     
     if (isVimeo || video.video_type === 'vimeo') {

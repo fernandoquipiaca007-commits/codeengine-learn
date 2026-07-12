@@ -1277,7 +1277,9 @@ export function CollaboratorProductForm({
         themeVideoConfig,
         primaryLanguage: locale,
         translations,
-        visibility
+        visibility,
+        status: 'draft',
+        scheduled_publish_at: null
       };
 
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
@@ -3713,6 +3715,10 @@ export function CollaboratorProductForm({
               aoa_price: isFree ? 0 : (priceAOA ? Number(priceAOA) : 0),
               is_free: isFree
             }}
+            overrideFAQs={faqs}
+            overrideBonuses={bonuses}
+            overrideBenefits={benefits}
+            overrideCustomSections={customSections}
           />
         </div>
       )}
@@ -3829,6 +3835,10 @@ export function CollaboratorProductForm({
                   aoa_price: isFree ? 0 : (priceAOA ? Number(priceAOA) : 0),
                   is_free: isFree
                 }}
+                overrideFAQs={faqs}
+                overrideBonuses={bonuses}
+                overrideBenefits={benefits}
+                overrideCustomSections={customSections}
               />
             </div>
           )}
@@ -4013,10 +4023,10 @@ function ReviewCoursePlayerMockup({
     if (!url) return '';
     const trimmed = url.trim();
     if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
-      const videoId = trimmed.includes('youtu.be')
-        ? trimmed.split('youtu.be/')[1]?.split('?')[0]
-        : trimmed.split('v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+      const match = trimmed.match(regExp);
+      const videoId = (match && match[2].length === 11) ? match[2] : null;
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : trimmed;
     }
     if (trimmed.includes('vimeo.com')) {
       const videoId = trimmed.split('vimeo.com/')[1]?.split('?')[0];

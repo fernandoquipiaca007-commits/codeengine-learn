@@ -61,6 +61,10 @@ interface ProductProps {
   overrideThemePath?: string;
   overrideThemeConfig?: any;
   overrideProductData?: any;
+  overrideFAQs?: any[];
+  overrideBonuses?: any[];
+  overrideBenefits?: any[];
+  overrideCustomSections?: any[];
 }
 
 function hasCopy(value: unknown): value is string {
@@ -102,14 +106,14 @@ function getEmbedUrl(url: string | null): { url: string; isEmbed: boolean } {
   if (!url) return { url: '', isEmbed: false };
   const trimmed = url.trim();
 
-  // 1. YouTube
+  // 1. YouTube Check
   if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
-    const videoId = trimmed.includes('youtu.be')
-      ? trimmed.split('youtu.be/')[1]?.split('?')[0]
-      : trimmed.split('v=')[1]?.split('&')[0];
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = trimmed.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
     return {
-      url: `https://www.youtube.com/embed/${videoId}?autoplay=0&modestbranding=1&rel=0`,
-      isEmbed: true
+      url: videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0&modestbranding=1&rel=0` : trimmed,
+      isEmbed: videoId ? true : false
     };
   }
 
@@ -212,6 +216,10 @@ export function Product({
   overrideThemePath,
   overrideThemeConfig,
   overrideProductData,
+  overrideFAQs,
+  overrideBonuses,
+  overrideBenefits,
+  overrideCustomSections,
 }: ProductProps) {
   const { locale, isLoading: localeLoading } = useLocale();
   const overrideTitle = overrideProductData?.title || "";
@@ -1335,6 +1343,7 @@ export function Product({
           refreshKey={childRefreshKey}
           title={translateDbText(customCopy?.benefits_title)}
           subtitle={translateDbText(customCopy?.benefits_subtitle)}
+          overrideBenefits={overrideBenefits}
         />
       )}
 
@@ -1346,11 +1355,16 @@ export function Product({
           subtitle={translateDbText(customCopy?.bonuses_subtitle)}
           productOriginalPrice={listPrice}
           productFinalPrice={getFinalPrice()}
+          overrideBonuses={overrideBonuses}
         />
       )}
 
       {showCustomSections && (
-        <ProductCustomSections productId={product.id} refreshKey={childRefreshKey} />
+        <ProductCustomSections
+          productId={product.id}
+          refreshKey={childRefreshKey}
+          overrideCustomSections={overrideCustomSections}
+        />
       )}
 
       {showFaq && (
@@ -1358,6 +1372,7 @@ export function Product({
           productId={product.id}
           refreshKey={childRefreshKey}
           title={translateDbText(customCopy?.faq_title)}
+          overrideFAQs={overrideFAQs}
         />
       )}
 

@@ -27,6 +27,7 @@ interface ProductBenefitsProps {
   refreshKey?: number;
   title?: string;
   subtitle?: string;
+  overrideBenefits?: any[];
 }
 
 const DEFAULT_BENEFITS: Record<string, { title: string; subtitle: string; items: { icon: string; title: string; description: string }[] }> = {
@@ -110,14 +111,19 @@ const TRANSLATIONS = {
   }
 };
 
-export function ProductBenefits({ productId, refreshKey = 0, title, subtitle }: ProductBenefitsProps) {
+export function ProductBenefits({ productId, refreshKey = 0, title, subtitle, overrideBenefits }: ProductBenefitsProps) {
   const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [loaded, setLoaded] = useState(false);
   const { locale } = useLocale();
 
   useEffect(() => {
+    if (overrideBenefits) {
+      setBenefits(overrideBenefits);
+      setLoaded(true);
+      return;
+    }
     void loadBenefits();
-  }, [productId, refreshKey]);
+  }, [productId, refreshKey, overrideBenefits]);
 
   async function loadBenefits() {
     try {

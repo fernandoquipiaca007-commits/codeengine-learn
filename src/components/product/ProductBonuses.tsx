@@ -68,6 +68,7 @@ interface ProductBonusesProps {
   subtitle?: string;
   productOriginalPrice?: number;
   productFinalPrice?: number;
+  overrideBonuses?: any[];
 }
 
 export function ProductBonuses({
@@ -77,6 +78,7 @@ export function ProductBonuses({
   subtitle,
   productOriginalPrice,
   productFinalPrice,
+  overrideBonuses,
 }: ProductBonusesProps) {
   const { locale } = useLocale();
   const currentLang = ((locale || 'pt').slice(0, 2) as 'pt' | 'en' | 'fr') || 'pt';
@@ -92,9 +94,14 @@ export function ProductBonuses({
   } | null>(null);
 
   useEffect(() => {
+    if (overrideBonuses) {
+      setBonuses(overrideBonuses);
+      setLoaded(true);
+      return;
+    }
     void loadBonuses();
     void loadActiveCampaign();
-  }, [productId, refreshKey]);
+  }, [productId, refreshKey, overrideBonuses]);
 
   useEffect(() => {
     if (!campaign?.show_countdown || !campaign.end_date) return;

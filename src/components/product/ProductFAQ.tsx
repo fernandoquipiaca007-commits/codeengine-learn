@@ -17,6 +17,7 @@ interface ProductFAQProps {
   productId: string;
   refreshKey?: number;
   title?: string;
+  overrideFAQs?: any[];
 }
 
 const DEFAULT_FAQS: Record<string, { title: string; subtitle: string; items: { question: string; answer: string; is_highlighted: boolean; is_expanded_by_default: boolean }[] }> = {
@@ -127,15 +128,22 @@ const TRANSLATIONS = {
   }
 };
 
-export function ProductFAQ({ productId, refreshKey = 0, title }: ProductFAQProps) {
+export function ProductFAQ({ productId, refreshKey = 0, title, overrideFAQs }: ProductFAQProps) {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const { locale } = useLocale();
 
   useEffect(() => {
+    if (overrideFAQs) {
+      setFaqs(overrideFAQs);
+      const defaultExpanded = overrideFAQs.find((f: FAQ) => f.is_expanded_by_default);
+      setExpandedId(defaultExpanded?.id ?? overrideFAQs[0]?.id ?? null);
+      setLoaded(true);
+      return;
+    }
     void loadFAQs();
-  }, [productId, refreshKey]);
+  }, [productId, refreshKey, overrideFAQs]);
 
   async function loadFAQs() {
     try {

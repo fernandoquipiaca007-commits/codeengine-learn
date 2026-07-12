@@ -15,6 +15,7 @@ interface CustomSection {
 interface ProductCustomSectionsProps {
   productId: string;
   refreshKey?: number;
+  overrideCustomSections?: any[];
 }
 
 const DEFAULT_SECTIONS: Record<string, { title: string; content: string; section_type: string }[]> = {
@@ -56,14 +57,19 @@ const DEFAULT_SECTIONS: Record<string, { title: string; content: string; section
   ]
 };
 
-export function ProductCustomSections({ productId, refreshKey = 0 }: ProductCustomSectionsProps) {
+export function ProductCustomSections({ productId, refreshKey = 0, overrideCustomSections }: ProductCustomSectionsProps) {
   const [sections, setSections] = useState<CustomSection[]>([]);
   const [loading, setLoading] = useState(true);
   const { locale } = useLocale();
 
   useEffect(() => {
+    if (overrideCustomSections) {
+      setSections(overrideCustomSections);
+      setLoading(false);
+      return;
+    }
     void loadSections();
-  }, [productId, refreshKey]);
+  }, [productId, refreshKey, overrideCustomSections]);
 
   async function loadSections() {
     try {
