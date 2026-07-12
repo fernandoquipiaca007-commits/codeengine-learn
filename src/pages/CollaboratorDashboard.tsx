@@ -2396,9 +2396,9 @@ export function CollaboratorDashboard({
                 </span>
 
                 {bioText && (
-                  <p className="text-[11px] text-on-surface-variant leading-relaxed max-w-sm">
-                    {bioText.slice(0, 120)}
-                    {bioText.length > 120 ? "…" : ""}
+                  <p className="text-[11px] text-on-surface-variant leading-relaxed max-w-sm line-clamp-3">
+                    {bioText.replace(/<[^>]*>/g, '').slice(0, 150)}
+                    {bioText.replace(/<[^>]*>/g, '').length > 150 ? "…" : ""}
                   </p>
                 )}
               </div>

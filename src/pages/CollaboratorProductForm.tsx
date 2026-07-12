@@ -3885,7 +3885,7 @@ export function CollaboratorProductForm({
                     <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                       <div className="space-y-1.5">
                         <h4 className="font-display text-sm font-bold text-white truncate">{title || 'Título do Produto'}</h4>
-                        <p className="font-sans text-xs text-on-surface-variant line-clamp-2">{description || 'Sem descrição cadastrada ainda...'}</p>
+                        <p className="font-sans text-xs text-on-surface-variant line-clamp-2">{description ? description.replace(/<[^>]*>/g, '') : 'Sem descrição cadastrada ainda...'}</p>
                       </div>
                       
                       <div className="flex items-center justify-between border-t border-white/5 pt-3">

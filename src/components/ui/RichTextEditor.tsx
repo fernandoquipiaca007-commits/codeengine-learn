@@ -86,6 +86,12 @@ export function RichTextEditor({
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
   return (
     <div className={`border border-white/10 rounded-xl bg-surface-high overflow-hidden flex flex-col ${className}`}>
       {/* Toolbar */}
@@ -184,6 +190,7 @@ export function RichTextEditor({
         onBlur={emitChange}
         onKeyUp={updateActiveFormats}
         onMouseUp={updateActiveFormats}
+        onPaste={handlePaste}
         className="w-full min-h-[120px] px-4 py-3 text-sm text-white focus:outline-none overflow-y-auto font-sans leading-relaxed prose prose-invert max-w-none prose-sm outline-none"
         placeholder={placeholder}
       />
