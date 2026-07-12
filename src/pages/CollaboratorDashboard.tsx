@@ -1722,7 +1722,7 @@ export function CollaboratorDashboard({
                   </div>
 
                   <span className="block text-xs font-semibold text-on-surface-variant mb-1">
-                    {t('collaborator.ledger.statusPending', 'Em Garantia')}
+                    {t('collaborator.wallet.inGuaranteeUsd', 'Em Garantia (USD)')}
                   </span>
 
                   <span className="block text-xl font-bold text-white font-mono">
@@ -1753,7 +1753,7 @@ export function CollaboratorDashboard({
                   </div>
 
                   <span className="block text-xs font-semibold text-on-surface-variant mb-1">
-                    {t('collaborator.wallet.inProcessing', 'Em Processamento')}
+                    {t('collaborator.wallet.inProcessingUsd', 'Em Processamento (USD)')}
                   </span>
 
                   <span className="block text-xl font-bold text-white font-mono">
@@ -1784,7 +1784,7 @@ export function CollaboratorDashboard({
                   </div>
 
                   <span className="block text-xs font-semibold text-on-surface-variant mb-1">
-                    {t('collaborator.wallet.available', 'Disponível para Saque')}
+                    {t('collaborator.wallet.availableUsd', 'Disponível para Saque (USD)')}
                   </span>
 
                   <span className="block text-xl font-bold text-white font-mono">

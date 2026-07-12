@@ -2706,9 +2706,11 @@ export function CollaboratorProductForm({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid grid-cols-1 ${isAngola ? 'sm:grid-cols-2' : ''} gap-4`}>
                 <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Promocional Internacional (USD)</label>
+                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">
+                    {isAngola ? 'Preço Promocional Internacional (USD)' : 'Preço Promocional (USD)'}
+                  </label>
                   <input
                     type="number"
                     step="0.01"
@@ -2724,22 +2726,24 @@ export function CollaboratorProductForm({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Promocional Angola (AOA)</label>
-                  <input
-                    type="number"
-                    step="1"
-                    max={MAX_PRICE_AOA}
-                    value={campaign.special_price_aoa}
-                    onChange={e => {
-                      let val = e.target.value;
-                      if (val && Number(val) > MAX_PRICE_AOA) val = String(MAX_PRICE_AOA);
-                      setCampaign({ ...campaign, special_price_aoa: val });
-                    }}
-                    placeholder="0"
-                    className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
-                  />
-                </div>
+                {isAngola && (
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço Promocional Angola (AOA)</label>
+                    <input
+                      type="number"
+                      step="1"
+                      max={MAX_PRICE_AOA}
+                      value={campaign.special_price_aoa}
+                      onChange={e => {
+                        let val = e.target.value;
+                        if (val && Number(val) > MAX_PRICE_AOA) val = String(MAX_PRICE_AOA);
+                        setCampaign({ ...campaign, special_price_aoa: val });
+                      }}
+                      placeholder="0"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-3 py-2">

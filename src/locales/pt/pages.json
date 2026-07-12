@@ -544,10 +544,13 @@
     },
     "wallet": {
       "inGuarantee": "Em Garantia (AOA)",
+      "inGuaranteeUsd": "Em Garantia (USD)",
       "guaranteeDesc": "Período de reembolso. Fundos bloqueados por segurança.",
       "inProcessing": "Em Processamento (AOA)",
+      "inProcessingUsd": "Em Processamento (USD)",
       "processingDesc": "Aguardando liquidação FaciPay.",
       "available": "Disponível para Saque (AOA)",
+      "availableUsd": "Disponível para Saque (USD)",
       "minWithdrawal": "Mínimo Kz {{min}} para sacar.",
       "totalEarned": "Total Acumulado (AOA)",
       "totalWithdrawn": "Total Sacado (AOA)",

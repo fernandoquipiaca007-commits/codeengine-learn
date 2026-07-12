@@ -540,10 +540,13 @@
     },
     "wallet": {
       "inGuarantee": "In Guarantee (AOA)",
+      "inGuaranteeUsd": "In Guarantee (USD)",
       "guaranteeDesc": "Refund period. Funds locked for security.",
       "inProcessing": "In Processing (AOA)",
+      "inProcessingUsd": "In Processing (USD)",
       "processingDesc": "Awaiting FaciPay settlement.",
       "available": "Available for Withdrawal (AOA)",
+      "availableUsd": "Available for Withdrawal (USD)",
       "minWithdrawal": "Minimum Kz {{min}} to withdraw.",
       "totalEarned": "Total Accumulated (AOA)",
       "totalWithdrawn": "Total Withdrawn (AOA)",

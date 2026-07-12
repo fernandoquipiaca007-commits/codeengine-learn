@@ -6,6 +6,7 @@ import { CollaboratorProductForm } from './CollaboratorProductForm';
 import { ProductTypePicker } from '../components/collaborator/ProductTypePicker';
 import { ProductFormType } from '../lib/categoryDetect';
 import { useTranslation } from 'react-i18next';
+import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface CollaboratorProductsProps {
   setScreen: (screen: string) => void;
@@ -25,6 +26,7 @@ interface PickerCategory {
 
 export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImmersive }: CollaboratorProductsProps) {
   const { t } = useTranslation('pages');
+  const { isAngola } = useUserCountry();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
   }
 
   const formatPrice = (prod: any) => {
-    if (prod.aoa_price && Number(prod.aoa_price) > 0) return Number(prod.aoa_price).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' });
+    if (isAngola && prod.aoa_price && Number(prod.aoa_price) > 0) return Number(prod.aoa_price).toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' });
     return Number(prod.price || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
   };
 
