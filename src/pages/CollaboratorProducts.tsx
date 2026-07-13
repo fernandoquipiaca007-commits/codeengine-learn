@@ -172,8 +172,12 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
     }
   };
 
+  const getProductSlug = (title: string) => {
+    return title.toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,'-').replace(/&/g,'-and-').replace(/[^\w\-]+/g,'').replace(/\-\-+/g,'-');
+  };
+
   const handleCopyLink = (title: string) => {
-    const slug = title.toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,'-').replace(/&/g,'-and-').replace(/[^\w\-]+/g,'').replace(/\-\-+/g,'-');
+    const slug = getProductSlug(title);
     navigator.clipboard.writeText(`${window.location.origin}/product/${slug}`).then(() => alert(t('collaborator.products.linkCopied', 'Link copiado!'))).catch(console.error);
   };
 
@@ -246,9 +250,9 @@ export function CollaboratorProducts({ setScreen, collaboratorProfile, setIsImme
                         <button onClick={() => handleDelete(prod.id)} className="flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer whitespace-nowrap"><Trash2 size={13} /> {t('collaborator.products.actionDelete', 'Excluir')}</button>
                         <button onClick={() => handleCopyLink(prod.title)} className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap"><Copy size={13} className="text-yellow-400" /> {t('collaborator.products.actionCopyLink', 'Copiar Link')}</button>
                         {prod.approval_status === 'approved' && prod.status === 'active' ? (
-                          <a href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap">{t('collaborator.products.actionViewStore', 'Ver Loja')} <ExternalLink size={12} className="text-primary" /></a>
+                          <a href={`/product/${getProductSlug(prod.title)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-white/10 transition-all cursor-pointer whitespace-nowrap">{t('collaborator.products.actionViewStore', 'Ver Loja')} <ExternalLink size={12} className="text-primary" /></a>
                         ) : (
-                          <a href={`/product/${prod.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')}?preview=true`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/25 transition-all cursor-pointer animate-pulse whitespace-nowrap">{t('collaborator.products.actionViewPreview', 'Ver Preview')} <ExternalLink size={12} /></a>
+                          <a href={`/product/${getProductSlug(prod.title)}?preview=true`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 rounded-full bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/25 transition-all cursor-pointer animate-pulse whitespace-nowrap">{t('collaborator.products.actionViewPreview', 'Ver Preview')} <ExternalLink size={12} /></a>
                         )}
                       </div>
                     </td>

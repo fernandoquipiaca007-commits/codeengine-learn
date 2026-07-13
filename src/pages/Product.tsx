@@ -361,10 +361,9 @@ export function Product({
           console.log('[ProductPage] base product resolved:', data);
           if (!data) return null;
 
-          // Check if product is hidden/draft and verify ownership
-          const isHidden = data.visibility === 'hidden';
+          // Check if product is draft and verify ownership
           const isDraft = data.status === 'draft';
-          if (isHidden || isDraft) {
+          if (isDraft) {
             const { data: { session } } = await supabase.auth.getSession();
             const userId = session?.user?.id;
             
