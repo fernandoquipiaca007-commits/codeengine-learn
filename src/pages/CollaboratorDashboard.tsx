@@ -87,6 +87,7 @@ interface CollaboratorProfile {
   upgradeReceiptUrl?: string;
 
   facipayAccount?: string;
+  avatarUrl?: string | null;
 }
 
 export function CollaboratorDashboard({
@@ -2371,9 +2372,17 @@ export function CollaboratorDashboard({
             <div className="glass-panel rounded-2xl border border-white/10 p-5 flex gap-4 items-start">
               <div className="relative shrink-0">
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 bg-primary/20 flex items-center justify-center">
-                  <span className="font-display font-black text-xl text-white">
-                    {profile.displayName?.charAt(0)?.toUpperCase()}
-                  </span>
+                  {profile.avatarUrl ? (
+                    <img
+                      src={profile.avatarUrl}
+                      alt={profile.displayName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-display font-black text-xl text-white">
+                      {profile.displayName?.charAt(0)?.toUpperCase()}
+                    </span>
+                  )}
                 </div>
 
                 <img
