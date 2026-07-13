@@ -93,7 +93,7 @@ export function Background3D({ isImmersive = false }: { isImmersive?: boolean })
     return (isMobile || isSlowConnection) ? 1 : 1.5;
   }, []);
 
-  const shouldRenderCanvas = !isLowPowerMode && !isImmersive && isTabVisible;
+  const shouldRenderCanvas = !isLowPowerMode && isTabVisible;
 
   return (
     <div className="fixed inset-0 z-[-10] bg-background pointer-events-none overflow-hidden">
@@ -102,9 +102,11 @@ export function Background3D({ isImmersive = false }: { isImmersive?: boolean })
       <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[150px] opacity-50"></div>
       
       {shouldRenderCanvas && (
-        <Canvas camera={{ position: [0, 0, 1] }} dpr={dpr}>
-          <Stars />
-        </Canvas>
+        <div className={`w-full h-full transition-opacity duration-700 ${isImmersive ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <Canvas camera={{ position: [0, 0, 1] }} dpr={dpr}>
+            <Stars />
+          </Canvas>
+        </div>
       )}
     </div>
   );

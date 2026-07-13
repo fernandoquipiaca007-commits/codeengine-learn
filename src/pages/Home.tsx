@@ -446,19 +446,22 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
     return (hasB ? 1 : 0) - (hasA ? 1 : 0);
   };
 
-  // Split products: top 4 for "Most Sold" (filter best seller first), next 4 for "New Releases", next 4 for "Recommended"
-  const bestSellerList = products.filter(p => p.is_bestseller).sort(sortByInterests);
-  const mostSoldProducts = bestSellerList.length >= 4 
-    ? bestSellerList.slice(0, 4) 
-    : [...bestSellerList, ...products.filter(p => !p.is_bestseller).slice(0, 4 - bestSellerList.length)];
+  // Split products: up to 10 for each row to allow carousel scrolling without repetition
+  const sortedByBestseller = [...products].sort((a, b) => {
+    const bestA = a.is_bestseller ? 1 : 0;
+    const bestB = b.is_bestseller ? 1 : 0;
+    if (bestA !== bestB) return bestB - bestA;
+    return sortByInterests(a, b);
+  });
+  const mostSoldProducts = sortedByBestseller.slice(0, 10);
 
   const newReleasesProducts = [...products]
-    .sort(sortByInterests)
-    .slice(0, 4);
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+    .slice(0, 10);
 
   const recommendedProducts = [...products]
     .sort((a, b) => getRecommendationScore(b, onboardingData) - getRecommendationScore(a, onboardingData))
-    .slice(0, 4);
+    .slice(0, 10);
 
   // Take first 8 products for circular gallery (or fallback to whatever is available), injecting sponsored ads first
   const circularGalleryItems = [
@@ -877,14 +880,14 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div ref={bestsellersRef} className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
+            <div ref={bestsellersRef} className="flex flex-row overflow-x-auto gap-4 pb-4 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
               {mostSoldProducts.map((product, idx) => {
                 return (
                   <article
                     key={product.id}
                     onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
                     onMouseEnter={() => prefetchProduct(product.id, locale)}
-                    className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                    className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-[220px] lg:w-[260px] flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                   >
                     {/* Glowing background card element */}
                     <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
@@ -973,13 +976,13 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div ref={recommendedRef} className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
+            <div ref={recommendedRef} className="flex flex-row overflow-x-auto gap-4 pb-4 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
               {recommendedProducts.map((product) => (
                 <article
                   key={product.id}
                   onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
                   onMouseEnter={() => prefetchProduct(product.id, locale)}
-                  className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                  className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-[220px] lg:w-[260px] flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                 >
                   <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
                   
@@ -1065,14 +1068,14 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
               {text.sections.noProducts}
             </div>
           ) : (
-            <div ref={releasesRef} className="flex flex-row overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-3 scrollbar-none snap-x snap-mandatory">
+            <div ref={releasesRef} className="flex flex-row overflow-x-auto gap-4 pb-4 scrollbar-none snap-x snap-mandatory w-full scroll-smooth">
               {newReleasesProducts.map((product) => {
                 return (
                   <article
                     key={product.id}
                     onClick={() => onProductClick ? onProductClick(product.id, product.title) : setScreen('product')}
                     onMouseEnter={() => prefetchProduct(product.id, locale)}
-                    className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-auto flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
+                    className="glass-card glass-card-hover rounded-2xl p-2 sm:p-2.5 w-[155px] sm:w-[220px] lg:w-[260px] flex-shrink-0 snap-start relative group flex flex-col cursor-pointer overflow-hidden text-left bg-surface/50 border border-white/5 hover:border-primary/20"
                   >
                     <div className="absolute w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(192,193,255,0.06)_0%,transparent_70%)] rounded-full pointer-events-none z-[-1] top-0 left-0" />
 

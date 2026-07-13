@@ -167,6 +167,9 @@ const normalizeString = (str: string) => {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, "e")
+    .replace(/\s+/g, " ")
+    .trim()
 }
 
 // Icon getter
