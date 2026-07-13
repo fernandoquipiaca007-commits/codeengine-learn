@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Download, Clock, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Download, Clock, AlertCircle, CheckCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { downloadProduct } from '../../lib/download-file';
 import { useLocale } from '../../contexts/LocaleContext';
@@ -18,8 +18,9 @@ interface ProductDownload {
   last_download?: string;
   download_count: number;
   language?: string | null;
-  use_shared_content?: boolean | null;
-  updated_at?: string | null;
+  use_shared_content?: boolean;
+  updated_at?: string;
+  bonuses?: any[];
 }
 
 interface DownloadListProps {
@@ -86,6 +87,20 @@ export function DownloadList({ memberId }: DownloadListProps) {
   const [products, setProducts] = useState<ProductDownload[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadingBonusId, setDownloadingBonusId] = useState<string | null>(null);
+
+  async function handleBonusDownload(bonusId: string) {
+    setDownloadingBonusId(bonusId);
+    try {
+      const { downloadBonus } = await import('../../lib/download-file');
+      await downloadBonus(bonusId);
+    } catch (error) {
+      console.error('Error downloading bonus:', error);
+      alert(error instanceof Error ? error.message : 'Bonus download failed');
+    } finally {
+      setDownloadingBonusId(null);
+    }
+  }
 
   useEffect(() => {
     loadPurchasedProducts();
@@ -100,6 +115,7 @@ export function DownloadList({ memberId }: DownloadListProps) {
         .select(`
           purchase_date,
           product_id,
+          selected_bonus_ids,
           products (
             id,
             title,
@@ -158,6 +174,21 @@ export function DownloadList({ memberId }: DownloadListProps) {
           const storage_url = useShared ? product.storage_url : (tr?.storage_url || fb?.storage_url || product.storage_url);
           const file_storage_path = useShared ? product.file_storage_path : (tr?.storage_url || fb?.storage_url || product.file_storage_path);
 
+          // Fetch bonuses for this product
+          const { data: dbBonuses } = await supabase
+            .from('product_bonuses')
+            .select('id, title, description, is_optional, file_url, file_storage_path')
+            .eq('product_id', product.id)
+            .eq('is_active', true);
+
+          const selectedIds = purchase.selected_bonus_ids || [];
+          const accessibleBonuses = (dbBonuses || []).filter((b: any) => {
+            const hasFile = !!(b.file_url || b.file_storage_path);
+            if (!hasFile) return false;
+            if (!b.is_optional) return true;
+            return selectedIds.includes(b.id);
+          });
+
           return {
             id: product.id,
             title,
@@ -170,7 +201,8 @@ export function DownloadList({ memberId }: DownloadListProps) {
             download_count: downloads?.length || 0,
             language: useShared ? 'pt' : locale,
             use_shared_content: useShared,
-            updated_at: product.updated_at
+            updated_at: product.updated_at,
+            bonuses: accessibleBonuses,
           };
         })
       );
@@ -346,6 +378,41 @@ export function DownloadList({ memberId }: DownloadListProps) {
                   </>
                 )}
               </button>
+
+              {/* Bonuses Downloads */}
+              {product.bonuses && product.bonuses.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-left">
+                  <h4 className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
+                    {activeLang === 'pt' ? 'Bônus Inclusos e Adquiridos' : 'Included & Purchased Bonuses'}
+                  </h4>
+                  <div className="space-y-1.5">
+                    {product.bonuses.map((bonus: any) => (
+                      <button
+                        key={bonus.id}
+                        type="button"
+                        onClick={() => handleBonusDownload(bonus.id)}
+                        disabled={downloadingBonusId === bonus.id}
+                        className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-white/90 hover:text-white transition group/bonus disabled:opacity-50"
+                      >
+                        <span className="font-semibold truncate max-w-[70%]">{bonus.title}</span>
+                        <span className="flex items-center gap-1.5 text-[10px] text-primary group-hover/bonus:text-secondary font-medium shrink-0">
+                          {downloadingBonusId === bonus.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>{texts.downloading || 'A baixar...'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-3.5 h-3.5" />
+                              <span>{activeLang === 'pt' ? 'Baixar' : 'Download'}</span>
+                            </>
+                          )}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

@@ -21,6 +21,7 @@ interface FastPayFlowProps {
     aoa_price?: number | null;
     fastpay_link?: string | null;
   };
+  selectedBonusIds?: string[];
   onClose: () => void;
   onComplete?: () => void;
 }
@@ -29,7 +30,7 @@ type Step = 'instructions' | 'creating' | 'redirect' | 'upload' | 'waiting';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app';
 
-export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) {
+export function FastPayFlow({ product, selectedBonusIds = [], onClose, onComplete }: FastPayFlowProps) {
   const { locale } = useLocale();
   const { t } = useTranslation('checkout');
   const [step, setStep] = useState<Step>('instructions');
@@ -67,7 +68,8 @@ export function FastPayFlow({ product, onClose, onComplete }: FastPayFlowProps) 
         },
         body: JSON.stringify({ 
           product_id: product.id,
-          referral_code: referralCode || undefined
+          referral_code: referralCode || undefined,
+          selectedBonusIds
         }),
       });
 

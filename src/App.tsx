@@ -176,7 +176,7 @@ const PageContent = memo(function PageContent({
       {resolvedScreen === 'contact' && <Contact setScreen={navigateToScreen} />}
       {resolvedScreen === 'favorites' && <Favorites setScreen={navigateToScreen} />}
       {resolvedScreen === 'news' && <News setScreen={navigateToScreen} />}
-      {resolvedScreen === 'settings' && <Settings setScreen={navigateToScreen} />}
+      {resolvedScreen === 'settings' && <Settings setScreen={navigateToScreen} setMember={setMember} />}
       {resolvedScreen === 'privacy' && <Privacy setScreen={navigateToScreen} />}
       {resolvedScreen === 'terms' && <Terms setScreen={navigateToScreen} />}
       {resolvedScreen === 'licensing' && <Licensing setScreen={navigateToScreen} />}

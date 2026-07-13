@@ -40,6 +40,8 @@ export interface LocalizedProduct {
   isSponsored?: boolean;
   theme_video_path?: string | null;
   theme_video_config?: any;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export function useLocalizedProduct(productId: string | null) {
@@ -136,6 +138,7 @@ export function useLocalizedProduct(productId: string | null) {
             status: base.status,
             video_url: base.video_url,
             category_name: t?.category_name || null,
+            created_at: base.created_at,
             updated_at: t?.cover_url ? t.updated_at : base.updated_at,
             collaborator: base.collaborator,
           };

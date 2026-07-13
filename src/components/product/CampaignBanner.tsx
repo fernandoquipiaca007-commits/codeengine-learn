@@ -86,7 +86,7 @@ export function CampaignBanner({ productId, onSpecialPrice, onCampaignActive }: 
       setCampaign(active ?? null);
       onSpecialPriceRef.current?.(active?.special_price ?? null);
 
-      if (active?.show_countdown && active.end_date) {
+      if (active?.end_date) {
         calculateTimeLeft(active.end_date);
         onCampaignActiveRef.current?.(active.end_date);
       } else {
@@ -117,7 +117,7 @@ export function CampaignBanner({ productId, onSpecialPrice, onCampaignActive }: 
   }, [campaign]);
 
   useEffect(() => {
-    if (!campaign?.show_countdown || !campaign.end_date) return;
+    if (!campaign?.end_date) return;
 
     const interval = setInterval(() => {
       calculateTimeLeft(campaign.end_date);
@@ -165,7 +165,7 @@ export function CampaignBanner({ productId, onSpecialPrice, onCampaignActive }: 
           {campaign.banner_text}
         </p>
 
-        {campaign.show_countdown && timeLeft && (
+        {timeLeft && (
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4" style={{ color: bannerStyle.textColor }} />
             <div

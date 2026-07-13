@@ -10,9 +10,10 @@ import { useUserCountry } from '../contexts/UserCountryContext';
 
 interface SettingsProps {
   setScreen: (screen: string) => void;
+  setMember?: React.Dispatch<React.SetStateAction<any>>;
 }
 
-export function Settings({ setScreen }: SettingsProps) {
+export function Settings({ setScreen, setMember }: SettingsProps) {
   const { t } = useTranslation(['pages', 'common', 'auth']);
   const { locale, setLocale } = useLocale();
   const { country } = useUserCountry();
@@ -307,6 +308,16 @@ export function Settings({ setScreen }: SettingsProps) {
 
       if (updateError) throw updateError;
 
+      if (setMember) {
+        setMember((prev: any) => prev ? {
+          ...prev,
+          profile_data: {
+            ...(prev.profile_data || {}),
+            avatar_url: publicUrl,
+          }
+        } : prev);
+      }
+
       setAvatarUrl(publicUrl);
       setMemberData({
         ...(memberData || {}),
@@ -375,6 +386,23 @@ export function Settings({ setScreen }: SettingsProps) {
         .eq('id', activeMember.id);
 
       if (error) throw error;
+
+      // Update collaborators table display_name
+      await supabase
+        .from('collaborators')
+        .update({ display_name: name })
+        .eq('member_id', activeMember.id);
+
+      if (setMember) {
+        setMember((prev: any) => prev ? {
+          ...prev,
+          profile_data: {
+            ...(prev.profile_data || {}),
+            name,
+            email_notifications: emailNotifications,
+          }
+        } : prev);
+      }
 
       // Save onboarding preferences
       await supabase

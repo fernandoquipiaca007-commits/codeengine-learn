@@ -56,6 +56,7 @@ export function ProductActionButton({
   const { t } = useTranslation(['common', 'checkout'], { lng: locale });
   const [showPaymentSelector, setShowPaymentSelector] = useState(false);
   const [showFastPayFlow, setShowFastPayFlow] = useState(false);
+  const [selectedBonusIdsForFastPay, setSelectedBonusIdsForFastPay] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,7 +157,7 @@ export function ProductActionButton({
     }
   };
 
-  const handlePaidCheckout = async (loggedInUser?: any) => {
+  const handlePaidCheckout = async (loggedInUser?: any, selectedBonusIds: string[] = []) => {
     if (loading) return; // Prevent double-click
     if (ownsProduct) return; // Already owns
     setShowPaymentSelector(false);
@@ -210,6 +211,7 @@ export function ProductActionButton({
           referralCode: referralCode || undefined,
           successUrl: `${appUrl}?screen=success`,
           cancelUrl: `${appUrl}?screen=cancel`,
+          selectedBonusIds,
         }),
       });
 
@@ -611,12 +613,13 @@ export function ProductActionButton({
             fastpay_link: fastpayLink,
             originalPrice: originalPrice || price,
           }}
-          onSelectStripe={() => {
+          onSelectStripe={(selectedIds) => {
             setShowPaymentSelector(false);
-            handlePaidCheckout();
+            void handlePaidCheckout(undefined, selectedIds);
           }}
-          onSelectFastPay={() => {
+          onSelectFastPay={(selectedIds) => {
             setShowPaymentSelector(false);
+            setSelectedBonusIdsForFastPay(selectedIds);
             setShowFastPayFlow(true);
           }}
           onClose={() => setShowPaymentSelector(false)}
@@ -633,6 +636,7 @@ export function ProductActionButton({
             aoa_price: aoaPrice,
             fastpay_link: fastpayLink,
           }}
+          selectedBonusIds={selectedBonusIdsForFastPay}
           onClose={() => setShowFastPayFlow(false)}
           onComplete={() => refetch()}
         />

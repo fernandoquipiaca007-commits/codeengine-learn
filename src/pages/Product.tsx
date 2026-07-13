@@ -102,6 +102,18 @@ const SECTION_TITLES = {
   }
 };
 
+const CAMPAIGN_TIMER_TRANSLATIONS = {
+  pt: {
+    endsIn: 'A Oferta Especial Termina Em:'
+  },
+  en: {
+    endsIn: 'Special Offer Ends In:'
+  },
+  fr: {
+    endsIn: "L'offre spéciale se termine dans :"
+  }
+};
+
 function getEmbedUrl(url: string | null): { url: string; isEmbed: boolean } {
   if (!url) return { url: '', isEmbed: false };
   const trimmed = url.trim();
@@ -242,6 +254,7 @@ export function Product({
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [campaignPrice, setCampaignPrice] = useState<number | null>(null);
   const [campaignEndDate, setCampaignEndDate] = useState<string | null>(null);
+  const lastProductIdRef = useRef<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -562,9 +575,13 @@ export function Product({
 
   useEffect(() => {
     if (localeLoading) return;
-    setCampaignPrice(null);
-    setDiscount(0);
-    setAppliedCoupon('');
+    if (lastProductIdRef.current !== productId) {
+      setCampaignPrice(null);
+      setCampaignEndDate(null);
+      setDiscount(0);
+      setAppliedCoupon('');
+      lastProductIdRef.current = productId;
+    }
     prevLocaleRef.current = locale;
     void loadProduct(false);
   }, [productId, localeLoading, loadProduct]);
@@ -1402,6 +1419,9 @@ export function Product({
           subtitle={translateDbText(customCopy?.bonuses_subtitle)}
           productOriginalPrice={listPrice}
           productFinalPrice={getFinalPrice()}
+          productOriginalPriceAoa={Number((product as any).aoa_price || Math.round(product.price * 920))}
+          productFinalPriceAoa={getFinalAoaPrice()}
+          preferAoa={isAngola}
           overrideBonuses={overrideBonuses}
         />
       )}
@@ -1500,7 +1520,7 @@ export function Product({
                 <div className="flex items-center gap-1.5 mb-1">
                   <Clock className="w-3.5 h-3.5 text-red-500" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-red-400">
-                    A Oferta Especial Termina Em:
+                    {CAMPAIGN_TIMER_TRANSLATIONS[currentLang]?.endsIn || CAMPAIGN_TIMER_TRANSLATIONS.pt.endsIn}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 font-mono text-sm sm:text-base font-extrabold text-white">

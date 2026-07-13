@@ -245,11 +245,17 @@ interface FAQState {
 }
 
 interface BonusState {
+  id?: string;
   title: string;
   description: string;
   original_value: string;
   display_order: number;
   linked_product_id?: string | null;
+  file_url?: string | null;
+  file_storage_path?: string | null;
+  is_optional?: boolean;
+  additional_price?: string;
+  additional_price_aoa?: string;
 }
 
 interface BenefitState {
@@ -598,7 +604,28 @@ export function CollaboratorProductForm({
   });
 
   const [newFaq, setNewFaq] = useState({ question: '', answer: '' });
-  const [newBonus, setNewBonus] = useState({ title: '', description: '', original_value: '', linked_product_id: '' });
+  const [newBonus, setNewBonus] = useState<{
+    id?: string;
+    title: string;
+    description: string;
+    original_value: string;
+    linked_product_id: string | null;
+    file_url: string;
+    file_storage_path: string;
+    is_optional: boolean;
+    additional_price: string;
+    additional_price_aoa: string;
+  }>({
+    title: '',
+    description: '',
+    original_value: '',
+    linked_product_id: null,
+    file_url: '',
+    file_storage_path: '',
+    is_optional: false,
+    additional_price: '',
+    additional_price_aoa: '',
+  });
   const [newBenefit, setNewBenefit] = useState({ title: '', description: '' });
 
   const [licenseType, setLicenseType] = useState<'personal' | 'commercial'>('personal');
@@ -878,11 +905,17 @@ export function CollaboratorProductForm({
 
           if (prod.product_bonuses) {
             setBonuses(prod.product_bonuses.map((b: any) => ({
+              id: b.id,
               title: b.title || '',
               description: b.description || '',
               original_value: String(b.original_value || '0'),
               display_order: b.display_order || 0,
               linked_product_id: b.linked_product_id || null,
+              file_url: b.file_url || null,
+              file_storage_path: b.file_storage_path || null,
+              is_optional: b.is_optional || false,
+              additional_price: String(b.additional_price || '0'),
+              additional_price_aoa: String(b.additional_price_aoa || '0'),
             })).sort((a: any, b: any) => a.display_order - b.display_order));
           }
 
@@ -1033,11 +1066,16 @@ export function CollaboratorProductForm({
     }
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, bucket: string, fieldSetter: (url: string) => void) => {
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    bucket: string,
+    fieldSetter: (url: string) => void,
+    progressKey?: string
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const key = bucket;
+    const key = progressKey || bucket;
     setUploadProgress(prev => ({ ...prev, [key]: 'Fazendo upload...' }));
     setFormError(null);
 
@@ -1563,7 +1601,17 @@ export function CollaboratorProductForm({
   const addBonus = () => {
     if (!newBonus.title || !newBonus.description) return;
     setBonuses(prev => [...prev, { ...newBonus, display_order: prev.length }]);
-    setNewBonus({ title: '', description: '', original_value: '', linked_product_id: '' });
+    setNewBonus({
+      title: '',
+      description: '',
+      original_value: '',
+      linked_product_id: null,
+      file_url: '',
+      file_storage_path: '',
+      is_optional: false,
+      additional_price: '',
+      additional_price_aoa: '',
+    });
   };
 
   const removeBonus = (index: number) => {
@@ -3045,7 +3093,6 @@ export function CollaboratorProductForm({
                   placeholder="Ex: Planilha interativa para planejar e controlar todos os investimentos e despesas."
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Valor Original Comparativo (USD)</label>
                 <input
@@ -3056,6 +3103,71 @@ export function CollaboratorProductForm({
                   className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
                 />
               </div>
+
+              {!newBonus.linked_product_id && (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Ficheiro do Bônus (.zip)</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="file"
+                      accept=".zip"
+                      onChange={e => handleFileUpload(e, 'ebooks-private', (url) => {
+                        setNewBonus(prev => ({ ...prev, file_url: url, file_storage_path: url }));
+                      }, 'bonus-file-upload')}
+                      className="hidden"
+                      id="bonus-file-upload-input"
+                    />
+                    <label
+                      htmlFor="bonus-file-upload-input"
+                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold cursor-pointer transition-all border border-white/10"
+                    >
+                      Escolher Arquivo .zip
+                    </label>
+                    <span className="text-xs text-on-surface-variant">
+                      {uploadProgress['bonus-file-upload'] || (newBonus.file_url ? 'Arquivo Privado Vinculado' : 'Nenhum arquivo selecionado')}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 py-1">
+                <input
+                  type="checkbox"
+                  id="bonus-is-optional"
+                  checked={newBonus.is_optional || false}
+                  onChange={e => setNewBonus(prev => ({ ...prev, is_optional: e.target.checked }))}
+                  className="w-4 h-4 rounded border-white/10 bg-surface-high text-primary focus:ring-0"
+                />
+                <label htmlFor="bonus-is-optional" className="text-xs font-semibold text-on-surface-variant cursor-pointer select-none">
+                  Preço Adicional no Checkout (Bônus Opcional / Order Bump)
+                </label>
+              </div>
+
+              {newBonus.is_optional && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço USD Adicional ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newBonus.additional_price || ''}
+                      onChange={e => setNewBonus(prev => ({ ...prev, additional_price: e.target.value }))}
+                      placeholder="Ex: 9.90"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço AOA Adicional (Kwanza)</label>
+                    <input
+                      type="number"
+                      value={newBonus.additional_price_aoa || ''}
+                      onChange={e => setNewBonus(prev => ({ ...prev, additional_price_aoa: e.target.value }))}
+                      placeholder="Ex: 5000"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
 
               <button
                 type="button"
@@ -3080,8 +3192,18 @@ export function CollaboratorProductForm({
                               Auto-Entrega
                             </span>
                           )}
+                          {b.is_optional && (
+                            <span className="text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded px-1.5 py-0.5 font-bold uppercase">
+                              Opcional (${b.additional_price} / {b.additional_price_aoa} AOA)
+                            </span>
+                          )}
+                          {(b.file_url || b.file_storage_path) && (
+                            <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded px-1.5 py-0.5 font-bold uppercase">
+                              Ficheiro
+                            </span>
+                          )}
                         </h4>
-                        <p className="text-on-surface-variant text-xs mt-1">{b.description}</p>
+                        <p className="text-on-surface-variant text-xs mt-1" dangerouslySetInnerHTML={{ __html: b.description || '' }} />
                       </div>
                       <button
                         type="button"
