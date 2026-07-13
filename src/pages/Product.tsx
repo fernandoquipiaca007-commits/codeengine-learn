@@ -1540,11 +1540,13 @@ export function Product({
             )}
 
             {/* Coupon Input */}
-            <ProductCouponSection
-              productId={product.id}
-              originalPrice={campaignPrice ?? listPrice}
-              onCouponApplied={handleCouponApplied}
-            />
+            {!product.is_free && (
+              <ProductCouponSection
+                productId={product.id}
+                originalPrice={campaignPrice ?? listPrice}
+                onCouponApplied={handleCouponApplied}
+              />
+            )}
             
             {/* Translation & Observation Alert */}
             {(availableLanguages.length > 0 || (customCopy?.purchase_note && customCopy.purchase_note.trim() !== '')) && (
