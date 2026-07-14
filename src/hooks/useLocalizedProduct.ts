@@ -25,6 +25,7 @@ export interface LocalizedProduct {
   is_free?: boolean;
   stripe_price_id: string;
   category_id: string;
+  additional_category_ids?: string[];
   subcategory_id?: string | null;
   aoa_price?: number | null;
   fastpay_link?: string | null;
@@ -131,6 +132,7 @@ export function useLocalizedProduct(productId: string | null) {
             is_free: base.is_free,
             stripe_price_id: base.stripe_price_id,
             category_id: base.category_id,
+            additional_category_ids: base.additional_category_ids || [],
             subcategory_id: base.subcategory_id,
             aoa_price: base.aoa_price,
             fastpay_link: base.fastpay_link,
@@ -185,7 +187,7 @@ export async function fetchLocalizedProducts(lang: AppLocale, status = 'active')
     const { data: products, error } = await supabase
       .from('products')
       .select(`
-        id, title, description, price, is_free, category_id, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, updated_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path, codeengine_recommended, editor_choice, featured_pick, is_bestseller,
+        id, title, description, price, is_free, category_id, additional_category_ids, subcategory_id, aoa_price, fastpay_link, tags, status, created_at, updated_at, stripe_price_id, video_url, cover_url, cover_storage_path, visibility, min_member_level, access_duration_days, use_shared_content, product_type, storage_url, preview_url, file_storage_path, codeengine_recommended, editor_choice, featured_pick, is_bestseller,
         collaborator:collaborators (
           id,
           display_name,

@@ -257,7 +257,9 @@ export function Library({ setScreen, onProductClick }: {
   const matchedCategoryAds = categoryAds
     .filter(ad => {
       if (!ad.product || ad.product.status !== 'active') return false;
-      const matchesCategory = selectedCategory ? ad.product.category_id === selectedCategory : true;
+      const matchesCategory = selectedCategory 
+        ? (ad.product.category_id === selectedCategory || (ad.product.additional_category_ids && ad.product.additional_category_ids.includes(selectedCategory))) 
+        : true;
       const matchesSubcategory = selectedSubcategory ? ad.product.subcategory_id === selectedSubcategory : true;
       return matchesCategory && matchesSubcategory;
     })
@@ -272,7 +274,9 @@ export function Library({ setScreen, onProductClick }: {
   // Filter and sort organic products by category, subcategory and recommendation score
   const organicFiltered = products
     .filter((p) => {
-      const matchesCategory = selectedCategory ? p.category_id === selectedCategory : true;
+      const matchesCategory = selectedCategory 
+        ? (p.category_id === selectedCategory || (p.additional_category_ids && p.additional_category_ids.includes(selectedCategory))) 
+        : true;
       const matchesSubcategory = selectedSubcategory ? p.subcategory_id === selectedSubcategory : true;
       return matchesCategory && matchesSubcategory;
     })
@@ -421,7 +425,7 @@ export function Library({ setScreen, onProductClick }: {
                             Todas as Categorias ({products.length})
                           </button>
                           {categories.map((category) => {
-                            const count = products.filter((p) => p.category_id === category.id).length;
+                            const count = products.filter((p) => p.category_id === category.id || (p.additional_category_ids && p.additional_category_ids.includes(category.id))).length;
                             const localizedProd = products.find((p) => p.category_id === category.id);
                             const displayCategoryName = (localizedProd as any)?.category_name || category.name;
                             return (

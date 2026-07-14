@@ -63,6 +63,7 @@ export function CreatorProductWizard({
   // Categories list for auto-tagging
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedAdditionalCategoryIds, setSelectedAdditionalCategoryIds] = useState<string[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>("");
   const [visibility, setVisibility] = useState<"public" | "hidden">("public");
@@ -181,6 +182,14 @@ export function CreatorProductWizard({
 
       const savedCatId = localStorage.getItem("wizard_form_categoryId");
       if (savedCatId) setSelectedCategoryId(savedCatId);
+      const savedAdditionalCats = localStorage.getItem("wizard_form_additionalCategoryIds");
+      if (savedAdditionalCats) {
+        try {
+          setSelectedAdditionalCategoryIds(JSON.parse(savedAdditionalCats));
+        } catch {
+          setSelectedAdditionalCategoryIds([]);
+        }
+      }
       const savedSubcatId = localStorage.getItem("wizard_form_subcategoryId");
       if (savedSubcatId) setSelectedSubcategoryId(savedSubcatId);
       const savedVis = localStorage.getItem("wizard_form_visibility");
@@ -199,6 +208,7 @@ export function CreatorProductWizard({
       localStorage.removeItem("wizard_form_affiliateEnabled");
       localStorage.removeItem("wizard_form_affiliateCommissionPct");
       localStorage.removeItem("wizard_form_categoryId");
+      localStorage.removeItem("wizard_form_additionalCategoryIds");
       localStorage.removeItem("wizard_form_subcategoryId");
       localStorage.removeItem("wizard_form_visibility");
       localStorage.removeItem("wizard_form_lessonTitle");
@@ -357,6 +367,7 @@ export function CreatorProductWizard({
         visibility,
         status: status === "published" ? "approved" : "draft", // draft or approved
         scheduled_at: status === "scheduled" && scheduledDate ? new Date(scheduledDate).toISOString() : null,
+        additionalCategoryIds: selectedAdditionalCategoryIds,
       };
 
       const url = createdProductId
@@ -546,6 +557,7 @@ export function CreatorProductWizard({
       localStorage.setItem("wizard_form_affiliateEnabled", affiliateEnabled ? "true" : "false");
       localStorage.setItem("wizard_form_affiliateCommissionPct", affiliateCommissionPct);
       localStorage.setItem("wizard_form_categoryId", selectedCategoryId);
+      localStorage.setItem("wizard_form_additionalCategoryIds", JSON.stringify(selectedAdditionalCategoryIds));
       localStorage.setItem("wizard_form_subcategoryId", selectedSubcategoryId);
       localStorage.setItem("wizard_form_visibility", visibility);
       localStorage.setItem("wizard_form_lessonTitle", lessonTitle);
@@ -572,6 +584,7 @@ export function CreatorProductWizard({
       localStorage.setItem("wizard_form_affiliateEnabled", affiliateEnabled ? "true" : "false");
       localStorage.setItem("wizard_form_affiliateCommissionPct", affiliateCommissionPct);
       localStorage.setItem("wizard_form_categoryId", selectedCategoryId);
+      localStorage.setItem("wizard_form_additionalCategoryIds", JSON.stringify(selectedAdditionalCategoryIds));
       localStorage.setItem("wizard_form_subcategoryId", selectedSubcategoryId);
       localStorage.setItem("wizard_form_visibility", visibility);
       localStorage.setItem("wizard_form_lessonTitle", lessonTitle);
@@ -722,6 +735,57 @@ export function CreatorProductWizard({
                   rows={3}
                   className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors resize-none"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Categoria Principal *
+                </label>
+                <select
+                  value={selectedCategoryId}
+                  onChange={(e) => setSelectedCategoryId(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-semibold focus:border-violet-500 focus:outline-none transition-colors"
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-neutral-950 text-white">
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant block mb-1">
+                  Categorias Adicionais (Selecione múltiplas)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.filter(c => c.id !== selectedCategoryId).map(c => {
+                    const isSelected = selectedAdditionalCategoryIds.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedAdditionalCategoryIds(prev => prev.filter(id => id !== c.id));
+                          } else {
+                            setSelectedAdditionalCategoryIds(prev => [...prev, c.id]);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-violet-500/25 border-violet-500 text-violet-400 shadow-lg shadow-violet-500/10'
+                            : 'bg-white/5 border-white/10 text-on-surface-variant hover:bg-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                  {categories.filter(c => c.id !== selectedCategoryId).length === 0 && (
+                    <span className="text-[10px] text-white/40 italic">Nenhuma outra categoria disponível.</span>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1.5">
@@ -1319,7 +1383,17 @@ export function CreatorProductWizard({
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5 truncate">
+                <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5 truncate col-span-2">
+                  <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Categorias</span>
+                  <span className="font-bold text-white text-xs truncate block">
+                    {[
+                      categories.find(c => c.id === selectedCategoryId)?.name,
+                      ...selectedAdditionalCategoryIds.map(id => categories.find(c => c.id === id)?.name)
+                    ].filter(Boolean).join(', ') || "Nenhuma"}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 space-y-0.5 truncate col-span-2">
                   <span className="text-on-surface-variant font-bold uppercase tracking-wider block text-[9px]">Subcategoria</span>
                   <span className="font-bold text-white text-xs truncate block">
                     {selectedSubcategoryId ? (subcategories.find((s) => s.id === selectedSubcategoryId)?.name || "Nenhuma") : "Nenhuma"}

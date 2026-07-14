@@ -292,6 +292,7 @@ export function CollaboratorProductForm({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState(presetCategoryId ?? '');
+  const [additionalCategoryIds, setAdditionalCategoryIds] = useState<string[]>([]);
 
   
   // Dual Pricing (USD and AOA simultaneously)
@@ -789,6 +790,7 @@ export function CollaboratorProductForm({
           setTitle(prod.title || '');
           setDescription(prod.description || '');
           setCategoryId(prod.category_id || '');
+          setAdditionalCategoryIds(prod.additional_category_ids || []);
           if (prod.category_id) {
             void fetchSubcategoriesForProduct(prod.category_id, prod.subcategory_id || '');
           } else {
@@ -824,23 +826,24 @@ export function CollaboratorProductForm({
           }
           
            setStorageUrl(prod.storage_url || '');
-          setTagsInput(prod.tags ? prod.tags.join(', ') : '');
+          setTagsInput(Array.isArray(prod.tags) ? prod.tags.join(', ') : (typeof prod.tags === 'string' ? prod.tags : ''));
           setCtaText(prod.cta_text || 'Comprar Agora');
           setThemeVideoPath(prod.theme_video_path || '');
           if (prod.theme_video_config) {
+            const cfg = typeof prod.theme_video_config === 'string' ? JSON.parse(prod.theme_video_config) : prod.theme_video_config;
             setThemeVideoConfig({
-              videoOpacity: prod.theme_video_config.videoOpacity ?? 0.25,
-              overlayOpacity: prod.theme_video_config.overlayOpacity ?? 0.7,
-              sectionOpacity: prod.theme_video_config.sectionOpacity ?? 0.1,
-              blurAmount: prod.theme_video_config.blurAmount ?? 8,
-              brightness: prod.theme_video_config.brightness ?? 1.0,
-              contrast: prod.theme_video_config.contrast ?? 1.0,
-              hueRotate: prod.theme_video_config.hueRotate ?? 0,
-              backgroundStyle: prod.theme_video_config.backgroundStyle,
-              textColor: prod.theme_video_config.textColor,
-              accentColor: prod.theme_video_config.accentColor,
-              panelBgColor: prod.theme_video_config.panelBgColor,
-              isLight: prod.theme_video_config.isLight,
+              videoOpacity: cfg?.videoOpacity ?? 0.25,
+              overlayOpacity: cfg?.overlayOpacity ?? 0.7,
+              sectionOpacity: cfg?.sectionOpacity ?? 0.1,
+              blurAmount: cfg?.blurAmount ?? 8,
+              brightness: cfg?.brightness ?? 1.0,
+              contrast: cfg?.contrast ?? 1.0,
+              hueRotate: cfg?.hueRotate ?? 0,
+              backgroundStyle: cfg?.backgroundStyle,
+              textColor: cfg?.textColor,
+              accentColor: cfg?.accentColor,
+              panelBgColor: cfg?.panelBgColor,
+              isLight: cfg?.isLight,
             });
           }
 
@@ -1335,6 +1338,7 @@ export function CollaboratorProductForm({
         affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
         themeVideoPath: themeVideoPath || null,
         themeVideoConfig,
+        additionalCategoryIds,
         testimonials: { title: testimonialsTitle, images: testimonialsImages },
         primaryLanguage: locale,
         translations,
@@ -1448,6 +1452,7 @@ export function CollaboratorProductForm({
         coupons, faqs, bonuses, benefits, customSections,
         affiliateEnabled, affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
         themeVideoPath: themeVideoPath || null, themeVideoConfig,
+        additionalCategoryIds,
         primaryLanguage: locale, translations,
         status: 'active',
         approval_status: 'approved',
@@ -1533,6 +1538,7 @@ export function CollaboratorProductForm({
         coupons, faqs, bonuses, benefits, customSections,
         affiliateEnabled, affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
         themeVideoPath: themeVideoPath || null, themeVideoConfig,
+        additionalCategoryIds,
         primaryLanguage: locale, translations,
         scheduled_publish_at: new Date(scheduledDate).toISOString(),
         visibility
@@ -1974,6 +1980,38 @@ export function CollaboratorProductForm({
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2 uppercase tracking-wider">Categorias Adicionais (Selecione múltiplas)</label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.filter(c => c.id !== categoryId).map(c => {
+                    const isSelected = additionalCategoryIds.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setAdditionalCategoryIds(prev => prev.filter(id => id !== c.id));
+                          } else {
+                            setAdditionalCategoryIds(prev => [...prev, c.id]);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10'
+                            : 'bg-white/5 border-white/10 text-on-surface-variant hover:bg-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                  {categories.filter(c => c.id !== categoryId).length === 0 && (
+                    <span className="text-xs text-white/40 italic">Nenhuma outra categoria disponível.</span>
+                  )}
                 </div>
               </div>
 

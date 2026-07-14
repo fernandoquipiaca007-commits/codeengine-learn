@@ -455,13 +455,24 @@ export function Home({ setScreen, onProductClick }: HomeProps) {
   });
   const mostSoldProducts = sortedByBestseller.slice(0, 10);
 
-  const newReleasesProducts = [...products]
-    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
-    .slice(0, 10);
+  // Top 5 most sold to push to the bottom of other lists
+  const topMostSoldIds = mostSoldProducts.slice(0, 5).map(p => p.id);
 
-  const recommendedProducts = [...products]
-    .sort((a, b) => getRecommendationScore(b, onboardingData) - getRecommendationScore(a, onboardingData))
-    .slice(0, 10);
+  // 2. New Releases: sort by date, but push topMostSoldIds to the bottom of the list
+  const sortedNewReleases = [...products].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const newReleasesUnique = sortedNewReleases.filter(p => !topMostSoldIds.includes(p.id));
+  const newReleasesRepeated = sortedNewReleases.filter(p => topMostSoldIds.includes(p.id));
+  const newReleasesProducts = [...newReleasesUnique, ...newReleasesRepeated].slice(0, 10);
+
+  // Top 5 of new releases to also push to the bottom of recommendations
+  const topNewReleasesIds = newReleasesProducts.slice(0, 5).map(p => p.id);
+  const excludeFromTopRecIds = [...topMostSoldIds, ...topNewReleasesIds];
+
+  // 3. Recommended: sort by recommendation score, but push excludeFromTopRecIds to the bottom
+  const sortedRecommended = [...products].sort((a, b) => getRecommendationScore(b, onboardingData) - getRecommendationScore(a, onboardingData));
+  const recommendedUnique = sortedRecommended.filter(p => !excludeFromTopRecIds.includes(p.id));
+  const recommendedRepeated = sortedRecommended.filter(p => excludeFromTopRecIds.includes(p.id));
+  const recommendedProducts = [...recommendedUnique, ...recommendedRepeated].slice(0, 10);
 
   // Take first 8 products for circular gallery (or fallback to whatever is available), injecting sponsored ads first
   const circularGalleryItems = [
