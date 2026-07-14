@@ -200,7 +200,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
     try {
       if (mode === 'signup') {
-        // Pre-signup check: check if the email already exists in members table to avoid silent errors or duplicate signups
+        // Pre-signup check: check if the email already exists in members table
         const { data: existingMember, error: queryError } = await supabase
           .from('members')
           .select('id')
@@ -215,28 +215,12 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
           throw new Error(lang === 'pt' ? 'Este e-mail já está cadastrado. Por favor, tente fazer login.' : 'This email is already registered. Please try logging in.');
         }
 
-        let referredByUserId: string | null = null;
+        // Read invite code from localStorage — will be resolved via SQL RPC after signup
+        let pendingInviteCode: string | null = null;
         try {
           const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
           if (stored && stored.expiry > Date.now()) {
-            // Support both old format { userId } and new format { code }
-            const rawCode: string | null = stored.userId || stored.code || null;
-            if (rawCode) {
-              // If rawCode is a UUID (36 chars) it's already an auth_id; otherwise resolve referral_code → auth_id
-              if (rawCode.length === 36 && /^[0-9a-f-]{36}$/i.test(rawCode)) {
-                referredByUserId = rawCode;
-              } else {
-                // Resolve referral_code to auth_id synchronously before signUp
-                const { data: founderMember } = await supabase
-                  .from('members')
-                  .select('auth_id')
-                  .eq('referral_code', rawCode)
-                  .maybeSingle();
-                if (founderMember?.auth_id) {
-                  referredByUserId = founderMember.auth_id;
-                }
-              }
-            }
+            pendingInviteCode = stored.userId || stored.code || null;
           } else {
             localStorage.removeItem('ce_founder_ref');
           }
@@ -250,15 +234,30 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
               name,
               country,
               role: registrationRole,
-              ...(referredByUserId ? { referred_by: referredByUserId } : {}),
+              // Pass invite code in metadata so the DB trigger can also try to resolve it
+              ...(pendingInviteCode ? { referred_by: pendingInviteCode } : {}),
             },
           },
         });
 
         if (signUpError) throw signUpError;
 
-        if (!signUpError && referredByUserId) {
-          localStorage.removeItem('ce_founder_ref');
+        // ── RPC link (primary mechanism — bypasses RLS, works for all auth methods) ──
+        // After signup we have a session token, so we can call the SECURITY DEFINER function.
+        // This is the reliable path regardless of whether the DB trigger succeeded.
+        if (data.session?.access_token && pendingInviteCode && data.user?.id) {
+          try {
+            const { data: rpcResult } = await supabase.rpc('link_member_to_founder', {
+              p_invite_code: pendingInviteCode,
+              p_user_auth_id: data.user.id,
+            });
+            console.log('[Auth] link_member_to_founder result:', rpcResult);
+            if ((rpcResult as any)?.success) {
+              localStorage.removeItem('ce_founder_ref');
+            }
+          } catch (rpcErr) {
+            console.warn('[Auth] RPC link_member_to_founder failed (non-fatal):', rpcErr);
+          }
         }
 
 
@@ -304,6 +303,26 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
 
         if (data.user) {
           setSuccess(t('signInSuccess'));
+
+          // ── On login: retroactively link to founder if ce_founder_ref still in localStorage ──
+          // Handles users who registered via OAuth before this fix was deployed,
+          // or whose signup trigger/RPC failed the first time.
+          try {
+            const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
+            if (stored && stored.expiry > Date.now()) {
+              const inviteCode: string | null = stored.userId || stored.code || null;
+              if (inviteCode) {
+                const { data: rpcResult } = await supabase.rpc('link_member_to_founder', {
+                  p_invite_code: inviteCode,
+                  p_user_auth_id: data.user.id,
+                });
+                console.log('[Auth] login link_member_to_founder:', rpcResult);
+                if ((rpcResult as any)?.success) {
+                  localStorage.removeItem('ce_founder_ref');
+                }
+              }
+            }
+          } catch { /* non-fatal */ }
 
           // Handle pending checkout before anything else
           const rawCheckout = sessionStorage.getItem('pendingCheckout');

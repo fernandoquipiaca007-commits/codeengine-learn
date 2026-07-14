@@ -644,37 +644,30 @@ export default function App() {
 
           // ── Auto-link to founder (safety net for Google OAuth & delayed signups) ──
           // If the member has no referred_by yet, but localStorage has a valid invite code,
-          // call ensure-member to establish the link on the backend NOW.
-          // This handles OAuth flows that cannot pass metadata during the OAuth redirect.
+          // call the SECURITY DEFINER SQL function directly — no backend HTTP needed,
+          // no RLS issues, works for any auth method (Google, email/password, etc.)
           if (currentMem && !currentMem.referred_by) {
             try {
               const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
               if (stored && stored.expiry > Date.now()) {
                 const rawInviteCode: string | null = stored.userId || stored.code || null;
-                if (rawInviteCode && session?.access_token) {
-                  const linkRes = await fetch(`${BACKEND_URL}/api/auth/ensure-member`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${session.access_token}`,
-                    },
-                    body: JSON.stringify({ inviteCode: rawInviteCode }),
+                if (rawInviteCode && user?.id) {
+                  const { data: rpcResult } = await supabase.rpc('link_member_to_founder', {
+                    p_invite_code: rawInviteCode,
+                    p_user_auth_id: user.id,
                   });
-                  if (linkRes.ok) {
-                    const linkData = await linkRes.json();
-                    if (linkData.success && linkData.member?.referred_by) {
-                      // Merge updated referred_by into local state
-                      currentMem = { ...currentMem, referred_by: linkData.member.referred_by };
-                      // Remove from localStorage — link established, no need to repeat
-                      localStorage.removeItem('ce_founder_ref');
-                      console.log('[App] Auto-linked member to founder:', linkData.member.referred_by);
-                    }
+                  console.log('[App] link_member_to_founder:', rpcResult);
+                  if ((rpcResult as any)?.success) {
+                    const founderId = (rpcResult as any)?.founder_id;
+                    if (founderId) currentMem = { ...currentMem, referred_by: founderId };
+                    localStorage.removeItem('ce_founder_ref');
                   }
                 }
               }
             } catch { /* non-fatal — UI continues normally */ }
           }
           // ─────────────────────────────────────────────────────────────────────────
+
 
           // Handle purchase flow flags if pendingCheckout exists
 
