@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
-import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft, Zap, Calendar, Music, Smartphone, Briefcase } from 'lucide-react';
+import { Save, X, FileText, Image, Video, Globe, Info, AlertTriangle, ShieldCheck, Plus, Trash, Globe2, Tag, Gift, Award, ListFilter, PlayCircle, BookOpen, Layers, DollarSign, Landmark, CheckCircle, Percent, Eye, ArrowLeft, Zap, Calendar, Music, Smartphone, Briefcase, MessageSquare } from 'lucide-react';
 import { CurriculumEditor } from '../components/collaborator/CurriculumEditor';
 import { CourseBuilder, Lesson, Module } from '../components/collaborator/forms/CourseBuilder';
 import { loadCurriculum, saveModule, deleteModule, saveLesson, deleteLesson } from '../lib/curriculum';
@@ -532,7 +532,9 @@ export function CollaboratorProductForm({
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [themeSaving, setThemeSaving] = useState(false);
   const [themeSaved, setThemeSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'campaigns' | 'coupons' | 'faqs' | 'bonuses' | 'benefits' | 'translations' | 'curriculum' | 'sections' | 'theme' | 'testimonials'>('details');
+  const [testimonialsTitle, setTestimonialsTitle] = useState('Alunos que já experimentaram');
+  const [testimonialsImages, setTestimonialsImages] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<'public' | 'hidden'>('public');
   const [reviewMode, setReviewMode] = useState(false);
   const [reviewTab, setReviewTab] = useState<'sales' | 'home' | 'player'>('sales');
@@ -957,6 +959,21 @@ export function CollaboratorProductForm({
                 };
               }
             });
+            // Find translation with testimonials
+            const ptTrans = prod.products_translations.find((t: any) => t.language === 'pt');
+            const enTrans = prod.products_translations.find((t: any) => t.language === 'en');
+            const transWithTestimonials = prod.products_translations.find((t: any) => t.testimonials && (t.testimonials.images || t.testimonials.length) > 0);
+            const targetTrans = transWithTestimonials || ptTrans || enTrans || prod.products_translations[0];
+            
+            if (targetTrans?.testimonials) {
+              const tData = targetTrans.testimonials as any;
+              setTestimonialsTitle(tData.title || 'Alunos que já experimentaram');
+              setTestimonialsImages(Array.isArray(tData.images) ? tData.images : (Array.isArray(tData) ? tData : []));
+            } else {
+              setTestimonialsTitle('Alunos que já experimentaram');
+              setTestimonialsImages([]);
+            }
+
             setTranslations(newTrans);
           }
         }
@@ -1318,6 +1335,7 @@ export function CollaboratorProductForm({
         affiliateCommissionPct: Number(affiliateCommissionPct) || 0,
         themeVideoPath: themeVideoPath || null,
         themeVideoConfig,
+        testimonials: { title: testimonialsTitle, images: testimonialsImages },
         primaryLanguage: locale,
         translations,
         visibility,
@@ -1870,6 +1888,15 @@ export function CollaboratorProductForm({
           }`}
         >
           <Video size={13} className="inline mr-1" /> Tema 3D
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('testimonials')}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            activeTab === 'testimonials' ? 'bg-white/10 text-white' : 'text-on-surface-variant hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <MessageSquare size={13} className="inline mr-1" /> Testemunhos
         </button>
       </div>
 
@@ -3620,6 +3647,93 @@ export function CollaboratorProductForm({
 
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Testimonials tab */}
+        {activeTab === 'testimonials' && (
+          <div className="space-y-4">
+            <div className="glass-panel p-4 rounded-xl border border-white/10 space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-white font-display">Testemunhos e Provas Sociais</h3>
+                <p className="text-[10px] text-on-surface-variant mt-0.5">
+                  Adicione capturas de tela ou fotos de avaliações de clientes/alunos para aumentar as conversões da sua página de vendas. Se adicionar 2 ou mais fotos, elas serão exibidas automaticamente em um carrossel dinâmico.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                  Título da Seção de Testemunhos
+                </label>
+                <input
+                  type="text"
+                  value={testimonialsTitle}
+                  onChange={e => setTestimonialsTitle(e.target.value)}
+                  placeholder="Ex: Alunos que já experimentaram"
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                  Fotos dos Testemunhos
+                </label>
+                
+                {/* Upload Button */}
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 px-4 py-2.5 text-xs font-semibold text-white transition-all">
+                    <Image size={14} className="text-primary" />
+                    Upload de Imagem
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={e => {
+                        handleFileUpload(e, 'product-covers', (url) => {
+                          setTestimonialsImages(prev => [...prev, url]);
+                        }, 'testimonial-upload');
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  {uploadProgress['testimonial-upload'] && (
+                    <span className="text-xs text-primary font-mono animate-pulse">
+                      {uploadProgress['testimonial-upload']}
+                    </span>
+                  )}
+                </div>
+
+                {/* Images list/grid */}
+                {testimonialsImages.length === 0 ? (
+                  <div className="border border-dashed border-white/10 rounded-xl p-8 text-center bg-white/[0.01]">
+                    <MessageSquare className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                    <p className="text-xs text-on-surface-variant font-medium">Nenhum testemunho adicionado.</p>
+                    <p className="text-[10px] text-white/30 mt-0.5">Faça upload de fotos das mensagens de seus clientes.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 mt-2">
+                    {testimonialsImages.map((img, idx) => (
+                      <div key={idx} className="relative group aspect-[4/3] rounded-lg border border-white/10 bg-black/40 overflow-hidden flex items-center justify-center p-1">
+                        <img 
+                          src={img} 
+                          alt={`Testemunho ${idx + 1}`} 
+                          className="max-w-full max-h-full object-contain rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setTestimonialsImages(prev => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-500/80 hover:bg-red-600 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md cursor-pointer"
+                        >
+                          <Trash size={12} />
+                        </button>
+                        <div className="absolute bottom-1 left-2 text-[9px] font-semibold text-white/50 bg-black/60 px-1.5 py-0.5 rounded">
+                          #{idx + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

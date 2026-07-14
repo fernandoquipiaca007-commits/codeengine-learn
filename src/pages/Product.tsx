@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Star, Lock, Play, Download, ArrowLeft, Languages, AlertTriangle, Clock } from 'lucide-react';
+import { ArrowRight, Star, Lock, Play, Download, ArrowLeft, Languages, AlertTriangle, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -261,6 +261,7 @@ export function Product({
     minutes: number;
     seconds: number;
   } | null>(null);
+  const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);
 
   useEffect(() => {
     if (!campaignEndDate) {
@@ -1008,6 +1009,18 @@ export function Product({
   const hasTheme = !!themePath;
   const isLight = !!themeConfig.isLight;
 
+  const testimonialsData = product.testimonials as any;
+  const testimonialsTitle = testimonialsData?.title || (currentLang === 'en' ? 'What our students say' : 'O que dizem os nossos alunos');
+  const testimonialImages = Array.isArray(testimonialsData?.images) ? testimonialsData.images : (Array.isArray(testimonialsData) ? testimonialsData : []);
+  const hasTestimonials = testimonialImages.length > 0;
+
+  const handlePrevTestimonial = () => {
+    setActiveTestimonialIndex(prev => (prev === 0 ? testimonialImages.length - 1 : prev - 1));
+  };
+  const handleNextTestimonial = () => {
+    setActiveTestimonialIndex(prev => (prev === testimonialImages.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <ProductPurchaseProvider productId={product.id}>
       {hasTheme && (
@@ -1431,6 +1444,71 @@ export function Product({
           refreshKey={childRefreshKey}
           overrideCustomSections={overrideCustomSections}
         />
+      )}
+
+      {hasTestimonials && (
+        <section className="mt-16 max-w-4xl mx-auto px-4 w-full">
+          <div className="text-center mb-10">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+              {testimonialsTitle}
+            </h2>
+            <div className="h-1 w-20 bg-gradient-to-r from-primary to-primary/40 mx-auto mt-4 rounded-full" />
+          </div>
+          
+          <div className="flex justify-center items-center">
+            {testimonialImages.length === 1 ? (
+              <div className="max-w-xl w-full glass-panel p-2 rounded-2xl border border-white/10 shadow-2xl overflow-hidden hover:scale-[1.02] transition-transform duration-300">
+                <img 
+                  src={testimonialImages[0]} 
+                  alt="Testemunho" 
+                  className="w-full h-auto rounded-xl object-contain max-h-[600px] mx-auto"
+                />
+              </div>
+            ) : (
+              <div className="relative max-w-2xl w-full flex flex-col items-center">
+                <div className="w-full glass-panel p-3 rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative group">
+                  <div className="relative aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9] w-full flex items-center justify-center bg-black/40 rounded-2xl overflow-hidden">
+                    <img 
+                      src={testimonialImages[activeTestimonialIndex]} 
+                      alt={`Testemunho ${activeTestimonialIndex + 1}`}
+                      className="max-w-full max-h-full object-contain rounded-xl transition-all duration-500 ease-out"
+                    />
+                  </div>
+                  
+                  {/* Navegação - Chevrons */}
+                  <button 
+                    type="button"
+                    onClick={handlePrevTestimonial}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg cursor-pointer"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={handleNextTestimonial}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-all duration-200 opacity-0 group-hover:opacity-100 shadow-lg cursor-pointer"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+                
+                {/* Dots Indicadores */}
+                <div className="flex gap-2 mt-4 justify-center">
+                  {testimonialImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveTestimonialIndex(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        idx === activeTestimonialIndex ? 'w-6 bg-primary' : 'w-2 bg-white/20 hover:bg-white/45'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
       )}
 
       {showFaq && (
