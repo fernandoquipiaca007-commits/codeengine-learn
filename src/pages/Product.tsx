@@ -262,6 +262,7 @@ export function Product({
     seconds: number;
   } | null>(null);
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);
+  const [isHoveringTestimonials, setIsHoveringTestimonials] = useState(false);
 
   useEffect(() => {
     if (!campaignEndDate) {
@@ -737,6 +738,12 @@ export function Product({
   useEffect(() => {
     if (loading || !product) return;
 
+    if (overrideProductData || isPreviewMode) {
+      gsap.set(coverRef.current, { opacity: 1, y: 0, rotationY: -15, rotationX: 10, scale: 1 });
+      gsap.set('.benefit-card, .bonus-card, .faq-item', { opacity: 1, y: 0 });
+      return;
+    }
+
     // 1. Intro Animation: 3D Entrance for Ebook Cover
     const introTween = gsap.fromTo(coverRef.current,
       {
@@ -1015,6 +1022,16 @@ export function Product({
   const testimonialsTitle = testimonialsData?.title || (currentLang === 'en' ? 'What our students say' : 'O que dizem os nossos alunos');
   const testimonialImages = Array.isArray(testimonialsData?.images) ? testimonialsData.images : (Array.isArray(testimonialsData) ? testimonialsData : []);
   const hasTestimonials = testimonialImages.length > 0;
+
+  useEffect(() => {
+    if (!hasTestimonials || testimonialImages.length <= 1 || isHoveringTestimonials) return;
+
+    const timer = setInterval(() => {
+      setActiveTestimonialIndex(prev => (prev === testimonialImages.length - 1 ? 0 : prev + 1));
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [hasTestimonials, testimonialImages.length, isHoveringTestimonials]);
 
   const handlePrevTestimonial = () => {
     setActiveTestimonialIndex(prev => (prev === 0 ? testimonialImages.length - 1 : prev - 1));
@@ -1468,7 +1485,11 @@ export function Product({
               </div>
             ) : (
               <div className="relative max-w-2xl w-full flex flex-col items-center">
-                <div className="w-full glass-panel p-3 rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative group">
+                <div 
+                  className="w-full glass-panel p-3 rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative group"
+                  onMouseEnter={() => setIsHoveringTestimonials(true)}
+                  onMouseLeave={() => setIsHoveringTestimonials(false)}
+                >
                   <div className="relative aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9] w-full flex items-center justify-center bg-black/40 rounded-2xl overflow-hidden">
                     <img 
                       src={testimonialImages[activeTestimonialIndex]} 
