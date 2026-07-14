@@ -641,7 +641,43 @@ export default function App() {
           if (!active) return;
           
           let currentMem = mem;
+
+          // ── Auto-link to founder (safety net for Google OAuth & delayed signups) ──
+          // If the member has no referred_by yet, but localStorage has a valid invite code,
+          // call ensure-member to establish the link on the backend NOW.
+          // This handles OAuth flows that cannot pass metadata during the OAuth redirect.
+          if (currentMem && !currentMem.referred_by) {
+            try {
+              const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
+              if (stored && stored.expiry > Date.now()) {
+                const rawInviteCode: string | null = stored.userId || stored.code || null;
+                if (rawInviteCode && session?.access_token) {
+                  const linkRes = await fetch(`${BACKEND_URL}/api/auth/ensure-member`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ inviteCode: rawInviteCode }),
+                  });
+                  if (linkRes.ok) {
+                    const linkData = await linkRes.json();
+                    if (linkData.success && linkData.member?.referred_by) {
+                      // Merge updated referred_by into local state
+                      currentMem = { ...currentMem, referred_by: linkData.member.referred_by };
+                      // Remove from localStorage — link established, no need to repeat
+                      localStorage.removeItem('ce_founder_ref');
+                      console.log('[App] Auto-linked member to founder:', linkData.member.referred_by);
+                    }
+                  }
+                }
+              }
+            } catch { /* non-fatal — UI continues normally */ }
+          }
+          // ─────────────────────────────────────────────────────────────────────────
+
           // Handle purchase flow flags if pendingCheckout exists
+
           const hasPendingCheckout = sessionStorage.getItem('pendingCheckout') !== null;
           if (hasPendingCheckout && mem && (!mem.onboarding_deferred || !mem.purchase_flow_started)) {
             const { data: updatedMem } = await supabase
