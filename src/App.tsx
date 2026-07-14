@@ -485,20 +485,10 @@ export default function App() {
       const inviteCode = parts[parts.length - 1]?.split(/[?#/]/)[0];
       if (inviteCode) {
         const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
-        if (inviteCode.length === 36) {
-          localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: inviteCode, expiry }));
-        } else {
-          supabase
-            .from('members')
-            .select('auth_id')
-            .eq('referral_code', inviteCode)
-            .maybeSingle()
-            .then(({ data }) => {
-              if (data?.auth_id) {
-                localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: data.auth_id, expiry }));
-              }
-            });
-        }
+        // Store raw code immediately — no async resolution to avoid race conditions.
+        // Auth.tsx will resolve referral_code → auth_id at signup time if needed.
+        // Backend /api/collaborators/apply already accepts both auth_id and referral_code.
+        localStorage.setItem('ce_founder_ref', JSON.stringify({ code: inviteCode, expiry }));
         // Redirect to welcome screen cleanly
         setScreen('welcome');
         window.history.replaceState({ screen: 'welcome', productId: null, section: 'inicio' }, '', '/');
@@ -528,22 +518,11 @@ export default function App() {
     const invite = params.get('invite');
     if (invite) {
       const expiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
-      if (invite.length === 36) {
-        localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: invite, expiry }));
-      } else {
-        // Query supabase to resolve referral_code to auth_id
-        supabase
-          .from('members')
-          .select('auth_id')
-          .eq('referral_code', invite)
-          .maybeSingle()
-          .then(({ data }) => {
-            if (data?.auth_id) {
-              localStorage.setItem('ce_founder_ref', JSON.stringify({ userId: data.auth_id, expiry }));
-            }
-          });
-      }
-      // Clean the invite param from URL to avoid leaking auth IDs in browser history
+      // Store raw code immediately — no async resolution to avoid race conditions.
+      // Auth.tsx will resolve referral_code → auth_id at signup time if needed.
+      // Backend /api/collaborators/apply already accepts both auth_id and referral_code.
+      localStorage.setItem('ce_founder_ref', JSON.stringify({ code: invite, expiry }));
+      // Clean the invite param from URL
       params.delete('invite');
       const cleanUrl = params.toString()
         ? `${window.location.pathname}?${params}`

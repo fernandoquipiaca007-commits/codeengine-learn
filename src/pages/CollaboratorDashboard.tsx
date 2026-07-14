@@ -384,7 +384,7 @@ export function CollaboratorDashboard({
   }
 
   async function copyInviteLink() {
-    const inviteCode = founderStats?.referralCode || founderStats?.authUserId;
+    const inviteCode = founderStats?.referralCode;
 
     if (!inviteCode) return;
 
@@ -392,25 +392,16 @@ export function CollaboratorDashboard({
 
     try {
       await navigator.clipboard.writeText(link);
-
       setInviteLinkCopied(true);
-
       setTimeout(() => setInviteLinkCopied(false), 2500);
     } catch {
       const ta = document.createElement("textarea");
-
       ta.value = link;
-
       document.body.appendChild(ta);
-
       ta.select();
-
       document.execCommand("copy");
-
       document.body.removeChild(ta);
-
       setInviteLinkCopied(true);
-
       setTimeout(() => setInviteLinkCopied(false), 2500);
     }
   }
@@ -2162,8 +2153,8 @@ export function CollaboratorDashboard({
                       />
 
                       <span className="truncate font-medium">
-                        {founderStats?.referralCode || founderStats?.authUserId
-                          ? `${window.location.origin}/convite/${founderStats.referralCode || founderStats.authUserId}`
+                        {founderStats?.referralCode
+                          ? `${window.location.origin}/convite/${founderStats.referralCode}`
                           : "Carregando..."}
                       </span>
                     </div>
@@ -2171,11 +2162,7 @@ export function CollaboratorDashboard({
                     <button
                       onClick={copyInviteLink}
 
-                      disabled={
-                        !(
-                          founderStats?.referralCode || founderStats?.authUserId
-                        )
-                      }
+                      disabled={!founderStats?.referralCode}
 
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                         inviteLinkCopied
@@ -2340,6 +2327,63 @@ export function CollaboratorDashboard({
                     </div>
                   )}
                 </div>
+
+                {/* Invited creators table */}
+                {founderStats?.invitedCollaborators?.length > 0 && (
+                  <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-white/10">
+                    <h4 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">
+                      Criadores que Convidei
+                    </h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-sm border-collapse">
+                        <thead>
+                          <tr className="text-on-surface-variant font-semibold border-b border-white/10 text-xs">
+                            <th className="pb-2.5 font-bold uppercase tracking-wider">Criador</th>
+                            <th className="pb-2.5 font-bold uppercase tracking-wider">Plano</th>
+                            <th className="pb-2.5 font-bold uppercase tracking-wider text-center">Produtos</th>
+                            <th className="pb-2.5 font-bold uppercase tracking-wider text-right">Vendas USD</th>
+                            {isAngola && (
+                              <th className="pb-2.5 font-bold uppercase tracking-wider text-right">Vendas AOA</th>
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {founderStats.invitedCollaborators.map((c: any) => (
+                            <tr key={c.collaboratorId} className="text-on-surface">
+                              <td className="py-3">
+                                <div className="font-semibold text-white text-sm">{c.displayName}</div>
+                                {c.email && (
+                                  <div className="text-[10px] text-on-surface-variant font-mono">{c.email}</div>
+                                )}
+                              </td>
+                              <td className="py-3">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border text-blue-300 bg-blue-500/10 border-blue-500/20 uppercase">
+                                  {c.plan?.replace('_', ' ') || '—'}
+                                </span>
+                              </td>
+                              <td className="py-3 text-center font-mono font-bold text-white">
+                                {c.productCount}
+                              </td>
+                              <td className="py-3 text-right font-mono font-semibold text-green-400">
+                                {c.totalSalesUsd > 0
+                                  ? c.totalSalesUsd.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                                  : <span className="text-on-surface-variant text-xs">—</span>}
+                              </td>
+                              {isAngola && (
+                                <td className="py-3 text-right font-mono font-semibold text-amber-400">
+                                  {c.totalSalesAoa > 0
+                                    ? c.totalSalesAoa.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 })
+                                    : <span className="text-on-surface-variant text-xs">—</span>}
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
               </div>
             )}
           </div>

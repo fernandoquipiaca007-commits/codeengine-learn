@@ -219,7 +219,24 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         try {
           const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
           if (stored && stored.expiry > Date.now()) {
-            referredByUserId = stored.userId;
+            // Support both old format { userId } and new format { code }
+            const rawCode: string | null = stored.userId || stored.code || null;
+            if (rawCode) {
+              // If rawCode is a UUID (36 chars) it's already an auth_id; otherwise resolve referral_code → auth_id
+              if (rawCode.length === 36 && /^[0-9a-f-]{36}$/i.test(rawCode)) {
+                referredByUserId = rawCode;
+              } else {
+                // Resolve referral_code to auth_id synchronously before signUp
+                const { data: founderMember } = await supabase
+                  .from('members')
+                  .select('auth_id')
+                  .eq('referral_code', rawCode)
+                  .maybeSingle();
+                if (founderMember?.auth_id) {
+                  referredByUserId = founderMember.auth_id;
+                }
+              }
+            }
           } else {
             localStorage.removeItem('ce_founder_ref');
           }
@@ -243,6 +260,7 @@ export function Auth({ setScreen, initialMode = 'login' }: AuthProps) {
         if (!signUpError && referredByUserId) {
           localStorage.removeItem('ce_founder_ref');
         }
+
 
         if (data.session?.access_token) {
           fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://codeengine-api-production-cb0c.up.railway.app'}/api/auth/welcome`, {

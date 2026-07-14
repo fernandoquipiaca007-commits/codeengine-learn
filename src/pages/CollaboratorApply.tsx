@@ -89,9 +89,11 @@ export function CollaboratorApply({ setScreen, onCandidacyApproved }: Collaborat
       try {
         const stored = JSON.parse(localStorage.getItem('ce_founder_ref') || 'null');
         if (stored && stored.expiry > Date.now()) {
-          inviteCode = stored.userId;
+          // Support both old format { userId } and new format { code }
+          inviteCode = stored.userId || stored.code || null;
         }
       } catch { /* ignore */ }
+
 
       // Detailed payout info will be configured in the Wallet settings after approval.
       const payoutInfo = {}; 

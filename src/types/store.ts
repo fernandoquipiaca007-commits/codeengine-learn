@@ -33,7 +33,9 @@ export interface Product {
   visibility?: string | null;
   collaborator_id?: string | null;
   scheduled_publish_at?: string | null;
+  testimonials?: any | null;
 }
+
 
 export interface Category {
   id: string;
