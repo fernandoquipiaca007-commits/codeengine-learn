@@ -286,9 +286,14 @@ export function ProductBonuses({
                 <h3 className="font-display text-2xl font-semibold text-on-surface mb-2">
                   {bonus.title}
                 </h3>
-                <p className="font-sans text-base text-on-surface-variant mb-4">
-                  {bonus.description}
-                </p>
+                <div 
+                  className="font-sans text-base text-on-surface-variant mb-4 rich-text-content"
+                  dangerouslySetInnerHTML={{ 
+                    __html: bonus.description?.includes('<') 
+                      ? bonus.description 
+                      : (bonus.description || '').replace(/\n/g, '<br/>') 
+                  }}
+                />
                 <div className="font-display text-xs font-semibold tracking-widest uppercase flex flex-wrap items-center gap-2">
                   <span className="text-on-surface-variant/70">{tDict.value || 'Valor'}</span>
                   {preferAoa ? (

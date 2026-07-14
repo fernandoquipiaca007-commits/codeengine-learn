@@ -264,6 +264,35 @@ export function Product({
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);
   const [isHoveringTestimonials, setIsHoveringTestimonials] = useState(false);
 
+  const testimonialsData = (() => {
+    if (!product?.testimonials) return null;
+    if (typeof product.testimonials === 'string') {
+      try {
+        return JSON.parse(product.testimonials);
+      } catch (e) {
+        return null;
+      }
+    }
+    return product.testimonials;
+  })();
+  const testimonialImages = Array.isArray(testimonialsData?.images) ? testimonialsData.images : (Array.isArray(testimonialsData) ? testimonialsData : []);
+  const hasTestimonials = testimonialImages.length > 0;
+  const testimonialsTitle = testimonialsData?.title || (currentLang === 'en' ? 'What our students say' : 'O que dizem os nossos alunos');
+
+  useEffect(() => {
+    setActiveTestimonialIndex(0);
+  }, [testimonialImages.length]);
+
+  useEffect(() => {
+    if (!hasTestimonials || testimonialImages.length <= 1 || isHoveringTestimonials) return;
+
+    const timer = setInterval(() => {
+      setActiveTestimonialIndex(prev => (prev === testimonialImages.length - 1 ? 0 : prev + 1));
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [hasTestimonials, testimonialImages.length, isHoveringTestimonials]);
+
   useEffect(() => {
     if (!campaignEndDate) {
       setTimeLeft(null);
@@ -1017,21 +1046,6 @@ export function Product({
   const themeConfig = overrideThemeConfig !== undefined ? overrideThemeConfig : ((product as any).theme_video_config || {});
   const hasTheme = !!themePath;
   const isLight = !!themeConfig.isLight;
-
-  const testimonialsData = product.testimonials as any;
-  const testimonialsTitle = testimonialsData?.title || (currentLang === 'en' ? 'What our students say' : 'O que dizem os nossos alunos');
-  const testimonialImages = Array.isArray(testimonialsData?.images) ? testimonialsData.images : (Array.isArray(testimonialsData) ? testimonialsData : []);
-  const hasTestimonials = testimonialImages.length > 0;
-
-  useEffect(() => {
-    if (!hasTestimonials || testimonialImages.length <= 1 || isHoveringTestimonials) return;
-
-    const timer = setInterval(() => {
-      setActiveTestimonialIndex(prev => (prev === testimonialImages.length - 1 ? 0 : prev + 1));
-    }, 3500);
-
-    return () => clearInterval(timer);
-  }, [hasTestimonials, testimonialImages.length, isHoveringTestimonials]);
 
   const handlePrevTestimonial = () => {
     setActiveTestimonialIndex(prev => (prev === 0 ? testimonialImages.length - 1 : prev - 1));

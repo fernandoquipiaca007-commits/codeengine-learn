@@ -4343,7 +4343,14 @@ function ReviewCoursePlayerMockup({
         {selectedLesson && (
           <div className="p-4 bg-neutral-950 rounded-2xl border border-white/5 mt-4 max-w-4xl mx-auto w-full">
             <h3 className="text-base font-bold text-white">{selectedLesson.title}</h3>
-            <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">{selectedLesson.description || 'Sem descrição cadastrada para esta aula.'}</p>
+            <div 
+              className="text-xs text-on-surface-variant mt-1 leading-relaxed rich-text-content"
+              dangerouslySetInnerHTML={{ 
+                __html: selectedLesson.description?.includes('<') 
+                  ? selectedLesson.description 
+                  : (selectedLesson.description || 'Sem descrição cadastrada para esta aula.').replace(/\n/g, '<br/>') 
+              }}
+            />
           </div>
         )}
       </div>

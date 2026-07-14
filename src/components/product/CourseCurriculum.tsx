@@ -102,7 +102,7 @@ export function CourseCurriculum({ productId, onPreviewLesson }: CourseCurriculu
         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => canWatch && onPreviewLesson?.(lesson.id)}>
           <p className="font-display font-semibold text-white truncate">{lesson.title}</p>
           {lesson.description && (
-            <p className="font-sans text-xs text-on-surface-variant line-clamp-1">{lesson.description}</p>
+            <p className="font-sans text-xs text-on-surface-variant line-clamp-1">{lesson.description.replace(/<[^>]*>/g, '')}</p>
           )}
         </div>
         <div className="text-right flex-shrink-0">
