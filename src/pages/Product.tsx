@@ -445,11 +445,13 @@ export function Product({
                 storage_url: t.storage_url || data.storage_url,
                 file_storage_path: t.storage_url || data.file_storage_path,
                 cta_text: t.cta_text || data.cta_text,
+                testimonials: t.testimonials || null,
                 language: translationLang,
                 updated_at: t.cover_url ? t.updated_at : data.updated_at,
               }
             : {
                 ...data,
+                testimonials: null,
                 language: 'pt',
               };
 

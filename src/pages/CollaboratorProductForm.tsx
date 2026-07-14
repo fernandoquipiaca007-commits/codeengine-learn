@@ -3968,7 +3968,8 @@ export function CollaboratorProductForm({
               cover_url: coverUrl || undefined,
               price: isFree ? 0 : (priceUSD ? Number(priceUSD) : 0),
               aoa_price: isFree ? 0 : (priceAOA ? Number(priceAOA) : 0),
-              is_free: isFree
+              is_free: isFree,
+              testimonials: { title: testimonialsTitle, images: testimonialsImages }
             }}
             overrideFAQs={faqs}
             overrideBonuses={bonuses}
@@ -4088,7 +4089,8 @@ export function CollaboratorProductForm({
                   cover_url: coverUrl || undefined,
                   price: isFree ? 0 : (priceUSD ? Number(priceUSD) : 0),
                   aoa_price: isFree ? 0 : (priceAOA ? Number(priceAOA) : 0),
-                  is_free: isFree
+                  is_free: isFree,
+                  testimonials: { title: testimonialsTitle, images: testimonialsImages }
                 }}
                 overrideFAQs={faqs}
                 overrideBonuses={bonuses}
