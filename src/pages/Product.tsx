@@ -517,34 +517,20 @@ export function Product({
             ...trCustomCopy
           };
 
-          // Fetch collaborator details if present
+          // Fetch collaborator details atomically via RPC (prevents RLS blocking on members table)
           let collaboratorInfo = null;
           if ((localized as any).collaborator_id) {
             try {
-              const { data: collab } = await supabase
-                .from('collaborators')
-                .select('id, display_name, member_id, bio, specialty')
-                .eq('id', (localized as any).collaborator_id)
-                .maybeSingle();
+              const { data: collabData, error: collabErr } = await supabase.rpc(
+                'get_collaborator_profile',
+                { p_collaborator_id: (localized as any).collaborator_id }
+              );
               
-              if (collab) {
-                const { data: mem } = await supabase
-                  .from('members')
-                  .select('profile_data')
-                  .eq('id', collab.member_id)
-                  .maybeSingle();
-                
-                collaboratorInfo = {
-                  id: collab.id,
-                  display_name: collab.display_name,
-                  bio: collab.bio,
-                  specialty: collab.specialty,
-                  avatar_url: mem?.profile_data?.avatar_url || null,
-                  cover_url: mem?.profile_data?.cover_url || mem?.profile_data?.banner_url || null,
-                };
+              if (!collabErr && collabData) {
+                collaboratorInfo = collabData;
               }
             } catch (err) {
-              console.error('[ProductPage] Error fetching collaboratorInfo:', err);
+              console.error('[ProductPage] Error fetching collaboratorInfo via RPC:', err);
             }
           }
 
