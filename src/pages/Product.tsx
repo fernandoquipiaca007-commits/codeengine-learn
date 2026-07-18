@@ -517,30 +517,12 @@ export function Product({
             ...trCustomCopy
           };
 
-          // Fetch collaborator details atomically via RPC (prevents RLS blocking on members table)
-          let collaboratorInfo = null;
-          if ((localized as any).collaborator_id) {
-            try {
-              const { data: collabData, error: collabErr } = await supabase.rpc(
-                'get_collaborator_profile',
-                { p_collaborator_id: (localized as any).collaborator_id }
-              );
-              
-              if (!collabErr && collabData) {
-                collaboratorInfo = collabData;
-              }
-            } catch (err) {
-              console.error('[ProductPage] Error fetching collaboratorInfo via RPC:', err);
-            }
-          }
-
           const row = localized as unknown as Record<string, unknown>;
           return {
             product: localized,
             pageLayout: parsePageLayoutConfig(row.page_layout_config),
             customCopy: mergedCustomCopy,
-            availableLanguages: Array.from(availLangs),
-            collaboratorInfo
+            availableLanguages: Array.from(availLangs)
           };
         };
 
@@ -558,7 +540,6 @@ export function Product({
           setPageLayout(cachedData.pageLayout);
           setCustomCopy(cachedData.customCopy);
           setAvailableLanguages(cachedData.availableLanguages || []);
-          setCollaboratorInfo(cachedData.collaboratorInfo || null);
         } else if (!silent) {
           console.log('[ProductPage] no product found, setting to null');
           setProduct(null);
@@ -583,7 +564,6 @@ export function Product({
         setPageLayout(data.pageLayout);
         setCustomCopy(data.customCopy);
         setAvailableLanguages(data.availableLanguages || []);
-        setCollaboratorInfo(data.collaboratorInfo || null);
       }
     });
     return () => {
@@ -603,6 +583,44 @@ export function Product({
     prevLocaleRef.current = locale;
     void loadProduct(false);
   }, [productId, localeLoading, loadProduct]);
+
+  // Dedicated hook to load creator profile in real-time, bypassing page cache
+  useEffect(() => {
+    let active = true;
+    const cid = (product as any)?.collaborator_id;
+
+    if (!cid || cid === 'system') {
+      setCollaboratorInfo(null);
+      return;
+    }
+
+    async function fetchCreatorProfile() {
+      try {
+        const { data: collabData, error: collabErr } = await supabase.rpc(
+          'get_collaborator_profile',
+          { p_collaborator_id: cid }
+        );
+
+        if (active) {
+          if (!collabErr && collabData) {
+            setCollaboratorInfo(collabData);
+          } else {
+            console.warn('[ProductPage] RPC profile fetch returned empty or error:', collabErr);
+            setCollaboratorInfo(null);
+          }
+        }
+      } catch (err) {
+        console.error('[ProductPage] Failed to fetch creator profile:', err);
+        if (active) setCollaboratorInfo(null);
+      }
+    }
+
+    void fetchCreatorProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [product?.collaborator_id]);
 
   useEffect(() => {
     if (localeLoading || !product?.id) return;
