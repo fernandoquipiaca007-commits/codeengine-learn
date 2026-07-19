@@ -52,7 +52,10 @@ interface Bonus {
   id: string;
   title: string;
   description: string;
-  original_value: number;
+  original_value: number;   // kept for backward compatibility
+  is_free: boolean;         // true = grátis; false = tem preço
+  bonus_price: number;      // preço USD quando is_free = false
+  bonus_price_aoa: number;  // preço AOA quando is_free = false
 }
 
 interface Campaign {
@@ -295,37 +298,34 @@ export function ProductBonuses({
                   }}
                 />
                 <div className="font-display text-xs font-semibold tracking-widest uppercase flex flex-wrap items-center gap-2">
-                  <span className="text-on-surface-variant/70">{tDict.value || 'Valor'}</span>
                   {preferAoa ? (
-                    <>
-                      <span className="text-on-surface-variant/50 mr-1">
-                        {tDict.before || 'Antes'} <span className="line-through">{(Number(bonus.original_value ?? 0) * 920).toLocaleString()} AOA</span>
+                    bonus.is_free !== false ? (
+                      <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
+                        {tDict.freeWord || 'Grátis'}
                       </span>
-                      {Number((bonus as any).is_optional ? 1 : 0) === 1 ? (
-                        <span className="bg-yellow-500/10 px-2.5 py-1 rounded-full text-yellow-400 font-bold tracking-normal normal-case">
-                          Opcional: +{Number((bonus as any).additional_price_aoa ?? 0).toLocaleString()} AOA
-                        </span>
-                      ) : (
-                        <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                          {todayPrefix}: {tDict.freeWord || 'Grátis'}
-                        </span>
-                      )}
-                    </>
+                    ) : (
+                      <span className="bg-primary/10 px-2.5 py-1 rounded-full text-primary font-bold tracking-normal normal-case">
+                        {Number((bonus as any).bonus_price_aoa ?? 0).toLocaleString()} AOA
+                      </span>
+                    )
                   ) : (
-                    <>
-                      <span className="text-on-surface-variant/50 mr-1">
-                        {tDict.before || 'Antes'} <span className="line-through">${Number(bonus.original_value ?? 0).toFixed(2)}</span>
+                    bonus.is_free !== false ? (
+                      <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
+                        {tDict.freeWord || 'Grátis'}
                       </span>
-                      {Number((bonus as any).is_optional ? 1 : 0) === 1 ? (
-                        <span className="bg-yellow-500/10 px-2.5 py-1 rounded-full text-yellow-400 font-bold tracking-normal normal-case">
-                          Opcional: +${Number((bonus as any).additional_price ?? 0).toFixed(2)}
-                        </span>
-                      ) : (
-                        <span className="bg-green-500/10 px-2.5 py-1 rounded-full text-green-400 font-bold tracking-normal normal-case">
-                          {todayPrefix}: {tDict.freeWord || 'Grátis'}
-                        </span>
-                      )}
-                    </>
+                    ) : (
+                      <span className="bg-primary/10 px-2.5 py-1 rounded-full text-primary font-bold tracking-normal normal-case">
+                        ${Number((bonus as any).bonus_price ?? 0).toFixed(2)}
+                      </span>
+                    )
+                  )}
+                  {/* Order Bump badge — unchanged */}
+                  {Number((bonus as any).is_optional ? 1 : 0) === 1 && (
+                    <span className="bg-yellow-500/10 px-2.5 py-1 rounded-full text-yellow-400 font-bold tracking-normal normal-case">
+                      {preferAoa
+                        ? `Opcional: +${Number((bonus as any).additional_price_aoa ?? 0).toLocaleString()} AOA`
+                        : `Opcional: +$${Number((bonus as any).additional_price ?? 0).toFixed(2)}`}
+                    </span>
                   )}
                 </div>
               </div>
@@ -365,42 +365,85 @@ export function ProductBonuses({
             </span>
           </div>
 
-          {/* Included Bonuses row */}
-          <div className="flex items-center justify-between text-sm sm:text-base border-b border-white/5 pb-3">
-            <span className="text-white/80">
-              {currentLang === 'pt' ? `Todos os ${bonuses.filter(b => !(b as any).is_optional).length} Bônus Exclusivos` : `All ${bonuses.filter(b => !(b as any).is_optional).length} Premium Bonuses`}
-            </span>
-            <span className="text-green-400 font-bold uppercase tracking-wider text-xs bg-green-500/10 px-2.5 py-1 rounded-full">
-              {currentLang === 'pt' ? 'Grátis' : 'Free'}
-            </span>
-          </div>
+          {/* Individual bonus rows */}
+          {bonuses.filter(b => !(b as any).is_optional).map((bonus, i) => (
+            <div key={(bonus as any).id || i} className="flex items-center justify-between text-sm sm:text-base border-b border-white/5 pb-3">
+              <span className="text-white/80">{bonus.title}</span>
+              {(bonus as any).is_free !== false ? (
+                <span className="text-green-400 font-bold uppercase tracking-wider text-xs bg-green-500/10 px-2.5 py-1 rounded-full">
+                  {currentLang === 'pt' ? 'Grátis' : 'Free'}
+                </span>
+              ) : (
+                <span className="font-semibold text-white/90">
+                  {preferAoa
+                    ? `${Number((bonus as any).bonus_price_aoa || 0).toLocaleString()} AOA`
+                    : `$${Number((bonus as any).bonus_price || 0).toFixed(2)}`}
+                </span>
+              )}
+            </div>
+          ))}
 
-          {/* Value comparison stats */}
+          {/* Value comparison — conditional on whether any bonus has a price */}
           {(() => {
             const included = bonuses.filter(b => !(b as any).is_optional);
-            const totalBonusesValUsd = included.reduce((acc, b) => acc + Number(b.original_value || 0), 0);
-            const totalBonusesValAoa = totalBonusesValUsd * 920;
+            const paidBonuses = included.filter(b => (b as any).is_free === false);
+            const allFree = paidBonuses.length === 0;
 
-            const baseOriginalUsd = productOriginalPrice || productFinalPrice || 0;
-            const baseOriginalAoa = productOriginalPriceAoa || productFinalPriceAoa || 0;
+            const totalBonusUsd = paidBonuses.reduce((acc, b) => acc + Number((b as any).bonus_price || 0), 0);
+            const totalBonusAoa = paidBonuses.reduce((acc, b) => acc + Number((b as any).bonus_price_aoa || 0), 0);
 
-            const totalValueUsd = baseOriginalUsd + totalBonusesValUsd;
-            const totalValueAoa = baseOriginalAoa + totalBonusesValAoa;
+            const productUsd = productFinalPrice || 0;
+            const productAoa = productFinalPriceAoa || 0;
 
-            const finalPriceDisplay = preferAoa 
-              ? `${(productFinalPriceAoa || 0).toLocaleString()} AOA` 
-              : `$${(productFinalPrice || 0).toFixed(2)}`;
+            const totalValueUsd = productUsd + totalBonusUsd;
+            const totalValueAoa = productAoa + totalBonusAoa;
+            const savingsUsd = totalValueUsd - productUsd;
+            const savingsAoa = totalValueAoa - productAoa;
 
-            const totalValueDisplay = preferAoa 
-              ? `${Math.round(totalValueAoa).toLocaleString()} AOA` 
+            const finalPriceDisplay = preferAoa
+              ? `${productAoa.toLocaleString()} AOA`
+              : `$${productUsd.toFixed(2)}`;
+
+            if (allFree) {
+              // Cenário B — todos os bônus gratuitos
+              return (
+                <div className="pt-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white/5 rounded-2xl p-6 border border-white/5">
+                    <div className="text-left">
+                      <span className="block text-xs uppercase tracking-wider text-primary font-bold">
+                        {currentLang === 'pt' ? 'Preço de Hoje' : 'Price Today'}
+                      </span>
+                      <span className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary-container animate-pulse">
+                        {finalPriceDisplay}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-xs text-green-400 font-bold bg-green-500/10 py-3 rounded-xl border border-green-500/20">
+                    <span>🎁</span>
+                    <span>
+                      {currentLang === 'pt'
+                        ? 'Todos os bônus incluídos gratuitamente nesta oferta'
+                        : 'All bonuses included for free in this offer'}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+
+            // Cenário A — pelo menos 1 bônus com preço
+            const totalValueDisplay = preferAoa
+              ? `${Math.round(totalValueAoa).toLocaleString()} AOA`
               : `$${totalValueUsd.toFixed(2)}`;
+            const savingsDisplay = preferAoa
+              ? `${Math.round(savingsAoa).toLocaleString()} AOA`
+              : `$${savingsUsd.toFixed(2)}`;
 
             return (
               <div className="pt-6 space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white/5 rounded-2xl p-6 border border-white/5">
                   <div className="text-left">
                     <span className="block text-xs uppercase tracking-wider text-on-surface-variant/80">
-                      {currentLang === 'pt' ? 'Valor Real Acumulado' : 'Total Package Value'}
+                      {currentLang === 'pt' ? 'Valor Real da Oferta' : 'Total Package Value'}
                     </span>
                     <span className="text-xl sm:text-2xl font-bold text-on-surface-variant line-through opacity-60">
                       {totalValueDisplay}
@@ -415,13 +458,12 @@ export function ProductBonuses({
                     </span>
                   </div>
                 </div>
-
                 <div className="flex items-center justify-center gap-2 text-xs text-green-400 font-bold bg-green-500/10 py-3 rounded-xl border border-green-500/20">
                   <span>🚀</span>
                   <span>
                     {currentLang === 'pt'
-                      ? `Você economiza mais de ${preferAoa ? `${Math.round(totalValueAoa - (productFinalPriceAoa || 0)).toLocaleString()} AOA` : `$${(totalValueUsd - (productFinalPrice || 0)).toFixed(2)}`} imediatamente!`
-                      : `You save over ${preferAoa ? `${Math.round(totalValueAoa - (productFinalPriceAoa || 0)).toLocaleString()} AOA` : `$${(totalValueUsd - (productFinalPrice || 0)).toFixed(2)}`} immediately!`}
+                      ? `Você economiza ${savingsDisplay} imediatamente!`
+                      : `You save ${savingsDisplay} immediately!`}
                   </span>
                 </div>
               </div>

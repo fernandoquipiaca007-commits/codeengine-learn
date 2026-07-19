@@ -248,11 +248,15 @@ interface BonusState {
   id?: string;
   title: string;
   description: string;
-  original_value: string;
+  // Pricing — simplified model
+  is_free: boolean;            // true = grátis; false = tem preço próprio
+  bonus_price: string;         // preço USD (só relevante quando is_free=false)
+  bonus_price_aoa: string;     // preço AOA (só relevante quando is_free=false)
   display_order: number;
   linked_product_id?: string | null;
   file_url?: string | null;
   file_storage_path?: string | null;
+  // Order Bump fields — independent logic, unchanged
   is_optional?: boolean;
   additional_price?: string;
   additional_price_aoa?: string;
@@ -611,7 +615,9 @@ export function CollaboratorProductForm({
     id?: string;
     title: string;
     description: string;
-    original_value: string;
+    is_free: boolean;
+    bonus_price: string;
+    bonus_price_aoa: string;
     linked_product_id: string | null;
     file_url: string;
     file_storage_path: string;
@@ -621,7 +627,9 @@ export function CollaboratorProductForm({
   }>({
     title: '',
     description: '',
-    original_value: '',
+    is_free: true,
+    bonus_price: '',
+    bonus_price_aoa: '',
     linked_product_id: null,
     file_url: '',
     file_storage_path: '',
@@ -910,6 +918,9 @@ export function CollaboratorProductForm({
 
           if (prod.product_bonuses) {
             setBonuses(prod.product_bonuses.map((b: any) => ({
+              is_free: b.is_free !== false,
+              bonus_price: b.bonus_price != null ? String(b.bonus_price) : (b.original_value != null ? String(b.original_value) : ''),
+              bonus_price_aoa: b.bonus_price_aoa != null ? String(b.bonus_price_aoa) : '',
               id: b.id,
               title: b.title || '',
               description: b.description || '',
@@ -1628,7 +1639,9 @@ export function CollaboratorProductForm({
     setNewBonus({
       title: '',
       description: '',
-      original_value: '',
+      is_free: true,
+      bonus_price: '',
+      bonus_price_aoa: '',
       linked_product_id: null,
       file_url: '',
       file_storage_path: '',
@@ -3124,7 +3137,9 @@ export function CollaboratorProductForm({
                       linked_product_id: e.target.value,
                       title: newBonus.title || (selectedProd ? `Acesso Bônus: ${selectedProd.title}` : ''),
                       description: newBonus.description || (selectedProd ? `Libera acesso completo ao produto "${selectedProd.title}" gratuitamente.` : ''),
-                      original_value: newBonus.original_value || (selectedProd ? String(selectedProd.price) : '')
+                      is_free: true,
+                      bonus_price: '',
+                      bonus_price_aoa: ''
                     });
                   }}
                   className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
@@ -3158,16 +3173,51 @@ export function CollaboratorProductForm({
                   placeholder="Ex: Planilha interativa para planejar e controlar todos os investimentos e despesas."
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Valor Original Comparativo (USD)</label>
-                <input
-                  type="number"
-                  value={newBonus.original_value}
-                  onChange={e => setNewBonus({ ...newBonus, original_value: e.target.value })}
-                  placeholder="Ex: 29.90"
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
-                />
+              {/* is_free toggle */}
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-high border border-white/10">
+                <div>
+                  <p className="text-sm font-semibold text-white">Este bônus é gratuito</p>
+                  <p className="text-[11px] text-on-surface-variant mt-0.5">Quando ativo, o bônus é incluído sem custo extra na oferta.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNewBonus(prev => ({ ...prev, is_free: !prev.is_free, bonus_price: '', bonus_price_aoa: '' }))}
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+                    newBonus.is_free ? 'bg-green-500' : 'bg-white/20'
+                  }`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+                    newBonus.is_free ? 'translate-x-6' : 'translate-x-0'
+                  }`} />
+                </button>
               </div>
+
+              {/* Preço do bônus — só aparece quando is_free = false */}
+              {!newBonus.is_free && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço do Bônus (USD)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newBonus.bonus_price}
+                      onChange={e => setNewBonus(prev => ({ ...prev, bonus_price: e.target.value }))}
+                      placeholder="Ex: 9.00"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço do Bônus (AOA)</label>
+                    <input
+                      type="number"
+                      value={newBonus.bonus_price_aoa}
+                      onChange={e => setNewBonus(prev => ({ ...prev, bonus_price_aoa: e.target.value }))}
+                      placeholder="Ex: 8280"
+                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
 
               {!newBonus.linked_product_id && (
                 <div className="space-y-1.5">
@@ -3251,7 +3301,11 @@ export function CollaboratorProductForm({
                       <div>
                         <h4 className="font-bold text-white mb-1 flex flex-wrap items-center gap-1.5">
                           <span>{b.title}</span>
-                          <span className="text-[10px] text-green-400 font-mono">(${b.original_value})</span>
+                          {b.is_free !== false ? (
+                            <span className="text-[10px] bg-green-500/15 text-green-400 border border-green-500/30 rounded px-1.5 py-0.5 font-bold">Grátis</span>
+                          ) : (
+                            <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 rounded px-1.5 py-0.5 font-bold">${b.bonus_price}</span>
+                          )}
                           {b.linked_product_id && (
                             <span className="text-[9px] bg-primary/20 text-primary border border-primary/30 rounded px-1 py-0.5 font-bold uppercase">
                               Auto-Entrega
