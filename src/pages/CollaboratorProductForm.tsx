@@ -3128,37 +3128,9 @@ export function CollaboratorProductForm({
                 <p className="text-xs text-on-surface-variant">Incentive a compra incluindo brindes gratuitos ou ofertas adicionais (Order Bumps).</p>
               </div>
 
-              {/* 1. Vincular Produto Interno */}
-              <div className="p-4 rounded-2xl bg-surface-high border border-white/10 space-y-2">
-                <label className="block text-xs font-semibold text-white uppercase tracking-wider">
-                  1. Vincular Produto da Plataforma <span className="text-on-surface-variant font-normal">(Opcional)</span>
-                </label>
-                <select
-                  value={newBonus.linked_product_id || ''}
-                  onChange={e => {
-                    const selectedProd = collaboratorProducts.find(p => p.id === e.target.value);
-                    setNewBonus(prev => ({
-                      ...prev,
-                      linked_product_id: e.target.value || null,
-                      title: prev.title || (selectedProd ? `Acesso Bônus: ${selectedProd.title}` : ''),
-                      description: prev.description || (selectedProd ? `Libera acesso completo ao produto "${selectedProd.title}".` : ''),
-                    }));
-                  }}
-                  className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50"
-                >
-                  <option value="">-- Selecione um produto para vincular --</option>
-                  {collaboratorProducts.map(p => (
-                    <option key={p.id} value={p.id}>{p.title} (${p.price})</option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-on-surface-variant">
-                  Ao selecionar um produto seu, o comprador receberá o acesso automaticamente na biblioteca dele ao concluir a compra.
-                </p>
-              </div>
-
-              {/* 2. Título & Descrição */}
+              {/* 1. Título do Bônus */}
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">2. Título do Bônus</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">1. Título do Bônus</label>
                 <input
                   type="text"
                   value={newBonus.title}
@@ -3168,8 +3140,9 @@ export function CollaboratorProductForm({
                 />
               </div>
 
+              {/* 2. Descrição */}
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">3. Descrição</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">2. Descrição</label>
                 <RichTextEditor
                   value={newBonus.description}
                   onChange={val => setNewBonus(prev => ({ ...prev, description: val }))}
@@ -3177,37 +3150,35 @@ export function CollaboratorProductForm({
                 />
               </div>
 
-              {/* Ficheiro avulso (se não houver produto vinculado) */}
-              {!newBonus.linked_product_id && (
-                <div className="p-3 rounded-xl bg-surface-high border border-white/10 space-y-2">
-                  <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Ficheiro do Bônus (.zip)</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="file"
-                      accept=".zip"
-                      onChange={e => handleFileUpload(e, 'ebooks-private', (url) => {
-                        setNewBonus(prev => ({ ...prev, file_url: url, file_storage_path: url }));
-                      }, 'bonus-file-upload')}
-                      className="hidden"
-                      id="bonus-file-upload-input"
-                    />
-                    <label
-                      htmlFor="bonus-file-upload-input"
-                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold cursor-pointer transition-all border border-white/10"
-                    >
-                      Escolher Arquivo .zip
-                    </label>
-                    <span className="text-xs text-on-surface-variant truncate">
-                      {uploadProgress['bonus-file-upload'] || (newBonus.file_url ? '✓ Arquivo vinculado' : 'Nenhum arquivo selecionado')}
-                    </span>
-                  </div>
+              {/* Ficheiro do Bônus (.zip) */}
+              <div className="p-3 rounded-xl bg-surface-high border border-white/10 space-y-2">
+                <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Ficheiro do Bônus (.zip)</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="file"
+                    accept=".zip"
+                    onChange={e => handleFileUpload(e, 'ebooks-private', (url) => {
+                      setNewBonus(prev => ({ ...prev, file_url: url, file_storage_path: url }));
+                    }, 'bonus-file-upload')}
+                    className="hidden"
+                    id="bonus-file-upload-input"
+                  />
+                  <label
+                    htmlFor="bonus-file-upload-input"
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold cursor-pointer transition-all border border-white/10"
+                  >
+                    Escolher Arquivo .zip
+                  </label>
+                  <span className="text-xs text-on-surface-variant truncate">
+                    {uploadProgress['bonus-file-upload'] || (newBonus.file_url ? '✓ Arquivo vinculado' : 'Nenhum arquivo selecionado')}
+                  </span>
                 </div>
-              )}
+              </div>
 
-              {/* 4. Modalidade do Bônus (Gratuito vs Pago / Order Bump) */}
+              {/* 3. Modalidade do Bônus (Gratuito vs Order Bump Pago) */}
               <div className="p-4 rounded-2xl bg-surface-high border border-white/10 space-y-3">
                 <label className="block text-xs font-semibold text-white uppercase tracking-wider">
-                  4. Modalidade da Oferta
+                  3. Modalidade da Oferta
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -3252,47 +3223,68 @@ export function CollaboratorProductForm({
                       <span className={`w-2.5 h-2.5 rounded-full ${!newBonus.is_free ? 'bg-primary' : 'bg-white/30'}`} />
                       🏷️ Oferta Checkout (Order Bump)
                     </div>
-                    <p className="text-[10px] opacity-80 mt-1">Opcional no checkout por valor extra.</p>
+                    <p className="text-[10px] opacity-80 mt-1">Opcional no checkout (Stripe).</p>
                   </button>
                 </div>
 
-                {/* Se for Bônus Pago / Order Bump — Exibe os campos de preço */}
+                {/* Se for Bônus Pago / Order Bump — Exibe os campos de preço com conversão automática */}
                 {!newBonus.is_free && (
-                  <div className="pt-2 grid grid-cols-2 gap-3 border-t border-white/10">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-on-surface-variant mb-1">Preço USD ($)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={newBonus.additional_price || newBonus.bonus_price || ''}
-                        onChange={e => {
-                          const val = e.target.value;
-                          setNewBonus(prev => ({
-                            ...prev,
-                            bonus_price: val,
-                            additional_price: val
-                          }));
-                        }}
-                        placeholder="Ex: 9.90"
-                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-on-surface-variant mb-1">Preço AOA (Kwanza)</label>
-                      <input
-                        type="number"
-                        value={newBonus.additional_price_aoa || newBonus.bonus_price_aoa || ''}
-                        onChange={e => {
-                          const val = e.target.value;
-                          setNewBonus(prev => ({
-                            ...prev,
-                            bonus_price_aoa: val,
-                            additional_price_aoa: val
-                          }));
-                        }}
-                        placeholder="Ex: 5000"
-                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
-                      />
+                  <div className="pt-2 space-y-2 border-t border-white/10">
+                    <p className="text-[11px] text-on-surface-variant">
+                      Digite o valor em USD ou AOA. O outro campo é calculado automaticamente.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-on-surface-variant mb-1">Preço USD ($)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={newBonus.additional_price || newBonus.bonus_price || ''}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (!val || isNaN(Number(val))) {
+                              setNewBonus(prev => ({ ...prev, bonus_price: '', additional_price: '', bonus_price_aoa: '', additional_price_aoa: '' }));
+                              return;
+                            }
+                            const num = Number(val);
+                            const aoaConverted = Math.round(num * usdToAoaRate).toString();
+                            setNewBonus(prev => ({
+                              ...prev,
+                              bonus_price: val,
+                              additional_price: val,
+                              bonus_price_aoa: aoaConverted,
+                              additional_price_aoa: aoaConverted
+                            }));
+                          }}
+                          placeholder="Ex: 9.90"
+                          className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-on-surface-variant mb-1">Preço AOA (Kwanza)</label>
+                        <input
+                          type="number"
+                          value={newBonus.additional_price_aoa || newBonus.bonus_price_aoa || ''}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (!val || isNaN(Number(val))) {
+                              setNewBonus(prev => ({ ...prev, bonus_price: '', additional_price: '', bonus_price_aoa: '', additional_price_aoa: '' }));
+                              return;
+                            }
+                            const num = Number(val);
+                            const usdConverted = (num / usdToAoaRate).toFixed(2);
+                            setNewBonus(prev => ({
+                              ...prev,
+                              bonus_price: usdConverted,
+                              additional_price: usdConverted,
+                              bonus_price_aoa: val,
+                              additional_price_aoa: val
+                            }));
+                          }}
+                          placeholder="Ex: 5000"
+                          className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}

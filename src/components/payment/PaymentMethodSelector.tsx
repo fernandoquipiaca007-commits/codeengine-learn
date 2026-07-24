@@ -75,7 +75,8 @@ export function PaymentMethodSelector({
     });
   }, [product.id, hasFastPayLink]);
 
-  const showFastPay = hasFastPayLink && fastpayEnabled;
+  const hasPaidBonuses = optionalBonuses.some(b => Number(b.additional_price || b.bonus_price || 0) > 0);
+  const showFastPay = hasFastPayLink && fastpayEnabled && !hasPaidBonuses;
   const hasOptionalBonuses = optionalBonuses.length > 0;
 
   // If only Stripe is available and no optional bonuses exist, skip the selector
@@ -161,15 +162,10 @@ export function PaymentMethodSelector({
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-white text-xs">{bonus.title}</span>
                         <span className="font-bold text-green-400 text-xs shrink-0">
-                          {showFastPay 
-                            ? `+${priceAoa.toLocaleString()} Kz`
-                            : `+$${priceUsd.toFixed(2)}`}
+                          {`+$${priceUsd.toFixed(2)}`}
                         </span>
                       </div>
                       <p className="text-[10px] text-on-surface-variant mt-0.5 leading-relaxed" dangerouslySetInnerHTML={{ __html: bonus.description || '' }} />
-                      <div className="text-[9px] text-on-surface-variant/60 mt-0.5 line-through">
-                        {locale === 'pt' ? `Valor original: $${Number(bonus.original_value || 0).toFixed(2)}` : `Original value: $${Number(bonus.original_value || 0).toFixed(2)}`}
-                      </div>
                     </div>
                   </div>
                 );
