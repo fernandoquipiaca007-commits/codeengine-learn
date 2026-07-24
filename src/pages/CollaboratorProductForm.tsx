@@ -3347,7 +3347,7 @@ export function CollaboratorProductForm({
                           className="p-2 text-red-400 hover:text-red-300 hover:bg-white/10 rounded-xl shrink-0 transition-colors"
                           title="Remover Bônus"
                         >
-                          <Trash2 size={16} />
+                          <Trash size={16} />
                         </button>
                       </div>
                     );
