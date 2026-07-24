@@ -3122,105 +3122,64 @@ export function CollaboratorProductForm({
         {/* Bonuses Customization Section */}
         {activeTab === 'bonuses' && (
           <div className="grid gap-8 lg:grid-cols-2">
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold font-display">Bônus Exclusivos</h3>
-              <p className="text-xs text-on-surface-variant">Incentive a compra incluindo brindes ou recursos extras.</p>
-
+            <div className="space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Vincular Produto Interno como Bônus (Opcional)</label>
+                <h3 className="text-lg font-bold font-display">Bônus Exclusivos</h3>
+                <p className="text-xs text-on-surface-variant">Incentive a compra incluindo brindes gratuitos ou ofertas adicionais (Order Bumps).</p>
+              </div>
+
+              {/* 1. Vincular Produto Interno */}
+              <div className="p-4 rounded-2xl bg-surface-high border border-white/10 space-y-2">
+                <label className="block text-xs font-semibold text-white uppercase tracking-wider">
+                  1. Vincular Produto da Plataforma <span className="text-on-surface-variant font-normal">(Opcional)</span>
+                </label>
                 <select
                   value={newBonus.linked_product_id || ''}
                   onChange={e => {
                     const selectedProd = collaboratorProducts.find(p => p.id === e.target.value);
-                    setNewBonus({
-                      ...newBonus,
-                      linked_product_id: e.target.value,
-                      title: newBonus.title || (selectedProd ? `Acesso Bônus: ${selectedProd.title}` : ''),
-                      description: newBonus.description || (selectedProd ? `Libera acesso completo ao produto "${selectedProd.title}" gratuitamente.` : ''),
-                      is_free: true,
-                      bonus_price: '',
-                      bonus_price_aoa: ''
-                    });
+                    setNewBonus(prev => ({
+                      ...prev,
+                      linked_product_id: e.target.value || null,
+                      title: prev.title || (selectedProd ? `Acesso Bônus: ${selectedProd.title}` : ''),
+                      description: prev.description || (selectedProd ? `Libera acesso completo ao produto "${selectedProd.title}".` : ''),
+                    }));
                   }}
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                  className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50"
                 >
                   <option value="">-- Selecione um produto para vincular --</option>
                   {collaboratorProducts.map(p => (
                     <option key={p.id} value={p.id}>{p.title} (${p.price})</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-on-surface-variant mt-1">
-                  Selecione um produto. Ao comprar o produto atual, o cliente receberá acesso de download para este bônus automaticamente na sua biblioteca.
+                <p className="text-[11px] text-on-surface-variant">
+                  Ao selecionar um produto seu, o comprador receberá o acesso automaticamente na biblioteca dele ao concluir a compra.
                 </p>
               </div>
 
+              {/* 2. Título & Descrição */}
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Título do Bônus</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">2. Título do Bônus</label>
                 <input
                   type="text"
                   value={newBonus.title}
-                  onChange={e => setNewBonus({ ...newBonus, title: e.target.value })}
-                  placeholder="Ex: Planilha de Controle Financeiro"
-                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
+                  onChange={e => setNewBonus(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Ex: Planilha de Controle Financeiro VIP"
+                  className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Descrição</label>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">3. Descrição</label>
                 <RichTextEditor
                   value={newBonus.description}
-                  onChange={val => setNewBonus({ ...newBonus, description: val })}
-                  placeholder="Ex: Planilha interativa para planejar e controlar todos os investimentos e despesas."
+                  onChange={val => setNewBonus(prev => ({ ...prev, description: val }))}
+                  placeholder="Descreva os benefícios e o que o comprador vai receber neste bônus..."
                 />
               </div>
-              {/* is_free toggle */}
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-high border border-white/10">
-                <div>
-                  <p className="text-sm font-semibold text-white">Este bônus é gratuito</p>
-                  <p className="text-[11px] text-on-surface-variant mt-0.5">Quando ativo, o bônus é incluído sem custo extra na oferta.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setNewBonus(prev => ({ ...prev, is_free: !prev.is_free, bonus_price: '', bonus_price_aoa: '' }))}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
-                    newBonus.is_free ? 'bg-green-500' : 'bg-white/20'
-                  }`}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
-                    newBonus.is_free ? 'translate-x-6' : 'translate-x-0'
-                  }`} />
-                </button>
-              </div>
 
-              {/* Preço do bônus — só aparece quando is_free = false */}
-              {!newBonus.is_free && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço do Bônus (USD)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newBonus.bonus_price}
-                      onChange={e => setNewBonus(prev => ({ ...prev, bonus_price: e.target.value }))}
-                      placeholder="Ex: 9.00"
-                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço do Bônus (AOA)</label>
-                    <input
-                      type="number"
-                      value={newBonus.bonus_price_aoa}
-                      onChange={e => setNewBonus(prev => ({ ...prev, bonus_price_aoa: e.target.value }))}
-                      placeholder="Ex: 8280"
-                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-              )}
-
+              {/* Ficheiro avulso (se não houver produto vinculado) */}
               {!newBonus.linked_product_id && (
-                <div className="space-y-1.5">
+                <div className="p-3 rounded-xl bg-surface-high border border-white/10 space-y-2">
                   <label className="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Ficheiro do Bônus (.zip)</label>
                   <div className="flex items-center gap-3">
                     <input
@@ -3234,105 +3193,165 @@ export function CollaboratorProductForm({
                     />
                     <label
                       htmlFor="bonus-file-upload-input"
-                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold cursor-pointer transition-all border border-white/10"
+                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold cursor-pointer transition-all border border-white/10"
                     >
                       Escolher Arquivo .zip
                     </label>
-                    <span className="text-xs text-on-surface-variant">
-                      {uploadProgress['bonus-file-upload'] || (newBonus.file_url ? 'Arquivo Privado Vinculado' : 'Nenhum arquivo selecionado')}
+                    <span className="text-xs text-on-surface-variant truncate">
+                      {uploadProgress['bonus-file-upload'] || (newBonus.file_url ? '✓ Arquivo vinculado' : 'Nenhum arquivo selecionado')}
                     </span>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center gap-2 py-1">
-                <input
-                  type="checkbox"
-                  id="bonus-is-optional"
-                  checked={newBonus.is_optional || false}
-                  onChange={e => setNewBonus(prev => ({ ...prev, is_optional: e.target.checked }))}
-                  className="w-4 h-4 rounded border-white/10 bg-surface-high text-primary focus:ring-0"
-                />
-                <label htmlFor="bonus-is-optional" className="text-xs font-semibold text-on-surface-variant cursor-pointer select-none">
-                  Preço Adicional no Checkout (Bônus Opcional / Order Bump)
+              {/* 4. Modalidade do Bônus (Gratuito vs Pago / Order Bump) */}
+              <div className="p-4 rounded-2xl bg-surface-high border border-white/10 space-y-3">
+                <label className="block text-xs font-semibold text-white uppercase tracking-wider">
+                  4. Modalidade da Oferta
                 </label>
-              </div>
 
-              {newBonus.is_optional && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço USD Adicional ($)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newBonus.additional_price || ''}
-                      onChange={e => setNewBonus(prev => ({ ...prev, additional_price: e.target.value }))}
-                      placeholder="Ex: 9.90"
-                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-on-surface-variant mb-1 uppercase tracking-wider">Preço AOA Adicional (Kwanza)</label>
-                    <input
-                      type="number"
-                      value={newBonus.additional_price_aoa || ''}
-                      onChange={e => setNewBonus(prev => ({ ...prev, additional_price_aoa: e.target.value }))}
-                      placeholder="Ex: 5000"
-                      className="w-full rounded-xl bg-surface-high border border-white/10 px-4 py-3 text-sm text-white focus:outline-none"
-                    />
-                  </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setNewBonus(prev => ({
+                      ...prev,
+                      is_free: true,
+                      is_optional: false,
+                      bonus_price: '',
+                      bonus_price_aoa: '',
+                      additional_price: '',
+                      additional_price_aoa: ''
+                    }))}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      newBonus.is_free
+                        ? 'bg-green-500/15 border-green-500/50 text-white'
+                        : 'bg-black/20 border-white/10 text-on-surface-variant hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 font-bold text-xs">
+                      <span className={`w-2.5 h-2.5 rounded-full ${newBonus.is_free ? 'bg-green-400' : 'bg-white/30'}`} />
+                      🎁 Bônus Gratuito
+                    </div>
+                    <p className="text-[10px] opacity-80 mt-1">Incluso sem custo extra na oferta.</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewBonus(prev => ({
+                      ...prev,
+                      is_free: false,
+                      is_optional: true
+                    }))}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      !newBonus.is_free
+                        ? 'bg-primary/15 border-primary/50 text-white'
+                        : 'bg-black/20 border-white/10 text-on-surface-variant hover:bg-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 font-bold text-xs">
+                      <span className={`w-2.5 h-2.5 rounded-full ${!newBonus.is_free ? 'bg-primary' : 'bg-white/30'}`} />
+                      🏷️ Oferta Checkout (Order Bump)
+                    </div>
+                    <p className="text-[10px] opacity-80 mt-1">Opcional no checkout por valor extra.</p>
+                  </button>
                 </div>
-              )}
+
+                {/* Se for Bônus Pago / Order Bump — Exibe os campos de preço */}
+                {!newBonus.is_free && (
+                  <div className="pt-2 grid grid-cols-2 gap-3 border-t border-white/10">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-on-surface-variant mb-1">Preço USD ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newBonus.additional_price || newBonus.bonus_price || ''}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setNewBonus(prev => ({
+                            ...prev,
+                            bonus_price: val,
+                            additional_price: val
+                          }));
+                        }}
+                        placeholder="Ex: 9.90"
+                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-on-surface-variant mb-1">Preço AOA (Kwanza)</label>
+                      <input
+                        type="number"
+                        value={newBonus.additional_price_aoa || newBonus.bonus_price_aoa || ''}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setNewBonus(prev => ({
+                            ...prev,
+                            bonus_price_aoa: val,
+                            additional_price_aoa: val
+                          }));
+                        }}
+                        placeholder="Ex: 5000"
+                        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <button
                 type="button"
                 onClick={addBonus}
-                className="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2.5 text-xs font-semibold transition-all"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold py-3 text-sm transition-all shadow-lg shadow-primary/20"
               >
-                <Plus size={14} /> Adicionar Bônus
+                <Plus size={16} /> Adicionar Bônus à Lista
               </button>
             </div>
 
-            <div>
+            {/* Lista de Bônus Adicionados */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold font-display text-white uppercase tracking-wider">
+                Bônus Configurados ({bonuses.length})
+              </h4>
               {bonuses.length > 0 ? (
                 <div className="space-y-3">
-                  {bonuses.map((b, i) => (
-                    <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-start justify-between gap-4 text-sm">
-                      <div>
-                        <h4 className="font-bold text-white mb-1 flex flex-wrap items-center gap-1.5">
-                          <span>{b.title}</span>
-                          {b.is_free !== false ? (
-                            <span className="text-[10px] bg-green-500/15 text-green-400 border border-green-500/30 rounded px-1.5 py-0.5 font-bold">Grátis</span>
-                          ) : (
-                            <span className="text-[10px] bg-primary/15 text-primary border border-primary/30 rounded px-1.5 py-0.5 font-bold">${b.bonus_price}</span>
-                          )}
-                          {b.linked_product_id && (
-                            <span className="text-[9px] bg-primary/20 text-primary border border-primary/30 rounded px-1 py-0.5 font-bold uppercase">
-                              Auto-Entrega
-                            </span>
-                          )}
-                          {b.is_optional && (
-                            <span className="text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded px-1.5 py-0.5 font-bold uppercase">
-                              Opcional (${b.additional_price} / {b.additional_price_aoa} AOA)
-                            </span>
-                          )}
-                          {(b.file_url || b.file_storage_path) && (
-                            <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded px-1.5 py-0.5 font-bold uppercase">
-                              Ficheiro
-                            </span>
-                          )}
-                        </h4>
-                        <p className="text-on-surface-variant text-xs mt-1" dangerouslySetInnerHTML={{ __html: b.description || '' }} />
+                  {bonuses.map((b, i) => {
+                    const priceUSD = b.additional_price || b.bonus_price;
+                    const priceAOA = b.additional_price_aoa || b.bonus_price_aoa;
+                    const isFree = b.is_free !== false && !b.is_optional && !priceUSD;
+
+                    return (
+                      <div key={i} className="p-4 rounded-2xl border border-white/10 bg-surface-high flex items-start justify-between gap-4 text-sm hover:border-white/20 transition-all">
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h5 className="font-bold text-white text-base truncate">{b.title}</h5>
+                            {isFree ? (
+                              <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 rounded-full px-2.5 py-0.5 font-bold">
+                                🎁 Grátis
+                              </span>
+                            ) : (
+                              <span className="text-[10px] bg-primary/20 text-primary border border-primary/30 rounded-full px-2.5 py-0.5 font-bold">
+                                🏷️ Order Bump ({priceUSD ? `$${priceUSD}` : ''}{priceUSD && priceAOA ? ' / ' : ''}{priceAOA ? `${priceAOA} Kz` : ''})
+                              </span>
+                            )}
+                            {b.linked_product_id && (
+                              <span className="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full px-2.5 py-0.5 font-bold">
+                                ⚡ Auto-Entrega
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-on-surface-variant text-xs line-clamp-2 rich-text-content" dangerouslySetInnerHTML={{ __html: b.description || '' }} />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeBonus(i)}
+                          className="p-2 text-red-400 hover:text-red-300 hover:bg-white/10 rounded-xl shrink-0 transition-colors"
+                          title="Remover Bônus"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeBonus(i)}
-                        className="p-1.5 text-red-400 hover:text-red-300 hover:bg-white/5 rounded shrink-0"
-                      >
-                        <Trash size={14} />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center bg-white/5 flex flex-col items-center justify-center h-full min-h-[220px]">
